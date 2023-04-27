@@ -1,4 +1,4 @@
-# Non-Steam-Launchers
+# NonSteamLaunchers
 Installs the latest GE-Proton and Installs Non Steam Launchers under 1 Proton prefix folder on the desktop of the Steam Deck. No files are left they are deleted after installation.  Currently Only Installs...  
 
   ~Battle.net
