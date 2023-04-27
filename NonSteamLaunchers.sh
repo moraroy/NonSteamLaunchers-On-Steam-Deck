@@ -2,7 +2,7 @@
 set -x
 
 # Display a list of options using zenity
-options=$(zenity --list --text="Which installers do you want to download and install?" --checklist --column=":)" --column="The default is one App ID Installation" FALSE "Seperate App IDs" TRUE "Epic Games Launcher" TRUE "GOG Galaxy" TRUE "Uplay" TRUE "Origin" TRUE "Battle.net" TRUE "Amazon Games" FALSE "EA App" --width=400 --height=350)
+options=$(zenity --list --text="Which installers do you want to download and install?" --checklist --column=":)" --column="The default is one App ID Installation" FALSE "Seperate App IDs" TRUE "Epic Games Launcher" TRUE "GOG Galaxy" TRUE "Uplay" TRUE "Origin" TRUE "Battle.net" FALSE "Amazon Games - broken" FALSE "EA App - broken" --width=400 --height=350)
 
 # Check if the user selected both Origin and EA App
 if [[ $options == *"Origin"* ]] && [[ $options == *"EA App"* ]]; then
