@@ -11,7 +11,7 @@ Installs the latest GE-Proton and Installs Non Steam Launchers under 1 Proton pr
   
   ~Ubisoft
 
-Currently Working On 
+Currently Working On These Things
 
   ~The EA App 
   
