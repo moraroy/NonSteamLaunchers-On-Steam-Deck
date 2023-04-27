@@ -1,5 +1,8 @@
 #!/bin/bash
 set -x
+set -u
+
+
 
 # Display a list of options using zenity
 options=$(zenity --list --text="Which installers do you want to download and install?" --checklist --column=":)" --column="The default is one App ID Installation" FALSE "Seperate App IDs" TRUE "Epic Games Launcher" TRUE "GOG Galaxy" TRUE "Uplay" TRUE "Origin" TRUE "Battle.net" FALSE "Amazon Games - broken" FALSE "EA App - broken" --width=400 --height=350)
@@ -20,7 +23,9 @@ else
     use_separate_appids=false
 fi
 
-
+(
+echo "0"
+echo "# Detecting and Installing GE-Proton"
 
 # Create NonSteamLaunchersInstallation subfolder in Downloads folder
 mkdir -p ~/Downloads/NonSteamLaunchersInstallation
@@ -62,17 +67,20 @@ installed_version=$(basename $proton_dir | sed 's/GE-Proton-//')
     latest_version=$(curl -s https://api.github.com/repos/GloriousEggroll/proton-ge-custom/releases/latest | grep tag_name | cut -d '"' -f 4)
     if [ "$installed_version" != "$latest_version" ]; then
         # Download GE-Proton using the first URL
+        echo "Downloading GE-Proton using the first URL"
         wget $ge_proton_url1 -O ~/Downloads/NonSteamLaunchersInstallation/GE-Proton.tar.gz
 
         # Check if the download succeeded
         if [ $? -ne 0 ]; then
             # Download GE-Proton using the second URL
+            echo "Downloading GE-Proton using the second URL"
             wget $ge_proton_url2 -O ~/Downloads/NonSteamLaunchersInstallation/GE-Proton.tar.gz
         fi
 
         # Check if either download succeeded
         if [ $? -eq 0 ]; then
             # Install GE-Proton
+            echo "Installing GE-Proton"
             tar -xvf ~/Downloads/NonSteamLaunchersInstallation/GE-Proton.tar.gz -C ~/.steam/root/compatibilitytools.d/
             proton_dir=$(find ~/.steam/root/compatibilitytools.d -maxdepth 1 -type d -name "GE-Proton*" | sort -V | tail -n1)
         else
@@ -81,6 +89,12 @@ installed_version=$(basename $proton_dir | sed 's/GE-Proton-//')
         fi
     fi
 fi
+
+
+echo "10"
+echo "# Setting files in their place"
+
+
 
 # Set the appid for the non-Steam game
 appid=NonSteamLaunchers
@@ -127,6 +141,11 @@ eaapp_url=https://origin-a.akamaihd.net/EA-Desktop-Client-Download/installer-rel
 # Set the path to save the seventh file to
 eaapp_file=~/Downloads/NonSteamLaunchersInstallation/EAappInstaller.exe
 
+
+echo "20"
+echo "# Creating folders"
+
+
 # Create app id folder in compatdata folder if it doesn't exist
 if [ ! -d "$HOME/.local/share/Steam/steamapps/compatdata/$appid" ]; then
     mkdir -p "$HOME/.local/share/Steam/steamapps/compatdata/$appid"
@@ -142,6 +161,8 @@ export STEAM_COMPAT_CLIENT_INSTALL_PATH="~/.local/share/Steam"
 export STEAM_COMPAT_DATA_PATH=~/.local/share/Steam/steamapps/compatdata/$appid
 
 wait
+echo "30"
+echo "# Downloading/Installing Epic Games"
 
 # Check if the user selected Epic Games Launcher
 if [[ $options == *"Epic Games Launcher"* ]]; then
@@ -182,6 +203,9 @@ fi
 
 # Wait for the MSI file to finish running
 wait
+echo "40"
+echo "# Downloading/Installing Gog Galaxy"
+
 
 # Check if the user selected GOG Galaxy
 if [[ $options == *"GOG Galaxy"* ]]; then
@@ -222,7 +246,8 @@ if [[ $options == *"GOG Galaxy"* ]]; then
 
     # Wait for 5 seconds to give the GalaxySetup.tmp process time to start
     sleep 90
-
+echo "45"
+echo "# Downloading/Installing Gog Galaxy"
     # Cancel & Exit the GOG Galaxy Setup Wizard
     pkill GalaxySetup.tmp
 
@@ -245,6 +270,9 @@ if [[ $options == *"GOG Galaxy"* ]]; then
 fi
 
 wait
+echo "50"
+echo "# Downloading/Installing Uplay"
+
 
 # Check if user selected Uplay
 if [[ $options == *"Uplay"* ]]; then
@@ -286,6 +314,10 @@ fi
 
 # Wait for the UBI file to finish running
 wait
+echo "60"
+echo "# Downloading/Installing Origin"
+
+
 
 # Check if user selected Origin
 if [[ $options == *"Origin"* ]]; then
@@ -335,6 +367,8 @@ if [[ $options == *"Origin"* ]]; then
 fi
 
 wait
+echo "70"
+echo "# Downloading/Installing Battle.net"
 
 # Check if user selected Battle.net
 if [[ $options == *"Battle.net"* ]]; then
@@ -382,6 +416,9 @@ fi
 
 wait
 
+echo "80"
+echo "# Downloading/Installing Amazon Games"
+
 # Check if user selected Amazon Games
 if [[ $options == *"Amazon Games"* ]]; then
     # User selected Amazon Games
@@ -424,6 +461,9 @@ if [[ $options == *"Amazon Games"* ]]; then
 fi
 
 wait
+
+echo "90"
+echo "# Downloading/Installing EA App"
 
 # Check if user selected EA App
 if [[ $options == *"EA App"* ]]; then
@@ -472,6 +512,17 @@ wait
 # Delete NonSteamLaunchersInstallation subfolder in Downloads folder
 rm -rf ~/Downloads/NonSteamLaunchersInstallation
 
-echo "Script is finished - you may close all windows"
-exit
+echo "100"
+echo "# Script is finished - you may close all windows"
+) |
+zenity --progress \
+  --title="Update Status" \
+  --text="Starting update..." --width=400 --height=350\
+  --percentage=0
 
+if [ "$?" = -1 ] ; then
+        zenity --error \
+          --text="Update canceled."
+fi
+
+exit
