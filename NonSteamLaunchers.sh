@@ -245,15 +245,63 @@ if [[ $options == *"GOG Galaxy"* ]]; then
     echo "Running EXE file using Proton without the /passive option"
     "$proton_dir/proton" run "$exe_file" &
 
-    # Wait for 5 seconds to give the GalaxySetup.tmp process time to start
-    sleep 90
+
 echo "45"
 echo "# Downloading/Installing Gog Galaxy"
-    # Cancel & Exit the GOG Galaxy Setup Wizard
+
+
+# Continuously check for the existence of the GalaxyInstaller_XXXXX folder until it is found
+while true; do
+    # Find the GalaxyInstaller_XXXXX folder
+    galaxy_installer_folder=$(find "/home/deck/.local/share/Steam/steamapps/compatdata/$appid/pfx/drive_c/users/steamuser/Temp" -maxdepth 1 -type d -name "GalaxyInstaller_*" | head -n1)
+
+    # Check if the folder was found
+    if [ -n "$galaxy_installer_folder" ]; then
+        # The folder was found
+        echo "The GalaxyInstaller_XXXXX folder was found: $galaxy_installer_folder"
+        break
+    else
+        # The folder was not found
+        echo "The GalaxyInstaller_XXXXX folder was not found. Waiting for it to be created..."
+        sleep 5
+    fi
+done
+
+# Set the path to the GalaxySetup.exe file
+galaxy_setup_file="$galaxy_installer_folder"/GalaxySetup.exe
+
+# Set the expected size of the GalaxySetup.exe file in bytes
+expected_size=275836128
+
+# Continuously check the size of the GalaxySetup.exe file until it has been fully downloaded
+while true; do
+    # Get the size of the GalaxySetup.exe file in bytes
+    file_size=$(stat -c%s "$galaxy_setup_file")
+
+    # Compare the size of the file with the expected size
+    if [ "$file_size" -eq "$expected_size" ]; then
+        sleep 2
+        # The sizes match
+        echo "The size of the GalaxySetup.exe file matches the expected size."
+        break
+    else
+        # The sizes do not match
+        echo "The size of the GalaxySetup.exe file does not match the expected size. Waiting for the file to finish downloading..."
+        sleep 1
+    fi
+done
+
+
+
+
+
+
+   # Cancel & Exit the GOG Galaxy Setup Wizard
     pkill GalaxySetup.tmp
 
+
     # Navigate to %LocalAppData%\Temp
-    cd "/home/deck/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/users/steamuser/Temp"
+    cd "/home/deck/.local/share/Steam/steamapps/compatdata/$appid/pfx/drive_c/users/steamuser/Temp"
 
     # Find the GalaxyInstaller_XXXXX folder and copy it to C:\Downloads
     galaxy_installer_folder=$(find . -maxdepth 1 -type d -name "GalaxyInstaller_*" | head -n1)
@@ -269,6 +317,9 @@ echo "# Downloading/Installing Gog Galaxy"
     # Wait for the EXE file to finish running
     wait
 fi
+
+
+
 
 wait
 echo "50"
@@ -411,7 +462,6 @@ if [[ $options == *"Battle.net"* ]]; then
     sleep 90
 
     pkill Battle.net.exe
-    pkill Battle.net Launcher.exe
 
 fi
 
@@ -520,7 +570,7 @@ echo "# Script is finished - you may close all windows"
 ) |
 zenity --progress \
   --title="Update Status" \
-  --text="Starting update..." --width=400 --height=350\
+  --text="Starting update..." --width=450 --height=350\
   --percentage=0
 
 if [ "$?" = -1 ] ; then
