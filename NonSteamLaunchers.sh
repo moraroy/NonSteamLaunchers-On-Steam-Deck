@@ -2,7 +2,7 @@
 set -x
 set -u
 
-
+export WINEDEBUG=-all,err+all
 
 # Display a list of options using zenity
 options=$(zenity --list --text="Which installers do you want to download and install?" --checklist --column=":)" --column="The default is one App ID Installation" FALSE "Seperate App IDs" TRUE "Epic Games Launcher" TRUE "GOG Galaxy" TRUE "Uplay" TRUE "Origin" TRUE "Battle.net" FALSE "Amazon Games - broken" FALSE "EA App - broken" --width=400 --height=350)
@@ -146,10 +146,11 @@ echo "20"
 echo "# Creating folders"
 
 
-# Create app id folder in compatdata folder if it doesn't exist
-if [ ! -d "$HOME/.local/share/Steam/steamapps/compatdata/$appid" ]; then
+# Create app id folder in compatdata folder if it doesn't exist and if the user selected to use a single app ID folder
+if [ "$use_separate_appids" = false ] && [ ! -d "$HOME/.local/share/Steam/steamapps/compatdata/$appid" ]; then
     mkdir -p "$HOME/.local/share/Steam/steamapps/compatdata/$appid"
 fi
+
 
 # Change working directory to Proton's
 cd $proton_dir
@@ -252,7 +253,7 @@ echo "# Downloading/Installing Gog Galaxy"
     pkill GalaxySetup.tmp
 
     # Navigate to %LocalAppData%\Temp
-    cd "/home/deck/Desktop/compatdata/NonSteamLaunchers/pfx/drive_c/users/steamuser/Temp"
+    cd "/home/deck/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/users/steamuser/Temp"
 
     # Find the GalaxyInstaller_XXXXX folder and copy it to C:\Downloads
     galaxy_installer_folder=$(find . -maxdepth 1 -type d -name "GalaxyInstaller_*" | head -n1)
@@ -452,6 +453,7 @@ if [[ $options == *"Amazon Games"* ]]; then
         wget $amazon_url -O $amazon_file
     fi
 
+
     # Run the Amazon file using Proton with the /passive option
     echo "Running Amazon file using Proton with the /passive option"
     "$proton_dir/proton" run "$amazon_file" /qn
@@ -471,7 +473,7 @@ if [[ $options == *"EA App"* ]]; then
     echo "User selected EA App"
 
 
-    # Set the appid for the Epic Games Launcher
+    # Set the appid for the EA App Launcher
     if [ "$use_separate_appids" = true ]; then
         appid=TheEAAPPLauncher
     else
@@ -499,9 +501,10 @@ if [[ $options == *"EA App"* ]]; then
         wget $eaapp_url -O $eaapp_file
     fi
 
+
     # Run the EA App file using Proton with the /passive option
     echo "Running EA App file using Proton with the /passive option"
-    "$proton_dir/proton" run "$eaapp_file" /VERYSILENT /NORESTART
+    "$proton_dir/proton" run "$eaapp_file"
 
     # Wait for the EA App file to finish running
     wait
