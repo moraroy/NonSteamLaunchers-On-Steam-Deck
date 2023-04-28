@@ -1,11 +1,15 @@
 #!/bin/bash
+
+chmod +x NonSteamLaunchers.sh
+
 set -x
 set -u
 
 export WINEDEBUG=-all,err+all
 
+
 # Display a list of options using zenity
-options=$(zenity --list --text="Which installers do you want to download and install?" --checklist --column=":)" --column="The default is one App ID Installation" FALSE "Seperate App IDs" TRUE "Epic Games Launcher" TRUE "GOG Galaxy" TRUE "Uplay" TRUE "Origin" TRUE "Battle.net" FALSE "Amazon Games - broken" FALSE "EA App - broken" --width=400 --height=350)
+options=$(zenity --list --text="Which installers do you want to download and install?" --checklist --column=":)" --column="The default is one App ID Installation" FALSE "Seperate App IDs" TRUE "Epic Games Launcher" TRUE "GOG Galaxy" TRUE "Uplay" TRUE "Origin" TRUE "Battle.net" FALSE "Amazon Games - broken" FALSE "EA App - broken" FALSE "itch.io - broken" --width=400 --height=362)
 
 # Check if the user selected both Origin and EA App
 if [[ $options == *"Origin"* ]] && [[ $options == *"EA App"* ]]; then
@@ -140,6 +144,14 @@ eaapp_url=https://origin-a.akamaihd.net/EA-Desktop-Client-Download/installer-rel
 
 # Set the path to save the seventh file to
 eaapp_file=~/Downloads/NonSteamLaunchersInstallation/EAappInstaller.exe
+
+# Set the URL to download the eighth file from
+itchio_url=https://itch.io/app/download?platform=windows
+
+# Set the path to save the eighth file to
+itchio_file=~/Downloads/NonSteamLaunchersInstallation/itch-setup.exe
+
+
 
 
 echo "20"
@@ -475,7 +487,7 @@ if [[ $options == *"Amazon Games"* ]]; then
     # User selected Amazon Games
     echo "User selected Amazon Games"
 
-    # Set the appid for the Epic Games Launcher
+    # Set the appid for the Amazon Games Launcher
     if [ "$use_separate_appids" = true ]; then
         appid=AmazonGamesLauncher
     else
@@ -525,7 +537,7 @@ if [[ $options == *"EA App"* ]]; then
 
     # Set the appid for the EA App Launcher
     if [ "$use_separate_appids" = true ]; then
-        appid=TheEAAPPLauncher
+        appid=TheEAappLauncher
     else
         appid=NonSteamLaunchers
     fi
@@ -561,6 +573,49 @@ if [[ $options == *"EA App"* ]]; then
 fi
 
 wait
+echo "95"
+echo "# Downloading/Installing itch.io"
+
+# Check if the user selected itchio Launcher
+if [[ $options == *"itch.io"* ]]; then
+    # User selected itchio Launcher
+    echo "User selected itch.io"
+
+    # Set the appid for the itchio Launcher
+    if [ "$use_separate_appids" = true ]; then
+        appid=itchioLauncher
+    else
+        appid=NonSteamLaunchers
+    fi
+
+    # Create app id folder in compatdata folder if it doesn't exist
+    if [ ! -d "$HOME/.local/share/Steam/steamapps/compatdata/$appid" ]; then
+        mkdir -p "$HOME/.local/share/Steam/steamapps/compatdata/$appid"
+    fi
+
+    # Change working directory to Proton's
+    cd $proton_dir
+
+    # Set the STEAM_COMPAT_CLIENT_INSTALL_PATH environment variable
+    export STEAM_COMPAT_CLIENT_INSTALL_PATH="~/.local/share/Steam"
+
+    # Set the STEAM_COMPAT_DATA_PATH environment variable for Epic Games Launcher
+    export STEAM_COMPAT_DATA_PATH=~/.local/share/Steam/steamapps/compatdata/$appid
+
+    # Download itchio file
+    if [ ! -f "$itchio_file" ]; then
+        echo "Downloading itchio file"
+        wget $itchio_url -O $itchio_file
+    fi
+
+# Run the itchio file using Proton with the /passive option
+echo "Running itchio file using Proton with the /passive option"
+"$proton_dir/proton" run "$itchio_file"
+fi
+
+
+wait
+
 
 # Delete NonSteamLaunchersInstallation subfolder in Downloads folder
 rm -rf ~/Downloads/NonSteamLaunchersInstallation
