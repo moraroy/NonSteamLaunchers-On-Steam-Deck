@@ -17,6 +17,8 @@ Currently Working On These Things
   
   ~Amazon Games Launcher 
   
+  ~Itch.io
+  
   ~Adding them to steam as shortcuts.
 
 
