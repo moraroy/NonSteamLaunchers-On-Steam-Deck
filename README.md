@@ -1,17 +1,19 @@
 # NonSteamLaunchers
-Installs the latest GE-Proton and Installs Non Steam Launchers under 1 Proton prefix folder in your compatdata folder path called NonSteamLaunchers. No files are left in your Downloads they are deleted after installation. 
+Installs the latest GE-Proton and Installs Non Steam Launchers under 1 Proton prefix folder in your compatdata folder path called "NonSteamLaunchers".
+
+No files are left in your "Downloads" they are deleted after installation. 
  
 Currently Only Installs... 👀 
 
-  ~Battle.net
+  ~Battle.net ✔️ 
   
-  ~Epic Games
+  ~Epic Games ✔️ 
   
-  ~Gog
+  ~Gog ✔️ 
   
-  ~Origin (only working way)
+  ~Origin (only working way) ✔️ 
   
-  ~Ubisoft
+  ~Ubisoft ✔️ 
 
 
 
@@ -33,7 +35,7 @@ Please right click and go to properties > permissions and check mark "Is Executa
 
 
 
-
+PLEASE NOTE!
 This does not add the Launchers to Steam as a non steam shortcut yet. This just installs them in your compatdata folder titled "NonSteamLaunchers" or their own "App Id".
 
 
