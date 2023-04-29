@@ -5,7 +5,6 @@ chmod +x NonSteamLaunchers.sh
 set -x
 set -u
 
-export WINEDEBUG=-all,err+all
 
 
 # Display a list of options using zenity
