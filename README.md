@@ -22,10 +22,11 @@ Currently Working On These Things
   ~Adding them to steam as shortcuts.
 
 
-In order to run it. Please right click and go to properties > permissions and check mark "Is Executable"
+In order to run it throw it on the Desktop. 
+Please right click and go to properties > permissions and check mark "Is Executable"
 
 
-This does not add the Launchers to Steam as a non steam shortcut yet. This just installs them in your compatdata folder titled "NonSteamLaunchers"
+This does not add the Launchers to Steam as a non steam shortcut yet. This just installs them in your compatdata folder titled "NonSteamLaunchers" or their own "App Id".
 
 
 
