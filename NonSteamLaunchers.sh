@@ -26,9 +26,19 @@ else
     use_separate_appids=false
 fi
 
-(
+
 echo "0"
 echo "# Detecting and Installing GE-Proton"
+
+# check to make sure compatabilitytools.d exists and makes it if it doesnt
+    if [ ! -d "$HOME/.steam/root/compatibilitytools.d" ]; then
+    mkdir -p "$HOME/.steam/root/compatibilitytools.d"
+fi
+
+
+
+(
+
 
 # Create NonSteamLaunchersInstallation subfolder in Downloads folder
 mkdir -p ~/Downloads/NonSteamLaunchersInstallation
@@ -39,6 +49,13 @@ proton_dir=$(find ~/.steam/root/compatibilitytools.d -maxdepth 1 -type d -name "
 # Set the URLs to download GE-Proton from
 ge_proton_url1=https://github.com/GloriousEggroll/proton-ge-custom/releases/latest/download/GE-Proton.tar.gz
 ge_proton_url2=https://github.com/GloriousEggroll/proton-ge-custom/releases/download/GE-Proton7-55/GE-Proton7-55.tar.gz
+
+
+
+
+
+
+
 
 # Check if GE-Proton is installed
 if [ -z "$proton_dir" ]; then
@@ -292,6 +309,8 @@ while true; do
     # Compare the size of the file with the expected size
     if [ "$file_size" -eq "$expected_size" ]; then
         sleep 2
+
+
         # The sizes match
         echo "The size of the GalaxySetup.exe file matches the expected size."
         break
