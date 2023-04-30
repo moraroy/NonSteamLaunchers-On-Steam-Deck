@@ -281,7 +281,7 @@ echo "# Downloading/Installing Gog Galaxy"
 # Continuously check for the existence of the GalaxyInstaller_XXXXX folder until it is found
 while true; do
     # Find the GalaxyInstaller_XXXXX folder
-    galaxy_installer_folder=$(find "/home/deck/.local/share/Steam/steamapps/compatdata/$appid/pfx/drive_c/users/steamuser/Temp" -maxdepth 1 -type d -name "GalaxyInstaller_*" | head -n1)
+    galaxy_installer_folder=$(find "$HOME/.local/share/Steam/steamapps/compatdata/$appid/pfx/drive_c/users/steamuser/Temp" -maxdepth 1 -type d -name "GalaxyInstaller_*" | head -n1)
 
     # Check if the folder was found
     if [ -n "$galaxy_installer_folder" ]; then
@@ -308,7 +308,7 @@ while true; do
 
     # Compare the size of the file with the expected size
     if [ "$file_size" -eq "$expected_size" ]; then
-        sleep 2
+        sleep 3
 
 
         # The sizes match
@@ -331,7 +331,7 @@ done
 
 
     # Navigate to %LocalAppData%\Temp
-    cd "/home/deck/.local/share/Steam/steamapps/compatdata/$appid/pfx/drive_c/users/steamuser/Temp"
+    cd "$HOME/.local/share/Steam/steamapps/compatdata/$appid/pfx/drive_c/users/steamuser/Temp"
 
     # Find the GalaxyInstaller_XXXXX folder and copy it to C:\Downloads
     galaxy_installer_folder=$(find . -maxdepth 1 -type d -name "GalaxyInstaller_*" | head -n1)
@@ -489,9 +489,38 @@ if [[ $options == *"Battle.net"* ]]; then
     echo "Running BATTLE file using Proton with the /passive option"
     "$proton_dir/proton" run "$battle_file" Battle.net-Setup.exe --lang=enUS --installpath="C:\Program Files (x86)\Battle.net" &
 
-    sleep 90
 
-    pkill Battle.net.exe
+
+    # Set the path to the Battle.net.14119 folder
+folder_path="$HOME/.local/share/Steam/steamapps/compatdata/$appid/pfx/drive_c/Program Files (x86)/Battle.net/Battle.net.14119"
+
+# Set the target size in bytes
+target_size=303050261
+
+# Continuously check if the folder exists
+while true; do
+    if [[ -d "$folder_path" ]]; then
+        # The folder exists, so continuously check the size of the folder
+        while true; do
+            # Get the current size of the folder in bytes
+            folder_size=$(du -sb "$folder_path" | cut -f1)
+
+            # Check if the folder size has reached the target size
+            if [[ $folder_size -ge $target_size ]]; then
+                # Terminate the Battle.net.exe process
+                sleep 8
+                pkill "Battle.net.exe"
+                break 2
+            fi
+
+            # Wait for 1 second before checking again
+            sleep 1
+        done
+    else
+        # The folder does not exist yet, so wait for 1 second before checking again
+        sleep 1
+    fi
+done
 
 fi
 
