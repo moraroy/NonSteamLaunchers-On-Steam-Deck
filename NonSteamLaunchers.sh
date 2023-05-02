@@ -1,9 +1,8 @@
 #!/bin/bash
 
-chmod +x NonSteamLaunchers.sh
+chmod +x "$0"
 
 set -x
-set -u
 
 
 # Set the paths to the launcher executables
