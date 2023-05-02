@@ -31,8 +31,9 @@ Currently Working On These Things 👷‍♂️
 
 
 INSTRUCTIONS 📝 
-In order to run it throw it on the Desktop. 
-Please right click and go to properties > permissions and check mark "Is Executable". Double Click it now and it should run.
+In order to run it, grab the NonSteamLaunchers.sh file and throw it on the Desktop. 
+
+Please right click and go to properties > permissions and check mark "Is Executable". Double Click it and it should run.
 
 
 
