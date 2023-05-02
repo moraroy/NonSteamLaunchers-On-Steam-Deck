@@ -6,25 +6,175 @@ set -x
 set -u
 
 
+# Set the paths to the launcher executables
+epic_games_launcher_path1="$HOME/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/Program Files (x86)/Epic Games/Launcher/Portal/Binaries/Win32/EpicGamesLauncher.exe"
+epic_games_launcher_path2="$HOME/.local/share/Steam/steamapps/compatdata/EpicGamesLauncher/pfx/drive_c/Program Files (x86)/Epic Games/Launcher/Portal/Binaries/Win32/EpicGamesLauncher.exe"
+gog_galaxy_path1="$HOME/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/Program Files (x86)/GOG Galaxy/GalaxyClient.exe"
+gog_galaxy_path2="$HOME/.local/share/Steam/steamapps/compatdata/GogGalaxyLauncher/pfx/drive_c/Program Files (x86)/GOG Galaxy/GalaxyClient.exe"
+origin_path1="$HOME/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/Program Files (x86)/Origin/Origin.exe"
+origin_path2="$HOME/.local/share/Steam/steamapps/compatdata/OriginLauncher/pfx/drive_c/Program Files (x86)/Origin/Origin.exe"
+uplay_path1="$HOME/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/Program Files (x86)/Ubisoft/Ubisoft Game Launcher/upc.exe"
+uplay_path2="$HOME/.local/share/Steam/steamapps/compatdata/UplayLauncher/pfx/drive_c/Program Files (x86)/Ubisoft/Ubisoft Game Launcher/upc.exe"
+battlenet_path1="$HOME/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/Program Files (x86)/Battle.net/Battle.net Launcher.exe"
+battlenet_path2="$HOME/.local/share/Steam/steamapps/compatdata/Battle.netLauncher/pfx/drive_c/Program Files (x86)/Battle.net/Battle.net Launcher.exe"
+eaapp_path1="/$HOME/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/Program Files/Electronic Arts/EA Desktop/EA Desktop/EADesktop.exe"
+eaapp_path2="$HOME/.local/share/Steam/steamapps/compatdata/TheEAappLauncher/pfx/drive_c/Program Files/Electronic Arts/EA Desktop/EA Desktop/EADesktop.exe"
+amazongames_path1="/$HOME/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/users/steamuser/AppData/Local/Amazon Games/App/Amazon Games.exe"
+amazongames_path2="/$HOME/.local/share/Steam/steamapps/compatdata/AmazonGamesLauncher/pfx/drive_c/users/steamuser/AppData/Local/Amazon Games/App/Amazon Games.exe"
+itchio_path1="/$HOME/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/users/steamuser/AppData/Local/itch/app-25.5.1/itch.exe"
+itchio_path2="/$HOME/.local/share/Steam/steamapps/compatdata/itchioLauncher/pfx/drive_c/users/steamuser/AppData/Local/itch/app-25.5.1/itch.exe"
+
+
+# Check if Epic Games Launcher is installed
+if [[ -f "$epic_games_launcher_path1" ]] || [[ -f "$epic_games_launcher_path2" ]]; then
+    # Epic Games Launcher is installed
+    epic_games_value="FALSE"
+    epic_games_text="Epic Games ===> Installed"
+else
+    # Epic Games Launcher is not installed
+    epic_games_value="TRUE"
+    epic_games_text="Epic Games"
+fi
+
+# Check if GOG Galaxy is installed
+if [[ -f "$gog_galaxy_path1" ]] || [[ -f "$gog_galaxy_path2" ]]; then
+    # GOG Galaxy is installed
+    gog_galaxy_value="FALSE"
+    gog_galaxy_text="GOG Galaxy ===> Installed"
+else
+    # GOG Galaxy is not installed
+    gog_galaxy_value="TRUE"
+    gog_galaxy_text="GOG Galaxy"
+fi
+
+# Check if Origin is installed
+if [[ -f "$origin_path1" ]] || [[ -f "$origin_path2" ]]; then
+    # Origin is installed
+    origin_value="FALSE"
+    origin_text="Origin ===> Installed"
+else
+    # Origin is not installed
+    origin_value="TRUE"
+    origin_text="Origin"
+fi
+
+# Check if Uplay is installed
+if [[ -f "$uplay_path1" ]] || [[ -f "$uplay_path2" ]]; then
+    # Uplay is installed
+    uplay_value="FALSE"
+    uplay_text="Uplay ===> Installed"
+else
+    # Uplay is not installed
+    uplay_value="TRUE"
+    uplay_text="Uplay"
+fi
+
+# Check if Battle.net is installed
+if [[ -f "$battlenet_path1" ]] || [[ -f "$battlenet_path2" ]]; then
+    # Battle.net is installed
+    battlenet_value="FALSE"
+    battlenet_text="Battle.net ===> Installed"
+else
+    # Battle.net is not installed
+    battlenet_value="TRUE"
+    battlenet_text="Battle.net"
+fi
+
+# Check if EA App is installed
+if [[ -f "$eaapp_path1" ]] || [[ -f "$eaapp_path2" ]]; then
+    # EA App is installed
+    eaapp_value="FALSE"
+    eaapp_text="EA App ===> Installed"
+else
+    # EA App is not installed
+    eaapp_value="FALSE"
+    eaapp_text="EA App"
+fi
+
+# Check if Amazon Games is installed
+if [[ -f "$amazongames_path1" ]] || [[ -f "$amazongames_path2" ]]; then
+    # Amazon Games is installed
+    amazongames_value="FALSE"
+    amazongames_text="Amazon Games ===> Installed"
+else
+    # Amazon Games is not installed
+    amazongames_value="TRUE"
+    amazongames_text="Amazon Games"
+fi
+
+# Check if itch.io is installed
+if [[ -f "$itchio_path1" ]] || [[ -f "$itchio_path2" ]]; then
+    # itch.io is installed
+    itchio_value="FALSE"
+    itchio_text="itch.io ===> Installed"
+else
+    # itch.io is not installed
+    itchio_value="TRUE"
+    itchio_text="itch.io"
+fi
+
+
+
+
+
+
+
 
 # Display a list of options using zenity
-options=$(zenity --list --text="Which installers do you want to download and install?" --checklist --column=":)" --column="The default is one App ID Installation" FALSE "Seperate App IDs" TRUE "Epic Games Launcher" TRUE "GOG Galaxy" TRUE "Uplay" TRUE "Origin" TRUE "Battle.net" FALSE "Amazon Games - broken" FALSE "EA App - broken" FALSE "itch.io - broken" --width=400 --height=362)
+options=$(zenity --list --text="Which launchers do you want to download and install?" --checklist --column=":)" --column="The default is one App ID Installation" FALSE "Separate App IDs" $epic_games_value "$epic_games_text" $gog_galaxy_value "$gog_galaxy_text" $uplay_value "$uplay_text" $origin_value "$origin_text" $battlenet_value "$battlenet_text" $amazongames_value "$amazongames_text" $eaapp_value "$eaapp_text" $itchio_value "$itchio_text" --width=400 --height=362)
 
-# Check if the user selected both Origin and EA App
-if [[ $options == *"Origin"* ]] && [[ $options == *"EA App"* ]]; then
-    # User selected both Origin and EA App
-    zenity --error --text="You cannot select both Origin and EA App at the same time." --width=200 --height=150
+# Check if the cancel button was clicked
+if [ $? -eq 1 ]; then
+    # The cancel button was clicked
+    echo "The cancel button was clicked"
     exit 1
 fi
 
+
+
 # Check if the user selected to use separate app IDs
-if [[ $options == *"Seperate App IDs"* ]]; then
+if [[ $options == *"Separate App IDs"* ]]; then
     # User selected to use separate app IDs
     use_separate_appids=true
 else
     # User did not select to use separate app IDs
     use_separate_appids=false
 fi
+
+
+
+# Check if the user selected both Origin and EA App
+if [[ $options == *"Origin"* ]] && [[ $options == *"EA App"* ]] && [ "$use_separate_appids" = false ]; then
+    # User selected both Origin and EA App without selecting separate app IDs
+    zenity --error --text="You cannot select both Origin and EA App at the same time unless you select separate app IDs." --width=200 --height=150
+    exit 1
+fi
+
+# Check if Origin is already installed
+if [[ -f "$origin_path1" ]] || [[ -f "$origin_path2" ]]; then
+    # Origin is installed
+    if [[ $options == *"EA App"* ]] && [ "$use_separate_appids" = false ]; then
+        # User selected EA App without selecting separate app IDs
+        zenity --error --text="You cannot install EA App because Origin is already installed. Please select separate app IDs if you want to install both." --width=200 --height=150
+        exit 1
+    fi
+fi
+
+# Check if EA App is already installed
+if [[ -f "$eaapp_path1" ]] || [[ -f "$eaapp_path2" ]]; then
+    # EA App is installed
+    if [[ $options == *"Origin"* ]] && [ "$use_separate_appids" = false ]; then
+        # User selected Origin without selecting separate app IDs
+        zenity --error --text="You cannot install Origin because EA App is already installed. Please select separate app IDs if you want to install both." --width=200 --height=150
+        exit 1
+    fi
+fi
+
+
+
+
+
+
 
 
 echo "0"
@@ -49,9 +199,6 @@ proton_dir=$(find ~/.steam/root/compatibilitytools.d -maxdepth 1 -type d -name "
 # Set the URLs to download GE-Proton from
 ge_proton_url1=https://github.com/GloriousEggroll/proton-ge-custom/releases/latest/download/GE-Proton.tar.gz
 ge_proton_url2=https://github.com/GloriousEggroll/proton-ge-custom/releases/download/GE-Proton7-55/GE-Proton7-55.tar.gz
-
-
-
 
 
 
@@ -183,6 +330,9 @@ fi
 # Change working directory to Proton's
 cd $proton_dir
 
+# Set the STEAM_RUNTIME environment variable
+export STEAM_RUNTIME="$HOME/.steam/root/ubuntu12_32/steam-runtime/run.sh"
+
 # Set the STEAM_COMPAT_CLIENT_INSTALL_PATH environment variable
 export STEAM_COMPAT_CLIENT_INSTALL_PATH="~/.local/share/Steam"
 
@@ -194,9 +344,9 @@ echo "30"
 echo "# Downloading/Installing Epic Games"
 
 # Check if the user selected Epic Games Launcher
-if [[ $options == *"Epic Games Launcher"* ]]; then
+if [[ $options == *"Epic Games"* ]]; then
     # User selected Epic Games Launcher
-    echo "User selected Epic Games Launcher"
+    echo "User selected Epic Games"
 
     # Set the appid for the Epic Games Launcher
     if [ "$use_separate_appids" = true ]; then
@@ -227,7 +377,7 @@ if [[ $options == *"Epic Games Launcher"* ]]; then
 
 # Run the MSI file using Proton with the /passive option
 echo "Running MSI file using Proton with the /passive option"
-"$proton_dir/proton" run MsiExec.exe /i "$msi_file" /qn
+"$STEAM_RUNTIME" "$proton_dir/proton" run MsiExec.exe /i "$msi_file" /qn
 fi
 
 # Wait for the MSI file to finish running
@@ -271,63 +421,22 @@ if [[ $options == *"GOG Galaxy"* ]]; then
 
     # Run the EXE file using Proton without the /passive option
     echo "Running EXE file using Proton without the /passive option"
-    "$proton_dir/proton" run "$exe_file" &
+    "$STEAM_RUNTIME" "$proton_dir/proton" run "$exe_file" &
 
 
 echo "45"
 echo "# Downloading/Installing Gog Galaxy"
 
 
-# Continuously check for the existence of the GalaxyInstaller_XXXXX folder until it is found
-while true; do
-    # Find the GalaxyInstaller_XXXXX folder
-    galaxy_installer_folder=$(find "$HOME/.local/share/Steam/steamapps/compatdata/$appid/pfx/drive_c/users/steamuser/Temp" -maxdepth 1 -type d -name "GalaxyInstaller_*" | head -n1)
-
-    # Check if the folder was found
-    if [ -n "$galaxy_installer_folder" ]; then
-        # The folder was found
-        echo "The GalaxyInstaller_XXXXX folder was found: $galaxy_installer_folder"
+# Cancel & Exit the GOG Galaxy Setup Wizard
+    while true; do
+    if pgrep -f "GalaxySetup.tmp" > /dev/null; then
+        pkill -f "GalaxySetup.tmp"
         break
-    else
-        # The folder was not found
-        echo "The GalaxyInstaller_XXXXX folder was not found. Waiting for it to be created..."
-        sleep 5
     fi
+    sleep 1
 done
 
-# Set the path to the GalaxySetup.exe file
-galaxy_setup_file="$galaxy_installer_folder"/GalaxySetup.exe
-
-# Set the expected size of the GalaxySetup.exe file in bytes
-expected_size=275836128
-
-# Continuously check the size of the GalaxySetup.exe file until it has been fully downloaded
-while true; do
-    # Get the size of the GalaxySetup.exe file in bytes
-    file_size=$(stat -c%s "$galaxy_setup_file")
-
-    # Compare the size of the file with the expected size
-    if [ "$file_size" -eq "$expected_size" ]; then
-        sleep 3
-
-
-        # The sizes match
-        echo "The size of the GalaxySetup.exe file matches the expected size."
-        break
-    else
-        # The sizes do not match
-        echo "The size of the GalaxySetup.exe file does not match the expected size. Waiting for the file to finish downloading..."
-        sleep 1
-    fi
-done
-
-
-
-
-
-
-   # Cancel & Exit the GOG Galaxy Setup Wizard
-    pkill GalaxySetup.tmp
 
 
     # Navigate to %LocalAppData%\Temp
@@ -337,12 +446,14 @@ done
     galaxy_installer_folder=$(find . -maxdepth 1 -type d -name "GalaxyInstaller_*" | head -n1)
     cp -r "$galaxy_installer_folder" ~/Downloads/NonSteamLaunchersInstallation/
 
+
+
     # Navigate to the C:\Downloads\GalaxyInstaller_XXXXX folder
     cd ~/Downloads/NonSteamLaunchersInstallation/"$(basename $galaxy_installer_folder)"
 
     # Run GalaxySetup.exe with the /VERYSILENT and /NORESTART options
     echo "Running GalaxySetup.exe with the /VERYSILENT and /NORESTART options"
-    "$proton_dir/proton" run GalaxySetup.exe /VERYSILENT /NORESTART
+    "$STEAM_RUNTIME" "$proton_dir/proton" run GalaxySetup.exe /VERYSILENT /NORESTART
 
     # Wait for the EXE file to finish running
     wait
@@ -391,7 +502,7 @@ if [[ $options == *"Uplay"* ]]; then
 
     # Run the UBI file using Proton with the /passive option
 echo "Running UBI file using Proton with the /passive option"
-"$proton_dir/proton" run "$ubi_file" /S
+"$STEAM_RUNTIME" "$proton_dir/proton" run "$ubi_file" /S
 fi
 
 # Wait for the UBI file to finish running
@@ -406,7 +517,7 @@ if [[ $options == *"Origin"* ]]; then
     # User selected Origin
     echo "User selected Origin"
 
-    # Set the appid for the Epic Games Launcher
+    # Set the appid for the Origin Launcher
     if [ "$use_separate_appids" = true ]; then
         appid=OriginLauncher
     else
@@ -436,7 +547,7 @@ if [[ $options == *"Origin"* ]]; then
 
     # Run the ORIGIN file using Proton with the /passive option
     echo "Running ORIGIN file using Proton with the /passive option"
-    "$proton_dir/proton" run "$origin_file" /SILENT
+    "$STEAM_RUNTIME" "$proton_dir/proton" run "$origin_file" /SILENT
 
     # Edit local.xml
     sed -i 's|</Settings>|    <Setting value="true" key="MigrationDisabled" type="1"/>\n    <Setting key="UpdateURL" value="" type="10"/>\n    <Setting key="AutoPatchGlobal" value="false" type="1"/>\n    <Setting key="AutoUpdate" value="false" type="1"/>\n</Settings>|' "$HOME/.local/share/Steam/steamapps/compatdata/$appid/pfx/drive_c/ProgramData/Origin/local.xml"
@@ -487,42 +598,19 @@ if [[ $options == *"Battle.net"* ]]; then
 
     # Run the BATTLE file using Proton with the /passive option
     echo "Running BATTLE file using Proton with the /passive option"
-    "$proton_dir/proton" run "$battle_file" Battle.net-Setup.exe --lang=enUS --installpath="C:\Program Files (x86)\Battle.net" &
+    "$STEAM_RUNTIME" "$proton_dir/proton" run "$battle_file" Battle.net-Setup.exe --lang=enUS --installpath="C:\Program Files (x86)\Battle.net" &
 
-
-
-    # Set the path to the Battle.net.14119 folder
-folder_path="$HOME/.local/share/Steam/steamapps/compatdata/$appid/pfx/drive_c/Program Files (x86)/Battle.net/Battle.net.14119"
-
-# Set the target size in bytes
-target_size=303050261
-
-# Continuously check if the folder exists
-while true; do
-    if [[ -d "$folder_path" ]]; then
-        # The folder exists, so continuously check the size of the folder
-        while true; do
-            # Get the current size of the folder in bytes
-            folder_size=$(du -sb "$folder_path" | cut -f1)
-
-            # Check if the folder size has reached the target size
-            if [[ $folder_size -ge $target_size ]]; then
-                # Terminate the Battle.net.exe process
-                sleep 8
-                pkill "Battle.net.exe"
-                break 2
-            fi
-
-            # Wait for 1 second before checking again
-            sleep 1
-        done
-    else
-        # The folder does not exist yet, so wait for 1 second before checking again
-        sleep 1
+    while true; do
+    if pgrep -f "Battle.net.exe" > /dev/null; then
+        pkill -f "Battle.net.exe"
+        break
     fi
+    sleep 1
 done
 
 fi
+
+
 
 wait
 
@@ -552,7 +640,7 @@ if [[ $options == *"Amazon Games"* ]]; then
     # Set the STEAM_COMPAT_CLIENT_INSTALL_PATH environment variable
     export STEAM_COMPAT_CLIENT_INSTALL_PATH="~/.local/share/Steam"
 
-    # Set the STEAM_COMPAT_DATA_PATH environment variable for Epic Games Launcher
+    # Set the STEAM_COMPAT_DATA_PATH environment variable for Amazon Games Launcher
     export STEAM_COMPAT_DATA_PATH=~/.local/share/Steam/steamapps/compatdata/$appid
 
 
@@ -565,11 +653,24 @@ if [[ $options == *"Amazon Games"* ]]; then
 
     # Run the Amazon file using Proton with the /passive option
     echo "Running Amazon file using Proton with the /passive option"
-    "$proton_dir/proton" run "$amazon_file" /qn
+    "$STEAM_RUNTIME" "$proton_dir/proton" run "$amazon_file" &
+
+
+    while true; do
+    if pgrep -f "Amazon Games.exe" > /dev/null; then
+        pkill -f "Amazon Games.exe"
+        break
+    fi
+    sleep 1
+done
 
     # Wait for the Amazon file to finish running
     wait
 fi
+
+
+
+
 
 wait
 
@@ -613,10 +714,28 @@ if [[ $options == *"EA App"* ]]; then
 
     # Run the EA App file using Proton with the /passive option
     echo "Running EA App file using Proton with the /passive option"
-    "$proton_dir/proton" run "$eaapp_file"
+    "$STEAM_RUNTIME" "$proton_dir/proton" run "$eaapp_file" /quiet
+
+    counter=0
+while true; do
+    if pgrep -f "EABackgroundService.exe" > /dev/null; then
+        pkill -f "EABackgroundService.exe"
+        break
+    fi
+    if pgrep -f "EALocalHostSvc.exe" > /dev/null; then
+        pkill -f "EALocalHostSvc.exe"
+        break
+    fi
+    sleep 1
+    counter=$((counter + 1))
+    if [ $counter -ge 10 ]; then
+        break
+    fi
+done
 
     # Wait for the EA App file to finish running
     wait
+
 fi
 
 wait
@@ -657,7 +776,7 @@ if [[ $options == *"itch.io"* ]]; then
 
 # Run the itchio file using Proton with the /passive option
 echo "Running itchio file using Proton with the /passive option"
-"$proton_dir/proton" run "$itchio_file"
+"$STEAM_RUNTIME" "$proton_dir/proton" run "$itchio_file"
 fi
 
 
