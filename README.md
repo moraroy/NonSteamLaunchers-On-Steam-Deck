@@ -15,17 +15,18 @@ Currently Only Installs... 👀
   
   ~Ubisoft ✔️ 
 
+  ~The EA App ✔️ 
+  
+  ~Amazon Games Launcher ✔️ 
+  
+  ~Itch.io ✔️ 
 
 
-Currently Working On These Things 👷‍♂️ 
 
-  ~The EA App 
+Currently Working On These Things 👷‍♂️
+
   
-  ~Amazon Games Launcher 
-  
-  ~Itch.io
-  
-  ~Adding them to steam as shortcuts.
+ ~Adding them to steam as shortcuts. 
 
 
 
