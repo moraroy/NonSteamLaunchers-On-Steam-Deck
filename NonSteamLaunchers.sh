@@ -22,6 +22,8 @@ amazongames_path1="/$HOME/.local/share/Steam/steamapps/compatdata/NonSteamLaunch
 amazongames_path2="/$HOME/.local/share/Steam/steamapps/compatdata/AmazonGamesLauncher/pfx/drive_c/users/steamuser/AppData/Local/Amazon Games/App/Amazon Games.exe"
 itchio_path1="/$HOME/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/users/steamuser/AppData/Local/itch/app-25.5.1/itch.exe"
 itchio_path2="/$HOME/.local/share/Steam/steamapps/compatdata/itchioLauncher/pfx/drive_c/users/steamuser/AppData/Local/itch/app-25.5.1/itch.exe"
+legacygames_path1="$HOME/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/Program Files/Legacy Games/Legacy Games Launcher/Legacy Games Launcher.exe"
+legacygames_path2="$HOME/.local/share/Steam/steamapps/compatdata/LegacyGamesLauncher/pfx/drive_c/Program Files/Legacy Games/Legacy Games Launcher/Legacy Games Launcher.exe"
 
 
 # Check if Epic Games Launcher is installed
@@ -112,7 +114,16 @@ else
     itchio_text="itch.io"
 fi
 
-
+# Check if Legacy Games Launcher is installed
+if [[ -f "$legacygames_path1" ]] || [[ -f "$legacygames_path2" ]]; then
+    # itch.io is installed
+    legacygames_value="FALSE"
+    legacygames_text="Legacy Games ===> Installed"
+else
+    # itch.io is not installed
+    legacygames_value="TRUE"
+    legacygames_text="Legacy Games"
+fi
 
 
 
@@ -120,7 +131,7 @@ fi
 
 
 # Display a list of options using zenity
-options=$(zenity --list --text="Which launchers do you want to download and install?" --checklist --column=":)" --column="The default is one App ID Installation" FALSE "Separate App IDs" $epic_games_value "$epic_games_text" $gog_galaxy_value "$gog_galaxy_text" $uplay_value "$uplay_text" $origin_value "$origin_text" $battlenet_value "$battlenet_text" $amazongames_value "$amazongames_text" $eaapp_value "$eaapp_text" $itchio_value "$itchio_text" --width=400 --height=362)
+options=$(zenity --list --text="Which launchers do you want to download and install?" --checklist --column=":)" --column="The default is one App ID Installation" FALSE "Separate App IDs" $epic_games_value "$epic_games_text" $gog_galaxy_value "$gog_galaxy_text" $uplay_value "$uplay_text" $origin_value "$origin_text" $battlenet_value "$battlenet_text" $amazongames_value "$amazongames_text" $eaapp_value "$eaapp_text" $itchio_value "$itchio_text" $legacygames_value "$legacygames_text" --width=400 --height=388)
 
 # Check if the cancel button was clicked
 if [ $? -eq 1 ]; then
@@ -313,7 +324,11 @@ itchio_url=https://itch.io/app/download?platform=windows
 # Set the path to save the eighth file to
 itchio_file=~/Downloads/NonSteamLaunchersInstallation/itch-setup.exe
 
+# Set the URL to download the ninth file from
+legacygames_url=https://cdn.legacygames.com/LegacyGamesLauncher/legacy-games-launcher-setup-1.10.0-x64-full.exe
 
+# Set the path to save the ninth file to
+legacygames_file=~/Downloads/NonSteamLaunchersInstallation/legacy-games-launcher-setup-1.10.0-x64-full.exe
 
 
 echo "20"
@@ -471,7 +486,7 @@ if [[ $options == *"Uplay"* ]]; then
     # User selected Uplay
     echo "User selected Uplay"
 
-    # Set the appid for the Epic Games Launcher
+    # Set the appid for the Ubisoft Launcher
     if [ "$use_separate_appids" = true ]; then
         appid=UplayLauncher
     else
@@ -780,6 +795,50 @@ fi
 
 
 wait
+echo "98"
+echo "# Downloading/Installing Legacy Games"
+
+# Check if user selected Legacy Games
+if [[ $options == *"Legacy Games"* ]]; then
+    # User selected Legacy Games
+    echo "User selected Legacy Games"
+
+    # Set the appid for the Legacy Games Launcher
+    if [ "$use_separate_appids" = true ]; then
+        appid=LegacyGamesLauncher
+    else
+        appid=NonSteamLaunchers
+    fi
+
+    # Create app id folder in compatdata folder if it doesn't exist
+    if [ ! -d "$HOME/.local/share/Steam/steamapps/compatdata/$appid" ]; then
+        mkdir -p "$HOME/.local/share/Steam/steamapps/compatdata/$appid"
+    fi
+
+    # Change working directory to Proton's
+    cd $proton_dir
+
+    # Set the STEAM_COMPAT_CLIENT_INSTALL_PATH environment variable
+    export STEAM_COMPAT_CLIENT_INSTALL_PATH="~/.local/share/Steam"
+
+    # Set the STEAM_COMPAT_DATA_PATH environment variable for Legacy Games Launcher
+    export STEAM_COMPAT_DATA_PATH=~/.local/share/Steam/steamapps/compatdata/$appid
+
+
+    # Download Legacy file
+    if [ ! -f "$legacygames_file" ]; then
+        echo "Downloading Legacy file"
+        wget $legacygames_url -O $legacygames_file
+    fi
+
+    # Run the Legacy file using Proton with the /passive option
+echo "Running Legacy file using Proton with the /passive option"
+"$STEAM_RUNTIME" "$proton_dir/proton" run "$legacygames_file" /S
+fi
+
+# Wait for the Legacy file to finish running
+wait
+
 
 
 # Delete NonSteamLaunchersInstallation subfolder in Downloads folder
