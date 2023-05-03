@@ -21,6 +21,7 @@ Currently Only Installs... 👀
   
   ~Itch.io ✔️ 
 
+  ~Legacy Games ✔️ 
 
 
 Currently Working On These Things 👷‍♂️
