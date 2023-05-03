@@ -1,8 +1,68 @@
 #!/bin/bash
+version=1.2
+
 
 chmod +x "$0"
 
 set -x
+
+check_for_updates() {
+    # Set the URL to the GitHub API for the repository
+    local api_url="https://api.github.com/repos/moraroy/NonSteamLaunchers-On-Steam-Deck/releases/latest"
+
+    # Get the latest release tag from the GitHub API
+    local latest_version=$(curl -s "$api_url" | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/')
+
+    # Compare the version number in the script against the latest release tag
+    if [ "$version" != "$latest_version" ]; then
+        echo "A new version is available: $latest_version"
+        # Download and replace the current script with the updated version from GitHub
+        local download_url="https://github.com/moraroy/NonSteamLaunchers-On-Steam-Deck/archive/refs/tags/$latest_version.zip"
+        wget "$download_url" -O /tmp/update.zip
+        unzip /tmp/update.zip -d /tmp/
+        cp /tmp/NonSteamLaunchers-On-Steam-Deck-$latest_version/script.sh $HOME/Downloads/NonSteamLauncher.sh
+        echo "Script updated to version $latest_version"
+
+        # Terminate the outdated script
+        pkill -f NonSteamLauncher.sh
+
+        # Run the new script
+        sh $HOME/Downloads/NonSteamLauncher.sh
+    else
+        echo "You are already running the latest version: $version"
+    fi
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 # Set the paths to the launcher executables
