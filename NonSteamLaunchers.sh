@@ -1,11 +1,12 @@
 #!/bin/bash
 
-
-
 chmod +x "$0"
 
 set -x
-version=v1.2
+
+
+version=v1.3
+
 check_for_updates() {
     # Set the URL to the GitHub API for the repository
     local api_url="https://api.github.com/repos/moraroy/NonSteamLaunchers-On-Steam-Deck/releases/latest"
@@ -19,7 +20,7 @@ check_for_updates() {
         # Download and replace the current script with the updated version from GitHub
         local download_url="https://github.com/moraroy/NonSteamLaunchers-On-Steam-Deck/archive/refs/tags/$latest_version.zip"
         wget "$download_url" -O /tmp/update.zip
-        unzip /tmp/update.zip -d /tmp/
+        unzip -o /tmp/update.zip -d /tmp/
         cp /tmp/NonSteamLaunchers-On-Steam-Deck-$latest_version/script.sh $HOME/Downloads/NonSteamLauncher.sh
         echo "Script updated to version $latest_version"
 
@@ -33,9 +34,7 @@ check_for_updates() {
     fi
 }
 
-
-
-
+check_for_updates
 
 
 
@@ -76,14 +75,16 @@ uplay_path1="$HOME/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx
 uplay_path2="$HOME/.local/share/Steam/steamapps/compatdata/UplayLauncher/pfx/drive_c/Program Files (x86)/Ubisoft/Ubisoft Game Launcher/upc.exe"
 battlenet_path1="$HOME/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/Program Files (x86)/Battle.net/Battle.net Launcher.exe"
 battlenet_path2="$HOME/.local/share/Steam/steamapps/compatdata/Battle.netLauncher/pfx/drive_c/Program Files (x86)/Battle.net/Battle.net Launcher.exe"
-eaapp_path1="/$HOME/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/Program Files/Electronic Arts/EA Desktop/EA Desktop/EADesktop.exe"
+eaapp_path1="$HOME/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/Program Files/Electronic Arts/EA Desktop/EA Desktop/EADesktop.exe"
 eaapp_path2="$HOME/.local/share/Steam/steamapps/compatdata/TheEAappLauncher/pfx/drive_c/Program Files/Electronic Arts/EA Desktop/EA Desktop/EADesktop.exe"
-amazongames_path1="/$HOME/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/users/steamuser/AppData/Local/Amazon Games/App/Amazon Games.exe"
-amazongames_path2="/$HOME/.local/share/Steam/steamapps/compatdata/AmazonGamesLauncher/pfx/drive_c/users/steamuser/AppData/Local/Amazon Games/App/Amazon Games.exe"
-itchio_path1="/$HOME/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/users/steamuser/AppData/Local/itch/app-25.5.1/itch.exe"
-itchio_path2="/$HOME/.local/share/Steam/steamapps/compatdata/itchioLauncher/pfx/drive_c/users/steamuser/AppData/Local/itch/app-25.5.1/itch.exe"
+amazongames_path1="$HOME/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/users/steamuser/AppData/Local/Amazon Games/App/Amazon Games.exe"
+amazongames_path2="$HOME/.local/share/Steam/steamapps/compatdata/AmazonGamesLauncher/pfx/drive_c/users/steamuser/AppData/Local/Amazon Games/App/Amazon Games.exe"
+itchio_path1="$HOME/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/users/steamuser/AppData/Local/itch/app-25.5.1/itch.exe"
+itchio_path2="$HOME/.local/share/Steam/steamapps/compatdata/itchioLauncher/pfx/drive_c/users/steamuser/AppData/Local/itch/app-25.5.1/itch.exe"
 legacygames_path1="$HOME/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/Program Files/Legacy Games/Legacy Games Launcher/Legacy Games Launcher.exe"
 legacygames_path2="$HOME/.local/share/Steam/steamapps/compatdata/LegacyGamesLauncher/pfx/drive_c/Program Files/Legacy Games/Legacy Games Launcher/Legacy Games Launcher.exe"
+
+
 
 
 # Check if Epic Games Launcher is installed
@@ -96,6 +97,7 @@ else
     epic_games_value="TRUE"
     epic_games_text="Epic Games"
 fi
+
 
 # Check if GOG Galaxy is installed
 if [[ -f "$gog_galaxy_path1" ]] || [[ -f "$gog_galaxy_path2" ]]; then
@@ -191,7 +193,7 @@ fi
 
 
 # Display a list of options using zenity
-options=$(zenity --list --text="Which launchers do you want to download and install?" --checklist --column="$version" --column="The default is one App ID Installation" FALSE "Separate App IDs" $epic_games_value "$epic_games_text" $gog_galaxy_value "$gog_galaxy_text" $uplay_value "$uplay_text" $origin_value "$origin_text" $battlenet_value "$battlenet_text" $amazongames_value "$amazongames_text" $eaapp_value "$eaapp_text" $itchio_value "$itchio_text" $legacygames_value "$legacygames_text" --width=400 --height=388)
+options=$(zenity --list --text="Which launchers do you want to download and install?" --checklist --column="$version" --column="The default is one App ID Installation" FALSE "Separate App IDs" $epic_games_value "$epic_games_text" $gog_galaxy_value "$gog_galaxy_text" $uplay_value "$uplay_text" $origin_value "$origin_text" $battlenet_value "$battlenet_text" $amazongames_value "$amazongames_text" $eaapp_value "$eaapp_text" $legacygames_value "$legacygames_text" $itchio_value "$itchio_text" --width=400 --height=388)
 
 # Check if the cancel button was clicked
 if [ $? -eq 1 ]; then
@@ -200,7 +202,12 @@ if [ $? -eq 1 ]; then
     exit 1
 fi
 
-
+# Check if no options were selected
+if [ -z "$options" ]; then
+    # No options were selected
+    zenity --error --text="No options were selected. The script will now exit." --width=200 --height=150
+    exit 1
+fi
 
 # Check if the user selected to use separate app IDs
 if [[ $options == *"Separate App IDs"* ]]; then
@@ -268,7 +275,7 @@ proton_dir=$(find ~/.steam/root/compatibilitytools.d -maxdepth 1 -type d -name "
 
 # Set the URLs to download GE-Proton from
 ge_proton_url1=https://github.com/GloriousEggroll/proton-ge-custom/releases/latest/download/GE-Proton.tar.gz
-ge_proton_url2=https://github.com/GloriousEggroll/proton-ge-custom/releases/download/GE-Proton7-55/GE-Proton7-55.tar.gz
+ge_proton_url2=https://github.com/GloriousEggroll/proton-ge-custom/releases/download/GE-Proton8-1/GE-Proton8-1.tar.gz
 
 
 
@@ -422,37 +429,48 @@ if [[ $options == *"Epic Games"* ]]; then
     # User selected Epic Games Launcher
     echo "User selected Epic Games"
 
-    # Set the appid for the Epic Games Launcher
-    if [ "$use_separate_appids" = true ]; then
+
+
+    if [[ ! -f "$epic_games_launcher_path1" ]] && [[ ! -f "$epic_games_launcher_path2" ]]; then
+        # Epic Games Launcher is not installed
+
+        # Set the appid for the Epic Games Launcher
+        if [ "$use_separate_appids" = true ]; then
         appid=EpicGamesLauncher
-    else
+        else
         appid=NonSteamLaunchers
+        fi
+
+
+        # Create app id folder in compatdata folder if it doesn't exist
+        if [ ! -d "$HOME/.local/share/Steam/steamapps/compatdata/$appid" ]; then
+            mkdir -p "$HOME/.local/share/Steam/steamapps/compatdata/$appid"
+        fi
+
+        # Change working directory to Proton's
+        cd $proton_dir
+
+        # Set the STEAM_COMPAT_CLIENT_INSTALL_PATH environment variable
+        export STEAM_COMPAT_CLIENT_INSTALL_PATH="~/.local/share/Steam"
+
+        # Set the STEAM_COMPAT_DATA_PATH environment variable for Epic Games Launcher
+        export STEAM_COMPAT_DATA_PATH=~/.local/share/Steam/steamapps/compatdata/$appid
+
+
+        # Download MSI file
+        if [ ! -f "$msi_file" ]; then
+            echo "Downloading MSI file"
+            wget $msi_url -O $msi_file
+        fi
+
+        # Run the MSI file using Proton with the /passive option
+        echo "Running MSI file using Proton with the /passive option"
+        "$STEAM_RUNTIME" "$proton_dir/proton" run MsiExec.exe /i "$msi_file" /qn
+
+
     fi
-
-    # Create app id folder in compatdata folder if it doesn't exist
-    if [ ! -d "$HOME/.local/share/Steam/steamapps/compatdata/$appid" ]; then
-        mkdir -p "$HOME/.local/share/Steam/steamapps/compatdata/$appid"
-    fi
-
-    # Change working directory to Proton's
-    cd $proton_dir
-
-    # Set the STEAM_COMPAT_CLIENT_INSTALL_PATH environment variable
-    export STEAM_COMPAT_CLIENT_INSTALL_PATH="~/.local/share/Steam"
-
-    # Set the STEAM_COMPAT_DATA_PATH environment variable for Epic Games Launcher
-    export STEAM_COMPAT_DATA_PATH=~/.local/share/Steam/steamapps/compatdata/$appid
-
-    # Download MSI file
-    if [ ! -f "$msi_file" ]; then
-        echo "Downloading MSI file"
-        wget $msi_url -O $msi_file
-    fi
-
-# Run the MSI file using Proton with the /passive option
-echo "Running MSI file using Proton with the /passive option"
-"$STEAM_RUNTIME" "$proton_dir/proton" run MsiExec.exe /i "$msi_file" /qn
 fi
+
 
 # Wait for the MSI file to finish running
 wait
@@ -464,6 +482,18 @@ echo "# Downloading/Installing Gog Galaxy"
 if [[ $options == *"GOG Galaxy"* ]]; then
     # User selected GOG Galaxy
     echo "User selected GOG Galaxy"
+
+
+    # Check if Gog Galaxy Launcher is already installed
+    if [[ ! -f "$gog_galaxy_path1" ]] || [[ ! -f "$gog_galaxy_path2" ]]; then
+        # Gog Galaxy Launcher is already installed
+        echo "Gog Galaxy Launcher is already installed"
+
+    # Gog Galaxy Launcher is not installed
+
+
+
+
 
     # Set the appid for the Gog Galaxy 2.0
     if [ "$use_separate_appids" = true ]; then
@@ -497,7 +527,7 @@ if [[ $options == *"GOG Galaxy"* ]]; then
     echo "Running EXE file using Proton without the /passive option"
     "$STEAM_RUNTIME" "$proton_dir/proton" run "$exe_file" &
 
-
+ fi
 echo "45"
 echo "# Downloading/Installing Gog Galaxy"
 
@@ -546,6 +576,18 @@ if [[ $options == *"Uplay"* ]]; then
     # User selected Uplay
     echo "User selected Uplay"
 
+    # Check if Uplay Launcher is installed
+if [[ ! -f "$uplay_path1" ]] || [[ ! -f "$uplay_path2" ]]; then
+
+
+
+
+
+
+
+
+
+
     # Set the appid for the Ubisoft Launcher
     if [ "$use_separate_appids" = true ]; then
         appid=UplayLauncher
@@ -574,7 +616,7 @@ if [[ $options == *"Uplay"* ]]; then
         wget $ubi_url -O $ubi_file
     fi
 
-    # Run the UBI file using Proton with the /passive option
+  fi  # Run the UBI file using Proton with the /passive option
 echo "Running UBI file using Proton with the /passive option"
 "$STEAM_RUNTIME" "$proton_dir/proton" run "$ubi_file" /S
 fi
@@ -590,6 +632,16 @@ echo "# Downloading/Installing Origin"
 if [[ $options == *"Origin"* ]]; then
     # User selected Origin
     echo "User selected Origin"
+
+
+    # Check if Origin Launcher is installed
+    if [[ ! -f "$origin_path1" ]] || [[ ! -f "$origin_path2" ]]; then
+
+
+
+
+
+
 
     # Set the appid for the Origin Launcher
     if [ "$use_separate_appids" = true ]; then
@@ -631,6 +683,7 @@ if [[ $options == *"Origin"* ]]; then
 
     # Wait for the ORIGIN file to finish running
     wait
+  fi
 fi
 
 wait
@@ -642,7 +695,12 @@ if [[ $options == *"Battle.net"* ]]; then
     # User selected Battle.net
     echo "User selected Battle.net"
 
-    # Set the appid for the Epic Games Launcher
+    # Check if Battlenet Launcher is installed
+    if [[ ! -f "$battlenet_path1" ]] || [[ ! -f "$battlenet_path2" ]]; then
+
+
+
+    # Set the appid for the Battlenet Launcher
     if [ "$use_separate_appids" = true ]; then
         appid=Battle.netLauncher
     else
@@ -681,7 +739,7 @@ if [[ $options == *"Battle.net"* ]]; then
     fi
     sleep 1
 done
-
+    fi
 fi
 
 
@@ -695,6 +753,15 @@ echo "# Downloading/Installing Amazon Games"
 if [[ $options == *"Amazon Games"* ]]; then
     # User selected Amazon Games
     echo "User selected Amazon Games"
+
+    # Check if Amazon Games Launcher is installed
+    if [[ ! -f "$amazongames_path1" ]] || [[ ! -f "$amazongames_path2" ]]; then
+
+
+
+
+
+
 
     # Set the appid for the Amazon Games Launcher
     if [ "$use_separate_appids" = true ]; then
@@ -737,7 +804,7 @@ if [[ $options == *"Amazon Games"* ]]; then
     fi
     sleep 1
 done
-
+    fi
     # Wait for the Amazon file to finish running
     wait
 fi
@@ -755,6 +822,16 @@ echo "# Downloading/Installing EA App"
 if [[ $options == *"EA App"* ]]; then
     # User selected EA App
     echo "User selected EA App"
+
+
+
+    # Check if The EA App Launcher is installed
+    if [[ ! -f "$eaapp_path1" ]] || [[ ! -f "$eaapp_path2" ]]; then
+
+
+
+
+
 
 
     # Set the appid for the EA App Launcher
@@ -809,7 +886,7 @@ done
 
     # Wait for the EA App file to finish running
     wait
-
+    fi
 fi
 
 wait
@@ -820,6 +897,13 @@ echo "# Downloading/Installing itch.io"
 if [[ $options == *"itch.io"* ]]; then
     # User selected itchio Launcher
     echo "User selected itch.io"
+
+    # Check if itchio Launcher is installed
+    if [[ ! -f "$itchio_path1" ]] || [[ ! -f "$itchio_path2" ]]; then
+
+
+
+
 
     # Set the appid for the itchio Launcher
     if [ "$use_separate_appids" = true ]; then
@@ -842,12 +926,13 @@ if [[ $options == *"itch.io"* ]]; then
     # Set the STEAM_COMPAT_DATA_PATH environment variable for Epic Games Launcher
     export STEAM_COMPAT_DATA_PATH=~/.local/share/Steam/steamapps/compatdata/$appid
 
+
     # Download itchio file
     if [ ! -f "$itchio_file" ]; then
         echo "Downloading itchio file"
         wget $itchio_url -O $itchio_file
     fi
-
+  fi
 # Run the itchio file using Proton with the /passive option
 echo "Running itchio file using Proton with the /passive option"
 "$STEAM_RUNTIME" "$proton_dir/proton" run "$itchio_file"
@@ -862,6 +947,13 @@ echo "# Downloading/Installing Legacy Games"
 if [[ $options == *"Legacy Games"* ]]; then
     # User selected Legacy Games
     echo "User selected Legacy Games"
+
+    if [[ ! -f "$legacygames_path1" ]] && [[ ! -f "$legacygames_path2" ]]; then
+        # Legacy Games Launcher is not installed
+
+
+
+
 
     # Set the appid for the Legacy Games Launcher
     if [ "$use_separate_appids" = true ]; then
@@ -891,7 +983,7 @@ if [[ $options == *"Legacy Games"* ]]; then
         wget $legacygames_url -O $legacygames_file
     fi
 
-    # Run the Legacy file using Proton with the /passive option
+  fi   # Run the Legacy file using Proton with the /passive option
 echo "Running Legacy file using Proton with the /passive option"
 "$STEAM_RUNTIME" "$proton_dir/proton" run "$legacygames_file" /S
 fi
@@ -900,12 +992,11 @@ fi
 wait
 
 
-
 # Delete NonSteamLaunchersInstallation subfolder in Downloads folder
 rm -rf ~/Downloads/NonSteamLaunchersInstallation
 
 echo "100"
-echo "# Script is finished - you may close all windows"
+echo "# Installation Complete - Steam will now restart. Your launchers will be in your library."
 ) |
 zenity --progress \
   --title="Update Status" \
@@ -917,4 +1008,569 @@ if [ "$?" = -1 ] ; then
           --text="Update canceled."
 fi
 
+wait
+
+
+
+
+
+#Checking Files For Shortcuts and Setting Directories For Shortcuts
+if [[ -f "$epic_games_launcher_path1" ]]; then
+    # Epic Games Launcher is installed at path 1
+    epicshortcutdirectory="\"$epic_games_launcher_path1\""
+    epiclaunchoptions="STEAM_COMPAT_DATA_PATH=\"/home/deck/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/\" %command%"
+elif [[ -f "$epic_games_launcher_path2" ]]; then
+    # Epic Games Launcher is installed at path 2
+    epicshortcutdirectory="\"$epic_games_launcher_path2\""
+    epiclaunchoptions="STEAM_COMPAT_DATA_PATH=\"/home/deck/.local/share/Steam/steamapps/compatdata/EpicGamesLauncher/\" %command%"
+fi
+if [[ -f "$gog_galaxy_path1" ]]; then
+    # Gog Galaxy Launcher is installed at path 1
+    gogshortcutdirectory="\"$gog_galaxy_path1\""
+    goglaunchoptions="STEAM_COMPAT_DATA_PATH=\"/home/deck/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/\" %command%"
+elif [[ -f "$epic_games_launcher_path2" ]]; then
+    # Gog Galaxy Launcher is installed at path 2
+    gogshortcutdirectory="\"$gog_galaxy_path2\""
+    goglaunchoptions="STEAM_COMPAT_DATA_PATH=\"/home/deck/.local/share/Steam/steamapps/compatdata/EpicGamesLauncher/\" %command%"
+fi
+if [[ -f "$origin_path1" ]]; then
+    # Origin Launcher is installed at path 1
+    originshortcutdirectory="\"$origin_path1\""
+    originlaunchoptions="STEAM_COMPAT_DATA_PATH=\"/home/deck/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/\" %command%"
+elif [[ -f "$origin_path2" ]]; then
+    # Origin Launcher is installed at path 2
+    originshortcutdirectory="\"$origin_path2\""
+    originlaunchoptions="STEAM_COMPAT_DATA_PATH=\"/home/deck/.local/share/Steam/steamapps/compatdata/EpicGamesLauncher/\" %command%"
+fi
+if [[ -f "$uplay_path1" ]]; then
+    # Uplay Launcher is installed at path 1
+    uplayshortcutdirectory="\"$uplay_path1\""
+    uplaylaunchoptions="STEAM_COMPAT_DATA_PATH=\"/home/deck/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/\" %command%"
+elif [[ -f "$origin_path2" ]]; then
+    # Uplay Launcher is installed at path 2
+    uplayshortcutdirectory="\"$uplay_path2\""
+    uplaylaunchoptions="STEAM_COMPAT_DATA_PATH=\"/home/deck/.local/share/Steam/steamapps/compatdata/EpicGamesLauncher/\" %command%"
+fi
+if [[ -f "$battlenet_path1" ]]; then
+    # Battlenet Launcher is installed at path 1
+    battlenetshortcutdirectory="\"$battlenet_path1\""
+    battlenetlaunchoptions="STEAM_COMPAT_DATA_PATH=\"/home/deck/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/\" %command%"
+elif [[ -f "$battlenet_path2" ]]; then
+    # Battlenet Launcher is installed at path 2
+    battlenetshortcutdirectory="\"$battlenet_path2\""
+    battlenetlaunchoptions="STEAM_COMPAT_DATA_PATH=\"/home/deck/.local/share/Steam/steamapps/compatdata/EpicGamesLauncher/\" %command%"
+fi
+if [[ -f "$eaapp_path1" ]]; then
+    # EA App Launcher is installed at path 1
+    eaappshortcutdirectory="\"$eaapp_path1\""
+    eaapplaunchoptions="STEAM_COMPAT_DATA_PATH=\"/home/deck/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/\" %command%"
+elif [[ -f "$eaapp_path2" ]]; then
+    # EA App Launcher is installed at path 2
+    eaappshortcutdirectory="\"$eaapp_path2\""
+    eaapplaunchoptions="STEAM_COMPAT_DATA_PATH=\"/home/deck/.local/share/Steam/steamapps/compatdata/EpicGamesLauncher/\" %command%"
+fi
+if [[ -f "$amazongames_path1" ]]; then
+    # Amazon Games Launcher is installed at path 1
+    amazonshortcutdirectory="\"$amazongames_path1\""
+    amazonlaunchoptions="STEAM_COMPAT_DATA_PATH=\"/home/deck/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/\" %command%"
+elif [[ -f "$amazongames_path2" ]]; then
+    # Amazon Games Launcher is installed at path 2
+    amazonshortcutdirectory="\"$amazongames_path2\""
+    amazonlaunchoptions="STEAM_COMPAT_DATA_PATH=\"/home/deck/.local/share/Steam/steamapps/compatdata/EpicGamesLauncher/\" %command%"
+fi
+if [[ -f "$itchio_path1" ]]; then
+    # itchio Launcher is installed at path 1
+    itchioshortcutdirectory="\"$itchio_path1\""
+    itchiolaunchoptions="STEAM_COMPAT_DATA_PATH=\"/home/deck/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/\" %command%"
+elif [[ -f "$itchio_path2" ]]; then
+    # itchio Launcher is installed at path 2
+    itchioshortcutdirectory="\"$itchio_path2\""
+    itchiolaunchoptions="STEAM_COMPAT_DATA_PATH=\"/home/deck/.local/share/Steam/steamapps/compatdata/EpicGamesLauncher/\" %command%"
+fi
+if [[ -f "$legacygames_path1" ]]; then
+    # Legacy Games Launcher is installed at path 1
+    legacyshortcutdirectory="\"$legacygames_path1\""
+    legacylaunchoptions="STEAM_COMPAT_DATA_PATH=\"/home/deck/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/\" %command%"
+elif [[ -f "$legacygames_path2" ]]; then
+    # Legacy Games Launcher is installed at path 2
+    legacyshortcutdirectory="\"$legacygames_path2\""
+    legacylaunchoptions="STEAM_COMPAT_DATA_PATH=\"/home/deck/.local/share/Steam/steamapps/compatdata/EpicGamesLauncher/\" %command%"
+fi
+
+
+# Close Steam
+killall steam
+
+
+
+# Set the download directory
+download_dir=~/Downloads/NonSteamLaunchersInstallation
+
+# Download the latest release of the vdf library from the Python Package Index
+download_url="https://files.pythonhosted.org/packages/44/7f/74192f47d67c8bf3c47bf0d8487b3457614c2c98d58b6617721d217f3f79/vdf-3.4.tar.gz"
+
+wget -P "$download_dir" "$download_url"
+
+# Extract the downloaded tar.gz file
+tar -xvf "$download_dir"/vdf-*.tar.gz -C "$download_dir"
+
+# Change to the extracted directory
+cd "$download_dir"/vdf-*/
+
+
+export PYTHONPATH="$download_dir/lib/python3.10/site-packages:$PYTHONPATH"
+
+
+
+
+
+# Install the vdf library
+python setup.py install --prefix=~/Downloads/NonSteamLaunchersInstallation
+
+
+# Set the PYTHONPATH environment variable
+export PYTHONPATH="$download_dir/lib/python3.10/site-packages:$PYTHONPATH"
+
+# Set the path to the shortcuts.vdf file
+shortcuts_vdf_path="/home/deck/.steam/root/userdata/106245328/config/shortcuts.vdf"
+
+# Create a backup of the shortcuts.vdf file
+cp "$shortcuts_vdf_path" "$shortcuts_vdf_path.bak"
+
+
+
+
+# Run the Python script to create a new entry for a Steam shortcut
+python -c "
+import vdf
+import subprocess
+import os
+
+
+# Load the shortcuts.vdf file
+with open('$shortcuts_vdf_path', 'rb') as f:
+    shortcuts = vdf.binary_load(f)
+
+# Define the path of the Launchers
+epicshortcutdirectory = '$epicshortcutdirectory'
+gogshortcutdirectory = '$gogshortcutdirectory'
+originshortcutdirectory = '$originshortcutdirectory'
+uplayshortcutdirectory = '$uplayshortcutdirectory'
+battlenetshortcutdirectory = '$battlenetshortcutdirectory'
+eaappshortcutdirectory = '$eaappshortcutdirectory'
+amazonshortcutdirectory = '$amazonshortcutdirectory'
+itchioshortcutdirectory = '$itchioshortcutdirectory'
+legacyshortcutdirectory = '$legacyshortcutdirectory'
+
+
+if epicshortcutdirectory != '':
+        # Create a new entry for the Steam shortcut
+        new_entry = {
+            'appid': '',
+            'AppName': 'Epic Games',
+            'Exe': '$epicshortcutdirectory',
+            'StartDir': '$epicshortcutdirectory',
+            'icon': '',
+            'ShortcutPath': '',
+            'LaunchOptions': '$epiclaunchoptions',
+            'IsHidden': 0,
+            'AllowDesktopConfig': 1,
+            'AllowOverlay': 1,
+            'OpenVR': 0,
+            'Devkit': 0,
+            'DevkitGameID': '',
+            'LastPlayTime': 0,
+            'tags': {
+                '0': 'favorite'
+            }
+        }
+
+        # Add the new entry to the shortcuts dictionary
+        entry_exists = False
+        if type(shortcuts['shortcuts']) == list:
+            for entry in shortcuts['shortcuts']:
+                if entry['AppName'] == new_entry['AppName'] and entry['Exe'] == new_entry['Exe']:
+                    entry_exists = True
+                    break
+            if not entry_exists:
+                shortcuts['shortcuts'].append(new_entry)
+        elif type(shortcuts['shortcuts']) == dict:
+            for key in shortcuts['shortcuts'].keys():
+                if shortcuts['shortcuts'][key]['AppName'] == new_entry['AppName'] and shortcuts['shortcuts'][key]['Exe'] == new_entry['Exe']:
+                    entry_exists = True
+                    break
+            if not entry_exists:
+                # Find the highest key value
+                max_key = max(int(key) for key in shortcuts['shortcuts'].keys())
+                # Add the new entry with a key value one higher than the current maximum
+                shortcuts['shortcuts'][str(max_key + 1)] = new_entry
+
+
+
+if gogshortcutdirectory != '':
+        # Create a new entry for the Steam shortcut
+        new_entry = {
+            'appid': '',
+            'AppName': 'Gog Galaxy',
+            'Exe': '$gogshortcutdirectory',
+            'StartDir': '$gogshortcutdirectory',
+            'icon': '',
+            'ShortcutPath': '',
+            'LaunchOptions': '$goglaunchoptions',
+            'IsHidden': 0,
+            'AllowDesktopConfig': 1,
+            'AllowOverlay': 1,
+            'OpenVR': 0,
+            'Devkit': 0,
+            'DevkitGameID': '',
+            'LastPlayTime': 0,
+            'tags': {
+                '0': 'favorite'
+            }
+        }
+
+        # Add the new entry to the shortcuts dictionary
+        entry_exists = False
+        if type(shortcuts['shortcuts']) == list:
+            for entry in shortcuts['shortcuts']:
+                if entry['AppName'] == new_entry['AppName'] and entry['Exe'] == new_entry['Exe']:
+                    entry_exists = True
+                    break
+            if not entry_exists:
+                shortcuts['shortcuts'].append(new_entry)
+        elif type(shortcuts['shortcuts']) == dict:
+            for key in shortcuts['shortcuts'].keys():
+                if shortcuts['shortcuts'][key]['AppName'] == new_entry['AppName'] and shortcuts['shortcuts'][key]['Exe'] == new_entry['Exe']:
+                    entry_exists = True
+                    break
+            if not entry_exists:
+                # Find the highest key value
+                max_key = max(int(key) for key in shortcuts['shortcuts'].keys())
+                # Add the new entry with a key value one higher than the current maximum
+                shortcuts['shortcuts'][str(max_key + 1)] = new_entry
+
+
+
+
+
+
+
+
+if uplayshortcutdirectory != '':
+        # Create a new entry for the Steam shortcut
+        new_entry = {
+            'appid': '',
+            'AppName': 'Ubisoft Connect',
+            'Exe': '$uplayshortcutdirectory',
+            'StartDir': '$uplayshortcutdirectory',
+            'icon': '',
+            'ShortcutPath': '',
+            'LaunchOptions': '$uplaylaunchoptions',
+            'IsHidden': 0,
+            'AllowDesktopConfig': 1,
+            'AllowOverlay': 1,
+            'OpenVR': 0,
+            'Devkit': 0,
+            'DevkitGameID': '',
+            'LastPlayTime': 0,
+            'tags': {
+                '0': 'favorite'
+            }
+        }
+
+        # Add the new entry to the shortcuts dictionary
+        entry_exists = False
+        if type(shortcuts['shortcuts']) == list:
+            for entry in shortcuts['shortcuts']:
+                if entry['AppName'] == new_entry['AppName'] and entry['Exe'] == new_entry['Exe']:
+                    entry_exists = True
+                    break
+            if not entry_exists:
+                shortcuts['shortcuts'].append(new_entry)
+        elif type(shortcuts['shortcuts']) == dict:
+            for key in shortcuts['shortcuts'].keys():
+                if shortcuts['shortcuts'][key]['AppName'] == new_entry['AppName'] and shortcuts['shortcuts'][key]['Exe'] == new_entry['Exe']:
+                    entry_exists = True
+                    break
+            if not entry_exists:
+                # Find the highest key value
+                max_key = max(int(key) for key in shortcuts['shortcuts'].keys())
+                # Add the new entry with a key value one higher than the current maximum
+                shortcuts['shortcuts'][str(max_key + 1)] = new_entry
+
+
+if originshortcutdirectory != '':
+        # Create a new entry for the Steam shortcut
+        new_entry = {
+            'appid': '',
+            'AppName': 'Origin',
+            'Exe': '$originshortcutdirectory',
+            'StartDir': '$originshortcutdirectory',
+            'icon': '',
+            'ShortcutPath': '',
+            'LaunchOptions': '$originlaunchoptions',
+            'IsHidden': 0,
+            'AllowDesktopConfig': 1,
+            'AllowOverlay': 1,
+            'OpenVR': 0,
+            'Devkit': 0,
+            'DevkitGameID': '',
+            'LastPlayTime': 0,
+            'tags': {
+                '0': 'favorite'
+            }
+        }
+
+        # Add the new entry to the shortcuts dictionary
+        entry_exists = False
+        if type(shortcuts['shortcuts']) == list:
+            for entry in shortcuts['shortcuts']:
+                if entry['AppName'] == new_entry['AppName'] and entry['Exe'] == new_entry['Exe']:
+                    entry_exists = True
+                    break
+            if not entry_exists:
+                shortcuts['shortcuts'].append(new_entry)
+        elif type(shortcuts['shortcuts']) == dict:
+            for key in shortcuts['shortcuts'].keys():
+                if shortcuts['shortcuts'][key]['AppName'] == new_entry['AppName'] and shortcuts['shortcuts'][key]['Exe'] == new_entry['Exe']:
+                    entry_exists = True
+                    break
+            if not entry_exists:
+                # Find the highest key value
+                max_key = max(int(key) for key in shortcuts['shortcuts'].keys())
+                # Add the new entry with a key value one higher than the current maximum
+                shortcuts['shortcuts'][str(max_key + 1)] = new_entry
+
+
+if battlenetshortcutdirectory != '':
+        # Create a new entry for the Steam shortcut
+        new_entry = {
+            'appid': '',
+            'AppName': 'Battle.net',
+            'Exe': '$battlenetshortcutdirectory',
+            'StartDir': '$battlenetshortcutdirectory',
+            'icon': '',
+            'ShortcutPath': '',
+            'LaunchOptions': '$battlenetlaunchoptions',
+            'IsHidden': 0,
+            'AllowDesktopConfig': 1,
+            'AllowOverlay': 1,
+            'OpenVR': 0,
+            'Devkit': 0,
+            'DevkitGameID': '',
+            'LastPlayTime': 0,
+            'tags': {
+                '0': 'favorite'
+            }
+        }
+
+        # Add the new entry to the shortcuts dictionary
+        entry_exists = False
+        if type(shortcuts['shortcuts']) == list:
+            for entry in shortcuts['shortcuts']:
+                if entry['AppName'] == new_entry['AppName'] and entry['Exe'] == new_entry['Exe']:
+                    entry_exists = True
+                    break
+            if not entry_exists:
+                shortcuts['shortcuts'].append(new_entry)
+        elif type(shortcuts['shortcuts']) == dict:
+            for key in shortcuts['shortcuts'].keys():
+                if shortcuts['shortcuts'][key]['AppName'] == new_entry['AppName'] and shortcuts['shortcuts'][key]['Exe'] == new_entry['Exe']:
+                    entry_exists = True
+                    break
+            if not entry_exists:
+                # Find the highest key value
+                max_key = max(int(key) for key in shortcuts['shortcuts'].keys())
+                # Add the new entry with a key value one higher than the current maximum
+                shortcuts['shortcuts'][str(max_key + 1)] = new_entry
+
+
+
+if eaappshortcutdirectory != '':
+        # Create a new entry for the Steam shortcut
+        new_entry = {
+            'appid': '',
+            'AppName': 'The EA App',
+            'Exe': '$eaappshortcutdirectory',
+            'StartDir': '$eaappshortcutdirectory',
+            'icon': '',
+            'ShortcutPath': '',
+            'LaunchOptions': '$eaapplaunchoptions',
+            'IsHidden': 0,
+            'AllowDesktopConfig': 1,
+            'AllowOverlay': 1,
+            'OpenVR': 0,
+            'Devkit': 0,
+            'DevkitGameID': '',
+            'LastPlayTime': 0,
+            'tags': {
+                '0': 'favorite'
+            }
+        }
+
+        # Add the new entry to the shortcuts dictionary
+        entry_exists = False
+        if type(shortcuts['shortcuts']) == list:
+            for entry in shortcuts['shortcuts']:
+                if entry['AppName'] == new_entry['AppName'] and entry['Exe'] == new_entry['Exe']:
+                    entry_exists = True
+                    break
+            if not entry_exists:
+                shortcuts['shortcuts'].append(new_entry)
+        elif type(shortcuts['shortcuts']) == dict:
+            for key in shortcuts['shortcuts'].keys():
+                if shortcuts['shortcuts'][key]['AppName'] == new_entry['AppName'] and shortcuts['shortcuts'][key]['Exe'] == new_entry['Exe']:
+                    entry_exists = True
+                    break
+            if not entry_exists:
+                # Find the highest key value
+                max_key = max(int(key) for key in shortcuts['shortcuts'].keys())
+                # Add the new entry with a key value one higher than the current maximum
+                shortcuts['shortcuts'][str(max_key + 1)] = new_entry
+
+
+if amazonshortcutdirectory != '':
+        # Create a new entry for the Steam shortcut
+        new_entry = {
+            'appid': '',
+            'AppName': 'Amazon Games',
+            'Exe': '$amazonshortcutdirectory',
+            'StartDir': '$amazonshortcutdirectory',
+            'icon': '',
+            'ShortcutPath': '',
+            'LaunchOptions': '$amazonlaunchoptions',
+            'IsHidden': 0,
+            'AllowDesktopConfig': 1,
+            'AllowOverlay': 1,
+            'OpenVR': 0,
+            'Devkit': 0,
+            'DevkitGameID': '',
+            'LastPlayTime': 0,
+            'tags': {
+                '0': 'favorite'
+            }
+        }
+
+        # Add the new entry to the shortcuts dictionary
+        entry_exists = False
+        if type(shortcuts['shortcuts']) == list:
+            for entry in shortcuts['shortcuts']:
+                if entry['AppName'] == new_entry['AppName'] and entry['Exe'] == new_entry['Exe']:
+                    entry_exists = True
+                    break
+            if not entry_exists:
+                shortcuts['shortcuts'].append(new_entry)
+        elif type(shortcuts['shortcuts']) == dict:
+            for key in shortcuts['shortcuts'].keys():
+                if shortcuts['shortcuts'][key]['AppName'] == new_entry['AppName'] and shortcuts['shortcuts'][key]['Exe'] == new_entry['Exe']:
+                    entry_exists = True
+                    break
+            if not entry_exists:
+                # Find the highest key value
+                max_key = max(int(key) for key in shortcuts['shortcuts'].keys())
+                # Add the new entry with a key value one higher than the current maximum
+                shortcuts['shortcuts'][str(max_key + 1)] = new_entry
+
+if itchioshortcutdirectory != '':
+        # Create a new entry for the Steam shortcut
+        new_entry = {
+            'appid': '',
+            'AppName': 'Itch.io',
+            'Exe': '$itchioshortcutdirectory',
+            'StartDir': '$itchioshortcutdirectory',
+            'icon': '',
+            'ShortcutPath': '',
+            'LaunchOptions': '$itchiolaunchoptions',
+            'IsHidden': 0,
+            'AllowDesktopConfig': 1,
+            'AllowOverlay': 1,
+            'OpenVR': 0,
+            'Devkit': 0,
+            'DevkitGameID': '',
+            'LastPlayTime': 0,
+            'tags': {
+                '0': 'favorite'
+            }
+        }
+
+        # Add the new entry to the shortcuts dictionary
+        entry_exists = False
+        if type(shortcuts['shortcuts']) == list:
+            for entry in shortcuts['shortcuts']:
+                if entry['AppName'] == new_entry['AppName'] and entry['Exe'] == new_entry['Exe']:
+                    entry_exists = True
+                    break
+            if not entry_exists:
+                shortcuts['shortcuts'].append(new_entry)
+        elif type(shortcuts['shortcuts']) == dict:
+            for key in shortcuts['shortcuts'].keys():
+                if shortcuts['shortcuts'][key]['AppName'] == new_entry['AppName'] and shortcuts['shortcuts'][key]['Exe'] == new_entry['Exe']:
+                    entry_exists = True
+                    break
+            if not entry_exists:
+                # Find the highest key value
+                max_key = max(int(key) for key in shortcuts['shortcuts'].keys())
+                # Add the new entry with a key value one higher than the current maximum
+                shortcuts['shortcuts'][str(max_key + 1)] = new_entry
+
+
+if legacyshortcutdirectory != '':
+        # Create a new entry for the Steam shortcut
+        new_entry = {
+            'appid': '',
+            'AppName': 'Legacy Games',
+            'Exe': '$legacyshortcutdirectory',
+            'StartDir': '$legacyshortcutdirectory',
+            'icon': '',
+            'ShortcutPath': '',
+            'LaunchOptions': '$legacylaunchoptions',
+            'IsHidden': 0,
+            'AllowDesktopConfig': 1,
+            'AllowOverlay': 1,
+            'OpenVR': 0,
+            'Devkit': 0,
+            'DevkitGameID': '',
+            'LastPlayTime': 0,
+            'tags': {
+                '0': 'favorite'
+            }
+        }
+
+        # Add the new entry to the shortcuts dictionary
+        entry_exists = False
+        if type(shortcuts['shortcuts']) == list:
+            for entry in shortcuts['shortcuts']:
+                if entry['AppName'] == new_entry['AppName'] and entry['Exe'] == new_entry['Exe']:
+                    entry_exists = True
+                    break
+            if not entry_exists:
+                shortcuts['shortcuts'].append(new_entry)
+        elif type(shortcuts['shortcuts']) == dict:
+            for key in shortcuts['shortcuts'].keys():
+                if shortcuts['shortcuts'][key]['AppName'] == new_entry['AppName'] and shortcuts['shortcuts'][key]['Exe'] == new_entry['Exe']:
+                    entry_exists = True
+                    break
+            if not entry_exists:
+                # Find the highest key value
+                max_key = max(int(key) for key in shortcuts['shortcuts'].keys())
+                # Add the new entry with a key value one higher than the current maximum
+                shortcuts['shortcuts'][str(max_key + 1)] = new_entry
+
+
+
+# Save the updated shortcuts dictionary to the shortcuts.vdf file
+with open('$shortcuts_vdf_path', 'wb') as f:
+    vdf.binary_dump(shortcuts, f)"
+
+
+
+
+
+
+# Delete NonSteamLaunchersInstallation subfolder in Downloads folder
+rm -rf ~/Downloads/NonSteamLaunchersInstallation
+wait
+sleep 10
+# Restart Steam
+/usr/bin/steam
 exit
