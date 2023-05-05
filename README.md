@@ -26,7 +26,7 @@ Currently Only Installs... 👀
 
 Currently Working On These Things 👷‍♂️
 
-  
+  Decky Loader Plugin
  
 
 
