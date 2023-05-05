@@ -5,7 +5,7 @@ chmod +x "$0"
 set -x
 
 
-version=v1.3
+version=v1.4
 
 check_for_updates() {
     # Set the URL to the GitHub API for the repository
@@ -1098,8 +1098,6 @@ elif [[ -f "$legacygames_path2" ]]; then
 fi
 
 
-# Close Steam
-killall steam
 
 
 
@@ -1566,11 +1564,21 @@ with open('$shortcuts_vdf_path', 'wb') as f:
 
 
 
-
 # Delete NonSteamLaunchersInstallation subfolder in Downloads folder
 rm -rf ~/Downloads/NonSteamLaunchersInstallation
-wait
-sleep 10
-# Restart Steam
-/usr/bin/steam
-exit
+
+
+
+
+
+
+
+
+
+
+# Detach script from Steam process
+nohup sh -c 'sleep 10; /usr/bin/steam' &
+
+# Close all instances of Steam
+killall steam
+
