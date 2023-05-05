@@ -79,8 +79,8 @@ eaapp_path1="$HOME/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx
 eaapp_path2="$HOME/.local/share/Steam/steamapps/compatdata/TheEAappLauncher/pfx/drive_c/Program Files/Electronic Arts/EA Desktop/EA Desktop/EADesktop.exe"
 amazongames_path1="$HOME/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/users/steamuser/AppData/Local/Amazon Games/App/Amazon Games.exe"
 amazongames_path2="$HOME/.local/share/Steam/steamapps/compatdata/AmazonGamesLauncher/pfx/drive_c/users/steamuser/AppData/Local/Amazon Games/App/Amazon Games.exe"
-itchio_path1="$HOME/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/users/steamuser/AppData/Local/itch/app-25.5.1/itch.exe"
-itchio_path2="$HOME/.local/share/Steam/steamapps/compatdata/itchioLauncher/pfx/drive_c/users/steamuser/AppData/Local/itch/app-25.5.1/itch.exe"
+itchio_path1="$HOME/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/users/steamuser/AppData/Local/itch/app-25.6.2/itch.exe"
+itchio_path2="$HOME/.local/share/Steam/steamapps/compatdata/itchioLauncher/pfx/drive_c/users/steamuser/AppData/Local/itch/app-25.6.2/itch.exe"
 legacygames_path1="$HOME/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/Program Files/Legacy Games/Legacy Games Launcher/Legacy Games Launcher.exe"
 legacygames_path2="$HOME/.local/share/Steam/steamapps/compatdata/LegacyGamesLauncher/pfx/drive_c/Program Files/Legacy Games/Legacy Games Launcher/Legacy Games Launcher.exe"
 
@@ -1129,8 +1129,15 @@ python setup.py install --prefix=~/Downloads/NonSteamLaunchersInstallation
 # Set the PYTHONPATH environment variable
 export PYTHONPATH="$download_dir/lib/python3.10/site-packages:$PYTHONPATH"
 
-# Set the path to the shortcuts.vdf file
-shortcuts_vdf_path="/home/deck/.steam/root/userdata/106245328/config/shortcuts.vdf"
+
+
+shortcuts_vdf_path=$(find ~/.steam/root/userdata -type d -name config -not -path "*/0/*" -not -path "*/anonymous/*" -exec find {} -name shortcuts.vdf \;)
+
+
+
+
+
+
 
 # Create a backup of the shortcuts.vdf file
 cp "$shortcuts_vdf_path" "$shortcuts_vdf_path.bak"
@@ -1553,7 +1560,6 @@ if legacyshortcutdirectory != '':
                 max_key = max(int(key) for key in shortcuts['shortcuts'].keys())
                 # Add the new entry with a key value one higher than the current maximum
                 shortcuts['shortcuts'][str(max_key + 1)] = new_entry
-
 
 
 # Save the updated shortcuts dictionary to the shortcuts.vdf file
