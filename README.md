@@ -29,9 +29,24 @@ Currently Working On These Things 👷‍♂️
   Decky Loader Plugin
  
 
+INSTRUCTIONS FOR GAME MODE 📝 
+In order to run it, grab the NonSteamLaunchers.sh file and download it.
+
+Please right click and go to properties > permissions and check mark "Is Executable". Then right click again and "Add to Steam".
+
+Then Restart your Steam Deck and launch NonSteamLaunchers.sh in Game Mode it will be in your library.
 
 
-INSTRUCTIONS 📝 
-In order to run it, grab the NonSteamLaunchers.sh file and run it from your Downloads Folder. 
 
-Please right click and go to properties > permissions and check mark "Is Executable". Double Click it and it should run. You can also right click and add it to steam and jump in gaming mode and launch it as long as you have set it "Executuable".
+INSTRUCTIONS FOR DESKTOP 📝 
+In order to run it, grab the NonSteamLaunchers.sh file and download it.
+
+Please right click and go to properties > permissions and check mark "Is Executable". Double Click it and it should run.
+
+
+
+
+
+
+
+You can also right click and add it to steam and jump in gaming mode and launch it as long as you have set it "Executuable".
