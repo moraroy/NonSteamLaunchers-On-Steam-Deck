@@ -32,7 +32,7 @@ Currently Working On These Things 👷‍♂️
 INSTRUCTIONS FOR GAME MODE 📝 
 In order to run it, grab the NonSteamLaunchers.sh file and download it.
 
-Please right click and go to properties > permissions and check mark "Is Executable". Then right click again and "Add to Steam".
+Please right click and go to properties > permissions and check mark "Is Executable". Then right click the file again and "Add to Steam".
 
 Then Restart your Steam Deck and launch NonSteamLaunchers.sh in Game Mode it will be in your library.
 
