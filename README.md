@@ -22,6 +22,8 @@ Currently Installs and adds to your Library... 👀
   ~Itch.io ✔️ 
 
   ~Legacy Games ✔️ 
+  
+  ~Humble Games Collection ✔️
 
 
 Currently Working On These Things 👷‍♂️
