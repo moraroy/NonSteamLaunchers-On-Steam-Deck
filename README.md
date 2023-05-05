@@ -49,4 +49,4 @@ Please right click and go to properties > permissions and check mark "Is Executa
 
 
 
-You can also right click and add it to steam and jump in gaming mode and launch it as long as you have set it "Executuable".
+You can also right click and add it to steam and jump in gaming mode and launch it as long as you have set it "Executable".
