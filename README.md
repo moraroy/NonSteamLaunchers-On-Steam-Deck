@@ -3,7 +3,7 @@ Installs the latest GE-Proton and Installs Non Steam Launchers under 1 Proton pr
 
 No files are left in your "Downloads" they are deleted after installation. 
  
-Currently Only Installs... 👀 
+Currently Installs and adds to your Library... 👀 
 
   ~Battle.net ✔️ 
   
