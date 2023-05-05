@@ -5,7 +5,7 @@ chmod +x "$0"
 set -x
 
 
-version=v1.6
+version=v1.7
 
 check_for_updates() {
     # Set the URL to the GitHub API for the repository
@@ -932,10 +932,6 @@ while true; do
         pkill -f "EABackgroundService.exe"
         break
     fi
-    if pgrep -f "EALocalHostSvc.exe" > /dev/null; then
-        pkill -f "EALocalHostSvc.exe"
-        break
-    fi
     sleep 1
     counter=$((counter + 1))
     if [ $counter -ge 10 ]; then
@@ -1042,11 +1038,11 @@ if [[ $options == *"Legacy Games"* ]]; then
         wget $legacygames_url -O $legacygames_file
     fi
 
-  fi   # Run the Legacy file using Proton with the /passive option
-echo "Running Legacy file using Proton with the /passive option"
-"$STEAM_RUNTIME" "$proton_dir/proton" run "$legacygames_file" /S
+      # Run the Legacy file using Proton with the /passive option
+      echo "Running Legacy file using Proton with the /passive option"
+      "$STEAM_RUNTIME" "$proton_dir/proton" run "$legacygames_file" /S
+  fi
 fi
-
 # Wait for the Legacy file to finish running
 wait
 
@@ -1158,7 +1154,7 @@ fi
 
 
 
-
+#VDF Library
 
 # Set the download directory
 download_dir=~/Downloads/NonSteamLaunchersInstallation
@@ -1170,6 +1166,30 @@ wget -P "$download_dir" "$download_url"
 
 # Extract the downloaded tar.gz file
 tar -xvf "$download_dir"/vdf-*.tar.gz -C "$download_dir"
+
+#Setup Tools
+
+# Download the latest release of setuptools from the Python Package Index
+download_url="https://files.pythonhosted.org/packages/9b/be/13f54335c7dba713b0e97e11e7a41db3df4a85073d6c5a6e7f6468b22ee2/setuptools-60.2.0.tar.gz"
+
+wget -P "$download_dir" "$download_url"
+
+# Extract the downloaded tar.gz file
+tar -xvf "$download_dir"/setuptools-*.tar.gz -C "$download_dir"
+
+# Change to the extracted directory
+cd "$download_dir"/setuptools-*/
+
+
+
+
+# Install setuptools
+python setup.py install --prefix="$download_dir"
+
+
+
+export PYTHONPATH="/usr/lib/python3.10/site-packages:$PYTHONPATH"
+
 
 # Change to the extracted directory
 cd "$download_dir"/vdf-*/
