@@ -4,8 +4,7 @@ chmod +x "$0"
 
 set -x
 
-
-version=v1.7
+version=v1.8
 
 check_for_updates() {
     # Set the URL to the GitHub API for the repository
@@ -16,19 +15,8 @@ check_for_updates() {
 
     # Compare the version number in the script against the latest release tag
     if [ "$version" != "$latest_version" ]; then
-        echo "A new version is available: $latest_version"
-        # Download and replace the current script with the updated version from GitHub
-        local download_url="https://github.com/moraroy/NonSteamLaunchers-On-Steam-Deck/archive/refs/tags/$latest_version.zip"
-        wget "$download_url" -O /tmp/update.zip
-        unzip -o /tmp/update.zip -d /tmp/
-        cp /tmp/NonSteamLaunchers-On-Steam-Deck-$latest_version/script.sh $HOME/Downloads/NonSteamLauncher.sh
-        echo "Script updated to version $latest_version"
-
-        # Terminate the outdated script
-        pkill -f NonSteamLauncher.sh
-
-        # Run the new script
-        sh $HOME/Downloads/NonSteamLauncher.sh
+        # Display a Zenity window to notify the user that a new version is available
+        zenity --info --text="A new version is available: $latest_version\nPlease download it from GitHub." --width=200 --height=100
     else
         echo "You are already running the latest version: $version"
     fi
@@ -83,7 +71,8 @@ itchio_path1="$HOME/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pf
 itchio_path2="$HOME/.local/share/Steam/steamapps/compatdata/itchioLauncher/pfx/drive_c/users/steamuser/AppData/Local/itch/app-25.6.2/itch.exe"
 legacygames_path1="$HOME/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/Program Files/Legacy Games/Legacy Games Launcher/Legacy Games Launcher.exe"
 legacygames_path2="$HOME/.local/share/Steam/steamapps/compatdata/LegacyGamesLauncher/pfx/drive_c/Program Files/Legacy Games/Legacy Games Launcher/Legacy Games Launcher.exe"
-
+humblegames_path1="$HOME/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/Program Files/Humble App/Humble App.exe"
+humblegames_path2="$HOME/.local/share/Steam/steamapps/compatdata/HumbleGamesLauncher/pfx/drive_c/Program Files/Humble App/Humble App.exe"
 
 
 
@@ -222,7 +211,20 @@ else
     legacygames_text="Legacy Games"
 fi
 
-
+# Check if Humble Games Launcher is installed
+if [[ -f "$humblegames_path1" ]]; then
+    # Humble Games is installed in path 1
+    humblegames_value="FALSE"
+    humblegames_text="Humble Games Collection ===> $humblegames_path1"
+elif [[ -f "$humblegames_path2" ]]; then
+    # Humble Games is installed in path 2
+    humblegames_value="FALSE"
+    humblegames_text="Humble Games Collection ===> $humblegames_path2"
+else
+    # Humble Games is not installed
+    humblegames_value="TRUE"
+    humblegames_text="Humble Games Collection"
+fi
 
 
 
@@ -230,7 +232,7 @@ fi
 
 
 # Display a list of options using zenity
-options=$(zenity --list --text="Which launchers do you want to download and install?" --checklist --column="$version" --column="Default = one App ID Installation" FALSE "Separate App IDs" $epic_games_value "$epic_games_text" $gog_galaxy_value "$gog_galaxy_text" $uplay_value "$uplay_text" $origin_value "$origin_text" $battlenet_value "$battlenet_text" $amazongames_value "$amazongames_text" $eaapp_value "$eaapp_text" $legacygames_value "$legacygames_text" $itchio_value "$itchio_text" --width=400 --height=398 --extra-button="Start Fresh")
+options=$(zenity --list --text="Which launchers do you want to download and install?" --checklist --column="$version" --column="Default = one App ID Installation" FALSE "Separate App IDs" $epic_games_value "$epic_games_text" $gog_galaxy_value "$gog_galaxy_text" $uplay_value "$uplay_text" $origin_value "$origin_text" $battlenet_value "$battlenet_text" $amazongames_value "$amazongames_text" $eaapp_value "$eaapp_text" $legacygames_value "$legacygames_text" $itchio_value "$itchio_text" $humblegames_value "$humblegames_text" --width=425 --height=427 --extra-button="Start Fresh")
 
 # Check if the cancel button was clicked
 if [ $? -eq 1 ] && [[ $options != "Start Fresh" ]]; then
@@ -301,6 +303,7 @@ if [[ $options == "Start Fresh" ]]; then
         rm -rf "$HOME/.local/share/Steam/steamapps/compatdata/AmazonGamesLauncher"
         rm -rf "$HOME/.local/share/Steam/steamapps/compatdata/LegacyGamesLauncher"
         rm -rf "$HOME/.local/share/Steam/steamapps/compatdata/itchioLauncher"
+        rm -rf "$HOME/.local/share/Steam/steamapps/compatdata/HumbleGamesLauncher"
         rm -rf ~/Downloads/NonSteamLaunchersInstallation
         # Exit the script
         exit 0
@@ -455,6 +458,16 @@ legacygames_url=https://cdn.legacygames.com/LegacyGamesLauncher/legacy-games-lau
 
 # Set the path to save the ninth file to
 legacygames_file=~/Downloads/NonSteamLaunchersInstallation/legacy-games-launcher-setup-1.10.0-x64-full.exe
+
+# Set the URL to download the tenth file from
+humblegames_url=https://www.humblebundle.com/app/download
+
+# Set the path to save the tenth file to
+humblegames_file=~/Downloads/NonSteamLaunchersInstallation/Humble-App-Setup-1.1.8+411.exe
+
+
+
+
 
 
 echo "20"
@@ -1047,6 +1060,94 @@ fi
 wait
 
 
+echo "99"
+echo "# Downloading/Installing Humble Games Collection"
+
+# Check if the user selected Humble Games Launcher
+if [[ $options == *"Humble Games Collection"* ]]; then
+    # User selected Humble Games Launcher
+    echo "User selected Humble Games Collection"
+
+
+
+    if [[ ! -f "$humblegames_path1" ]] && [[ ! -f "$humblegames_path2" ]]; then
+        # Humble Games Launcher is not installed
+
+        # Set the appid for the Humble Games Launcher
+        if [ "$use_separate_appids" = true ]; then
+        appid=HumbleGamesLauncher
+        else
+        appid=NonSteamLaunchers
+        fi
+
+
+        # Create app id folder in compatdata folder if it doesn't exist
+        if [ ! -d "$HOME/.local/share/Steam/steamapps/compatdata/$appid" ]; then
+            mkdir -p "$HOME/.local/share/Steam/steamapps/compatdata/$appid"
+        fi
+
+        # Change working directory to Proton's
+        cd $proton_dir
+
+        # Set the STEAM_COMPAT_CLIENT_INSTALL_PATH environment variable
+        export STEAM_COMPAT_CLIENT_INSTALL_PATH="~/.local/share/Steam"
+
+        # Set the STEAM_COMPAT_DATA_PATH environment variable for Humble Games Launcher
+        export STEAM_COMPAT_DATA_PATH=~/.local/share/Steam/steamapps/compatdata/$appid
+
+
+        # Download exe file
+        if [ ! -f "$humblegames_file" ]; then
+            echo "Downloading MSI file"
+            wget $humblegames_url -O $humblegames_file
+        fi
+
+        # Run the exe file using Proton with the /passive option
+        echo "Running Exe file using Proton with the /passive option"
+        "$STEAM_RUNTIME" "$proton_dir/proton" run "$humblegames_file" /S /D="C:\Program Files\Humble App"
+
+
+    fi
+fi
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 # Delete NonSteamLaunchersInstallation subfolder in Downloads folder
 rm -rf ~/Downloads/NonSteamLaunchersInstallation
 
@@ -1086,7 +1187,7 @@ if [[ -f "$gog_galaxy_path1" ]]; then
 elif [[ -f "$epic_games_launcher_path2" ]]; then
     # Gog Galaxy Launcher is installed at path 2
     gogshortcutdirectory="\"$gog_galaxy_path2\""
-    goglaunchoptions="STEAM_COMPAT_DATA_PATH=\"/home/deck/.local/share/Steam/steamapps/compatdata/EpicGamesLauncher/\" %command%"
+    goglaunchoptions="STEAM_COMPAT_DATA_PATH=\"/home/deck/.local/share/Steam/steamapps/compatdata/GogGalaxyLauncher/\" %command%"
 fi
 if [[ -f "$origin_path1" ]]; then
     # Origin Launcher is installed at path 1
@@ -1095,7 +1196,7 @@ if [[ -f "$origin_path1" ]]; then
 elif [[ -f "$origin_path2" ]]; then
     # Origin Launcher is installed at path 2
     originshortcutdirectory="\"$origin_path2\""
-    originlaunchoptions="STEAM_COMPAT_DATA_PATH=\"/home/deck/.local/share/Steam/steamapps/compatdata/EpicGamesLauncher/\" %command%"
+    originlaunchoptions="STEAM_COMPAT_DATA_PATH=\"/home/deck/.local/share/Steam/steamapps/compatdata/OriginLauncher/\" %command%"
 fi
 if [[ -f "$uplay_path1" ]]; then
     # Uplay Launcher is installed at path 1
@@ -1104,7 +1205,7 @@ if [[ -f "$uplay_path1" ]]; then
 elif [[ -f "$origin_path2" ]]; then
     # Uplay Launcher is installed at path 2
     uplayshortcutdirectory="\"$uplay_path2\""
-    uplaylaunchoptions="STEAM_COMPAT_DATA_PATH=\"/home/deck/.local/share/Steam/steamapps/compatdata/EpicGamesLauncher/\" %command%"
+    uplaylaunchoptions="STEAM_COMPAT_DATA_PATH=\"/home/deck/.local/share/Steam/steamapps/compatdata/UplayLauncher/\" %command%"
 fi
 if [[ -f "$battlenet_path1" ]]; then
     # Battlenet Launcher is installed at path 1
@@ -1113,7 +1214,7 @@ if [[ -f "$battlenet_path1" ]]; then
 elif [[ -f "$battlenet_path2" ]]; then
     # Battlenet Launcher is installed at path 2
     battlenetshortcutdirectory="\"$battlenet_path2\""
-    battlenetlaunchoptions="STEAM_COMPAT_DATA_PATH=\"/home/deck/.local/share/Steam/steamapps/compatdata/EpicGamesLauncher/\" %command%"
+    battlenetlaunchoptions="STEAM_COMPAT_DATA_PATH=\"/home/deck/.local/share/Steam/steamapps/compatdata/Battle.netLauncher/\" %command%"
 fi
 if [[ -f "$eaapp_path1" ]]; then
     # EA App Launcher is installed at path 1
@@ -1122,7 +1223,7 @@ if [[ -f "$eaapp_path1" ]]; then
 elif [[ -f "$eaapp_path2" ]]; then
     # EA App Launcher is installed at path 2
     eaappshortcutdirectory="\"$eaapp_path2\""
-    eaapplaunchoptions="STEAM_COMPAT_DATA_PATH=\"/home/deck/.local/share/Steam/steamapps/compatdata/EpicGamesLauncher/\" %command%"
+    eaapplaunchoptions="STEAM_COMPAT_DATA_PATH=\"/home/deck/.local/share/Steam/steamapps/compatdata/TheEAappLauncher/\" %command%"
 fi
 if [[ -f "$amazongames_path1" ]]; then
     # Amazon Games Launcher is installed at path 1
@@ -1131,7 +1232,7 @@ if [[ -f "$amazongames_path1" ]]; then
 elif [[ -f "$amazongames_path2" ]]; then
     # Amazon Games Launcher is installed at path 2
     amazonshortcutdirectory="\"$amazongames_path2\""
-    amazonlaunchoptions="STEAM_COMPAT_DATA_PATH=\"/home/deck/.local/share/Steam/steamapps/compatdata/EpicGamesLauncher/\" %command%"
+    amazonlaunchoptions="STEAM_COMPAT_DATA_PATH=\"/home/deck/.local/share/Steam/steamapps/compatdata/AmazonGamesLauncher/\" %command%"
 fi
 if [[ -f "$itchio_path1" ]]; then
     # itchio Launcher is installed at path 1
@@ -1140,7 +1241,7 @@ if [[ -f "$itchio_path1" ]]; then
 elif [[ -f "$itchio_path2" ]]; then
     # itchio Launcher is installed at path 2
     itchioshortcutdirectory="\"$itchio_path2\""
-    itchiolaunchoptions="STEAM_COMPAT_DATA_PATH=\"/home/deck/.local/share/Steam/steamapps/compatdata/EpicGamesLauncher/\" %command%"
+    itchiolaunchoptions="STEAM_COMPAT_DATA_PATH=\"/home/deck/.local/share/Steam/steamapps/compatdata/itchioLauncher/\" %command%"
 fi
 if [[ -f "$legacygames_path1" ]]; then
     # Legacy Games Launcher is installed at path 1
@@ -1149,9 +1250,17 @@ if [[ -f "$legacygames_path1" ]]; then
 elif [[ -f "$legacygames_path2" ]]; then
     # Legacy Games Launcher is installed at path 2
     legacyshortcutdirectory="\"$legacygames_path2\""
-    legacylaunchoptions="STEAM_COMPAT_DATA_PATH=\"/home/deck/.local/share/Steam/steamapps/compatdata/EpicGamesLauncher/\" %command%"
+    legacylaunchoptions="STEAM_COMPAT_DATA_PATH=\"/home/deck/.local/share/Steam/steamapps/compatdata/LegacyGamesLauncher/\" %command%"
 fi
-
+if [[ -f "$humblegames_path1" ]]; then
+    # Humble Games Launcher is installed at path 1
+    humbleshortcutdirectory="\"$humblegames_path1\""
+    humblelaunchoptions="STEAM_COMPAT_DATA_PATH=\"/home/deck/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/\" %command%"
+elif [[ -f "$humblegames_path2" ]]; then
+    # Humble Games Launcher is installed at path 2
+    humbleshortcutdirectory="\"$humblegames_path2\""
+    humblelaunchoptions="STEAM_COMPAT_DATA_PATH=\"/home/deck/.local/share/Steam/steamapps/compatdata/HumbleGamesLauncher/\" %command%"
+fi
 
 
 #VDF Library
@@ -1245,6 +1354,7 @@ eaappshortcutdirectory = '$eaappshortcutdirectory'
 amazonshortcutdirectory = '$amazonshortcutdirectory'
 itchioshortcutdirectory = '$itchioshortcutdirectory'
 legacyshortcutdirectory = '$legacyshortcutdirectory'
+humbleshortcutdirectory = '$humbleshortcutdirectory'
 
 
 if epicshortcutdirectory != '':
@@ -1639,6 +1749,71 @@ if legacyshortcutdirectory != '':
                 max_key = max(int(key) for key in shortcuts['shortcuts'].keys())
                 # Add the new entry with a key value one higher than the current maximum
                 shortcuts['shortcuts'][str(max_key + 1)] = new_entry
+
+
+if humbleshortcutdirectory != '':
+        # Create a new entry for the Steam shortcut
+        new_entry = {
+            'appid': '',
+            'AppName': 'Humble Games Collection',
+            'Exe': '$humbleshortcutdirectory',
+            'StartDir': '$humbleshortcutdirectory',
+            'icon': '',
+            'ShortcutPath': '',
+            'LaunchOptions': '$humblelaunchoptions',
+            'IsHidden': 0,
+            'AllowDesktopConfig': 1,
+            'AllowOverlay': 1,
+            'OpenVR': 0,
+            'Devkit': 0,
+            'DevkitGameID': '',
+            'LastPlayTime': 0,
+            'tags': {
+                '0': 'favorite'
+            }
+        }
+
+        # Add the new entry to the shortcuts dictionary
+        entry_exists = False
+        if type(shortcuts['shortcuts']) == list:
+            for entry in shortcuts['shortcuts']:
+                if entry['AppName'] == new_entry['AppName'] and entry['Exe'] == new_entry['Exe']:
+                    entry_exists = True
+                    break
+            if not entry_exists:
+                shortcuts['shortcuts'].append(new_entry)
+        elif type(shortcuts['shortcuts']) == dict:
+            for key in shortcuts['shortcuts'].keys():
+                if shortcuts['shortcuts'][key]['AppName'] == new_entry['AppName'] and shortcuts['shortcuts'][key]['Exe'] == new_entry['Exe']:
+                    entry_exists = True
+                    break
+            if not entry_exists:
+                # Find the highest key value
+                max_key = max(int(key) for key in shortcuts['shortcuts'].keys())
+                # Add the new entry with a key value one higher than the current maximum
+                shortcuts['shortcuts'][str(max_key + 1)] = new_entry
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 # Save the updated shortcuts dictionary to the shortcuts.vdf file
