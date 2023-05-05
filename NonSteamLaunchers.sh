@@ -5,7 +5,7 @@ chmod +x "$0"
 set -x
 
 
-version=v1.5
+version=v1.6
 
 check_for_updates() {
     # Set the URL to the GitHub API for the repository
@@ -88,22 +88,29 @@ legacygames_path2="$HOME/.local/share/Steam/steamapps/compatdata/LegacyGamesLaun
 
 
 # Check if Epic Games Launcher is installed
-if [[ -f "$epic_games_launcher_path1" ]] || [[ -f "$epic_games_launcher_path2" ]]; then
-    # Epic Games Launcher is installed
+if [[ -f "$epic_games_launcher_path1" ]]; then
+    # Epic Games Launcher is installed in path 1
     epic_games_value="FALSE"
-    epic_games_text="Epic Games ===> Installed"
+    epic_games_text="Epic Games ===> $epic_games_launcher_path1"
+elif [[ -f "$epic_games_launcher_path2" ]]; then
+    # Epic Games Launcher is installed in path 2
+    epic_games_value="FALSE"
+    epic_games_text="Epic Games ===> $epic_games_launcher_path2"
 else
     # Epic Games Launcher is not installed
     epic_games_value="TRUE"
     epic_games_text="Epic Games"
 fi
 
-
 # Check if GOG Galaxy is installed
-if [[ -f "$gog_galaxy_path1" ]] || [[ -f "$gog_galaxy_path2" ]]; then
-    # GOG Galaxy is installed
+if [[ -f "$gog_galaxy_path1" ]]; then
+    # GOG Galaxy is installed in path 1
     gog_galaxy_value="FALSE"
-    gog_galaxy_text="GOG Galaxy ===> Installed"
+    gog_galaxy_text="GOG Galaxy ===> $gog_galaxy_path1"
+elif [[ -f "$gog_galaxy_path2" ]]; then
+    # GOG Galaxy is installed in path 2
+    gog_galaxy_value="FALSE"
+    gog_galaxy_text="GOG Galaxy ===> $gog_galaxy_path2"
 else
     # GOG Galaxy is not installed
     gog_galaxy_value="TRUE"
@@ -111,10 +118,14 @@ else
 fi
 
 # Check if Origin is installed
-if [[ -f "$origin_path1" ]] || [[ -f "$origin_path2" ]]; then
-    # Origin is installed
+if [[ -f "$origin_path1" ]]; then
+    # Origin is installed in path 1
     origin_value="FALSE"
-    origin_text="Origin ===> Installed"
+    origin_text="Origin ===> $origin_path1"
+elif [[ -f "$origin_path2" ]]; then
+    # Origin is installed in path 2
+    origin_value="FALSE"
+    origin_text="Origin ===> $origin_path2"
 else
     # Origin is not installed
     origin_value="TRUE"
@@ -122,10 +133,14 @@ else
 fi
 
 # Check if Uplay is installed
-if [[ -f "$uplay_path1" ]] || [[ -f "$uplay_path2" ]]; then
-    # Uplay is installed
+if [[ -f "$uplay_path1" ]]; then
+    # Uplay is installed in path 1
     uplay_value="FALSE"
-    uplay_text="Uplay ===> Installed"
+    uplay_text="Uplay ===> $uplay_path1"
+elif [[ -f "$uplay_path2" ]]; then
+    # Uplay is installed in path 2
+    uplay_value="FALSE"
+    uplay_text="Uplay ===> $uplay_path2"
 else
     # Uplay is not installed
     uplay_value="TRUE"
@@ -133,10 +148,14 @@ else
 fi
 
 # Check if Battle.net is installed
-if [[ -f "$battlenet_path1" ]] || [[ -f "$battlenet_path2" ]]; then
-    # Battle.net is installed
+if [[ -f "$battlenet_path1" ]]; then
+    # Battle.net is installed in path 1
     battlenet_value="FALSE"
-    battlenet_text="Battle.net ===> Installed"
+    battlenet_text="Battle.net ===> $battlenet_path1"
+elif [[ -f "$battlenet_path2" ]]; then
+    # Battle.net is installed in path 2
+    battlenet_value="FALSE"
+    battlenet_text="Battle.net ===> $battlenet_path2"
 else
     # Battle.net is not installed
     battlenet_value="TRUE"
@@ -144,21 +163,29 @@ else
 fi
 
 # Check if EA App is installed
-if [[ -f "$eaapp_path1" ]] || [[ -f "$eaapp_path2" ]]; then
-    # EA App is installed
+if [[ -f "$eaapp_path1" ]]; then
+    # EA App is installed in path 1
     eaapp_value="FALSE"
-    eaapp_text="EA App ===> Installed"
+    eaapp_text="EA App ===> $eaapp_path1"
+elif [[ -f "$eaapp_path2" ]]; then
+     # EA App is installed in path 2
+     eaapp_value="FALSE"
+     eaapp_text="EA App ===> $eaapp_path2"
 else
-    # EA App is not installed
-    eaapp_value="FALSE"
-    eaapp_text="EA App"
+     # EA App is not installed
+     eaapp_value="FALSE"
+     eaapp_text="EA App"
 fi
 
 # Check if Amazon Games is installed
-if [[ -f "$amazongames_path1" ]] || [[ -f "$amazongames_path2" ]]; then
-    # Amazon Games is installed
+if [[ -f "$amazongames_path1" ]]; then
+    # Amazon Games is installed in path 1
     amazongames_value="FALSE"
-    amazongames_text="Amazon Games ===> Installed"
+    amazongames_text="Amazon Games ===> $amazongames_path1"
+elif [[ -f "$amazongames_path2" ]]; then
+    # Amazon Games is installed in path 2
+    amazongames_value="FALSE"
+    amazongames_text="Amazon Games ===> $amazongames_path2"
 else
     # Amazon Games is not installed
     amazongames_value="TRUE"
@@ -166,10 +193,14 @@ else
 fi
 
 # Check if itch.io is installed
-if [[ -f "$itchio_path1" ]] || [[ -f "$itchio_path2" ]]; then
-    # itch.io is installed
+if [[ -f "$itchio_path1" ]]; then
+    # itch.io is installed in path 1
     itchio_value="FALSE"
-    itchio_text="itch.io ===> Installed"
+    itchio_text="itch.io ===> $itchio_path1"
+elif [[ -f "$itchio_path2" ]]; then
+    # itch.io is installed in path 2
+    itchio_value="FALSE"
+    itchio_text="itch.io ===> $itchio_path2"
 else
     # itch.io is not installed
     itchio_value="TRUE"
@@ -177,12 +208,16 @@ else
 fi
 
 # Check if Legacy Games Launcher is installed
-if [[ -f "$legacygames_path1" ]] || [[ -f "$legacygames_path2" ]]; then
-    # itch.io is installed
+if [[ -f "$legacygames_path1" ]]; then
+    # Legacy Games is installed in path 1
     legacygames_value="FALSE"
-    legacygames_text="Legacy Games ===> Installed"
+    legacygames_text="Legacy Games ===> $legacygames_path1"
+elif [[ -f "$legacygames_path2" ]]; then
+    # Legacy Games is installed in path 2
+    legacygames_value="FALSE"
+    legacygames_text="Legacy Games ===> $legacygames_path2"
 else
-    # itch.io is not installed
+    # Legacy Games is not installed
     legacygames_value="TRUE"
     legacygames_text="Legacy Games"
 fi
@@ -192,11 +227,13 @@ fi
 
 
 
+
+
 # Display a list of options using zenity
-options=$(zenity --list --text="Which launchers do you want to download and install?" --checklist --column="$version" --column="The default is one App ID Installation" FALSE "Separate App IDs" $epic_games_value "$epic_games_text" $gog_galaxy_value "$gog_galaxy_text" $uplay_value "$uplay_text" $origin_value "$origin_text" $battlenet_value "$battlenet_text" $amazongames_value "$amazongames_text" $eaapp_value "$eaapp_text" $legacygames_value "$legacygames_text" $itchio_value "$itchio_text" --width=400 --height=388)
+options=$(zenity --list --text="Which launchers do you want to download and install?" --checklist --column="$version" --column="Default = one App ID Installation" FALSE "Separate App IDs" $epic_games_value "$epic_games_text" $gog_galaxy_value "$gog_galaxy_text" $uplay_value "$uplay_text" $origin_value "$origin_text" $battlenet_value "$battlenet_text" $amazongames_value "$amazongames_text" $eaapp_value "$eaapp_text" $legacygames_value "$legacygames_text" $itchio_value "$itchio_text" --width=400 --height=398 --extra-button="Start Fresh")
 
 # Check if the cancel button was clicked
-if [ $? -eq 1 ]; then
+if [ $? -eq 1 ] && [[ $options != "Start Fresh" ]]; then
     # The cancel button was clicked
     echo "The cancel button was clicked"
     exit 1
@@ -248,9 +285,31 @@ if [[ -f "$eaapp_path1" ]] || [[ -f "$eaapp_path2" ]]; then
 fi
 
 
-
-
-
+# Check if the Start Fresh button was clicked
+if [[ $options == "Start Fresh" ]]; then
+    # The Start Fresh button was clicked
+    if zenity --question --text="aaahhh it always feels good to start fresh :) but...This will delete the App ID folders you installed inside the steamapps/compatdata/ directory. This means anything youve installed (launchers or games) WITH THIS SCRIPT ONLY will be deleted if you have them there. Are you sure?" --width=300 --height=250; then
+        # The user clicked the "Yes" button
+        # Add code here to delete the directories
+        rm -rf "$HOME/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers"
+        rm -rf "$HOME/.local/share/Steam/steamapps/compatdata/EpicGamesLauncher"
+        rm -rf "$HOME/.local/share/Steam/steamapps/compatdata/GogGalaxyLauncher"
+        rm -rf "$HOME/.local/share/Steam/steamapps/compatdata/OriginLauncher"
+        rm -rf "$HOME/.local/share/Steam/steamapps/compatdata/UplayLauncher"
+        rm -rf "$HOME/.local/share/Steam/steamapps/compatdata/Battle.netLauncher"
+        rm -rf "$HOME/.local/share/Steam/steamapps/compatdata/TheEAappLauncher"
+        rm -rf "$HOME/.local/share/Steam/steamapps/compatdata/AmazonGamesLauncher"
+        rm -rf "$HOME/.local/share/Steam/steamapps/compatdata/LegacyGamesLauncher"
+        rm -rf "$HOME/.local/share/Steam/steamapps/compatdata/itchioLauncher"
+        rm -rf ~/Downloads/NonSteamLaunchersInstallation
+        # Exit the script
+        exit 0
+    else
+        # The user clicked the "No" button
+        # Add code here to exit the script
+        exit 0
+    fi
+fi
 
 
 
@@ -932,12 +991,12 @@ if [[ $options == *"itch.io"* ]]; then
         echo "Downloading itchio file"
         wget $itchio_url -O $itchio_file
     fi
-  fi
-# Run the itchio file using Proton with the /passive option
-echo "Running itchio file using Proton with the /passive option"
-"$STEAM_RUNTIME" "$proton_dir/proton" run "$itchio_file"
-fi
 
+    # Run the itchio file using Proton with the /passive option
+    echo "Running itchio file using Proton with the /passive option"
+    "$STEAM_RUNTIME" "$proton_dir/proton" run "$itchio_file"
+  fi
+fi
 
 wait
 echo "98"
@@ -1480,7 +1539,7 @@ if itchioshortcutdirectory != '':
         # Create a new entry for the Steam shortcut
         new_entry = {
             'appid': '',
-            'AppName': 'Itch.io',
+            'AppName': 'itch.io',
             'Exe': '$itchioshortcutdirectory',
             'StartDir': '$itchioshortcutdirectory',
             'icon': '',
