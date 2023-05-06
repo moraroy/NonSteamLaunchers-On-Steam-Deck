@@ -18,11 +18,24 @@ check_for_updates() {
         # Display a Zenity window to notify the user that a new version is available
         zenity --info --text="A new version is available: $latest_version\nPlease download it from GitHub." --width=200 --height=100
     else
-        echo "You are already running the latest version: $version"
+        # Set the URL to the raw content of the script on GitHub
+        local raw_url=$(curl -s "$api_url" | grep '"tarball_url":' | sed -E 's/.*"([^"]+)".*/\1/')
+
+        # Download the latest version of the script from GitHub
+        curl -Ls "$raw_url" | tar -xzO --wildcards "*/script.sh" > /tmp/latest_script.sh
+
+        # Compare the latest version of the script against the local version
+        if ! cmp -s "$0" /tmp/latest_script.sh; then
+            # Display a Zenity window to notify the user that a new version is available
+            zenity --info --text="A new version is available\nPlease download it from GitHub." --width=200 --height=100
+        else
+            echo "You are already running the latest version: $version"
+        fi
     fi
 }
 
 check_for_updates
+
 
 
 
