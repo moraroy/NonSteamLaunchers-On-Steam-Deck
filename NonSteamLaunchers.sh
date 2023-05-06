@@ -1319,7 +1319,7 @@ export PYTHONPATH="$download_dir/lib/python3.10/site-packages:$PYTHONPATH"
 
 
 
-shortcuts_vdf_path=$(find ~/.steam/root/userdata -type d -name config -not -path "*/0/*" -not -path "*/anonymous/*" -exec find {} -name shortcuts.vdf \;)
+shortcuts_vdf_path=$(find ~/.steam/root/userdata -type d -regextype posix-extended -regex '.*/[0-9]{9}/config' -not -path "*/0/*" -not -path "*/anonymous/*" -exec find {} -name shortcuts.vdf \;)
 
 
 
@@ -1825,7 +1825,7 @@ with open('$shortcuts_vdf_path', 'wb') as f:
 
 
 # Delete NonSteamLaunchersInstallation subfolder in Downloads folder
-rm -rf ~/Downloads/NonSteamLaunchersInstallation
+#rm -rf ~/Downloads/NonSteamLaunchersInstallation
 
 
 
@@ -1837,8 +1837,8 @@ rm -rf ~/Downloads/NonSteamLaunchersInstallation
 
 
 # Detach script from Steam process
-nohup sh -c 'sleep 10; /usr/bin/steam' &
+#nohup sh -c 'sleep 10; /usr/bin/steam' &
 
 # Close all instances of Steam
-killall steam
+#killall steam
 
