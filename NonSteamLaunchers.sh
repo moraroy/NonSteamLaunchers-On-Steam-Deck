@@ -4,7 +4,7 @@ chmod +x "$0"
 
 set -x
 
-version=v1.8
+version=v1.9
 
 check_for_updates() {
     # Set the URL to the GitHub API for the repository
@@ -555,51 +555,46 @@ if [[ $options == *"GOG Galaxy"* ]]; then
     # User selected GOG Galaxy
     echo "User selected GOG Galaxy"
 
-
     # Check if Gog Galaxy Launcher is already installed
     if [[ ! -f "$gog_galaxy_path1" ]] || [[ ! -f "$gog_galaxy_path2" ]]; then
+        # Gog Galaxy Launcher is not installed
+
+        # Set the appid for the Gog Galaxy 2.0
+        if [ "$use_separate_appids" = true ]; then
+            appid=GogGalaxyLauncher
+        else
+            appid=NonSteamLaunchers
+        fi
+
+        # Create app id folder in compatdata folder if it doesn't exist
+        if [ ! -d "$HOME/.local/share/Steam/steamapps/compatdata/$appid" ]; then
+            mkdir -p "$HOME/.local/share/Steam/steamapps/compatdata/$appid"
+        fi
+
+        # Change working directory to Proton's
+        cd $proton_dir
+
+        # Set the STEAM_COMPAT_CLIENT_INSTALL_PATH environment variable
+        export STEAM_COMPAT_CLIENT_INSTALL_PATH="~/.local/share/Steam"
+
+        # Set the STEAM_COMPAT_DATA_PATH environment variable for Epic Games Launcher
+        export STEAM_COMPAT_DATA_PATH=~/.local/share/Steam/steamapps/compatdata/$appid
+
+        # Download EXE file
+        if [ ! -f "$exe_file" ]; then
+            echo "Downloading EXE file"
+            wget $exe_url -O $exe_file
+        fi
+
+        # Run the EXE file using Proton without the /passive option
+        echo "Running EXE file using Proton without the /passive option"
+        "$STEAM_RUNTIME" "$proton_dir/proton" run "$exe_file" &
+    else
         # Gog Galaxy Launcher is already installed
         echo "Gog Galaxy Launcher is already installed"
-
-    # Gog Galaxy Launcher is not installed
-
-
-
-
-
-    # Set the appid for the Gog Galaxy 2.0
-    if [ "$use_separate_appids" = true ]; then
-        appid=GogGalaxyLauncher
-    else
-        appid=NonSteamLaunchers
     fi
 
-    # Create app id folder in compatdata folder if it doesn't exist
-    if [ ! -d "$HOME/.local/share/Steam/steamapps/compatdata/$appid" ]; then
-        mkdir -p "$HOME/.local/share/Steam/steamapps/compatdata/$appid"
-    fi
 
-    # Change working directory to Proton's
-    cd $proton_dir
-
-    # Set the STEAM_COMPAT_CLIENT_INSTALL_PATH environment variable
-    export STEAM_COMPAT_CLIENT_INSTALL_PATH="~/.local/share/Steam"
-
-    # Set the STEAM_COMPAT_DATA_PATH environment variable for Epic Games Launcher
-    export STEAM_COMPAT_DATA_PATH=~/.local/share/Steam/steamapps/compatdata/$appid
-
-
-    # Download EXE file
-    if [ ! -f "$exe_file" ]; then
-        echo "Downloading EXE file"
-        wget $exe_url -O $exe_file
-    fi
-
-    # Run the EXE file using Proton without the /passive option
-    echo "Running EXE file using Proton without the /passive option"
-    "$STEAM_RUNTIME" "$proton_dir/proton" run "$exe_file" &
-
- fi
 echo "45"
 echo "# Downloading/Installing Gog Galaxy"
 
@@ -633,10 +628,9 @@ done
 
     # Wait for the EXE file to finish running
     wait
+
+
 fi
-
-
-
 
 wait
 echo "50"
@@ -1383,6 +1377,8 @@ if epicshortcutdirectory != '':
         entry_exists = False
         if type(shortcuts['shortcuts']) == list:
             for entry in shortcuts['shortcuts']:
+                entry.setdefault('AppName', '')
+                entry.setdefault('Exe', '')
                 if entry['AppName'] == new_entry['AppName'] and entry['Exe'] == new_entry['Exe']:
                     entry_exists = True
                     break
@@ -1390,6 +1386,8 @@ if epicshortcutdirectory != '':
                 shortcuts['shortcuts'].append(new_entry)
         elif type(shortcuts['shortcuts']) == dict:
             for key in shortcuts['shortcuts'].keys():
+                shortcuts['shortcuts'][key].setdefault('AppName', '')
+                shortcuts['shortcuts'][key].setdefault('Exe', '')
                 if shortcuts['shortcuts'][key]['AppName'] == new_entry['AppName'] and shortcuts['shortcuts'][key]['Exe'] == new_entry['Exe']:
                     entry_exists = True
                     break
@@ -1427,6 +1425,8 @@ if gogshortcutdirectory != '':
         entry_exists = False
         if type(shortcuts['shortcuts']) == list:
             for entry in shortcuts['shortcuts']:
+                entry.setdefault('AppName', '')
+                entry.setdefault('Exe', '')
                 if entry['AppName'] == new_entry['AppName'] and entry['Exe'] == new_entry['Exe']:
                     entry_exists = True
                     break
@@ -1434,6 +1434,8 @@ if gogshortcutdirectory != '':
                 shortcuts['shortcuts'].append(new_entry)
         elif type(shortcuts['shortcuts']) == dict:
             for key in shortcuts['shortcuts'].keys():
+                shortcuts['shortcuts'][key].setdefault('AppName', '')
+                shortcuts['shortcuts'][key].setdefault('Exe', '')
                 if shortcuts['shortcuts'][key]['AppName'] == new_entry['AppName'] and shortcuts['shortcuts'][key]['Exe'] == new_entry['Exe']:
                     entry_exists = True
                     break
@@ -1476,6 +1478,8 @@ if uplayshortcutdirectory != '':
         entry_exists = False
         if type(shortcuts['shortcuts']) == list:
             for entry in shortcuts['shortcuts']:
+                entry.setdefault('AppName', '')
+                entry.setdefault('Exe', '')
                 if entry['AppName'] == new_entry['AppName'] and entry['Exe'] == new_entry['Exe']:
                     entry_exists = True
                     break
@@ -1483,6 +1487,8 @@ if uplayshortcutdirectory != '':
                 shortcuts['shortcuts'].append(new_entry)
         elif type(shortcuts['shortcuts']) == dict:
             for key in shortcuts['shortcuts'].keys():
+                shortcuts['shortcuts'][key].setdefault('AppName', '')
+                shortcuts['shortcuts'][key].setdefault('Exe', '')
                 if shortcuts['shortcuts'][key]['AppName'] == new_entry['AppName'] and shortcuts['shortcuts'][key]['Exe'] == new_entry['Exe']:
                     entry_exists = True
                     break
@@ -1519,6 +1525,8 @@ if originshortcutdirectory != '':
         entry_exists = False
         if type(shortcuts['shortcuts']) == list:
             for entry in shortcuts['shortcuts']:
+                entry.setdefault('AppName', '')
+                entry.setdefault('Exe', '')
                 if entry['AppName'] == new_entry['AppName'] and entry['Exe'] == new_entry['Exe']:
                     entry_exists = True
                     break
@@ -1526,6 +1534,8 @@ if originshortcutdirectory != '':
                 shortcuts['shortcuts'].append(new_entry)
         elif type(shortcuts['shortcuts']) == dict:
             for key in shortcuts['shortcuts'].keys():
+                shortcuts['shortcuts'][key].setdefault('AppName', '')
+                shortcuts['shortcuts'][key].setdefault('Exe', '')
                 if shortcuts['shortcuts'][key]['AppName'] == new_entry['AppName'] and shortcuts['shortcuts'][key]['Exe'] == new_entry['Exe']:
                     entry_exists = True
                     break
@@ -1562,6 +1572,8 @@ if battlenetshortcutdirectory != '':
         entry_exists = False
         if type(shortcuts['shortcuts']) == list:
             for entry in shortcuts['shortcuts']:
+                entry.setdefault('AppName', '')
+                entry.setdefault('Exe', '')
                 if entry['AppName'] == new_entry['AppName'] and entry['Exe'] == new_entry['Exe']:
                     entry_exists = True
                     break
@@ -1569,6 +1581,8 @@ if battlenetshortcutdirectory != '':
                 shortcuts['shortcuts'].append(new_entry)
         elif type(shortcuts['shortcuts']) == dict:
             for key in shortcuts['shortcuts'].keys():
+                shortcuts['shortcuts'][key].setdefault('AppName', '')
+                shortcuts['shortcuts'][key].setdefault('Exe', '')
                 if shortcuts['shortcuts'][key]['AppName'] == new_entry['AppName'] and shortcuts['shortcuts'][key]['Exe'] == new_entry['Exe']:
                     entry_exists = True
                     break
@@ -1606,6 +1620,8 @@ if eaappshortcutdirectory != '':
         entry_exists = False
         if type(shortcuts['shortcuts']) == list:
             for entry in shortcuts['shortcuts']:
+                entry.setdefault('AppName', '')
+                entry.setdefault('Exe', '')
                 if entry['AppName'] == new_entry['AppName'] and entry['Exe'] == new_entry['Exe']:
                     entry_exists = True
                     break
@@ -1613,6 +1629,8 @@ if eaappshortcutdirectory != '':
                 shortcuts['shortcuts'].append(new_entry)
         elif type(shortcuts['shortcuts']) == dict:
             for key in shortcuts['shortcuts'].keys():
+                shortcuts['shortcuts'][key].setdefault('AppName', '')
+                shortcuts['shortcuts'][key].setdefault('Exe', '')
                 if shortcuts['shortcuts'][key]['AppName'] == new_entry['AppName'] and shortcuts['shortcuts'][key]['Exe'] == new_entry['Exe']:
                     entry_exists = True
                     break
@@ -1649,6 +1667,8 @@ if amazonshortcutdirectory != '':
         entry_exists = False
         if type(shortcuts['shortcuts']) == list:
             for entry in shortcuts['shortcuts']:
+                entry.setdefault('AppName', '')
+                entry.setdefault('Exe', '')
                 if entry['AppName'] == new_entry['AppName'] and entry['Exe'] == new_entry['Exe']:
                     entry_exists = True
                     break
@@ -1656,6 +1676,8 @@ if amazonshortcutdirectory != '':
                 shortcuts['shortcuts'].append(new_entry)
         elif type(shortcuts['shortcuts']) == dict:
             for key in shortcuts['shortcuts'].keys():
+                shortcuts['shortcuts'][key].setdefault('AppName', '')
+                shortcuts['shortcuts'][key].setdefault('Exe', '')
                 if shortcuts['shortcuts'][key]['AppName'] == new_entry['AppName'] and shortcuts['shortcuts'][key]['Exe'] == new_entry['Exe']:
                     entry_exists = True
                     break
@@ -1691,6 +1713,8 @@ if itchioshortcutdirectory != '':
         entry_exists = False
         if type(shortcuts['shortcuts']) == list:
             for entry in shortcuts['shortcuts']:
+                entry.setdefault('AppName', '')
+                entry.setdefault('Exe', '')
                 if entry['AppName'] == new_entry['AppName'] and entry['Exe'] == new_entry['Exe']:
                     entry_exists = True
                     break
@@ -1698,6 +1722,8 @@ if itchioshortcutdirectory != '':
                 shortcuts['shortcuts'].append(new_entry)
         elif type(shortcuts['shortcuts']) == dict:
             for key in shortcuts['shortcuts'].keys():
+                shortcuts['shortcuts'][key].setdefault('AppName', '')
+                shortcuts['shortcuts'][key].setdefault('Exe', '')
                 if shortcuts['shortcuts'][key]['AppName'] == new_entry['AppName'] and shortcuts['shortcuts'][key]['Exe'] == new_entry['Exe']:
                     entry_exists = True
                     break
@@ -1734,6 +1760,8 @@ if legacyshortcutdirectory != '':
         entry_exists = False
         if type(shortcuts['shortcuts']) == list:
             for entry in shortcuts['shortcuts']:
+                entry.setdefault('AppName', '')
+                entry.setdefault('Exe', '')
                 if entry['AppName'] == new_entry['AppName'] and entry['Exe'] == new_entry['Exe']:
                     entry_exists = True
                     break
@@ -1741,6 +1769,8 @@ if legacyshortcutdirectory != '':
                 shortcuts['shortcuts'].append(new_entry)
         elif type(shortcuts['shortcuts']) == dict:
             for key in shortcuts['shortcuts'].keys():
+                shortcuts['shortcuts'][key].setdefault('AppName', '')
+                shortcuts['shortcuts'][key].setdefault('Exe', '')
                 if shortcuts['shortcuts'][key]['AppName'] == new_entry['AppName'] and shortcuts['shortcuts'][key]['Exe'] == new_entry['Exe']:
                     entry_exists = True
                     break
@@ -1777,6 +1807,8 @@ if humbleshortcutdirectory != '':
         entry_exists = False
         if type(shortcuts['shortcuts']) == list:
             for entry in shortcuts['shortcuts']:
+                entry.setdefault('AppName', '')
+                entry.setdefault('Exe', '')
                 if entry['AppName'] == new_entry['AppName'] and entry['Exe'] == new_entry['Exe']:
                     entry_exists = True
                     break
@@ -1784,6 +1816,8 @@ if humbleshortcutdirectory != '':
                 shortcuts['shortcuts'].append(new_entry)
         elif type(shortcuts['shortcuts']) == dict:
             for key in shortcuts['shortcuts'].keys():
+                shortcuts['shortcuts'][key].setdefault('AppName', '')
+                shortcuts['shortcuts'][key].setdefault('Exe', '')
                 if shortcuts['shortcuts'][key]['AppName'] == new_entry['AppName'] and shortcuts['shortcuts'][key]['Exe'] == new_entry['Exe']:
                     entry_exists = True
                     break
