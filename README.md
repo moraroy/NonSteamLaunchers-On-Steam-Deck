@@ -36,7 +36,7 @@ In order to run it, grab the "NonSteamLaunchers.sh" file and download it.
 
 Please right click and go to properties > permissions and check mark "Is Executable". Then right click the file again and "Add to Steam".
 
-Then Restart your Steam Deck and "NonSteamLaunchers.sh" will now be in your library in Game Mode. MAKE SURE YOU FORCE COMPATABILTY IN GAME MODE.
+Then Restart your Steam Deck and "NonSteamLaunchers.sh" will now be in your library in Game Mode. MAKE SURE YOU FORCE COMPATABILTY IN GAME MODE WITH THE LAUNCHERS ONCE THEY ARE IN YOUR LIBRARY. DO NOT FORCE COMPATABILITY ON THE SCRIPT ITSELF, IT DOES NOT NEED IT.
 
 
 
@@ -45,4 +45,4 @@ In order to run it, grab the "NonSteamLaunchers.sh" file and download it.
 
 Please right click and go to properties > permissions and check mark "Is Executable". Double Click it and it should run.
 
-MAKE SURE YOU FORCE COMPATABILTY IN DESKTOP MODE.
+MAKE SURE YOU FORCE COMPATABILTY IN DESKTOP MODE WITH THE LAUNCHERS ONCE THEY ARE IN YOUR LIBRARY. DO NOT FORCE COMPATABILITY ON THE SCRIPT ITSELF, IT DOES NOT NEED IT.
