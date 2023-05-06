@@ -1283,46 +1283,30 @@ tar -xvf "$download_dir"/setuptools-*.tar.gz -C "$download_dir"
 # Change to the extracted directory
 cd "$download_dir"/setuptools-*/
 
-
-
-
 # Install setuptools
 python setup.py install --prefix="$download_dir"
 
-
-
 export PYTHONPATH="/usr/lib/python3.10/site-packages:$PYTHONPATH"
-
 
 # Change to the extracted directory
 cd "$download_dir"/vdf-*/
 
-
+# Set the PYTHONPATH environment variable
 export PYTHONPATH="$download_dir/lib/python3.10/site-packages:$PYTHONPATH"
-
-
-
-
 
 # Install the vdf library
 python setup.py install --prefix=~/Downloads/NonSteamLaunchersInstallation
 
-
-# Set the PYTHONPATH environment variable
-export PYTHONPATH="$download_dir/lib/python3.10/site-packages:$PYTHONPATH"
-
-
-
 shortcuts_vdf_path=$(find ~/.steam/root/userdata -type d -regextype posix-extended -regex '.*/[0-9]{9}/config' -not -path "*/0/*" -not -path "*/anonymous/*" -exec find {} -name shortcuts.vdf \;)
 
+# Check if shortcuts_vdf_path is not empty
+if [[ -n "$shortcuts_vdf_path" ]]; then
+    # Create a backup of the shortcuts.vdf file
+    cp "$shortcuts_vdf_path" "$shortcuts_vdf_path.bak"
+else
+    echo "Error: shortcuts_vdf_path is empty"
+fi
 
-
-
-
-
-
-# Create a backup of the shortcuts.vdf file
-cp "$shortcuts_vdf_path" "$shortcuts_vdf_path.bak"
 
 
 
