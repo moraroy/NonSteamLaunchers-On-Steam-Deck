@@ -18,37 +18,11 @@ check_for_updates() {
         # Display a Zenity window to notify the user that a new version is available
         zenity --info --text="A new version is available: $latest_version\nPlease download it from GitHub." --width=200 --height=100
     else
-        # Set the username, repository, branch, and path to file
-        local username="moraroy"
-        local repository="NonSteamLaunchers-On-Steam-Deck"
-        local branch="main"
-        local path_to_file="NonSteamLaunchers.sh"
-
-        # Construct the raw URL
-        local raw_url="https://raw.githubusercontent.com/$username/$repository/$branch/$path_to_file"
-
-        # Download the latest version of the file from GitHub
-        curl -s "$raw_url" -o /tmp/latest_script.sh
-
-        # Compare the latest version of the file against the local version
-        if ! cmp -s "$0" /tmp/latest_script.sh; then
-            # Display a Zenity window to notify the user that a new version is available
-            zenity --info --text="A new version is available\nPlease download it from GitHub." --width=200 --height=100
-        else
-            echo "You are already running the latest version: $version"
-        fi
+        echo "You are already running the latest version: $version"
     fi
 }
 
 check_for_updates
-
-
-
-
-
-
-
-test hi
 
 
 
