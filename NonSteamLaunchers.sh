@@ -337,7 +337,7 @@ proton_dir=$(find ~/.steam/root/compatibilitytools.d -maxdepth 1 -type d -name "
 
 # Set the URLs to download GE-Proton from
 ge_proton_url1=https://github.com/GloriousEggroll/proton-ge-custom/releases/latest/download/GE-Proton.tar.gz
-ge_proton_url2=https://github.com/GloriousEggroll/proton-ge-custom/releases/download/GE-Proton8-1/GE-Proton8-1.tar.gz
+ge_proton_url2=https://github.com/GloriousEggroll/proton-ge-custom/releases/download/GE-Proton8-2/GE-Proton8-2.tar.gz
 
 
 
