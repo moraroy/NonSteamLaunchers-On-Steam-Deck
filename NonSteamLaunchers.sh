@@ -4,7 +4,7 @@ chmod +x "$0"
 
 set -x
 
-version=v1.91
+version=v2.0
 
 check_for_updates() {
     # Set the URL to the GitHub API for the repository
@@ -69,6 +69,7 @@ humblegames_path2="$HOME/.local/share/Steam/steamapps/compatdata/HumbleGamesLaun
 
 
 
+function CheckInstallations {
 # Check if Epic Games Launcher is installed
 if [[ -f "$epic_games_launcher_path1" ]]; then
     # Epic Games Launcher is installed in path 1
@@ -206,11 +207,11 @@ fi
 
 # Check if Humble Games Launcher is installed
 if [[ -f "$humblegames_path1" ]]; then
-    # Humble Games is installed in path 1
+    # Humble Games is installed in path 1 on local drive
     humblegames_value="FALSE"
     humblegames_text="Humble Games Collection ===> $humblegames_path1"
 elif [[ -f "$humblegames_path2" ]]; then
-    # Humble Games is installed in path 2
+    # Humble Games is installed in path 2 on local drive
     humblegames_value="FALSE"
     humblegames_text="Humble Games Collection ===> $humblegames_path2"
 else
@@ -218,17 +219,126 @@ else
     humblegames_value="TRUE"
     humblegames_text="Humble Games Collection"
 fi
+}
+
+
+function CheckInstallationDirectory {
+    # Check if NonSteamLaunchers is installed
+    if [[ -d "$HOME/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers" ]]; then
+        # NonSteamLaunchers is installed
+        nonsteamlauncher_move_value="TRUE"
+    else
+        # NonSteamLaunchers is not installed
+        nonsteamlauncher_move_value="FALSE"
+    fi
+
+    # Check if EpicGamesLauncher is installed
+    if [[ -d "$HOME/.local/share/Steam/steamapps/compatdata/EpicGamesLauncher" ]]; then
+        # EpicGamesLauncher is installed
+        epicgameslauncher_move_value="TRUE"
+    else
+        # EpicGamesLauncher is not installed
+        epicgameslauncher_move_value="FALSE"
+    fi
+
+    # Check if GogGalaxyLauncher is installed
+    if [[ -d "$HOME/.local/share/Steam/steamapps/compatdata/GogGalaxyLauncher" ]]; then
+        # GogGalaxyLauncher is installed
+        goggalaxylauncher_move_value="TRUE"
+    else
+        # GogGalaxyLauncher is not installed
+        goggalaxylauncher_move_value="FALSE"
+    fi
+
+    # Check if OriginLauncher is installed
+    if [[ -d "$HOME/.local/share/Steam/steamapps/compatdata/OriginLauncher" ]]; then
+        # OriginLauncher is installed
+        originlauncher_move_value="TRUE"
+    else
+        # OriginLauncher is not installed
+        originlauncher_move_value="FALSE"
+    fi
+
+    # Check if UplayLauncher is installed
+    if [[ -d "$HOME/.local/share/Steam/steamapps/compatdata/UplayLauncher" ]]; then
+        # UplayLauncher is installed
+        uplaylauncher_move_value="TRUE"
+    else
+        # UplayLauncher is not installed
+        uplaylauncher_move_value="FALSE"
+    fi
+
+    # Check if Battle.netLauncher is installed
+    if [[ -d "$HOME/.local/share/Steam/steamapps/compatdata/Battle.netLauncher" ]]; then
+        # Battle.netLauncher is installed
+        battlenetlauncher_move_value="TRUE"
+    else
+        # Battle.netLauncher is not installed
+        battlenetlauncher_move_value="FALSE"
+    fi
+
+    # Check if TheEAappLauncher is installed
+    if [[ -d "$HOME/.local/share/Steam/steamapps/compatdata/TheEAappLauncher" ]]; then
+        # TheEAappLauncher is installed
+        eaapplauncher_move_value="TRUE"
+    else
+        # TheEAappLauncher is not installed
+        eaapplauncher_move_value="FALSE"
+    fi
+
+
+    # Check if AmazonGamesLauncher is installed
+    if [[ -d "$HOME/.local/share/Steam/steamapps/compatdata/AmazonGamesLauncher" ]]; then
+        # AmazonGamesLauncher is installed
+        amazongameslauncher_move_value="TRUE"
+    else
+        # AmazonGamesLauncher is not installed
+        amazongameslauncher_move_value="FALSE"
+    fi
+
+    # Check if itchioLauncher is installed
+    if [[ -d "$HOME/.local/share/Steam/steamapps/compatdata/itchioLauncher" ]]; then
+        # itchioLauncher is installed
+        itchiolauncher_move_value="TRUE"
+    else
+        # itchioLauncher is not installed
+        itchiolauncher_move_value="FALSE"
+    fi
+
+    # Check if LegacyGamesLauncher is installed
+    if [[ -d "$HOME/.local/share/Steam/steamapps/compatdata/LegacyGamesLauncher" ]]; then
+        # LegacyGamesLauncher is installed
+        legacygameslauncher_move_value="TRUE"
+    else
+        # LegacyGamesLauncher is not installed
+        legacygameslauncher_move_value="FALSE"
+    fi
+
+    # Check if HumbleGamesLauncher is installed
+    if [[ -d "$HOME/.local/share/Steam/steamapps/compatdata/HumbleGamesLauncher" ]]; then
+        # HumbleGamesLauncher is installed
+        humblegameslauncher_move_value="TRUE"
+    else
+        # HumbleGamesLauncher is not installed
+        humblegameslauncher_move_value="FALSE"
+    fi
+}
 
 
 
 
+
+
+# Check which app IDs are installed
+CheckInstallations
+CheckInstallationDirectory
 
 
 # Display a list of options using zenity
-options=$(zenity --list --text="Which launchers do you want to download and install?" --checklist --column="$version" --column="Default = one App ID Installation" FALSE "Separate App IDs" $epic_games_value "$epic_games_text" $gog_galaxy_value "$gog_galaxy_text" $uplay_value "$uplay_text" $origin_value "$origin_text" $battlenet_value "$battlenet_text" $amazongames_value "$amazongames_text" $eaapp_value "$eaapp_text" $legacygames_value "$legacygames_text" $itchio_value "$itchio_text" $humblegames_value "$humblegames_text" --width=425 --height=427 --extra-button="Start Fresh")
+options=$(zenity --list --text="Which launchers do you want to download and install?" --checklist --column="$version" --column="Default = one App ID Installation" FALSE "Separate App IDs" $epic_games_value "$epic_games_text" $gog_galaxy_value "$gog_galaxy_text" $uplay_value "$uplay_text" $origin_value "$origin_text" $battlenet_value "$battlenet_text" $amazongames_value "$amazongames_text" $eaapp_value "$eaapp_text" $legacygames_value "$legacygames_text" $itchio_value "$itchio_text" $humblegames_value "$humblegames_text" --width=535 --height=457  --extra-button="Start Fresh" --extra-button="Move to SD Card")
 
 # Check if the cancel button was clicked
-if [ $? -eq 1 ] && [[ $options != "Start Fresh" ]]; then
+if [ $? -eq 1 ] && [[ $options != "Start Fresh" ]] && [[ $options != "Move to SD Card" ]]; then
     # The cancel button was clicked
     echo "The cancel button was clicked"
     exit 1
@@ -249,7 +359,6 @@ else
     # User did not select to use separate app IDs
     use_separate_appids=false
 fi
-
 
 
 # Check if the user selected both Origin and EA App
@@ -286,18 +395,30 @@ if [[ $options == "Start Fresh" ]]; then
     if zenity --question --text="aaahhh it always feels good to start fresh :) but...This will delete the App ID folders you installed inside the steamapps/compatdata/ directory. This means anything youve installed (launchers or games) WITH THIS SCRIPT ONLY will be deleted if you have them there. Are you sure?" --width=300 --height=250; then
         # The user clicked the "Yes" button
         # Add code here to delete the directories
-        rm -rf "$HOME/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers"
-        rm -rf "$HOME/.local/share/Steam/steamapps/compatdata/EpicGamesLauncher"
-        rm -rf "$HOME/.local/share/Steam/steamapps/compatdata/GogGalaxyLauncher"
-        rm -rf "$HOME/.local/share/Steam/steamapps/compatdata/OriginLauncher"
-        rm -rf "$HOME/.local/share/Steam/steamapps/compatdata/UplayLauncher"
-        rm -rf "$HOME/.local/share/Steam/steamapps/compatdata/Battle.netLauncher"
-        rm -rf "$HOME/.local/share/Steam/steamapps/compatdata/TheEAappLauncher"
-        rm -rf "$HOME/.local/share/Steam/steamapps/compatdata/AmazonGamesLauncher"
-        rm -rf "$HOME/.local/share/Steam/steamapps/compatdata/LegacyGamesLauncher"
-        rm -rf "$HOME/.local/share/Steam/steamapps/compatdata/itchioLauncher"
-        rm -rf "$HOME/.local/share/Steam/steamapps/compatdata/HumbleGamesLauncher"
-        rm -rf ~/Downloads/NonSteamLaunchersInstallation
+        unlink & rm -rf "$HOME/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers"
+        unlink & rm -rf "$HOME/.local/share/Steam/steamapps/compatdata/EpicGamesLauncher"
+        unlink & rm -rf "$HOME/.local/share/Steam/steamapps/compatdata/GogGalaxyLauncher"
+        unlink & rm -rf "$HOME/.local/share/Steam/steamapps/compatdata/OriginLauncher"
+        unlink & rm -rf "$HOME/.local/share/Steam/steamapps/compatdata/UplayLauncher"
+        unlink & rm -rf "$HOME/.local/share/Steam/steamapps/compatdata/Battle.netLauncher"
+        unlink & rm -rf "$HOME/.local/share/Steam/steamapps/compatdata/TheEAappLauncher"
+        unlink & rm -rf "$HOME/.local/share/Steam/steamapps/compatdata/AmazonGamesLauncher"
+        unlink & rm -rf "$HOME/.local/share/Steam/steamapps/compatdata/LegacyGamesLauncher"
+        unlink & rm -rf "$HOME/.local/share/Steam/steamapps/compatdata/itchioLauncher"
+        unlink & rm -rf "$HOME/.local/share/Steam/steamapps/compatdata/HumbleGamesLauncher"
+        rm -rf "~/Downloads/NonSteamLaunchersInstallation"
+        rm -rf "/run/media/mmcblk0p1/NonSteamLaunchers/"
+        rm -rf "/run/media/mmcblk0p1/EpicGamesLauncher/"
+        rm -rf "/run/media/mmcblk0p1/GogGalaxyLauncher/"
+        rm -rf "/run/media/mmcblk0p1/OriginLauncher/"
+        rm -rf "/run/media/mmcblk0p1/UplayLauncher/"
+        rm -rf "/run/media/mmcblk0p1/Battle.netLauncher/"
+        rm -rf "/run/media/mmcblk0p1/TheEAappLauncher/"
+        rm -rf "/run/media/mmcblk0p1/AmazonGamesLauncher/"
+        rm -rf "/run/media/mmcblk0p1/LegacyGamesLauncher/"
+        rm -rf "/run/media/mmcblk0p1/itchioLauncher/"
+        rm -rf "/run/media/mmcblk0p1/HumbleGamesLauncher/"
+
         # Exit the script
         exit 0
     else
@@ -306,6 +427,231 @@ if [[ $options == "Start Fresh" ]]; then
         exit 0
     fi
 fi
+
+if [[ $options == "Move to SD Card" ]]; then
+    # The Move to SD Card button was clicked
+    # Check which app IDs are installed
+
+    # Add similar checks for other app IDs here
+    CheckInstallationDirectory
+
+
+    move_options=$(zenity --list --text="Which app IDs do you want to move to the SD card?" --checklist --column="Select" --column="App ID" $nonsteamlauncher_move_value "NonSteamLaunchers" $epicgameslauncher_move_value "EpicGamesLauncher" $goggalaxylauncher_move_value "GogGalaxyLauncher" $originlauncher_move_value "OriginLauncher" $uplaylauncher_move_value "UplayLauncher" $battlenetlauncher_move_value "Battle.netLauncher" $eaapplauncher_move_value "TheEAappLauncher" $amazongameslauncher_move_value "AmazonGamesLauncher" $itchiolauncher_move_value "itchioLauncher" $legacygameslauncher_move_value "LegacyGamesLauncher" $humblegameslauncher_move_value "HumbleGamesLauncher" --width=535 --height=415)
+
+    # Check if the cancel button was clicked
+    if [ $? -eq 0 ]; then
+        # The OK button was clicked
+        # Display a message to the user indicating that the operation was successful
+        zenity --info --text="The selected directories have been moved to the SD card and symbolic links have been created." --width=200 --height=150
+    fi
+
+    # Set the path to the new directory on the SD card
+    new_dir="/run/media/mmcblk0p1"
+
+
+    # Check if NonSteamLaunchers is installed
+    if [[ -d "$HOME/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers" ]]; then
+    # NonSteamLaunchers is installed
+    original_dir="$HOME/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers"
+    else
+    # NonSteamLaunchers is not installed
+    original_dir=""
+    fi
+
+    # Check if the user selected to move NonSteamLaunchers
+    if [[ $move_options == *"NonSteamLaunchers"* ]] && [[ -n $original_dir ]]; then
+    # Move the NonSteamLaunchers directory to the SD card
+    mv "$original_dir" "$new_dir/NonSteamLaunchers"
+
+    # Create a symbolic link to the new directory
+    ln -s "$new_dir/NonSteamLaunchers" "$original_dir"
+    fi
+
+    # Check if EpicGamesLauncher is installed
+    if [[ -d "$HOME/.local/share/Steam/steamapps/compatdata/EpicGamesLauncher" ]]; then
+    # EpicGamesLauncher is installed
+    original_dir="$HOME/.local/share/Steam/steamapps/compatdata/EpicGamesLauncher"
+    else
+    # EpicGamesLauncher is not installed
+    original_dir=""
+    fi
+
+    # Check if the user selected to move EpicGamesLauncher
+    if [[ $move_options == *"EpicGamesLauncher"* ]] && [[ -n $original_dir ]]; then
+    # Move the EpicGamesLauncher directory to the SD card
+    mv "$original_dir" "$new_dir/EpicGamesLauncher"
+
+    # Create a symbolic link to the new directory
+    ln -s "$new_dir/EpicGamesLauncher" "$original_dir"
+    fi
+
+    # Check if GogGalaxyLauncher is installed
+    if [[ -d "$HOME/.local/share/Steam/steamapps/compatdata/GogGalaxyLauncher" ]]; then
+    # GogGalaxyLauncher is installed
+    original_dir="$HOME/.local/share/Steam/steamapps/compatdata/GogGalaxyLauncher"
+    else
+    # GogGalaxyLauncher is not installed
+    original_dir=""
+    fi
+
+    # Check if the user selected to move GogGalaxyLauncher
+    if [[ $move_options == *"GogGalaxyLauncher"* ]] && [[ -n $original_dir ]]; then
+    # Move the GogGalaxyLauncher directory to the SD card
+    mv "$original_dir" "$new_dir/GogGalaxyLauncher"
+
+    # Create a symbolic link to the new directory
+    ln -s "$new_dir/GogGalaxyLauncher" "$original_dir"
+    fi
+
+    # Check if OriginLauncher is installed
+    if [[ -d "$HOME/.local/share/Steam/steamapps/compatdata/OriginLauncher" ]]; then
+    # OriginLauncher is installed
+    original_dir="$HOME/.local/share/Steam/steamapps/compatdata/OriginLauncher"
+    else
+    # OriginLauncher is not installed
+    original_dir=""
+    fi
+
+    # Check if the user selected to move OriginLauncher
+    if [[ $move_options == *"OriginLauncher"* ]] && [[ -n $original_dir ]]; then
+    # Move the OriginLauncher directory to the SD card
+    mv "$original_dir" "$new_dir/OriginLauncher"
+
+    # Create a symbolic link to the new directory
+    ln -s "$new_dir/OriginLauncher" "$original_dir"
+    fi
+
+    # Check if UplayLauncher is installed
+    if [[ -d "$HOME/.local/share/Steam/steamapps/compatdata/UplayLauncher" ]]; then
+    # UplayLauncher is installed
+    original_dir="$HOME/.local/share/Steam/steamapps/compatdata/UplayLauncher"
+    else
+    # UplayLauncher is not installed
+    original_dir=""
+    fi
+
+    # Check if the user selected to move UplayLauncher
+    if [[ $move_options == *"UplayLauncher"* ]] && [[ -n $original_dir ]]; then
+    # Move the UplayLauncher directory to the SD card
+    mv "$original_dir" "$new_dir/UplayLauncher"
+
+    # Create a symbolic link to the new directory
+    ln -s "$new_dir/UplayLauncher" "$original_dir"
+    fi
+
+    # Check if Battle.netLauncher is installed
+    if [[ -d "$HOME/.local/share/Steam/steamapps/compatdata/Battle.netLauncher" ]]; then
+        # Battle.netLauncher is installed
+        original_dir="$HOME/.local/share/Steam/steamapps/compatdata/Battle.netLauncher"
+    else
+        # Battle.netLauncher is not installed
+        original_dir=""
+    fi
+
+    # Check if the user selected to move Battle.netLauncher
+    if [[ $move_options == *"Battle.netLauncher"* ]] && [[ -n $original_dir ]]; then
+        # Move the Battle.netLauncher directory to the SD card
+        mv "$original_dir" "$new_dir/Battle.netLauncher"
+
+        # Create a symbolic link to the new directory
+        ln -s "$new_dir/Battle.netLauncher" "$original_dir"
+    fi
+
+    # Check if TheEAappLauncher is installed
+    if [[ -d "$HOME/.local/share/Steam/steamapps/compatdata/TheEAappLauncher" ]]; then
+        # TheEAappLauncher is installed
+        original_dir="$HOME/.local/share/Steam/steamapps/compatdata/TheEAappLauncher"
+    else
+        # TheEAappLauncher is not installed
+        original_dir=""
+    fi
+
+    # Check if the user selected to move TheEAappLauncher
+    if [[ $move_options == *"TheEAappLauncher"* ]] && [[ -n $original_dir ]]; then
+        # Move the TheEAappLauncher directory to the SD card
+        mv "$original_dir" "$new_dir/TheEAappLauncher"
+
+        # Create a symbolic link to the new directory
+        ln -s "$new_dir/TheEAappLauncher" "$original_dir"
+    fi
+
+    # Check if AmazonGamesLauncher is installed
+    if [[ -d "$HOME/.local/share/Steam/steamapps/compatdata/AmazonGamesLauncher" ]]; then
+        # AmazonGamesLauncher is installed
+        original_dir="$HOME/.local/share/Steam/steamapps/compatdata/AmazonGamesLauncher"
+    else
+        # AmazonGamesLauncher is not installed
+        original_dir=""
+    fi
+
+    # Check if the user selected to move AmazonGamesLauncher
+    if [[ $move_options == *"AmazonGamesLauncher"* ]] && [[ -n $original_dir ]]; then
+    # Move the AmazonGamesLauncher directory to the SD card
+    mv "$original_dir" "$new_dir/AmazonGamesLauncher"
+
+    # Create a symbolic link to the new directory
+    ln -s "$new_dir/AmazonGamesLauncher" "$original_dir"
+    fi
+
+    # Check if itchioLauncher is installed
+    if [[ -d "$HOME/.local/share/Steam/steamapps/compatdata/itchioLauncher" ]]; then
+        # itchioLauncher is installed
+        original_dir="$HOME/.local/share/Steam/steamapps/compatdata/itchioLauncher"
+    else
+        # itchioLauncher is not installed
+        original_dir=""
+    fi
+
+    # Check if the user selected to move itchioLauncher
+    if [[ $move_options == *"itchioLauncher"* ]] && [[ -n $original_dir ]]; then
+        # Move the itchioLauncher directory to the SD card
+        mv "$original_dir" "$new_dir/itchioLauncher"
+
+        # Create a symbolic link to the new directory
+        ln -s "$new_dir/itchioLauncher" "$original_dir"
+    fi
+
+    # Check if LegacyGamesLauncher is installed
+    if [[ -d "$HOME/.local/share/Steam/steamapps/compatdata/LegacyGamesLauncher" ]]; then
+        # LegacyGamesLauncher is installed
+        original_dir="$HOME/.local/share/Steam/steamapps/compatdata/LegacyGamesLauncher"
+    else
+        # LegacyGamesLauncher is not installed
+        original_dir=""
+    fi
+
+    # Check if the user selected to move LegacyGamesLauncher
+    if [[ $move_options == *"LegacyGamesLauncher"* ]] && [[ -n $original_dir ]]; then
+    # Move the LegacyGamesLauncher directory to the SD card
+    mv "$original_dir" "$new_dir/LegacyGamesLauncher"
+
+    # Create a symbolic link to the new directory
+    ln -s "$new_dir/LegacyGamesLauncher" "$original_dir"
+    fi
+
+    # Check if HumbleGamesLauncher is installed
+    if [[ -d "$HOME/.local/share/Steam/steamapps/compatdata/HumbleGamesLauncher" ]]; then
+        # HumbleGamesLauncher is installed
+        original_dir="$HOME/.local/share/Steam/steamapps/compatdata/HumbleGamesLauncher"
+    else
+        # HumbleGamesLauncher is not installed
+        original_dir=""
+    fi
+
+    # Check if the user selected to move HumbleGamesLauncher
+    if [[ $move_options == *"HumbleGamesLauncher"* ]] && [[ -n $original_dir ]]; then
+        # Move the HumbleGamesLauncher directory to the SD card
+        mv "$original_dir" "$new_dir/HumbleGamesLauncher"
+
+        # Create a symbolic link to the new directory
+        ln -s "$new_dir/HumbleGamesLauncher" "$original_dir"
+    fi
+    # Exit the script
+    exit 1
+
+fi
+
+
 
 
 
