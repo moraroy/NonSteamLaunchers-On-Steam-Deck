@@ -24,6 +24,10 @@ Currently Installs and adds to your Library... 👀
   ~Legacy Games ✔️ 
   
   ~Humble Games Collection ✔️
+  
+  ---------------------------
+  
+  ~SD CARD SUPPORT ✔️
 
 
 Currently Working On These Things 👷‍♂️
