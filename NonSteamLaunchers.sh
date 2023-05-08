@@ -1636,11 +1636,41 @@ export PYTHONPATH="$download_dir/lib/python3.10/site-packages:$PYTHONPATH"
 # Install the vdf library
 python setup.py install --prefix=~/Downloads/NonSteamLaunchersInstallation
 
-# Find the shortcuts.vdf file
-shortcuts_vdf_path=$(find ~/.steam/root/userdata -type d -regextype posix-extended -regex '.*/[0-9]{9}/config' -not -path "*/0/*" -not -path "*/anonymous/*" -exec find {} -name shortcuts.vdf \;)
 
-# Find the shortcuts.vdf file
-shortcuts_vdf_path=$(find ~/.steam/root/userdata -type d -regextype posix-extended -regex '.*/[0-9]{9,10}/config' -not -path "*/0/*" -not -path "*/anonymous/*" -exec find {} -name shortcuts.vdf \;)
+
+
+
+
+
+
+# Find all shortcuts.vdf files
+shortcuts_vdf_paths=$(find ~/.steam/root/userdata -type d -regextype posix-extended -regex '.*/[0-9]{9,10}/config' -not -path "*/0/*" -not -path "*/anonymous/*" -exec find {} -name shortcuts.vdf \;)
+
+# Set the current date
+current_date=$(date +%s)
+
+# Set the maximum age of the shortcuts.vdf file in seconds (e.g. 1 month)
+max_age=$((30*24*60*60))
+
+# Initialize the shortcuts_vdf_path variable
+shortcuts_vdf_path=""
+
+# Loop through the shortcuts.vdf files
+while read -r path; do
+    # Get the modification date of the shortcuts.vdf file
+    mod_date=$(date -r "$path" +%s)
+
+    # Calculate the age of the shortcuts.vdf file
+    age=$((current_date-mod_date))
+
+    # Check if the age of the shortcuts.vdf file is less than or equal to the maximum age
+    if [[ $age -le $max_age ]]; then
+        # The shortcuts.vdf file is current or up to date
+        # Set the shortcuts_vdf_path variable
+        shortcuts_vdf_path="$path"
+        break
+    fi
+done <<< "$shortcuts_vdf_paths"
 
 # Check if shortcuts_vdf_path is not empty
 if [[ -n "$shortcuts_vdf_path" ]]; then
@@ -1976,7 +2006,7 @@ if eaappshortcutdirectory != '':
         # Create a new entry for the Steam shortcut
         new_entry = {
             'appid': '',
-            'AppName': 'The EA App',
+            'AppName': 'EA App',
             'Exe': '$eaappshortcutdirectory',
             'StartDir': '$eaappshortcutdirectory',
             'icon': '',
