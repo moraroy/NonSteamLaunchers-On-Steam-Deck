@@ -406,7 +406,6 @@ if [[ $options == "Start Fresh" ]]; then
         unlink & rm -rf "$HOME/.local/share/Steam/steamapps/compatdata/LegacyGamesLauncher"
         unlink & rm -rf "$HOME/.local/share/Steam/steamapps/compatdata/itchioLauncher"
         unlink & rm -rf "$HOME/.local/share/Steam/steamapps/compatdata/HumbleGamesLauncher"
-        rm -rf "~/Downloads/NonSteamLaunchersInstallation"
         rm -rf "/run/media/mmcblk0p1/NonSteamLaunchers/"
         rm -rf "/run/media/mmcblk0p1/EpicGamesLauncher/"
         rm -rf "/run/media/mmcblk0p1/GogGalaxyLauncher/"
@@ -418,6 +417,7 @@ if [[ $options == "Start Fresh" ]]; then
         rm -rf "/run/media/mmcblk0p1/LegacyGamesLauncher/"
         rm -rf "/run/media/mmcblk0p1/itchioLauncher/"
         rm -rf "/run/media/mmcblk0p1/HumbleGamesLauncher/"
+        rm -rf ~/Downloads/NonSteamLaunchersInstallation
 
         # Exit the script
         exit 0
@@ -1622,6 +1622,9 @@ tar -xvf "$download_dir"/setuptools-*.tar.gz -C "$download_dir"
 
 # Change to the extracted directory
 cd "$download_dir"/setuptools-*/
+
+# Add the installation directory to the PYTHONPATH environment variable
+export PYTHONPATH="$download_dir/lib/python3.10/site-packages:$PYTHONPATH"
 
 # Install setuptools
 python setup.py install --prefix="$download_dir"
