@@ -4,7 +4,7 @@ chmod +x "$0"
 
 set -x
 
-version=v2.0
+version=v2.1
 
 check_for_updates() {
     # Set the URL to the GitHub API for the repository
@@ -1636,6 +1636,7 @@ export PYTHONPATH="$download_dir/lib/python3.10/site-packages:$PYTHONPATH"
 # Install the vdf library
 python setup.py install --prefix=~/Downloads/NonSteamLaunchersInstallation
 
+# Find the shortcuts.vdf file
 shortcuts_vdf_path=$(find ~/.steam/root/userdata -type d -regextype posix-extended -regex '.*/[0-9]{9}/config' -not -path "*/0/*" -not -path "*/anonymous/*" -exec find {} -name shortcuts.vdf \;)
 
 # Check if shortcuts_vdf_path is not empty
@@ -1643,8 +1644,23 @@ if [[ -n "$shortcuts_vdf_path" ]]; then
     # Create a backup of the shortcuts.vdf file
     cp "$shortcuts_vdf_path" "$shortcuts_vdf_path.bak"
 else
-    echo "Error: shortcuts_vdf_path is empty"
+    # Find the config directory
+    config_dir=$(find ~/.steam/root/userdata -type d -regextype posix-extended -regex '.*/[0-9]{9}/config' -not -path "*/0/*" -not -path "*/anonymous/*")
+
+    # Check if config_dir is not empty
+    if [[ -n "$config_dir" ]]; then
+        # Create a new shortcuts.vdf file at the expected location
+        touch "$config_dir/shortcuts.vdf"
+        shortcuts_vdf_path="$config_dir/shortcuts.vdf"
+    else
+        echo "Error: config_dir is empty"
+    fi
 fi
+
+
+
+
+
 
 
 
@@ -1660,6 +1676,20 @@ import os
 # Load the shortcuts.vdf file
 with open('$shortcuts_vdf_path', 'rb') as f:
     shortcuts = vdf.binary_load(f)
+
+# Check if the 'shortcuts' key exists in the dictionary
+if 'shortcuts' not in shortcuts:
+    # Create an empty 'shortcuts' entry
+    shortcuts['shortcuts'] = {}
+
+# Check the format of the 'shortcuts' entry
+if isinstance(shortcuts['shortcuts'], dict):
+    # The 'shortcuts' entry is a dictionary
+    for key, value in shortcuts['shortcuts'].items():
+        # Check the type of the value
+        if not isinstance(value, (str, int, dict)):
+            pass
+
 
 # Define the path of the Launchers
 epicshortcutdirectory = '$epicshortcutdirectory'
@@ -1715,10 +1745,15 @@ if epicshortcutdirectory != '':
                     entry_exists = True
                     break
             if not entry_exists:
-                # Find the highest key value
-                max_key = max(int(key) for key in shortcuts['shortcuts'].keys())
+                # Check if the shortcuts['shortcuts'] dictionary is empty
+                if not shortcuts['shortcuts']:
+                    max_key = -1
+                else:
+                    # Find the highest key value
+                    max_key = max(int(key) for key in shortcuts['shortcuts'].keys())
                 # Add the new entry with a key value one higher than the current maximum
                 shortcuts['shortcuts'][str(max_key + 1)] = new_entry
+
 
 
 
@@ -1763,8 +1798,12 @@ if gogshortcutdirectory != '':
                     entry_exists = True
                     break
             if not entry_exists:
-                # Find the highest key value
-                max_key = max(int(key) for key in shortcuts['shortcuts'].keys())
+                # Check if the shortcuts['shortcuts'] dictionary is empty
+                if not shortcuts['shortcuts']:
+                    max_key = -1
+                else:
+                    # Find the highest key value
+                    max_key = max(int(key) for key in shortcuts['shortcuts'].keys())
                 # Add the new entry with a key value one higher than the current maximum
                 shortcuts['shortcuts'][str(max_key + 1)] = new_entry
 
@@ -1816,8 +1855,12 @@ if uplayshortcutdirectory != '':
                     entry_exists = True
                     break
             if not entry_exists:
-                # Find the highest key value
-                max_key = max(int(key) for key in shortcuts['shortcuts'].keys())
+                # Check if the shortcuts['shortcuts'] dictionary is empty
+                if not shortcuts['shortcuts']:
+                    max_key = -1
+                else:
+                    # Find the highest key value
+                    max_key = max(int(key) for key in shortcuts['shortcuts'].keys())
                 # Add the new entry with a key value one higher than the current maximum
                 shortcuts['shortcuts'][str(max_key + 1)] = new_entry
 
@@ -1863,8 +1906,12 @@ if originshortcutdirectory != '':
                     entry_exists = True
                     break
             if not entry_exists:
-                # Find the highest key value
-                max_key = max(int(key) for key in shortcuts['shortcuts'].keys())
+                # Check if the shortcuts['shortcuts'] dictionary is empty
+                if not shortcuts['shortcuts']:
+                    max_key = -1
+                else:
+                    # Find the highest key value
+                    max_key = max(int(key) for key in shortcuts['shortcuts'].keys())
                 # Add the new entry with a key value one higher than the current maximum
                 shortcuts['shortcuts'][str(max_key + 1)] = new_entry
 
@@ -1910,8 +1957,12 @@ if battlenetshortcutdirectory != '':
                     entry_exists = True
                     break
             if not entry_exists:
-                # Find the highest key value
-                max_key = max(int(key) for key in shortcuts['shortcuts'].keys())
+                # Check if the shortcuts['shortcuts'] dictionary is empty
+                if not shortcuts['shortcuts']:
+                    max_key = -1
+                else:
+                    # Find the highest key value
+                    max_key = max(int(key) for key in shortcuts['shortcuts'].keys())
                 # Add the new entry with a key value one higher than the current maximum
                 shortcuts['shortcuts'][str(max_key + 1)] = new_entry
 
@@ -1958,8 +2009,12 @@ if eaappshortcutdirectory != '':
                     entry_exists = True
                     break
             if not entry_exists:
-                # Find the highest key value
-                max_key = max(int(key) for key in shortcuts['shortcuts'].keys())
+                # Check if the shortcuts['shortcuts'] dictionary is empty
+                if not shortcuts['shortcuts']:
+                    max_key = -1
+                else:
+                    # Find the highest key value
+                    max_key = max(int(key) for key in shortcuts['shortcuts'].keys())
                 # Add the new entry with a key value one higher than the current maximum
                 shortcuts['shortcuts'][str(max_key + 1)] = new_entry
 
@@ -2005,8 +2060,12 @@ if amazonshortcutdirectory != '':
                     entry_exists = True
                     break
             if not entry_exists:
-                # Find the highest key value
-                max_key = max(int(key) for key in shortcuts['shortcuts'].keys())
+                # Check if the shortcuts['shortcuts'] dictionary is empty
+                if not shortcuts['shortcuts']:
+                    max_key = -1
+                else:
+                    # Find the highest key value
+                    max_key = max(int(key) for key in shortcuts['shortcuts'].keys())
                 # Add the new entry with a key value one higher than the current maximum
                 shortcuts['shortcuts'][str(max_key + 1)] = new_entry
 
@@ -2051,8 +2110,12 @@ if itchioshortcutdirectory != '':
                     entry_exists = True
                     break
             if not entry_exists:
-                # Find the highest key value
-                max_key = max(int(key) for key in shortcuts['shortcuts'].keys())
+                # Check if the shortcuts['shortcuts'] dictionary is empty
+                if not shortcuts['shortcuts']:
+                    max_key = -1
+                else:
+                    # Find the highest key value
+                    max_key = max(int(key) for key in shortcuts['shortcuts'].keys())
                 # Add the new entry with a key value one higher than the current maximum
                 shortcuts['shortcuts'][str(max_key + 1)] = new_entry
 
@@ -2098,8 +2161,12 @@ if legacyshortcutdirectory != '':
                     entry_exists = True
                     break
             if not entry_exists:
-                # Find the highest key value
-                max_key = max(int(key) for key in shortcuts['shortcuts'].keys())
+                # Check if the shortcuts['shortcuts'] dictionary is empty
+                if not shortcuts['shortcuts']:
+                    max_key = -1
+                else:
+                    # Find the highest key value
+                    max_key = max(int(key) for key in shortcuts['shortcuts'].keys())
                 # Add the new entry with a key value one higher than the current maximum
                 shortcuts['shortcuts'][str(max_key + 1)] = new_entry
 
@@ -2145,8 +2212,12 @@ if humbleshortcutdirectory != '':
                     entry_exists = True
                     break
             if not entry_exists:
-                # Find the highest key value
-                max_key = max(int(key) for key in shortcuts['shortcuts'].keys())
+                # Check if the shortcuts['shortcuts'] dictionary is empty
+                if not shortcuts['shortcuts']:
+                    max_key = -1
+                else:
+                    # Find the highest key value
+                    max_key = max(int(key) for key in shortcuts['shortcuts'].keys())
                 # Add the new entry with a key value one higher than the current maximum
                 shortcuts['shortcuts'][str(max_key + 1)] = new_entry
 
