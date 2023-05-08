@@ -1639,13 +1639,16 @@ python setup.py install --prefix=~/Downloads/NonSteamLaunchersInstallation
 # Find the shortcuts.vdf file
 shortcuts_vdf_path=$(find ~/.steam/root/userdata -type d -regextype posix-extended -regex '.*/[0-9]{9}/config' -not -path "*/0/*" -not -path "*/anonymous/*" -exec find {} -name shortcuts.vdf \;)
 
+# Find the shortcuts.vdf file
+shortcuts_vdf_path=$(find ~/.steam/root/userdata -type d -regextype posix-extended -regex '.*/[0-9]{9,10}/config' -not -path "*/0/*" -not -path "*/anonymous/*" -exec find {} -name shortcuts.vdf \;)
+
 # Check if shortcuts_vdf_path is not empty
 if [[ -n "$shortcuts_vdf_path" ]]; then
     # Create a backup of the shortcuts.vdf file
     cp "$shortcuts_vdf_path" "$shortcuts_vdf_path.bak"
 else
     # Find the config directory
-    config_dir=$(find ~/.steam/root/userdata -type d -regextype posix-extended -regex '.*/[0-9]{9}/config' -not -path "*/0/*" -not -path "*/anonymous/*")
+    config_dir=$(find ~/.steam/root/userdata -type d -regextype posix-extended -regex '.*/[0-9]{9,10}/config' -not -path "*/0/*" -not -path "*/anonymous/*")
 
     # Check if config_dir is not empty
     if [[ -n "$config_dir" ]]; then
@@ -1656,6 +1659,7 @@ else
         echo "Error: config_dir is empty"
     fi
 fi
+
 
 
 
