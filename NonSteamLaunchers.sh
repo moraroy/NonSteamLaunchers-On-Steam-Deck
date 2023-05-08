@@ -4,7 +4,7 @@ chmod +x "$0"
 
 set -x
 
-version=v2.1
+version=v2.2
 
 check_for_updates() {
     # Set the URL to the GitHub API for the repository
@@ -824,6 +824,7 @@ cd $proton_dir
 
 # Set the STEAM_RUNTIME environment variable
 export STEAM_RUNTIME="$HOME/.steam/root/ubuntu12_32/steam-runtime/run.sh"
+
 
 # Set the STEAM_COMPAT_CLIENT_INSTALL_PATH environment variable
 export STEAM_COMPAT_CLIENT_INSTALL_PATH="~/.local/share/Steam"
@@ -1649,8 +1650,8 @@ shortcuts_vdf_paths=$(find ~/.steam/root/userdata -type d -regextype posix-exten
 # Set the current date
 current_date=$(date +%s)
 
-# Set the maximum age of the shortcuts.vdf file in seconds (e.g. 1 month)
-max_age=$((30*24*60*60))
+# Set the maximum age of the shortcuts.vdf file in seconds (e.g. 1 week)
+max_age=$((7*24*60*60))
 
 # Initialize the shortcuts_vdf_path variable
 shortcuts_vdf_path=""
@@ -1686,9 +1687,15 @@ else
         touch "$config_dir/shortcuts.vdf"
         shortcuts_vdf_path="$config_dir/shortcuts.vdf"
     else
-        echo "Error: config_dir is empty"
+        # Create a new config directory and a new shortcuts.vdf file at the expected location
+        mkdir ~/.steam/root/userdata/*/config/
+        touch ~/.steam/root/userdata/*/config/shortcuts.vdf
+        config_dir=$(find ~/.steam/root/userdata/*/config/)
+        shortcuts_vdf_path="$config_dir/shortcuts.vdf"
     fi
 fi
+
+
 
 
 
