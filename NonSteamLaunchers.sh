@@ -1877,7 +1877,7 @@ indieshortcutdirectory = '$indieshortcutdirectory'
 if epicshortcutdirectory != '':
         # Create a new entry for the Steam shortcut
         new_entry = {
-            'appid': '3174284084',
+            'appid': '',
             'AppName': 'Epic Games',
             'Exe': '$epicshortcutdirectory',
             'StartDir': '$epicshortcutdirectory',
@@ -1930,7 +1930,7 @@ if epicshortcutdirectory != '':
 if gogshortcutdirectory != '':
         # Create a new entry for the Steam shortcut
         new_entry = {
-            'appid': '2344952361',
+            'appid': '',
             'AppName': 'Gog Galaxy',
             'Exe': '$gogshortcutdirectory',
             'StartDir': '$gogshortcutdirectory',
@@ -1987,7 +1987,7 @@ if gogshortcutdirectory != '':
 if uplayshortcutdirectory != '':
         # Create a new entry for the Steam shortcut
         new_entry = {
-            'appid': '3093888883',
+            'appid': '',
             'AppName': 'Ubisoft Connect',
             'Exe': '$uplayshortcutdirectory',
             'StartDir': '$uplayshortcutdirectory',
@@ -2038,7 +2038,7 @@ if uplayshortcutdirectory != '':
 if originshortcutdirectory != '':
         # Create a new entry for the Steam shortcut
         new_entry = {
-            'appid': '4023557058',
+            'appid': '',
             'AppName': 'Origin',
             'Exe': '$originshortcutdirectory',
             'StartDir': '$originshortcutdirectory',
@@ -2089,7 +2089,7 @@ if originshortcutdirectory != '':
 if battlenetshortcutdirectory != '':
         # Create a new entry for the Steam shortcut
         new_entry = {
-            'appid': '3209628574',
+            'appid': '',
             'AppName': 'Battle.net',
             'Exe': '$battlenetshortcutdirectory',
             'StartDir': '$battlenetshortcutdirectory',
@@ -2141,7 +2141,7 @@ if battlenetshortcutdirectory != '':
 if eaappshortcutdirectory != '':
         # Create a new entry for the Steam shortcut
         new_entry = {
-            'appid': '2545643690',
+            'appid': '',
             'AppName': 'EA App',
             'Exe': '$eaappshortcutdirectory',
             'StartDir': '$eaappshortcutdirectory',
@@ -2192,7 +2192,7 @@ if eaappshortcutdirectory != '':
 if amazonshortcutdirectory != '':
         # Create a new entry for the Steam shortcut
         new_entry = {
-            'appid': '2175370486',
+            'appid': '',
             'AppName': 'Amazon Games',
             'Exe': '$amazonshortcutdirectory',
             'StartDir': '$amazonshortcutdirectory',
@@ -2242,7 +2242,7 @@ if amazonshortcutdirectory != '':
 if itchioshortcutdirectory != '':
         # Create a new entry for the Steam shortcut
         new_entry = {
-            'appid': '2942812860',
+            'appid': '',
             'AppName': 'itch.io',
             'Exe': '$itchioshortcutdirectory',
             'StartDir': '$itchioshortcutdirectory',
@@ -2293,7 +2293,7 @@ if itchioshortcutdirectory != '':
 if legacyshortcutdirectory != '':
         # Create a new entry for the Steam shortcut
         new_entry = {
-            'appid': '2899994198',
+            'appid': '',
             'AppName': 'Legacy Games',
             'Exe': '$legacyshortcutdirectory',
             'StartDir': '$legacyshortcutdirectory',
@@ -2344,7 +2344,7 @@ if legacyshortcutdirectory != '':
 if humbleshortcutdirectory != '':
         # Create a new entry for the Steam shortcut
         new_entry = {
-            'appid': '2587571319',
+            'appid': '',
             'AppName': 'Humble Games Collection',
             'Exe': '$humbleshortcutdirectory',
             'StartDir': '$humbleshortcutdirectory',
@@ -2396,7 +2396,7 @@ if humbleshortcutdirectory != '':
 if indieshortcutdirectory != '':
         # Create a new entry for the Steam shortcut
         new_entry = {
-            'appid': '2310706189',
+            'appid': '',
             'AppName': 'IndieGala',
             'Exe': '$indieshortcutdirectory',
             'StartDir': '$indieshortcutdirectory',
