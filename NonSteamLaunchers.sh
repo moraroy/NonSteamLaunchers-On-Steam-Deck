@@ -1626,10 +1626,25 @@ cd "$download_dir"/setuptools-*/
 # Add the installation directory to the PYTHONPATH environment variable
 export PYTHONPATH="$download_dir/lib/python3.10/site-packages:$PYTHONPATH"
 
+echo $PYTHONPATH
+
 # Install setuptools
 python setup.py install --prefix="$download_dir"
 
 export PYTHONPATH="/usr/lib/python3.10/site-packages:$PYTHONPATH"
+
+# Download extended-setup-tools from the provided URL
+download_url="https://files.pythonhosted.org/packages/d2/a0/979ab67627f03da03eff3bc9d01c2969d89e33175764cdd5ec15a44efe50/extended-setup-tools-0.1.8.tar.gz"
+wget -P "$download_dir" "$download_url"
+
+# Extract the downloaded tar.gz file
+tar -xvf "$download_dir"/extended-setup-tools-*.tar.gz -C "$download_dir"
+
+# Change to the extracted directory
+cd "$download_dir"/extended-setup-tools-*/
+
+# Install extended-setup-tools
+python setup.py install --prefix="$download_dir"
 
 # Change to the extracted directory
 cd "$download_dir"/vdf-*/
@@ -1639,9 +1654,6 @@ export PYTHONPATH="$download_dir/lib/python3.10/site-packages:$PYTHONPATH"
 
 # Install the vdf library
 python setup.py install --prefix=~/Downloads/NonSteamLaunchersInstallation
-
-
-
 
 
 
@@ -2297,7 +2309,7 @@ with open('$shortcuts_vdf_path', 'wb') as f:
 
 
 # Delete NonSteamLaunchersInstallation subfolder in Downloads folder
-rm -rf ~/Downloads/NonSteamLaunchersInstallation
+#rm -rf ~/Downloads/NonSteamLaunchersInstallation
 
 
 
@@ -2309,8 +2321,8 @@ rm -rf ~/Downloads/NonSteamLaunchersInstallation
 
 
 # Detach script from Steam process
-nohup sh -c 'sleep 10; /usr/bin/steam' &
+#nohup sh -c 'sleep 10; /usr/bin/steam' &
 
 # Close all instances of Steam
-killall steam
+#killall steam
 
