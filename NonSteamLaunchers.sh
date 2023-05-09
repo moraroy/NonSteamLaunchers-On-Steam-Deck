@@ -2309,7 +2309,7 @@ with open('$shortcuts_vdf_path', 'wb') as f:
 
 
 # Delete NonSteamLaunchersInstallation subfolder in Downloads folder
-#rm -rf ~/Downloads/NonSteamLaunchersInstallation
+rm -rf ~/Downloads/NonSteamLaunchersInstallation
 
 
 
@@ -2321,8 +2321,8 @@ with open('$shortcuts_vdf_path', 'wb') as f:
 
 
 # Detach script from Steam process
-#nohup sh -c 'sleep 10; /usr/bin/steam' &
+nohup sh -c 'sleep 10; /usr/bin/steam' &
 
 # Close all instances of Steam
-#killall steam
+killall steam
 
