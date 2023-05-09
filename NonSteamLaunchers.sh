@@ -1660,7 +1660,7 @@ python setup.py install --prefix=~/Downloads/NonSteamLaunchersInstallation
 
 
 # Find all shortcuts.vdf files
-shortcuts_vdf_paths=$(find ~/.steam/root/userdata -type d -regextype posix-extended -regex '.*/[0-9]{9,10}/config' -not -path "*/0/*" -not -path "*/anonymous/*" -exec find {} -name shortcuts.vdf \;)
+shortcuts_vdf_paths=$(find ~/.steam/root/userdata -type d -regextype posix-extended -regex ".*/[0-9]{9,10}/config" -not -path "*/0/*" -not -path "*/anonymous/*" -exec find {} -name shortcuts.vdf \;)
 
 # Set the current date
 current_date=$(date +%s)
@@ -1694,7 +1694,7 @@ if [[ -n "$shortcuts_vdf_path" ]]; then
     cp "$shortcuts_vdf_path" "$shortcuts_vdf_path.bak"
 else
     # Find the config directory
-    config_dir=$(find ~/.steam/root/userdata -type d -regextype posix-extended -regex '.*/[0-9]{9,10}/config' -not -path "*/0/*" -not -path "*/anonymous/*")
+    config_dir=$(find ~/.steam/root/userdata -type d -regextype posix-extended -regex ".*/[0-9]{9,10}/config" -not -path "*/0/*" -not -path "*/anonymous/*")
 
     # Check if config_dir is not empty
     if [[ -n "$config_dir" ]]; then
