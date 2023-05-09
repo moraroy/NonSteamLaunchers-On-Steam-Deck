@@ -4,7 +4,7 @@ chmod +x "$0"
 
 set -x
 
-version=v2.3
+version=v2.4
 
 check_for_updates() {
     # Set the URL to the GitHub API for the repository
@@ -66,6 +66,8 @@ legacygames_path1="$HOME/.local/share/Steam/steamapps/compatdata/NonSteamLaunche
 legacygames_path2="$HOME/.local/share/Steam/steamapps/compatdata/LegacyGamesLauncher/pfx/drive_c/Program Files/Legacy Games/Legacy Games Launcher/Legacy Games Launcher.exe"
 humblegames_path1="$HOME/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/Program Files/Humble App/Humble App.exe"
 humblegames_path2="$HOME/.local/share/Steam/steamapps/compatdata/HumbleGamesLauncher/pfx/drive_c/Program Files/Humble App/Humble App.exe"
+indiegala_path1="$HOME/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/Program Files/IGClient/IGClient.exe"
+indiegala_path2="$HOME/.local/share/Steam/steamapps/compatdata/IndieGalaLauncher/pfx/drive_c/Program Files/IGClient/IGClient.exe"
 
 
 
@@ -219,7 +221,31 @@ else
     humblegames_value="TRUE"
     humblegames_text="Humble Games Collection"
 fi
+
+# Check if indiegala is installed
+if [[ -f "$indiegala_path1" ]]; then
+    # indiegala is installed in path 1 on local drive
+    indiegala_value="FALSE"
+    indiegala_text="IndieGala ===> $indiegala_path1"
+elif [[ -f "$indiegala_path2" ]]; then
+    # indiegala is installed in path 2 on local drive
+    indiegala_value="FALSE"
+    indiegala_text="IndieGala ===> $indiegala_path2"
+else
+    # indiegala is not installed
+    indiegala_value="TRUE"
+    indiegala_text="IndieGala"
+fi
 }
+
+
+
+
+
+
+
+
+
 
 
 function CheckInstallationDirectory {
@@ -322,9 +348,16 @@ function CheckInstallationDirectory {
         # HumbleGamesLauncher is not installed
         humblegameslauncher_move_value="FALSE"
     fi
+
+    # Check if indiegala is installed
+    if [[ -d "$HOME/.local/share/Steam/steamapps/compatdata/IndieGalaLauncher" ]]; then
+        # indiegalaLauncher is installed
+        indiegalalauncher_move_value="TRUE"
+    else
+        # indiegalaLauncher is not installed
+        indiegalalauncher_move_value="FALSE"
+    fi
 }
-
-
 
 
 
@@ -335,7 +368,7 @@ CheckInstallationDirectory
 
 
 # Display a list of options using zenity
-options=$(zenity --list --text="Which launchers do you want to download and install?" --checklist --column="$version" --column="Default = one App ID Installation" FALSE "Separate App IDs" $epic_games_value "$epic_games_text" $gog_galaxy_value "$gog_galaxy_text" $uplay_value "$uplay_text" $origin_value "$origin_text" $battlenet_value "$battlenet_text" $amazongames_value "$amazongames_text" $eaapp_value "$eaapp_text" $legacygames_value "$legacygames_text" $itchio_value "$itchio_text" $humblegames_value "$humblegames_text" --width=535 --height=425  --extra-button="Start Fresh" --extra-button="Move to SD Card")
+options=$(zenity --list --text="Which launchers do you want to download and install?" --checklist --column="$version" --column="Default = one App ID Installation" FALSE "Separate App IDs" $epic_games_value "$epic_games_text" $gog_galaxy_value "$gog_galaxy_text" $uplay_value "$uplay_text" $origin_value "$origin_text" $battlenet_value "$battlenet_text" $amazongames_value "$amazongames_text" $eaapp_value "$eaapp_text" $legacygames_value "$legacygames_text" $itchio_value "$itchio_text" $humblegames_value "$humblegames_text" $indiegala_value "$indiegala_text" --width=435 --height=452  --extra-button="Start Fresh" --extra-button="Move to SD Card")
 
 # Check if the cancel button was clicked
 if [ $? -eq 1 ] && [[ $options != "Start Fresh" ]] && [[ $options != "Move to SD Card" ]]; then
@@ -406,6 +439,7 @@ if [[ $options == "Start Fresh" ]]; then
         unlink & rm -rf "$HOME/.local/share/Steam/steamapps/compatdata/LegacyGamesLauncher"
         unlink & rm -rf "$HOME/.local/share/Steam/steamapps/compatdata/itchioLauncher"
         unlink & rm -rf "$HOME/.local/share/Steam/steamapps/compatdata/HumbleGamesLauncher"
+        unlink & rm -rf "$HOME/.local/share/Steam/steamapps/compatdata/IndieGalaLauncher"
         rm -rf "/run/media/mmcblk0p1/NonSteamLaunchers/"
         rm -rf "/run/media/mmcblk0p1/EpicGamesLauncher/"
         rm -rf "/run/media/mmcblk0p1/GogGalaxyLauncher/"
@@ -417,6 +451,7 @@ if [[ $options == "Start Fresh" ]]; then
         rm -rf "/run/media/mmcblk0p1/LegacyGamesLauncher/"
         rm -rf "/run/media/mmcblk0p1/itchioLauncher/"
         rm -rf "/run/media/mmcblk0p1/HumbleGamesLauncher/"
+        rm -rf "/run/media/mmcblk0p1/IndieGalaLauncher/"
         rm -rf ~/Downloads/NonSteamLaunchersInstallation
 
         # Exit the script
@@ -436,7 +471,7 @@ if [[ $options == "Move to SD Card" ]]; then
     CheckInstallationDirectory
 
 
-    move_options=$(zenity --list --text="Which app IDs do you want to move to the SD card?" --checklist --column="Select" --column="App ID" $nonsteamlauncher_move_value "NonSteamLaunchers" $epicgameslauncher_move_value "EpicGamesLauncher" $goggalaxylauncher_move_value "GogGalaxyLauncher" $originlauncher_move_value "OriginLauncher" $uplaylauncher_move_value "UplayLauncher" $battlenetlauncher_move_value "Battle.netLauncher" $eaapplauncher_move_value "TheEAappLauncher" $amazongameslauncher_move_value "AmazonGamesLauncher" $itchiolauncher_move_value "itchioLauncher" $legacygameslauncher_move_value "LegacyGamesLauncher" $humblegameslauncher_move_value "HumbleGamesLauncher" --width=535 --height=415)
+    move_options=$(zenity --list --text="Which app IDs do you want to move to the SD card?" --checklist --column="Select" --column="App ID" $nonsteamlauncher_move_value "NonSteamLaunchers" $epicgameslauncher_move_value "EpicGamesLauncher" $goggalaxylauncher_move_value "GogGalaxyLauncher" $originlauncher_move_value "OriginLauncher" $uplaylauncher_move_value "UplayLauncher" $battlenetlauncher_move_value "Battle.netLauncher" $eaapplauncher_move_value "TheEAappLauncher" $amazongameslauncher_move_value "AmazonGamesLauncher" $itchiolauncher_move_value "itchioLauncher" $legacygameslauncher_move_value "LegacyGamesLauncher" $humblegameslauncher_move_value "HumbleGamesLauncher" $indiegalalauncher_move_value "IndieGalaLauncher" --width=335 --height=445)
 
     # Check if the cancel button was clicked
     if [ $? -eq 0 ]; then
@@ -646,10 +681,30 @@ if [[ $options == "Move to SD Card" ]]; then
         # Create a symbolic link to the new directory
         ln -s "$new_dir/HumbleGamesLauncher" "$original_dir"
     fi
+
+    # Check if IndieGalaLauncher is installed
+    if [[ -d "$HOME/.local/share/Steam/steamapps/compatdata/IndieGalaLauncher" ]]; then
+        # IndieGalaLauncher is installed
+        original_dir="$HOME/.local/share/Steam/steamapps/compatdata/IndieGalaLauncher"
+    else
+        # Indie Gala Launcher is not installed
+        original_dir=""
+    fi
+
+    # Check if the user selected to move IndieGalaLauncher
+    if [[ $move_options == *"IndieGalaLauncher"* ]] && [[ -n $original_dir ]]; then
+        # Move the Indie GalaLauncher directory to the SD card
+        mv "$original_dir" "$new_dir/IndieGalaLauncher"
+
+        # Create a symbolic link to the new directory
+        ln -s "$new_dir/IndieGalaLauncher" "$original_dir"
+    fi
+
     # Exit the script
     exit 1
 
 fi
+
 
 
 
@@ -736,6 +791,8 @@ installed_version=$(basename $proton_dir | sed 's/GE-Proton-//')
 fi
 
 
+
+
 echo "10"
 echo "# Setting files in their place"
 
@@ -804,13 +861,17 @@ humblegames_url=https://www.humblebundle.com/app/download
 # Set the path to save the tenth file to
 humblegames_file=~/Downloads/NonSteamLaunchersInstallation/Humble-App-Setup-1.1.8+411.exe
 
+# Set the URL to download the eleventh file from
+indiegala_url=https://content.indiegalacdn.com/common/IGClientSetup.exe
 
+# Set the path to save the eleventh file to
+indiegala_file=~/Downloads/NonSteamLaunchersInstallation/IGClientSetup.exe
 
 
 
 
 echo "20"
-echo "# Creating folders"
+echo "# Creating files & folders"
 
 
 # Create app id folder in compatdata folder if it doesn't exist and if the user selected to use a single app ID folder
@@ -832,9 +893,15 @@ export STEAM_COMPAT_CLIENT_INSTALL_PATH="~/.local/share/Steam"
 # Set the STEAM_COMPAT_DATA_PATH environment variable for the first file
 export STEAM_COMPAT_DATA_PATH=~/.local/share/Steam/steamapps/compatdata/$appid
 
+
+
+
+
+
+
 wait
 echo "30"
-echo "# Downloading/Installing Epic Games"
+echo "# Downloading & Installing Epic Games...Please wait..."
 
 # Check if the user selected Epic Games Launcher
 if [[ $options == *"Epic Games"* ]]; then
@@ -887,7 +954,7 @@ fi
 # Wait for the MSI file to finish running
 wait
 echo "40"
-echo "# Downloading/Installing Gog Galaxy"
+echo "# Downloading & Installing Gog Galaxy...Please wait..."
 
 
 # Check if the user selected GOG Galaxy
@@ -936,7 +1003,7 @@ if [[ $options == *"GOG Galaxy"* ]]; then
 
 
 echo "45"
-echo "# Downloading/Installing Gog Galaxy"
+echo "# Downloading & Installing Gog Galaxy...Please wait..."
 
 
 # Cancel & Exit the GOG Galaxy Setup Wizard
@@ -974,7 +1041,7 @@ fi
 
 wait
 echo "50"
-echo "# Downloading/Installing Uplay"
+echo "# Downloading & Installing Uplay ...Please wait..."
 
 
 # Check if user selected Uplay
@@ -1030,7 +1097,7 @@ fi
 # Wait for the UBI file to finish running
 wait
 echo "60"
-echo "# Downloading/Installing Origin"
+echo "# Downloading & Installing Origin...Please wait..."
 
 
 
@@ -1094,7 +1161,7 @@ fi
 
 wait
 echo "70"
-echo "# Downloading/Installing Battle.net"
+echo "# Downloading & Installing Battle.net...Please wait..."
 
 # Check if user selected Battle.net
 if [[ $options == *"Battle.net"* ]]; then
@@ -1153,7 +1220,7 @@ fi
 wait
 
 echo "80"
-echo "# Downloading/Installing Amazon Games"
+echo "# Downloading & Installing Amazon Games...Please wait..."
 
 # Check if user selected Amazon Games
 if [[ $options == *"Amazon Games"* ]]; then
@@ -1222,7 +1289,7 @@ fi
 wait
 
 echo "90"
-echo "# Downloading/Installing EA App"
+echo "# Downloading & Installing EA App...Please wait..."
 
 # Check if user selected EA App
 if [[ $options == *"EA App"* ]]; then
@@ -1293,7 +1360,7 @@ fi
 
 wait
 echo "95"
-echo "# Downloading/Installing itch.io"
+echo "# Downloading & Installing itch.io...Please wait..."
 
 # Check if the user selected itchio Launcher
 if [[ $options == *"itch.io"* ]]; then
@@ -1343,7 +1410,7 @@ fi
 
 wait
 echo "98"
-echo "# Downloading/Installing Legacy Games"
+echo "# Downloading & Installing Legacy Games...Please wait..."
 
 # Check if user selected Legacy Games
 if [[ $options == *"Legacy Games"* ]]; then
@@ -1395,7 +1462,7 @@ wait
 
 
 echo "99"
-echo "# Downloading/Installing Humble Games Collection"
+echo "# Downloading & Installing Humble Games Collection...Please wait..."
 
 # Check if the user selected Humble Games Launcher
 if [[ $options == *"Humble Games Collection"* ]]; then
@@ -1445,33 +1512,57 @@ if [[ $options == *"Humble Games Collection"* ]]; then
 fi
 
 
+wait
+echo "98"
+echo "# Downloading & Installing Indie Gala...Please wait..."
+
+# Check if user selected indiegala
+if [[ $options == *"IndieGala"* ]]; then
+    # User selected indiegala
+    echo "User selected IndieGala"
+
+    if [[ ! -f "$indiegala_path1" ]] && [[ ! -f "$indiegala_path2" ]]; then
+        # indiegala Launcher is not installed
 
 
 
 
 
+    # Set the appid for the indiegala Launcher
+    if [ "$use_separate_appids" = true ]; then
+        appid=IndieGalaLauncher
+    else
+        appid=NonSteamLaunchers
+    fi
+
+    # Create app id folder in compatdata folder if it doesn't exist
+    if [ ! -d "$HOME/.local/share/Steam/steamapps/compatdata/$appid" ]; then
+        mkdir -p "$HOME/.local/share/Steam/steamapps/compatdata/$appid"
+    fi
+
+    # Change working directory to Proton's
+    cd $proton_dir
+
+    # Set the STEAM_COMPAT_CLIENT_INSTALL_PATH environment variable
+    export STEAM_COMPAT_CLIENT_INSTALL_PATH="~/.local/share/Steam"
+
+    # Set the STEAM_COMPAT_DATA_PATH environment variable for Legacy Games Launcher
+    export STEAM_COMPAT_DATA_PATH=~/.local/share/Steam/steamapps/compatdata/$appid
 
 
+    # Download indiegala file
+    if [ ! -f "$indiegala_file" ]; then
+        echo "Downloading indiegala file"
+        wget $indiegala_url -O $indiegala_file
+    fi
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+      # Run the indiegala file using Proton with the /passive option
+      echo "Running IndieGala file using Proton with the /passive option"
+      "$STEAM_RUNTIME" "$proton_dir/proton" run "$indiegala_file" /S
+  fi
+fi
+# Wait for the Indie file to finish running
+wait
 
 
 
@@ -1486,11 +1577,11 @@ fi
 rm -rf ~/Downloads/NonSteamLaunchersInstallation
 
 echo "100"
-echo "# Installation Complete - Steam will now restart. Your launchers will be in your library."
+echo "# Installation Complete - Steam will now restart. Your launchers will be in your library!...Food for thought...Do jedis use force compatibility?"
 ) |
 zenity --progress \
   --title="Update Status" \
-  --text="Starting update..." --width=450 --height=350\
+  --text="Starting update...Please wait..." --width=450 --height=350\
   --percentage=0
 
 if [ "$?" = -1 ] ; then
@@ -1499,6 +1590,10 @@ if [ "$?" = -1 ] ; then
 fi
 
 wait
+
+
+
+
 
 
 
@@ -1518,7 +1613,7 @@ if [[ -f "$gog_galaxy_path1" ]]; then
     # Gog Galaxy Launcher is installed at path 1
     gogshortcutdirectory="\"$gog_galaxy_path1\""
     goglaunchoptions="STEAM_COMPAT_DATA_PATH=\"/home/deck/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/\" %command%"
-elif [[ -f "$epic_games_launcher_path2" ]]; then
+elif [[ -f "$gog_galaxy_path2" ]]; then
     # Gog Galaxy Launcher is installed at path 2
     gogshortcutdirectory="\"$gog_galaxy_path2\""
     goglaunchoptions="STEAM_COMPAT_DATA_PATH=\"/home/deck/.local/share/Steam/steamapps/compatdata/GogGalaxyLauncher/\" %command%"
@@ -1595,6 +1690,24 @@ elif [[ -f "$humblegames_path2" ]]; then
     humbleshortcutdirectory="\"$humblegames_path2\""
     humblelaunchoptions="STEAM_COMPAT_DATA_PATH=\"/home/deck/.local/share/Steam/steamapps/compatdata/HumbleGamesLauncher/\" %command%"
 fi
+if [[ -f "$indiegala_path1" ]]; then
+    # indiegala Launcher is installed at path 1
+    indieshortcutdirectory="\"$indiegala_path1\""
+    indielaunchoptions="STEAM_COMPAT_DATA_PATH=\"/home/deck/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/\" %command%"
+elif [[ -f "$indiegala_path2" ]]; then
+    # indiegala Launcher is installed at path 2
+    indieshortcutdirectory="\"$indiegala_path2\""
+    indielaunchoptions="STEAM_COMPAT_DATA_PATH=\"/home/deck/.local/share/Steam/steamapps/compatdata/IndieGalaLauncher/\" %command%"
+fi
+
+
+
+
+
+
+
+
+
 
 
 #VDF Library
@@ -1660,7 +1773,7 @@ python setup.py install --prefix=~/Downloads/NonSteamLaunchersInstallation
 
 
 # Find all shortcuts.vdf files
-shortcuts_vdf_paths=$(find ~/.steam/root/userdata -type d -regextype posix-extended -regex ".*/[0-9]{9,10}/config" -not -path "*/0/*" -not -path "*/anonymous/*" -exec find {} -name shortcuts.vdf \;)
+shortcuts_vdf_paths=$(find ~/.steam/root/userdata -type d -regextype posix-extended -regex ".*/[0-9]{8,10}/config" -not -path "*/0/*" -not -path "*/anonymous/*" -exec find {} -name shortcuts.vdf \;)
 
 # Set the current date
 current_date=$(date +%s)
@@ -1694,7 +1807,7 @@ if [[ -n "$shortcuts_vdf_path" ]]; then
     cp "$shortcuts_vdf_path" "$shortcuts_vdf_path.bak"
 else
     # Find the config directory
-    config_dir=$(find ~/.steam/root/userdata -type d -regextype posix-extended -regex ".*/[0-9]{9,10}/config" -not -path "*/0/*" -not -path "*/anonymous/*")
+    config_dir=$(find ~/.steam/root/userdata -type d -regextype posix-extended -regex ".*/[0-9]{8,10}/config" -not -path "*/0/*" -not -path "*/anonymous/*")
 
     # Check if config_dir is not empty
     if [[ -n "$config_dir" ]]; then
@@ -1758,12 +1871,13 @@ amazonshortcutdirectory = '$amazonshortcutdirectory'
 itchioshortcutdirectory = '$itchioshortcutdirectory'
 legacyshortcutdirectory = '$legacyshortcutdirectory'
 humbleshortcutdirectory = '$humbleshortcutdirectory'
+indieshortcutdirectory = '$indieshortcutdirectory'
 
 
 if epicshortcutdirectory != '':
         # Create a new entry for the Steam shortcut
         new_entry = {
-            'appid': '',
+            'appid': '3174284084',
             'AppName': 'Epic Games',
             'Exe': '$epicshortcutdirectory',
             'StartDir': '$epicshortcutdirectory',
@@ -1816,7 +1930,7 @@ if epicshortcutdirectory != '':
 if gogshortcutdirectory != '':
         # Create a new entry for the Steam shortcut
         new_entry = {
-            'appid': '',
+            'appid': '2344952361',
             'AppName': 'Gog Galaxy',
             'Exe': '$gogshortcutdirectory',
             'StartDir': '$gogshortcutdirectory',
@@ -1873,7 +1987,7 @@ if gogshortcutdirectory != '':
 if uplayshortcutdirectory != '':
         # Create a new entry for the Steam shortcut
         new_entry = {
-            'appid': '',
+            'appid': '3093888883',
             'AppName': 'Ubisoft Connect',
             'Exe': '$uplayshortcutdirectory',
             'StartDir': '$uplayshortcutdirectory',
@@ -1924,7 +2038,7 @@ if uplayshortcutdirectory != '':
 if originshortcutdirectory != '':
         # Create a new entry for the Steam shortcut
         new_entry = {
-            'appid': '',
+            'appid': '4023557058',
             'AppName': 'Origin',
             'Exe': '$originshortcutdirectory',
             'StartDir': '$originshortcutdirectory',
@@ -1975,7 +2089,7 @@ if originshortcutdirectory != '':
 if battlenetshortcutdirectory != '':
         # Create a new entry for the Steam shortcut
         new_entry = {
-            'appid': '',
+            'appid': '3209628574',
             'AppName': 'Battle.net',
             'Exe': '$battlenetshortcutdirectory',
             'StartDir': '$battlenetshortcutdirectory',
@@ -2027,7 +2141,7 @@ if battlenetshortcutdirectory != '':
 if eaappshortcutdirectory != '':
         # Create a new entry for the Steam shortcut
         new_entry = {
-            'appid': '',
+            'appid': '2545643690',
             'AppName': 'EA App',
             'Exe': '$eaappshortcutdirectory',
             'StartDir': '$eaappshortcutdirectory',
@@ -2078,7 +2192,7 @@ if eaappshortcutdirectory != '':
 if amazonshortcutdirectory != '':
         # Create a new entry for the Steam shortcut
         new_entry = {
-            'appid': '',
+            'appid': '2175370486',
             'AppName': 'Amazon Games',
             'Exe': '$amazonshortcutdirectory',
             'StartDir': '$amazonshortcutdirectory',
@@ -2128,7 +2242,7 @@ if amazonshortcutdirectory != '':
 if itchioshortcutdirectory != '':
         # Create a new entry for the Steam shortcut
         new_entry = {
-            'appid': '',
+            'appid': '2942812860',
             'AppName': 'itch.io',
             'Exe': '$itchioshortcutdirectory',
             'StartDir': '$itchioshortcutdirectory',
@@ -2179,7 +2293,7 @@ if itchioshortcutdirectory != '':
 if legacyshortcutdirectory != '':
         # Create a new entry for the Steam shortcut
         new_entry = {
-            'appid': '',
+            'appid': '2899994198',
             'AppName': 'Legacy Games',
             'Exe': '$legacyshortcutdirectory',
             'StartDir': '$legacyshortcutdirectory',
@@ -2230,13 +2344,65 @@ if legacyshortcutdirectory != '':
 if humbleshortcutdirectory != '':
         # Create a new entry for the Steam shortcut
         new_entry = {
-            'appid': '',
+            'appid': '2587571319',
             'AppName': 'Humble Games Collection',
             'Exe': '$humbleshortcutdirectory',
             'StartDir': '$humbleshortcutdirectory',
             'icon': '',
             'ShortcutPath': '',
             'LaunchOptions': '$humblelaunchoptions',
+            'IsHidden': 0,
+            'AllowDesktopConfig': 1,
+            'AllowOverlay': 1,
+            'OpenVR': 0,
+            'Devkit': 0,
+            'DevkitGameID': '',
+            'LastPlayTime': 0,
+            'tags': {
+                '0': 'favorite'
+            }
+        }
+
+        # Add the new entry to the shortcuts dictionary
+        entry_exists = False
+        if type(shortcuts['shortcuts']) == list:
+            for entry in shortcuts['shortcuts']:
+                entry.setdefault('AppName', '')
+                entry.setdefault('Exe', '')
+                if entry['AppName'] == new_entry['AppName'] and entry['Exe'] == new_entry['Exe']:
+                    entry_exists = True
+                    break
+            if not entry_exists:
+                shortcuts['shortcuts'].append(new_entry)
+        elif type(shortcuts['shortcuts']) == dict:
+            for key in shortcuts['shortcuts'].keys():
+                shortcuts['shortcuts'][key].setdefault('AppName', '')
+                shortcuts['shortcuts'][key].setdefault('Exe', '')
+                if shortcuts['shortcuts'][key]['AppName'] == new_entry['AppName'] and shortcuts['shortcuts'][key]['Exe'] == new_entry['Exe']:
+                    entry_exists = True
+                    break
+            if not entry_exists:
+                # Check if the shortcuts['shortcuts'] dictionary is empty
+                if not shortcuts['shortcuts']:
+                    max_key = -1
+                else:
+                    # Find the highest key value
+                    max_key = max(int(key) for key in shortcuts['shortcuts'].keys())
+                # Add the new entry with a key value one higher than the current maximum
+                shortcuts['shortcuts'][str(max_key + 1)] = new_entry
+
+
+
+if indieshortcutdirectory != '':
+        # Create a new entry for the Steam shortcut
+        new_entry = {
+            'appid': '2310706189',
+            'AppName': 'IndieGala',
+            'Exe': '$indieshortcutdirectory',
+            'StartDir': '$indieshortcutdirectory',
+            'icon': '',
+            'ShortcutPath': '',
+            'LaunchOptions': '$indielaunchoptions',
             'IsHidden': 0,
             'AllowDesktopConfig': 1,
             'AllowOverlay': 1,
@@ -2292,14 +2458,6 @@ if humbleshortcutdirectory != '':
 
 
 
-
-
-
-
-
-
-
-
 # Save the updated shortcuts dictionary to the shortcuts.vdf file
 with open('$shortcuts_vdf_path', 'wb') as f:
     vdf.binary_dump(shortcuts, f)"
@@ -2307,17 +2465,8 @@ with open('$shortcuts_vdf_path', 'wb') as f:
 
 
 
-
 # Delete NonSteamLaunchersInstallation subfolder in Downloads folder
 rm -rf ~/Downloads/NonSteamLaunchersInstallation
-
-
-
-
-
-
-
-
 
 
 # Detach script from Steam process
