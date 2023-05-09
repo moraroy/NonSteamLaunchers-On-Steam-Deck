@@ -25,6 +25,8 @@ Currently Installs and adds to your Library... 👀
   
   ~Humble Games Collection ✔️
   
+  ~IndieGala ✔️
+  
   ---------------------------
   
   ~SD CARD SUPPORT ✔️
