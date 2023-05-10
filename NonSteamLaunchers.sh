@@ -68,8 +68,8 @@ humblegames_path1="$HOME/.local/share/Steam/steamapps/compatdata/NonSteamLaunche
 humblegames_path2="$HOME/.local/share/Steam/steamapps/compatdata/HumbleGamesLauncher/pfx/drive_c/Program Files/Humble App/Humble App.exe"
 indiegala_path1="$HOME/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/Program Files/IGClient/IGClient.exe"
 indiegala_path2="$HOME/.local/share/Steam/steamapps/compatdata/IndieGalaLauncher/pfx/drive_c/Program Files/IGClient/IGClient.exe"
-
-
+rockstar_path1="$HOME/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/Program Files/Rockstar Games/Launcher/Launcher.exe"
+rockstar_path2="$HOME/.local/share/Steam/steamapps/compatdata/RockstarGamesLauncher/pfx/drive_c/Program Files/Rockstar Games/Launcher/Launcher.exe"
 
 function CheckInstallations {
 # Check if Epic Games Launcher is installed
@@ -236,7 +236,21 @@ else
     indiegala_value="TRUE"
     indiegala_text="IndieGala"
 fi
-}
+
+# Check if Rockstar is installed
+if [[ -f "$rockstar_path1" ]]; then
+    # Rockstar is installed in path 1 on local drive
+    rockstar_value="FALSE"
+    rockstar_text="Rockstar Games Launcher ===> $rockstar_path1"
+elif [[ -f "$rockstar_path2" ]]; then
+    # Rockstar is installed in path 2 on local drive
+    rockstar_value="FALSE"
+    rockstar_text="Rockstar Games Launcher ===> $rockstar_path2"
+else
+    # Rockstar is not installed
+    rockstar_value="TRUE"
+    rockstar_text="Rockstar Games Launcher"
+fi }
 
 
 
@@ -357,7 +371,15 @@ function CheckInstallationDirectory {
         # indiegalaLauncher is not installed
         indiegalalauncher_move_value="FALSE"
     fi
-}
+
+    # Check if rockstar is installed
+    if [[ -d "$HOME/.local/share/Steam/steamapps/compatdata/RockstarGamesLauncher" ]]; then
+        # rockstar games launcher is installed
+        rockstargameslauncher_move_value="TRUE"
+    else
+        # rockstar games launcher is not installed
+        rockstargameslauncher_move_value="FALSE"
+    fi }
 
 
 
@@ -368,7 +390,7 @@ CheckInstallationDirectory
 
 
 # Display a list of options using zenity
-options=$(zenity --list --text="Which launchers do you want to download and install?" --checklist --column="$version" --column="Default = one App ID Installation" FALSE "Separate App IDs" $epic_games_value "$epic_games_text" $gog_galaxy_value "$gog_galaxy_text" $uplay_value "$uplay_text" $origin_value "$origin_text" $battlenet_value "$battlenet_text" $amazongames_value "$amazongames_text" $eaapp_value "$eaapp_text" $legacygames_value "$legacygames_text" $itchio_value "$itchio_text" $humblegames_value "$humblegames_text" $indiegala_value "$indiegala_text" --width=435 --height=452  --extra-button="Start Fresh" --extra-button="Move to SD Card")
+options=$(zenity --list --text="Which launchers do you want to download and install?" --checklist --column="$version" --column="Default = one App ID Installation" FALSE "Separate App IDs" $epic_games_value "$epic_games_text" $gog_galaxy_value "$gog_galaxy_text" $uplay_value "$uplay_text" $origin_value "$origin_text" $battlenet_value "$battlenet_text" $amazongames_value "$amazongames_text" $eaapp_value "$eaapp_text" $legacygames_value "$legacygames_text" $itchio_value "$itchio_text" $humblegames_value "$humblegames_text" $indiegala_value "$indiegala_text" $rockstar_value "$rockstar_text" --width=435 --height=480  --extra-button="Start Fresh" --extra-button="Move to SD Card")
 
 # Check if the cancel button was clicked
 if [ $? -eq 1 ] && [[ $options != "Start Fresh" ]] && [[ $options != "Move to SD Card" ]]; then
@@ -425,7 +447,7 @@ fi
 # Check if the Start Fresh button was clicked
 if [[ $options == "Start Fresh" ]]; then
     # The Start Fresh button was clicked
-    if zenity --question --text="aaahhh it always feels good to start fresh :) but...This will delete the App ID folders you installed inside the steamapps/compatdata/ directory. This means anything youve installed (launchers or games) WITH THIS SCRIPT ONLY will be deleted if you have them there. Are you sure?" --width=300 --height=250; then
+    if zenity --question --text="aaahhh it always feels good to start fresh :) but...This will delete the App ID folders you installed inside the steamapps/compatdata/ directory. This means anything youve installed (launchers or games) WITH THIS SCRIPT ONLY will be deleted if you have them there. Are you sure?" --width=300 --height=260; then
         # The user clicked the "Yes" button
         # Add code here to delete the directories
         unlink & rm -rf "$HOME/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers"
@@ -440,6 +462,7 @@ if [[ $options == "Start Fresh" ]]; then
         unlink & rm -rf "$HOME/.local/share/Steam/steamapps/compatdata/itchioLauncher"
         unlink & rm -rf "$HOME/.local/share/Steam/steamapps/compatdata/HumbleGamesLauncher"
         unlink & rm -rf "$HOME/.local/share/Steam/steamapps/compatdata/IndieGalaLauncher"
+        unlink & rm -rf "$HOME/.local/share/Steam/steamapps/compatdata/RockstarGamesLauncher"
         rm -rf "/run/media/mmcblk0p1/NonSteamLaunchers/"
         rm -rf "/run/media/mmcblk0p1/EpicGamesLauncher/"
         rm -rf "/run/media/mmcblk0p1/GogGalaxyLauncher/"
@@ -452,6 +475,7 @@ if [[ $options == "Start Fresh" ]]; then
         rm -rf "/run/media/mmcblk0p1/itchioLauncher/"
         rm -rf "/run/media/mmcblk0p1/HumbleGamesLauncher/"
         rm -rf "/run/media/mmcblk0p1/IndieGalaLauncher/"
+        rm -rf "/run/media/mmcblk0p1/RockstarGamesLauncher/"
         rm -rf ~/Downloads/NonSteamLaunchersInstallation
 
         # Exit the script
@@ -471,7 +495,7 @@ if [[ $options == "Move to SD Card" ]]; then
     CheckInstallationDirectory
 
 
-    move_options=$(zenity --list --text="Which app IDs do you want to move to the SD card?" --checklist --column="Select" --column="App ID" $nonsteamlauncher_move_value "NonSteamLaunchers" $epicgameslauncher_move_value "EpicGamesLauncher" $goggalaxylauncher_move_value "GogGalaxyLauncher" $originlauncher_move_value "OriginLauncher" $uplaylauncher_move_value "UplayLauncher" $battlenetlauncher_move_value "Battle.netLauncher" $eaapplauncher_move_value "TheEAappLauncher" $amazongameslauncher_move_value "AmazonGamesLauncher" $itchiolauncher_move_value "itchioLauncher" $legacygameslauncher_move_value "LegacyGamesLauncher" $humblegameslauncher_move_value "HumbleGamesLauncher" $indiegalalauncher_move_value "IndieGalaLauncher" --width=335 --height=445)
+    move_options=$(zenity --list --text="Which app IDs do you want to move to the SD card?" --checklist --column="Select" --column="App ID" $nonsteamlauncher_move_value "NonSteamLaunchers" $epicgameslauncher_move_value "EpicGamesLauncher" $goggalaxylauncher_move_value "GogGalaxyLauncher" $originlauncher_move_value "OriginLauncher" $uplaylauncher_move_value "UplayLauncher" $battlenetlauncher_move_value "Battle.netLauncher" $eaapplauncher_move_value "TheEAappLauncher" $amazongameslauncher_move_value "AmazonGamesLauncher" $itchiolauncher_move_value "itchioLauncher" $legacygameslauncher_move_value "LegacyGamesLauncher" $humblegameslauncher_move_value "HumbleGamesLauncher" $indiegalalauncher_move_value "IndieGalaLauncher" $rockstargameslauncher_move_value "RockstarGamesLauncher" --width=335 --height=470)
 
     # Check if the cancel button was clicked
     if [ $? -eq 0 ]; then
@@ -700,13 +724,22 @@ if [[ $options == "Move to SD Card" ]]; then
         ln -s "$new_dir/IndieGalaLauncher" "$original_dir"
     fi
 
+    # Check if the user selected to move RockstarGamesLauncher
+    if [[ $move_options == *"RockstarGamesLauncher"* ]] && [[ -n $original_dir ]]; then
+        # Move the Rockstar Games Launcher directory to the SD card
+        mv "$original_dir" "$new_dir/RockstarGamesLauncher"
+
+        # Create a symbolic link to the new directory
+        ln -s "$new_dir/RockstarGamesLauncher" "$original_dir"
+    fi
+
     # Exit the script
     exit 1
 
 fi
 
 
-
+(
 
 
 
@@ -720,7 +753,7 @@ fi
 
 
 
-(
+
 
 
 # Create NonSteamLaunchersInstallation subfolder in Downloads folder
@@ -866,6 +899,12 @@ indiegala_url=https://content.indiegalacdn.com/common/IGClientSetup.exe
 
 # Set the path to save the eleventh file to
 indiegala_file=~/Downloads/NonSteamLaunchersInstallation/IGClientSetup.exe
+
+# Set the URL to download the twelfth file from
+rockstar_url=https://gamedownloads.rockstargames.com/public/installer/Rockstar-Games-Launcher.exe
+
+# Set the path to save the twelfth file to
+rockstar_file=~/Downloads/NonSteamLaunchersInstallation/Rockstar-Games-Launcher.exe
 
 
 
@@ -1565,7 +1604,56 @@ fi
 wait
 
 
+echo "99"
+echo "# Downloading & Installing Rockstar Games Launcher...please wait..."
 
+# Check if user selected rockstar games launcher
+if [[ $options == *"Rockstar Games Launcher"* ]]; then
+    # User selected rockstar games
+    echo "User selected Rockstar Games Launcher"
+fi
+    if [[ ! -f "$rockstar_path1" ]] && [[ ! -f "$rockstar_path2" ]]; then
+        # rockstar games Launcher is not installed
+
+
+
+
+
+    # Set the appid for the indiegala Launcher
+    if [ "$use_separate_appids" = true ]; then
+        appid=RockstarGamesLauncher
+    else
+        appid=NonSteamLaunchers
+    fi
+
+    # Create app id folder in compatdata folder if it doesn't exist
+    if [ ! -d "$HOME/.local/share/Steam/steamapps/compatdata/$appid" ]; then
+        mkdir -p "$HOME/.local/share/Steam/steamapps/compatdata/$appid"
+    fi
+
+    # Change working directory to Proton's
+    cd $proton_dir
+
+    # Set the STEAM_COMPAT_CLIENT_INSTALL_PATH environment variable
+    export STEAM_COMPAT_CLIENT_INSTALL_PATH="~/.local/share/Steam"
+
+    # Set the STEAM_COMPAT_DATA_PATH environment variable for Legacy Games Launcher
+    export STEAM_COMPAT_DATA_PATH=~/.local/share/Steam/steamapps/compatdata/$appid
+
+
+    # Download rockstar games file
+    if [ ! -f "$rockstar_file" ]; then
+        echo "Downloading rockstar file"
+        wget $rockstar_url -O $rockstar_file
+    fi
+
+      # Run the rockstar file using Proton with the /passive option
+      echo "Running Rockstar Games Launcher file using Proton with the /passive option"
+      "$STEAM_RUNTIME" "$proton_dir/proton" run "$rockstar_file"
+
+fi
+# Wait for the rockstar file to finish running
+wait
 
 
 
@@ -1577,7 +1665,7 @@ wait
 rm -rf ~/Downloads/NonSteamLaunchersInstallation
 
 echo "100"
-echo "# Installation Complete - Steam will now restart. Your launchers will be in your library!...Food for thought...Do jedis use force compatibility?"
+echo "# Installation Complete - Steam will now restart. Your launchers will be in your library!...Food for thought...even Jedis use Force Compatability"
 ) |
 zenity --progress \
   --title="Update Status" \
@@ -1699,7 +1787,15 @@ elif [[ -f "$indiegala_path2" ]]; then
     indieshortcutdirectory="\"$indiegala_path2\""
     indielaunchoptions="STEAM_COMPAT_DATA_PATH=\"/home/deck/.local/share/Steam/steamapps/compatdata/IndieGalaLauncher/\" %command%"
 fi
-
+if [[ -f "$rockstar_path1" ]]; then
+    # rockstar Launcher is installed at path 1
+    rockstarshortcutdirectory="\"$rockstar_path1\""
+    rockstarlaunchoptions="STEAM_COMPAT_DATA_PATH=\"/home/deck/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/\" %command%"
+elif [[ -f "$rockstar_path2" ]]; then
+    # rockstar Launcher is installed at path 2
+    rockstarshortcutdirectory="\"$rockstar_path2\""
+    rockstarlaunchoptions="STEAM_COMPAT_DATA_PATH=\"/home/deck/.local/share/Steam/steamapps/compatdata/RockstarGamesLauncher/\" %command%"
+fi
 
 
 
@@ -1739,7 +1835,7 @@ cd "$download_dir"/setuptools-*/
 # Add the installation directory to the PYTHONPATH environment variable
 export PYTHONPATH="$download_dir/lib/python3.10/site-packages:$PYTHONPATH"
 
-echo $PYTHONPATH
+echo "$PYTHONPATH"
 
 # Install setuptools
 python setup.py install --prefix="$download_dir"
@@ -1872,7 +1968,7 @@ itchioshortcutdirectory = '$itchioshortcutdirectory'
 legacyshortcutdirectory = '$legacyshortcutdirectory'
 humbleshortcutdirectory = '$humbleshortcutdirectory'
 indieshortcutdirectory = '$indieshortcutdirectory'
-
+rockstarshortcutdirectory = '$rockstarshortcutdirectory'
 
 if epicshortcutdirectory != '':
         # Create a new entry for the Steam shortcut
@@ -2445,7 +2541,55 @@ if indieshortcutdirectory != '':
 
 
 
+if rockstarshortcutdirectory != '':
+        # Create a new entry for the Steam shortcut
+        new_entry = {
+            'appid': '',
+            'AppName': 'Rockstar Games Launcher',
+            'Exe': '$rockstarshortcutdirectory',
+            'StartDir': '$rockstarshortcutdirectory',
+            'icon': '',
+            'ShortcutPath': '',
+            'LaunchOptions': '$rockstarlaunchoptions',
+            'IsHidden': 0,
+            'AllowDesktopConfig': 1,
+            'AllowOverlay': 1,
+            'OpenVR': 0,
+            'Devkit': 0,
+            'DevkitGameID': '',
+            'LastPlayTime': 0,
+            'tags': {
+                '0': 'favorite'
+            }
+        }
 
+        # Add the new entry to the shortcuts dictionary
+        entry_exists = False
+        if type(shortcuts['shortcuts']) == list:
+            for entry in shortcuts['shortcuts']:
+                entry.setdefault('AppName', '')
+                entry.setdefault('Exe', '')
+                if entry['AppName'] == new_entry['AppName'] and entry['Exe'] == new_entry['Exe']:
+                    entry_exists = True
+                    break
+            if not entry_exists:
+                shortcuts['shortcuts'].append(new_entry)
+        elif type(shortcuts['shortcuts']) == dict:
+            for key in shortcuts['shortcuts'].keys():
+                shortcuts['shortcuts'][key].setdefault('AppName', '')
+                shortcuts['shortcuts'][key].setdefault('Exe', '')
+                if shortcuts['shortcuts'][key]['AppName'] == new_entry['AppName'] and shortcuts['shortcuts'][key]['Exe'] == new_entry['Exe']:
+                    entry_exists = True
+                    break
+            if not entry_exists:
+                # Check if the shortcuts['shortcuts'] dictionary is empty
+                if not shortcuts['shortcuts']:
+                    max_key = -1
+                else:
+                    # Find the highest key value
+                    max_key = max(int(key) for key in shortcuts['shortcuts'].keys())
+                # Add the new entry with a key value one higher than the current maximum
+                shortcuts['shortcuts'][str(max_key + 1)] = new_entry
 
 
 
@@ -2461,6 +2605,9 @@ if indieshortcutdirectory != '':
 # Save the updated shortcuts dictionary to the shortcuts.vdf file
 with open('$shortcuts_vdf_path', 'wb') as f:
     vdf.binary_dump(shortcuts, f)"
+
+
+
 
 
 
