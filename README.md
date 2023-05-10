@@ -27,6 +27,8 @@ Currently Installs and adds to your Library... 👀
   
   ~IndieGala ✔️
   
+  ~Rockstar Games Launcher ✔️
+  
   ---------------------------
   
   ~SD CARD SUPPORT ✔️
@@ -47,7 +49,7 @@ Then Restart your Steam Deck and "NonSteamLaunchers.sh" will now be in your libr
 
 
 INSTRUCTIONS FOR DESKTOP 📝 
-In order to run it, grab the "NonSteamLaunchers.sh" file and download it.
+In order to run it, grab the "NonSteamLaunchers.sh" file and download it. Or grab the .desktop file and throw it on the Desktop!
 
 Please right click and go to properties > permissions and check mark "Is Executable". Double Click it and it should run.
 
