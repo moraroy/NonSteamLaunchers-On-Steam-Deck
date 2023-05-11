@@ -2,7 +2,7 @@
 This script installs the latest GE-Proton, installs Non-Steam-Launchers under one unique Proton prefix folder in your compatdata folder path called "NonSteamLaunchers" and adds them to your Steam Library. 
 So you can use them on Desktop or in Game Mode.
 # Installation 🔧
-Go to desktop mode, right click [HERE](https://github.com/cchrkk/NonSteamLaunchers-On-Steam-Deck/blob/main/NonSteamLaunchers.desktop) and save the .desktop file to your Steam Deck desktop. 
+Go to desktop mode, right click [HERE](https://github.com/moraroy/NonSteamLaunchers-On-Steam-Deck/blob/main/NonSteamLaunchers.desktop) and save the .desktop file to your Steam Deck desktop. 
 # Usage 🎮
 Go to your desktop, click the NonSteamLaunchers icon, it will download and run the latest NonSteamLaunchers.sh from this repository and run it. 
 You will simply have to choose which launcher to install and let the script handle the rest. 💻 No files are left in your "Downloads" they are deleted after installation.
@@ -30,8 +30,6 @@ The script will install launchers and games to your SD card, and the launchers i
 # Currently Working On 👷‍♂️
 
 - Decky Loader Plugin ❌ 
-
-Enjoy easily accessing all your PC games on Steam Deck! Let me know if you have any issues or feature requests. 👾
 
 ## Contributing 🤝
 
