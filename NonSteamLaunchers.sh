@@ -1611,46 +1611,42 @@ echo "# Downloading & Installing Rockstar Games Launcher...please wait..."
 if [[ $options == *"Rockstar Games Launcher"* ]]; then
     # User selected rockstar games
     echo "User selected Rockstar Games Launcher"
-fi
+
     if [[ ! -f "$rockstar_path1" ]] && [[ ! -f "$rockstar_path2" ]]; then
         # rockstar games Launcher is not installed
 
+        # Set the appid for the indiegala Launcher
+        if [ "$use_separate_appids" = true ]; then
+            appid=RockstarGamesLauncher
+        else
+            appid=NonSteamLaunchers
+        fi
 
+        # Create app id folder in compatdata folder if it doesn't exist
+        if [ ! -d "$HOME/.local/share/Steam/steamapps/compatdata/$appid" ]; then
+            mkdir -p "$HOME/.local/share/Steam/steamapps/compatdata/$appid"
+        fi
 
+        # Change working directory to Proton's
+        cd $proton_dir
 
+        # Set the STEAM_COMPAT_CLIENT_INSTALL_PATH environment variable
+        export STEAM_COMPAT_CLIENT_INSTALL_PATH="~/.local/share/Steam"
 
-    # Set the appid for the indiegala Launcher
-    if [ "$use_separate_appids" = true ]; then
-        appid=RockstarGamesLauncher
-    else
-        appid=NonSteamLaunchers
+        # Set the STEAM_COMPAT_DATA_PATH environment variable for Legacy Games Launcher
+        export STEAM_COMPAT_DATA_PATH=~/.local/share/Steam/steamapps/compatdata/$appid
+
+        # Download rockstar games file
+        if [ ! -f "$rockstar_file" ]; then
+            echo "Downloading rockstar file"
+            wget $rockstar_url -O $rockstar_file
+        fi
+
+          # Run the rockstar file using Proton with the /passive option
+          echo "Running Rockstar Games Launcher file using Proton with the /passive option"
+          "$STEAM_RUNTIME" "$proton_dir/proton" run "$rockstar_file"
+
     fi
-
-    # Create app id folder in compatdata folder if it doesn't exist
-    if [ ! -d "$HOME/.local/share/Steam/steamapps/compatdata/$appid" ]; then
-        mkdir -p "$HOME/.local/share/Steam/steamapps/compatdata/$appid"
-    fi
-
-    # Change working directory to Proton's
-    cd $proton_dir
-
-    # Set the STEAM_COMPAT_CLIENT_INSTALL_PATH environment variable
-    export STEAM_COMPAT_CLIENT_INSTALL_PATH="~/.local/share/Steam"
-
-    # Set the STEAM_COMPAT_DATA_PATH environment variable for Legacy Games Launcher
-    export STEAM_COMPAT_DATA_PATH=~/.local/share/Steam/steamapps/compatdata/$appid
-
-
-    # Download rockstar games file
-    if [ ! -f "$rockstar_file" ]; then
-        echo "Downloading rockstar file"
-        wget $rockstar_url -O $rockstar_file
-    fi
-
-      # Run the rockstar file using Proton with the /passive option
-      echo "Running Rockstar Games Launcher file using Proton with the /passive option"
-      "$STEAM_RUNTIME" "$proton_dir/proton" run "$rockstar_file"
-
 fi
 # Wait for the rockstar file to finish running
 wait
