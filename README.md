@@ -1,58 +1,42 @@
-# NonSteamLaunchers
-Installs the latest GE-Proton and Installs Non Steam Launchers under 1 Proton prefix folder in your compatdata folder path called "NonSteamLaunchers" and adds them to your Steam Library. Use on Desktop or in Game Mode.
+# NonSteamLaunchers 🚀
+This script installs the latest GE-Proton, installs Non-Steam-Launchers under one unique Proton prefix folder in your compatdata folder path called "NonSteamLaunchers" and adds them to your Steam Library. 
+So you can use them on Desktop or in Game Mode.
+# Installation 🔧
+Go to desktop mode, right click [HERE](https://github.com/cchrkk/NonSteamLaunchers-On-Steam-Deck/blob/main/NonSteamLaunchers.desktop) and save the .desktop file to your Steam Deck desktop. 
+# Usage 🎮
+Go to your desktop, click the NonSteamLaunchers icon, it will download and run the latest NonSteamLaunchers.sh from this repository and run it. 
+You will simply have to choose which launcher to install and let the script handle the rest. 💻 No files are left in your "Downloads" they are deleted after installation.
 
-No files are left in your "Downloads" they are deleted after installation. 
- 
-Currently Installs and adds to your Library... 👀 
+After running the script, launch Steam on your Steam Deck. You'll find the new launchers in your library under the non-steam tab. Click a launcher to see your installed games from that store, and launch them directly from Steam! Even in gamemode 🥳
 
-  ~Battle.net ✔️ 
-  
-  ~Epic Games ✔️ 
-  
-  ~Gog ✔️ 
-  
-  ~Origin (only working way) ✔️ 
-  
-  ~Ubisoft ✔️ 
+# Supported Stores 🛍
+- Battle.net ✔️
+- Epic Games ✔️
+- GOG Galaxy ✔️
+- Origin (only working way) ✔️
+- Ubisoft ✔️
+- EA App ✔️
+- Amazon Games Launcher ✔️
+- Itch.io ✔️
+- Legacy Games ✔️
+- Humble Games Collection ✔️
+- IndieGala ✔️
+- Rockstar Games Launcher ✔️
 
-  ~The EA App ✔️ 
-  
-  ~Amazon Games Launcher ✔️ 
-  
-  ~Itch.io ✔️ 
+# MicroSD Support 💾
+This script supports moving the entire prefix to a microSD.
+The script will install launchers and games to your SD card, and the launchers in Steam will point to the SD card installation. This allows you to save internal storage space on your Steam Deck!
 
-  ~Legacy Games ✔️ 
-  
-  ~Humble Games Collection ✔️
-  
-  ~IndieGala ✔️
-  
-  ~Rockstar Games Launcher ✔️
-  
-  ---------------------------
-  
-  ~SD CARD SUPPORT ✔️
+# Currently Working On 👷‍♂️
 
+- Decky Loader Plugin ❌ 
 
+Enjoy easily accessing all your PC games on Steam Deck! Let me know if you have any issues or feature requests. 👾
 
+## Contributing 🤝
 
-Currently Working On These Things 👷‍♂️
+If you have any suggestions or improvements for this script, feel free to open an issue or submit a pull request.
 
-  Decky Loader Plugin
- 
+## 📝 License
 
-INSTRUCTIONS FOR GAME MODE 📝 
-In order to run it, grab the "NonSteamLaunchers.sh" file and download it.
-
-Please right click and go to properties > permissions and check mark "Is Executable". Then right click the file again and "Add to Steam".
-
-Then Restart your Steam Deck and "NonSteamLaunchers.sh" will now be in your library in Game Mode. MAKE SURE YOU FORCE COMPATABILTY IN GAME MODE WITH THE LAUNCHERS ONCE THEY ARE IN YOUR LIBRARY. DO NOT FORCE COMPATABILITY ON THE SCRIPT ITSELF, IT DOES NOT NEED IT.
-
-
-
-INSTRUCTIONS FOR DESKTOP 📝 
-In order to run it, grab the "NonSteamLaunchers.sh" file and download it. Or grab the .desktop file and throw it on the Desktop!
-
-Please right click and go to properties > permissions and check mark "Is Executable". Double Click it and it should run.
-
-MAKE SURE YOU FORCE COMPATABILTY IN DESKTOP MODE WITH THE LAUNCHERS ONCE THEY ARE IN YOUR LIBRARY. DO NOT FORCE COMPATABILITY ON THE SCRIPT ITSELF, IT DOES NOT NEED IT.
+This project is licensed under the MIT License. See the `LICENSE` file for more information.
