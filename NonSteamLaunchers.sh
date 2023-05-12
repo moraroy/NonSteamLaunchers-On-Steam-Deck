@@ -744,7 +744,7 @@ fi
 
 
 echo "0"
-echo "# Detecting and Installing GE-Proton"
+echo "# Detecting, Updating and Installing GE-Proton"
 
 # check to make sure compatabilitytools.d exists and makes it if it doesnt
     if [ ! -d "$HOME/.steam/root/compatibilitytools.d" ]; then
@@ -940,7 +940,7 @@ export STEAM_COMPAT_DATA_PATH=~/.local/share/Steam/steamapps/compatdata/$appid
 
 wait
 echo "30"
-echo "# Downloading & Installing Epic Games...Please wait..."
+echo "# Downloading & Installing Epic Games...please wait..."
 
 # Check if the user selected Epic Games Launcher
 if [[ $options == *"Epic Games"* ]]; then
@@ -993,7 +993,7 @@ fi
 # Wait for the MSI file to finish running
 wait
 echo "40"
-echo "# Downloading & Installing Gog Galaxy...Please wait..."
+echo "# Downloading & Installing Gog Galaxy...please wait..."
 
 
 # Check if the user selected GOG Galaxy
@@ -1002,7 +1002,7 @@ if [[ $options == *"GOG Galaxy"* ]]; then
     echo "User selected GOG Galaxy"
 
     # Check if Gog Galaxy Launcher is already installed
-    if [[ ! -f "$gog_galaxy_path1" ]] || [[ ! -f "$gog_galaxy_path2" ]]; then
+    if [[ ! -f "$gog_galaxy_path1" ]] && [[ ! -f "$gog_galaxy_path2" ]]; then
         # Gog Galaxy Launcher is not installed
 
         # Set the appid for the Gog Galaxy 2.0
@@ -1035,52 +1035,48 @@ if [[ $options == *"GOG Galaxy"* ]]; then
         # Run the EXE file using Proton without the /passive option
         echo "Running EXE file using Proton without the /passive option"
         "$STEAM_RUNTIME" "$proton_dir/proton" run "$exe_file" &
+
+        echo "45"
+        echo "# Downloading & Installing Gog Galaxy...Please wait..."
+
+        # Cancel & Exit the GOG Galaxy Setup Wizard
+        while true; do
+            if pgrep -f "GalaxySetup.tmp" > /dev/null; then
+                pkill -f "GalaxySetup.tmp"
+                break
+            fi
+            sleep 1
+        done
+
+        # Navigate to %LocalAppData%\Temp
+        cd "$HOME/.local/share/Steam/steamapps/compatdata/$appid/pfx/drive_c/users/steamuser/Temp"
+
+        # Find the GalaxyInstaller_XXXXX folder and copy it to C:\Downloads
+        galaxy_installer_folder=$(find . -maxdepth 1 -type d -name "GalaxyInstaller_*" | head -n1)
+        cp -r "$galaxy_installer_folder" ~/Downloads/NonSteamLaunchersInstallation/
+
+        # Navigate to the C:\Downloads\GalaxyInstaller_XXXXX folder
+        cd ~/Downloads/NonSteamLaunchersInstallation/"$(basename $galaxy_installer_folder)"
+
+        # Run GalaxySetup.exe with the /VERYSILENT and /NORESTART options
+        echo "Running GalaxySetup.exe with the /VERYSILENT and /NORESTART options"
+        "$STEAM_RUNTIME" "$proton_dir/proton" run GalaxySetup.exe /VERYSILENT /NORESTART
+
+        # Wait for the EXE file to finish running
+        wait
+
     else
         # Gog Galaxy Launcher is already installed
         echo "Gog Galaxy Launcher is already installed"
     fi
 
-
-echo "45"
-echo "# Downloading & Installing Gog Galaxy...Please wait..."
-
-
-# Cancel & Exit the GOG Galaxy Setup Wizard
-    while true; do
-    if pgrep -f "GalaxySetup.tmp" > /dev/null; then
-        pkill -f "GalaxySetup.tmp"
-        break
-    fi
-    sleep 1
-done
-
-
-
-    # Navigate to %LocalAppData%\Temp
-    cd "$HOME/.local/share/Steam/steamapps/compatdata/$appid/pfx/drive_c/users/steamuser/Temp"
-
-    # Find the GalaxyInstaller_XXXXX folder and copy it to C:\Downloads
-    galaxy_installer_folder=$(find . -maxdepth 1 -type d -name "GalaxyInstaller_*" | head -n1)
-    cp -r "$galaxy_installer_folder" ~/Downloads/NonSteamLaunchersInstallation/
-
-
-
-    # Navigate to the C:\Downloads\GalaxyInstaller_XXXXX folder
-    cd ~/Downloads/NonSteamLaunchersInstallation/"$(basename $galaxy_installer_folder)"
-
-    # Run GalaxySetup.exe with the /VERYSILENT and /NORESTART options
-    echo "Running GalaxySetup.exe with the /VERYSILENT and /NORESTART options"
-    "$STEAM_RUNTIME" "$proton_dir/proton" run GalaxySetup.exe /VERYSILENT /NORESTART
-
-    # Wait for the EXE file to finish running
-    wait
-
-
 fi
+
+
 
 wait
 echo "50"
-echo "# Downloading & Installing Uplay ...Please wait..."
+echo "# Downloading & Installing Uplay ...please wait..."
 
 
 # Check if user selected Uplay
@@ -1089,7 +1085,7 @@ if [[ $options == *"Uplay"* ]]; then
     echo "User selected Uplay"
 
     # Check if Uplay Launcher is installed
-if [[ ! -f "$uplay_path1" ]] || [[ ! -f "$uplay_path2" ]]; then
+if [[ ! -f "$uplay_path1" ]] && [[ ! -f "$uplay_path2" ]]; then
 
 
 
@@ -1136,7 +1132,7 @@ fi
 # Wait for the UBI file to finish running
 wait
 echo "60"
-echo "# Downloading & Installing Origin...Please wait..."
+echo "# Downloading & Installing Origin...please wait..."
 
 
 
@@ -1147,7 +1143,7 @@ if [[ $options == *"Origin"* ]]; then
 
 
     # Check if Origin Launcher is installed
-    if [[ ! -f "$origin_path1" ]] || [[ ! -f "$origin_path2" ]]; then
+    if [[ ! -f "$origin_path1" ]] && [[ ! -f "$origin_path2" ]]; then
 
 
 
@@ -1200,7 +1196,7 @@ fi
 
 wait
 echo "70"
-echo "# Downloading & Installing Battle.net...Please wait..."
+echo "# Downloading & Installing Battle.net...please wait..."
 
 # Check if user selected Battle.net
 if [[ $options == *"Battle.net"* ]]; then
@@ -1208,7 +1204,7 @@ if [[ $options == *"Battle.net"* ]]; then
     echo "User selected Battle.net"
 
     # Check if Battlenet Launcher is installed
-    if [[ ! -f "$battlenet_path1" ]] || [[ ! -f "$battlenet_path2" ]]; then
+    if [[ ! -f "$battlenet_path1" ]] && [[ ! -f "$battlenet_path2" ]]; then
 
 
 
@@ -1259,7 +1255,7 @@ fi
 wait
 
 echo "80"
-echo "# Downloading & Installing Amazon Games...Please wait..."
+echo "# Downloading & Installing Amazon Games...please wait..."
 
 # Check if user selected Amazon Games
 if [[ $options == *"Amazon Games"* ]]; then
@@ -1267,7 +1263,7 @@ if [[ $options == *"Amazon Games"* ]]; then
     echo "User selected Amazon Games"
 
     # Check if Amazon Games Launcher is installed
-    if [[ ! -f "$amazongames_path1" ]] || [[ ! -f "$amazongames_path2" ]]; then
+    if [[ ! -f "$amazongames_path1" ]] && [[ ! -f "$amazongames_path2" ]]; then
 
 
 
@@ -1328,7 +1324,7 @@ fi
 wait
 
 echo "90"
-echo "# Downloading & Installing EA App...Please wait..."
+echo "# Downloading & Installing EA App...please wait..."
 
 # Check if user selected EA App
 if [[ $options == *"EA App"* ]]; then
@@ -1338,7 +1334,7 @@ if [[ $options == *"EA App"* ]]; then
 
 
     # Check if The EA App Launcher is installed
-    if [[ ! -f "$eaapp_path1" ]] || [[ ! -f "$eaapp_path2" ]]; then
+    if [[ ! -f "$eaapp_path1" ]] && [[ ! -f "$eaapp_path2" ]]; then
 
 
 
@@ -1399,7 +1395,7 @@ fi
 
 wait
 echo "95"
-echo "# Downloading & Installing itch.io...Please wait..."
+echo "# Downloading & Installing itch.io...please wait..."
 
 # Check if the user selected itchio Launcher
 if [[ $options == *"itch.io"* ]]; then
@@ -1407,7 +1403,7 @@ if [[ $options == *"itch.io"* ]]; then
     echo "User selected itch.io"
 
     # Check if itchio Launcher is installed
-    if [[ ! -f "$itchio_path1" ]] || [[ ! -f "$itchio_path2" ]]; then
+    if [[ ! -f "$itchio_path1" ]] && [[ ! -f "$itchio_path2" ]]; then
 
 
 
@@ -1449,7 +1445,7 @@ fi
 
 wait
 echo "98"
-echo "# Downloading & Installing Legacy Games...Please wait..."
+echo "# Downloading & Installing Legacy Games...please wait..."
 
 # Check if user selected Legacy Games
 if [[ $options == *"Legacy Games"* ]]; then
@@ -1501,7 +1497,7 @@ wait
 
 
 echo "99"
-echo "# Downloading & Installing Humble Games Collection...Please wait..."
+echo "# Downloading & Installing Humble Games Collection...please wait..."
 
 # Check if the user selected Humble Games Launcher
 if [[ $options == *"Humble Games Collection"* ]]; then
@@ -1553,7 +1549,7 @@ fi
 
 wait
 echo "98"
-echo "# Downloading & Installing Indie Gala...Please wait..."
+echo "# Downloading & Installing Indie Gala...please wait..."
 
 # Check if user selected indiegala
 if [[ $options == *"IndieGala"* ]]; then
@@ -1661,7 +1657,7 @@ wait
 rm -rf ~/Downloads/NonSteamLaunchersInstallation
 
 echo "100"
-echo "# Installation Complete - Steam will now restart. Your launchers will be in your library!...Food for thought...even Jedis use Force Compatability"
+echo "# Installation Complete - Steam will now restart. Your launchers will be in your library!...Food for thought...even Jedis use Force Compatability!"
 ) |
 zenity --progress \
   --title="Update Status" \
@@ -1864,56 +1860,69 @@ python setup.py install --prefix=~/Downloads/NonSteamLaunchersInstallation
 
 
 
-# Find all shortcuts.vdf files
-shortcuts_vdf_paths=$(find ~/.steam/root/userdata -type d -regextype posix-extended -regex ".*/[0-9]{8,10}/config" -not -path "*/0/*" -not -path "*/anonymous/*" -exec find {} -name shortcuts.vdf \;)
+# Initialize the userdata_folder variable
+userdata_folder=""
 
-# Set the current date
-current_date=$(date +%s)
+# Initialize the most_recent variable
+most_recent=0
 
-# Set the maximum age of the shortcuts.vdf file in seconds (e.g. 1 week)
-max_age=$((7*24*60*60))
+# Loop through all the userdata folders
+for USERDATA_FOLDER in ~/.steam/root/userdata/*
+do
+    # Check if the current userdata folder is not the "0" or "anonymous" folder
+    if [[ "$USERDATA_FOLDER" != *"/0" ]] && [[ "$USERDATA_FOLDER" != *"/anonymous" ]]
+    then
+        # Get the access time of the current userdata folder
+        access_time=$(stat -c %X "$USERDATA_FOLDER")
 
-# Initialize the shortcuts_vdf_path variable
-shortcuts_vdf_path=""
+        # Check if the access time of the current userdata folder is more recent than the most recent access time
+        if [[ $access_time -gt $most_recent ]]
+        then
+            # The access time of the current userdata folder is more recent
+            # Set the userdata_folder variable
+            userdata_folder="$USERDATA_FOLDER"
 
-# Loop through the shortcuts.vdf files
-while read -r path; do
-    # Get the modification date of the shortcuts.vdf file
-    mod_date=$(date -r "$path" +%s)
-
-    # Calculate the age of the shortcuts.vdf file
-    age=$((current_date-mod_date))
-
-    # Check if the age of the shortcuts.vdf file is less than or equal to the maximum age
-    if [[ $age -le $max_age ]]; then
-        # The shortcuts.vdf file is current or up to date
-        # Set the shortcuts_vdf_path variable
-        shortcuts_vdf_path="$path"
-        break
+            # Update the most_recent variable
+            most_recent=$access_time
+        fi
     fi
-done <<< "$shortcuts_vdf_paths"
+done
 
-# Check if shortcuts_vdf_path is not empty
-if [[ -n "$shortcuts_vdf_path" ]]; then
-    # Create a backup of the shortcuts.vdf file
-    cp "$shortcuts_vdf_path" "$shortcuts_vdf_path.bak"
-else
-    # Find the config directory
-    config_dir=$(find ~/.steam/root/userdata -type d -regextype posix-extended -regex ".*/[0-9]{8,10}/config" -not -path "*/0/*" -not -path "*/anonymous/*")
+# Check if the userdata folder was found
+if [[ -n "$userdata_folder" ]]; then
+    # The userdata folder was found
+    echo "Current user's userdata folder found at: $userdata_folder"
 
-    # Check if config_dir is not empty
-    if [[ -n "$config_dir" ]]; then
-        # Create a new shortcuts.vdf file at the expected location
-        touch "$config_dir/shortcuts.vdf"
-        shortcuts_vdf_path="$config_dir/shortcuts.vdf"
+    # Find the shortcuts.vdf file for the current user
+    shortcuts_vdf_path=$(find "$userdata_folder" -type f -name shortcuts.vdf)
+
+    # Check if shortcuts_vdf_path is not empty
+    if [[ -n "$shortcuts_vdf_path" ]]; then
+        # Create a backup of the shortcuts.vdf file
+        cp "$shortcuts_vdf_path" "$shortcuts_vdf_path.bak"
     else
-        # Create a new config directory and a new shortcuts.vdf file at the expected location
-        mkdir ~/.steam/root/userdata/*/config/
-        touch ~/.steam/root/userdata/*/config/shortcuts.vdf
-        config_dir=$(find ~/.steam/root/userdata/*/config/)
-        shortcuts_vdf_path="$config_dir/shortcuts.vdf"
+        # Find the config directory for the current user
+        config_dir=$(find "$userdata_folder" -type d -name config)
+
+        # Check if config_dir is not empty
+        if [[ -n "$config_dir" ]]; then
+            # Create a new shortcuts.vdf file at the expected location for the current user
+            touch "$config_dir/shortcuts.vdf"
+            shortcuts_vdf_path="$config_dir/shortcuts.vdf"
+        else
+            # Create a new config directory and a new shortcuts.vdf file at the expected location for the current user
+            mkdir "$userdata_folder/config/"
+            touch "$userdata_folder/config/shortcuts.vdf"
+            config_dir="$userdata_folder/config/"
+            shortcuts_vdf_path="$config_dir/shortcuts.vdf"
+        fi
     fi
+
+else
+    # The userdata folder was not found
+    echo "Current user's userdata folder not found"
 fi
+
 
 
 
