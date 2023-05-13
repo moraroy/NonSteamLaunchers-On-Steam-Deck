@@ -42,7 +42,8 @@ The script will install launchers and games to your SD card, and the launchers i
 ## Currently Working On 👷‍♂️
 
 - Decky Loader Plugin ❌ 
- 
+- Auto-download images and set them for library entries ❌ 
+- Fixing Humble Bundle login issue ❌ 
 #
 
 ### Contributing 🤝
