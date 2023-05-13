@@ -7,22 +7,19 @@
 This script installs the latest GE-Proton, installs Non-Steam-Launchers under one unique Proton prefix folder in your compatdata folder path called "NonSteamLaunchers" and adds them to your Steam Library. 
 So you can use them on Desktop or in Game Mode.
 
-## Usage 🎮
-Go to your desktop, click the NonSteamLaunchers icon, it will download and run the latest NonSteamLaunchers.sh from this repository and run it. 
-You will simply have to choose which launcher to install and let the script handle the rest. 💻 No files are left in your "Downloads" they are deleted after installation.
-
-After running the script, launch Steam on your Steam Deck. You'll find the new launchers in your library under the non-steam tab. Click a launcher to see your installed games from that store, and launch them directly from Steam! Even in gamemode 🥳
 ## Installation Instructions🔧
-Go to desktop mode, right click [HERE](https://github.com/moraroy/NonSteamLaunchers-On-Steam-Deck/raw/main/NonSteamLaunchers.desktop) and save the .desktop file to your Steam Deck desktop. 
++ Go to desktop mode, right click [HERE](https://github.com/moraroy/NonSteamLaunchers-On-Steam-Deck/raw/main/NonSteamLaunchers.desktop) and save the .desktop file to your Steam Deck desktop. 
++ Go to your desktop, click the NonSteamLaunchers icon, it will download and run the latest NonSteamLaunchers.sh from this repository and run it. 
++ You will simply have to choose which launcher to install and let the script handle the rest. 💻 No files are left in your "Downloads" they are deleted after installation.
++ After running the script, launch Steam on your Steam Deck. You'll find the new launchers in your library under the non-steam tab. Click a launcher to see your installed games from that store, and launch them directly from Steam! Even in gamemode 🥳
 
-
-## Installation Tutorials 📖
-[@SteamDeckGaming](https://www.youtube.com/@SteamDeckGaming) - YouTube Tutorial
-[https://www.youtube.com/watch?v=uYWNZGiBsUo](https://youtu.be/svOj4MTEAVc)
-
-[@SteamDeckGaming](https://www.steamdeckgaming.net) - Article
-https://www.steamdeckgaming.net/post/easy-launchers-install-on-steam-deck
-[![IMAGE ALT TEXT HERE](https://img.youtube.com/vi/svOj4MTEAVc/0.jpg)](https://youtu.be/svOj4MTEAVc)
+## Installation Tutorials (courtesy of [@SteamDeckGaming](https://www.youtube.com/@SteamDeckGaming) )📖
+<p align="center">
+▶️ YouTube Tutorial 🡺🡺🡺 https://www.youtube.com/watch?v=svOj4MTEAVc 🡸🡸🡸 ▶️
+</p>
+<p align="center">
+📖 Step-by-step Article 🡺🡺🡺 https://www.steamdeckgaming.net/post/easy-launchers-install-on-steam-deck 🡸🡸🡸 📖
+</p>
 
 ## Supported Stores 🛍
 - Battle.net ✔️
