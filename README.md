@@ -27,7 +27,7 @@ So you can use them on Desktop or in Game Mode.
 - Rockstar Games Launcher ✔️
 
 
-# Installation Instructions🔧
+# How to Install🔧
 + Go to desktop mode, right click [HERE](https://github.com/moraroy/NonSteamLaunchers-On-Steam-Deck/raw/main/NonSteamLaunchers.desktop) and save the .desktop file to your Steam Deck desktop. 
 + Go to your desktop, click the NonSteamLaunchers icon, it will download and run the latest NonSteamLaunchers.sh from this repository and run it. 
 + You will simply have to choose which launcher to install and let the script handle the rest. 💻 No files are left in your "Downloads" they are deleted after installation.
@@ -41,12 +41,9 @@ So you can use them on Desktop or in Game Mode.
 📖 Step-by-step Article 🡺🡺🡺 https://www.steamdeckgaming.net/post/easy-launchers-install-on-steam-deck 🡸🡸🡸 📖
 </p>
 
-
-Uninstall:
-Run the script. Select what Launchers to Uninstall. Press OK. that's it.
-
-
-
+# How to Uninstall 🗑
++ Just run the script, select which launchers to remove. Press OK.
++ That's it.
 
 ## Currently Working On 👷‍♂️
 
