@@ -41,6 +41,13 @@ So you can use them on Desktop or in Game Mode.
 📖 Step-by-step Article 🡺🡺🡺 https://www.steamdeckgaming.net/post/easy-launchers-install-on-steam-deck 🡸🡸🡸 📖
 </p>
 
+
+Uninstall:
+Run the script. Select what Launchers to Uninstall. Press OK. that's it.
+
+
+
+
 ## Currently Working On 👷‍♂️
 
 - Decky Loader Plugin ❌ 
