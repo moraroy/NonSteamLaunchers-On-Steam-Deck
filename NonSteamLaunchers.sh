@@ -4,7 +4,7 @@ chmod +x "$0"
 
 set -x
 
-version=v2.7
+version=v2.71
 
 check_for_updates() {
     # Set the URL to the GitHub API for the repository
@@ -2190,6 +2190,15 @@ fi
 
 
 
+# Delete NonSteamLaunchersInstallation subfolder in Downloads folder
+rm -rf ~/Downloads/NonSteamLaunchersInstallation
+
+
+# Detach script from Steam process
+nohup sh -c 'sleep 10; /usr/bin/steam' &
+
+# Close all instances of Steam
+killall steam &
 
 
 
@@ -2877,12 +2886,3 @@ with open('$shortcuts_vdf_path', 'wb') as f:
 
 
 
-# Delete NonSteamLaunchersInstallation subfolder in Downloads folder
-rm -rf ~/Downloads/NonSteamLaunchersInstallation
-
-
-# Detach script from Steam process
-nohup sh -c 'sleep 10; /usr/bin/steam' &
-
-# Close all instances of Steam
-killall steam
