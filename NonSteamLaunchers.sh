@@ -4,7 +4,7 @@ chmod +x "$0"
 
 set -x
 
-version=v2.71
+version=v2.75
 
 check_for_updates() {
     # Set the URL to the GitHub API for the repository
@@ -2054,10 +2054,6 @@ fi
 
 
 
-
-
-
-
 #VDF Library
 
 # Set the download directory
@@ -2120,33 +2116,28 @@ python setup.py install --prefix=~/Downloads/NonSteamLaunchersInstallation
 
 
 
-# Initialize the userdata_folder variable
-userdata_folder=""
+# Set the default Steam directory
+steam_dir="$HOME/.local/share/Steam"
 
-# Initialize the most_recent variable
-most_recent=0
+# Check if the config.vdf file exists
+if [[ -f "$steam_dir/config/config.vdf" ]]; then
+    # Get the steamid of the currently logged in user
+    steamid=$(grep -oP 'SteamID"\s+"\K[0-9]+' "$steam_dir/config/config.vdf")
 
-# Loop through all the userdata folders
-for USERDATA_FOLDER in ~/.steam/root/userdata/*
-do
-    # Check if the current userdata folder is not the "0" or "anonymous" folder
-    if [[ "$USERDATA_FOLDER" != *"/0" ]] && [[ "$USERDATA_FOLDER" != *"/anonymous" ]]
-    then
-        # Get the access time of the current userdata folder
-        access_time=$(stat -c %X "$USERDATA_FOLDER")
+    # Convert steamid to steamid3
+    steamid3=$((steamid - 76561197960265728))
 
-        # Check if the access time of the current userdata folder is more recent than the most recent access time
-        if [[ $access_time -gt $most_recent ]]
-        then
-            # The access time of the current userdata folder is more recent
-            # Set the userdata_folder variable
-            userdata_folder="$USERDATA_FOLDER"
-
-            # Update the most_recent variable
-            most_recent=$access_time
-        fi
+    # Check if the userdata directory exists for the currently logged in user
+    if [[ -d "$HOME/.steam/root/userdata/$steamid3" ]]; then
+        echo "The correct steamid3 for the currently logged in user is: $steamid3"
+        userdata_folder="$HOME/.steam/root/userdata/$steamid3"
+        echo "The corresponding userdata folder for the currently logged in user is: $userdata_folder"
+    else
+        echo "Could not find userdata directory for steamid3: $steamid3"
     fi
-done
+else
+    echo "Could not find config.vdf file"
+fi
 
 # Check if the userdata folder was found
 if [[ -n "$userdata_folder" ]]; then
@@ -2190,6 +2181,8 @@ fi
 
 
 
+
+
 # Delete NonSteamLaunchersInstallation subfolder in Downloads folder
 rm -rf ~/Downloads/NonSteamLaunchersInstallation
 
@@ -2198,7 +2191,12 @@ rm -rf ~/Downloads/NonSteamLaunchersInstallation
 nohup sh -c 'sleep 10; /usr/bin/steam' &
 
 # Close all instances of Steam
-killall steam &
+killall steam
+
+
+
+
+
 
 
 
@@ -2879,7 +2877,6 @@ if rockstarshortcutdirectory != '':
 # Save the updated shortcuts dictionary to the shortcuts.vdf file
 with open('$shortcuts_vdf_path', 'wb') as f:
     vdf.binary_dump(shortcuts, f)"
-
 
 
 
