@@ -2065,7 +2065,7 @@ download_url="https://github.com/p0358/vdf-parser/archive/refs/heads/master.zip"
 wget -P "$download_dir" "$download_url"
 
 # Extract the downloaded zip file
-unzip "$download_dir"/master.zip -d "$download_dir"
+unzip "$download_dir"/master.zip -d "$download_dir" > /dev/null
 
 # Move the extracted files to the desired location
 mv "$download_dir"/vdf-parser-master/* "$download_dir"
@@ -2081,6 +2081,9 @@ steam_dir="$HOME/.local/share/Steam"
 if [[ -f "$steam_dir/config/config.vdf" ]]; then
     # Get the steamid of the currently logged in user
     steamid=$(grep -oP 'SteamID"\s+"\K[0-9]+' "$steam_dir/config/config.vdf")
+
+    # Print out the value of steamid for debugging purposes
+    echo "steamid: $steamid"
 
     # Convert steamid to steamid3
     steamid3=$((steamid - 76561197960265728))
@@ -2131,12 +2134,6 @@ else
     # The userdata folder was not found
     echo "Current user's userdata folder not found"
 fi
-
-
-
-
-
-
 
 
 
