@@ -2080,7 +2080,7 @@ steam_dir="$HOME/.local/share/Steam"
 # Check if the config.vdf file exists
 if [[ -f "$steam_dir/config/config.vdf" ]]; then
     # Get the steamid of the currently logged in user
-    steamid=$(grep -oP 'SteamID"\s+"\K[0-9]+' "$steam_dir/config/config.vdf")
+    steamid=$(grep -oP 'SteamID"\s+"\K[0-9]+' "$steam_dir/config/config.vdf" | head -n 1)
 
     # Print out the value of steamid for debugging purposes
     echo "steamid: $steamid"
