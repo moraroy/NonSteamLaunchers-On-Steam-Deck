@@ -4,7 +4,7 @@ chmod +x "$0"
 
 set -x
 
-version=v2.75
+version=v2.8
 
 check_for_updates() {
     # Set the URL to the GitHub API for the repository
@@ -2054,63 +2054,21 @@ fi
 
 
 
-#VDF Library
-
 # Set the download directory
 download_dir=~/Downloads/NonSteamLaunchersInstallation
 
-# Download the latest release of the vdf library from the Python Package Index
-download_url="https://files.pythonhosted.org/packages/44/7f/74192f47d67c8bf3c47bf0d8487b3457614c2c98d58b6617721d217f3f79/vdf-3.4.tar.gz"
+# Create the download directory if it doesn't exist
+mkdir -p "$download_dir"
 
+# Download the vdf-parser module from GitHub
+download_url="https://github.com/p0358/vdf-parser/archive/refs/heads/master.zip"
 wget -P "$download_dir" "$download_url"
 
-# Extract the downloaded tar.gz file
-tar -xvf "$download_dir"/vdf-*.tar.gz -C "$download_dir"
+# Extract the downloaded zip file
+unzip "$download_dir"/master.zip -d "$download_dir"
 
-#Setup Tools
-
-# Download the latest release of setuptools from the Python Package Index
-download_url="https://files.pythonhosted.org/packages/9b/be/13f54335c7dba713b0e97e11e7a41db3df4a85073d6c5a6e7f6468b22ee2/setuptools-60.2.0.tar.gz"
-
-wget -P "$download_dir" "$download_url"
-
-# Extract the downloaded tar.gz file
-tar -xvf "$download_dir"/setuptools-*.tar.gz -C "$download_dir"
-
-# Change to the extracted directory
-cd "$download_dir"/setuptools-*/
-
-# Add the installation directory to the PYTHONPATH environment variable
-export PYTHONPATH="$download_dir/lib/python3.10/site-packages:$PYTHONPATH"
-
-echo "$PYTHONPATH"
-
-# Install setuptools
-python setup.py install --prefix="$download_dir"
-
-export PYTHONPATH="/usr/lib/python3.10/site-packages:$PYTHONPATH"
-
-# Download extended-setup-tools from the provided URL
-download_url="https://files.pythonhosted.org/packages/d2/a0/979ab67627f03da03eff3bc9d01c2969d89e33175764cdd5ec15a44efe50/extended-setup-tools-0.1.8.tar.gz"
-wget -P "$download_dir" "$download_url"
-
-# Extract the downloaded tar.gz file
-tar -xvf "$download_dir"/extended-setup-tools-*.tar.gz -C "$download_dir"
-
-# Change to the extracted directory
-cd "$download_dir"/extended-setup-tools-*/
-
-# Install extended-setup-tools
-python setup.py install --prefix="$download_dir"
-
-# Change to the extracted directory
-cd "$download_dir"/vdf-*/
-
-# Set the PYTHONPATH environment variable
-export PYTHONPATH="$download_dir/lib/python3.10/site-packages:$PYTHONPATH"
-
-# Install the vdf library
-python setup.py install --prefix=~/Downloads/NonSteamLaunchersInstallation
+# Move the extracted files to the desired location
+mv "$download_dir"/vdf-parser-master/* "$download_dir"
 
 
 
@@ -2194,9 +2152,8 @@ nohup sh -c 'sleep 10; /usr/bin/steam' &
 killall steam
 
 
-
-
-
+# Wait for the steam process to exit
+while pgrep steam > /dev/null; do sleep 1; done
 
 
 
@@ -2205,9 +2162,12 @@ killall steam
 
 # Run the Python script to create a new entry for a Steam shortcut
 python -c "
-import vdf
-import subprocess
+import sys
 import os
+sys.path.insert(0, os.path.expanduser('~/Downloads/NonSteamLaunchersInstallation'))
+import vdf  # Updated import
+import subprocess
+
 
 
 # Load the shortcuts.vdf file
@@ -2877,8 +2837,6 @@ if rockstarshortcutdirectory != '':
 # Save the updated shortcuts dictionary to the shortcuts.vdf file
 with open('$shortcuts_vdf_path', 'wb') as f:
     vdf.binary_dump(shortcuts, f)"
-
-
 
 
 
