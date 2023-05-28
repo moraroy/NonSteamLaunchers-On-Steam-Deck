@@ -2089,41 +2089,64 @@ if [[ -f "$steam_dir/config/config.vdf" ]]; then
     # Convert steamid to steamid3
     steamid3=$((steamid - 76561197960265728))
 
-    # Check if the userdata directory exists for the currently logged in user
-    if [[ -d "$HOME/.steam/root/userdata/$steamid3" ]]; then
-        echo "The correct steamid3 for the currently logged in user is: $steamid3"
-        userdata_folder="$HOME/.steam/root/userdata/$steamid3"
-        echo "The corresponding userdata folder for the currently logged in user is: $userdata_folder"
-    else
-        echo "Could not find userdata directory for steamid3: $steamid3"
-    fi
+    # Initialize the userdata_folder variable
+    userdata_folder=""
+
+    # Initialize the most_recent variable
+    most_recent=0
+
+    # Loop through all the userdata folders
+    for USERDATA_FOLDER in ~/.steam/root/userdata/*
+    do
+        # Check if the current userdata folder is not the "0" or "anonymous" folder
+        if [[ "$USERDATA_FOLDER" != *"/0" ]] && [[ "$USERDATA_FOLDER" != *"/anonymous" ]]
+        then
+            # Get the access time of the current userdata folder
+            access_time=$(stat -c %X "$USERDATA_FOLDER")
+
+            # Extract steamid3 from userdata folder name
+            userdata_steamid3=$(basename "$USERDATA_FOLDER")
+
+            # Check if userdata_steamid3 matches steamid3 and if access time is more recent than most recent access time
+            if [[ $userdata_steamid3 -eq $steamid3 ]] && [[ $access_time -gt $most_recent ]]
+            then
+                # The access time of current userdata folder is more recent and steamid3 matches
+                # Set userdata_folder variable
+                userdata_folder="$USERDATA_FOLDER"
+
+                # Update most_recent variable
+                most_recent=$access_time
+            fi
+        fi
+    done
+
 else
     echo "Could not find config.vdf file"
 fi
 
-# Check if the userdata folder was found
+# Check if userdata folder was found
 if [[ -n "$userdata_folder" ]]; then
-    # The userdata folder was found
+    # Userdata folder was found
     echo "Current user's userdata folder found at: $userdata_folder"
 
-    # Find the shortcuts.vdf file for the current user
+    # Find shortcuts.vdf file for current user
     shortcuts_vdf_path=$(find "$userdata_folder" -type f -name shortcuts.vdf)
 
     # Check if shortcuts_vdf_path is not empty
     if [[ -n "$shortcuts_vdf_path" ]]; then
-        # Create a backup of the shortcuts.vdf file
+        # Create backup of shortcuts.vdf file
         cp "$shortcuts_vdf_path" "$shortcuts_vdf_path.bak"
     else
-        # Find the config directory for the current user
+        # Find config directory for current user
         config_dir=$(find "$userdata_folder" -type d -name config)
 
         # Check if config_dir is not empty
         if [[ -n "$config_dir" ]]; then
-            # Create a new shortcuts.vdf file at the expected location for the current user
+            # Create new shortcuts.vdf file at expected location for current user
             touch "$config_dir/shortcuts.vdf"
             shortcuts_vdf_path="$config_dir/shortcuts.vdf"
         else
-            # Create a new config directory and a new shortcuts.vdf file at the expected location for the current user
+            # Create new config directory and new shortcuts.vdf file at expected location for current user
             mkdir "$userdata_folder/config/"
             touch "$userdata_folder/config/shortcuts.vdf"
             config_dir="$userdata_folder/config/"
@@ -2132,9 +2155,11 @@ if [[ -n "$userdata_folder" ]]; then
     fi
 
 else
-    # The userdata folder was not found
+    # Userdata folder was not found
     echo "Current user's userdata folder not found"
 fi
+
+
 
 
 
