@@ -2060,15 +2060,16 @@ download_dir=~/Downloads/NonSteamLaunchersInstallation
 # Create the download directory if it doesn't exist
 mkdir -p "$download_dir"
 
-# Download the vdf-parser module from GitHub
-download_url="https://github.com/p0358/vdf-parser/archive/refs/heads/master.zip"
+# Download the python-vdf library from GitHub
+download_url="https://github.com/ValvePython/vdf/archive/refs/heads/master.zip"
 wget -P "$download_dir" "$download_url"
 
 # Extract the downloaded zip file
 unzip "$download_dir"/master.zip -d "$download_dir" > /dev/null
 
 # Move the extracted files to the desired location
-mv "$download_dir"/vdf-parser-master/* "$download_dir"
+mv "$download_dir"/vdf-master/* "$download_dir"
+
 
 
 
@@ -2138,8 +2139,7 @@ fi
 
 
 
-# Delete NonSteamLaunchersInstallation subfolder in Downloads folder
-rm -rf ~/Downloads/NonSteamLaunchersInstallation
+
 
 
 # Detach script from Steam process
@@ -2161,9 +2161,12 @@ while pgrep steam > /dev/null; do sleep 1; done
 python -c "
 import sys
 import os
-sys.path.insert(0, os.path.expanduser('~/Downloads/NonSteamLaunchersInstallation'))
+sys.path.insert(0, os.path.expanduser('~/Downloads/NonSteamLaunchersInstallation/vdf'))
 import vdf  # Updated import
 import subprocess
+
+# Print the path to the file where the vdf module was loaded from
+print(vdf.__file__)
 
 
 
@@ -2838,3 +2841,9 @@ with open('$shortcuts_vdf_path', 'wb') as f:
 
 
 
+
+
+
+
+# Delete NonSteamLaunchersInstallation subfolder in Downloads folder
+rm -rf ~/Downloads/NonSteamLaunchersInstallation
