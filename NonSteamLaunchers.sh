@@ -4,7 +4,7 @@ chmod +x "$0"
 
 set -x
 
-version=v2.82
+version=v2.83
 
 check_for_updates() {
     # Set the URL to the GitHub API for the repository
@@ -2070,6 +2070,20 @@ unzip "$download_dir"/master.zip -d "$download_dir" > /dev/null
 # Move the extracted files to the desired location
 mv "$download_dir"/vdf-master/* "$download_dir"
 
+# Set the download directory
+download_dir=~/Downloads/NonSteamLaunchersInstallation
+
+# Change to the extracted directory
+cd "$download_dir"
+
+# Install the vdf library in a custom location
+python setup.py install --prefix="$download_dir"
+
+# Get the version of Python being used
+python_version=$(python -c 'import sys; print(f"{sys.version_info.major}.{sys.version_info.minor}")')
+
+# Set the PYTHONPATH environment variable
+export PYTHONPATH="$download_dir/lib/python$python_version/site-packages:$PYTHONPATH"
 
 
 
@@ -2180,13 +2194,13 @@ while pgrep steam > /dev/null; do sleep 1; done
 
 
 
-# Set the PYTHONPATH environment variable
-export PYTHONPATH="$HOME/Downloads/NonSteamLaunchersInstallation/vdf:$PYTHONPATH"
+
 
 # Run the Python script to create a new entry for a Steam shortcut
 python -c "
 import sys
 import os
+import subprocess
 sys.path.insert(0, os.path.expanduser('$HOME/Downloads/NonSteamLaunchersInstallation/vdf'))
 print(sys.path)  # Add this line to print the value of sys.path
 import vdf  # Updated import
