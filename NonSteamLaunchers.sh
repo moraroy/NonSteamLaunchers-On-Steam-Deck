@@ -4,7 +4,7 @@ chmod +x "$0"
 
 set -x
 
-version=v2.81
+version=v2.8
 
 check_for_updates() {
     # Set the URL to the GitHub API for the repository
@@ -2180,15 +2180,17 @@ while pgrep steam > /dev/null; do sleep 1; done
 
 
 
-
+# Set the PYTHONPATH environment variable
+export PYTHONPATH="$HOME/Downloads/NonSteamLaunchersInstallation/vdf:$PYTHONPATH"
 
 # Run the Python script to create a new entry for a Steam shortcut
 python -c "
 import sys
 import os
-sys.path.insert(0, os.path.expanduser('~/Downloads/NonSteamLaunchersInstallation/vdf'))
+sys.path.insert(0, os.path.expanduser('$HOME/Downloads/NonSteamLaunchersInstallation/vdf'))
+print(sys.path)  # Add this line to print the value of sys.path
 import vdf  # Updated import
-import subprocess
+
 
 # Print the path to the file where the vdf module was loaded from
 print(vdf.__file__)
@@ -2862,10 +2864,6 @@ if rockstarshortcutdirectory != '':
 # Save the updated shortcuts dictionary to the shortcuts.vdf file
 with open('$shortcuts_vdf_path', 'wb') as f:
     vdf.binary_dump(shortcuts, f)"
-
-
-
-
 
 
 
