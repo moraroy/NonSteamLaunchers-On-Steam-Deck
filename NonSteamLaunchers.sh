@@ -2069,10 +2069,10 @@ if ! python -c "import setuptools" &> /dev/null; then
     wget -P "$download_dir" "$download_url"
 
     # Extract the downloaded tar.gz file
-    tar -xvf "$download_dir"/setuptools-*.tar.gz -C "$download_dir"
+    tar -xvf "$download_dir/setuptools-67.8.0.tar.gz" -C "$download_dir"
 
     # Change to the extracted directory
-    cd "$download_dir"/setuptools-*/
+    cd "$download_dir/setuptools-67.8.0"
 
     # Install setuptools in a custom location
     python setup.py install --prefix="$download_dir"
