@@ -1,4 +1,5 @@
 #!/bin/bash
+
 # Create a log file in the same directory as the desktop file/.sh file
 exec >> NonSteamLaunchers-install.log 2>&1
 
@@ -6,7 +7,7 @@ chmod +x "$0"
 
 set -x
 
-version=v2.83
+version=v2.84
 
 check_for_updates() {
     # Set the URL to the GitHub API for the repository
@@ -2055,6 +2056,51 @@ fi
 
 
 
+# Set the download directory
+download_dir=~/Downloads/NonSteamLaunchersInstallation
+
+# Create the download directory if it doesn't exist
+mkdir -p "$download_dir"
+
+# Check if setuptools is already installed
+if ! python -c "import setuptools" &> /dev/null; then
+    # Download the latest version of setuptools from the Python Package Index
+    download_url="https://pypi.org/project/setuptools/#files"
+    wget -P "$download_dir" "$download_url"
+
+    # Extract the downloaded tar.gz file
+    tar -xvf "$download_dir"/setuptools-*.tar.gz -C "$download_dir"
+
+    # Change to the extracted directory
+    cd "$download_dir"/setuptools-*/
+
+    # Install setuptools in a custom location
+    python setup.py install --prefix="$download_dir"
+fi
+
+
+# Download extended-setup-tools from the Python Package Index
+download_url="https://files.pythonhosted.org/packages/d2/a0/979ab67627f03da03eff3bc9d01c2969d89e33175764cdd5ec15a44efe50/extended-setup-tools-0.1.8.tar.gz"
+wget -P "$download_dir" "$download_url"
+
+# Extract the downloaded tar.gz file
+tar -xvf "$download_dir"/extended-setup-tools-*.tar.gz -C "$download_dir"
+
+# Change to the extracted directory
+cd "$download_dir"/extended-setup-tools-*/
+
+# Install extended-setup-tools in a custom location
+python setup.py install --prefix="$download_dir"
+
+# Get the version of Python being used
+python_version=$(python -c 'import sys; print(f"{sys.version_info.major}.{sys.version_info.minor}")')
+
+# Set the PYTHONPATH environment variable
+export PYTHONPATH="$download_dir/lib/python$python_version/site-packages:$PYTHONPATH"
+
+
+
+
 
 # Set the download directory
 download_dir=~/Downloads/NonSteamLaunchersInstallation
@@ -2080,6 +2126,9 @@ cd "$download_dir"
 
 # Install the vdf library in a custom location
 python setup.py install --prefix="$download_dir"
+
+
+
 
 # Get the version of Python being used
 python_version=$(python -c 'import sys; print(f"{sys.version_info.major}.{sys.version_info.minor}")')
