@@ -1,4 +1,6 @@
 #!/bin/bash
+# Create a log file in the same directory as the desktop file/.sh file
+exec >> NonSteamLaunchers-install.log 2>&1
 
 chmod +x "$0"
 
