@@ -2065,7 +2065,7 @@ mkdir -p "$download_dir"
 # Check if setuptools is already installed
 if ! python -c "import setuptools" &> /dev/null; then
     # Download the latest version of setuptools from the Python Package Index
-    download_url="https://pypi.org/project/setuptools/#files"
+    download_url="https://files.pythonhosted.org/packages/03/20/630783571e76e5fa5f3e9f29398ca3ace377207b8196b54e0ffdf09f12c1/setuptools-67.8.0.tar.gz"
     wget -P "$download_dir" "$download_url"
 
     # Extract the downloaded tar.gz file
