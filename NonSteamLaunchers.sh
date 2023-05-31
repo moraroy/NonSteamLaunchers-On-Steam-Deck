@@ -1946,110 +1946,110 @@ wait
 if [[ -f "$epic_games_launcher_path1" ]]; then
     # Epic Games Launcher is installed at path 1
     epicshortcutdirectory="\"$epic_games_launcher_path1\""
-    epiclaunchoptions="STEAM_COMPAT_DATA_PATH=\"/home/$USER/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/\" %command%"
+    epiclaunchoptions="STEAM_COMPAT_DATA_PATH=\"$HOME/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/\" %command%"
 elif [[ -f "$epic_games_launcher_path2" ]]; then
     # Epic Games Launcher is installed at path 2
     epicshortcutdirectory="\"$epic_games_launcher_path2\""
-    epiclaunchoptions="STEAM_COMPAT_DATA_PATH=\"/home/$USER/.local/share/Steam/steamapps/compatdata/EpicGamesLauncher/\" %command%"
+    epiclaunchoptions="STEAM_COMPAT_DATA_PATH=\"$HOME/.local/share/Steam/steamapps/compatdata/EpicGamesLauncher/\" %command%"
 fi
 if [[ -f "$gog_galaxy_path1" ]]; then
     # Gog Galaxy Launcher is installed at path 1
     gogshortcutdirectory="\"$gog_galaxy_path1\""
-    goglaunchoptions="STEAM_COMPAT_DATA_PATH=\"/home/$USER/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/\" %command%"
+    goglaunchoptions="STEAM_COMPAT_DATA_PATH=\"$HOME/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/\" %command%"
 elif [[ -f "$gog_galaxy_path2" ]]; then
     # Gog Galaxy Launcher is installed at path 2
     gogshortcutdirectory="\"$gog_galaxy_path2\""
-    goglaunchoptions="STEAM_COMPAT_DATA_PATH=\"/home/$USER/.local/share/Steam/steamapps/compatdata/GogGalaxyLauncher/\" %command%"
+    goglaunchoptions="STEAM_COMPAT_DATA_PATH=\"$HOME/.local/share/Steam/steamapps/compatdata/GogGalaxyLauncher/\" %command%"
 fi
 if [[ -f "$origin_path1" ]]; then
     # Origin Launcher is installed at path 1
     originshortcutdirectory="\"$origin_path1\""
-    originlaunchoptions="STEAM_COMPAT_DATA_PATH=\"/home/$USER/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/\" %command%"
+    originlaunchoptions="STEAM_COMPAT_DATA_PATH=\"$HOME/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/\" %command%"
 elif [[ -f "$origin_path2" ]]; then
     # Origin Launcher is installed at path 2
     originshortcutdirectory="\"$origin_path2\""
-    originlaunchoptions="STEAM_COMPAT_DATA_PATH=\"/home/$USER/.local/share/Steam/steamapps/compatdata/OriginLauncher/\" %command%"
+    originlaunchoptions="STEAM_COMPAT_DATA_PATH=\"$HOME/.local/share/Steam/steamapps/compatdata/OriginLauncher/\" %command%"
 fi
 if [[ -f "$uplay_path1" ]]; then
     # Uplay Launcher is installed at path 1
     uplayshortcutdirectory="\"$uplay_path1\""
-    uplaylaunchoptions="STEAM_COMPAT_DATA_PATH=\"/home/$USER/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/\" %command%"
+    uplaylaunchoptions="STEAM_COMPAT_DATA_PATH=\"$HOME/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/\" %command%"
 elif [[ -f "$origin_path2" ]]; then
     # Uplay Launcher is installed at path 2
     uplayshortcutdirectory="\"$uplay_path2\""
-    uplaylaunchoptions="STEAM_COMPAT_DATA_PATH=\"/home/$USER/.local/share/Steam/steamapps/compatdata/UplayLauncher/\" %command%"
+    uplaylaunchoptions="STEAM_COMPAT_DATA_PATH=\"$HOME/.local/share/Steam/steamapps/compatdata/UplayLauncher/\" %command%"
 fi
 if [[ -f "$battlenet_path1" ]]; then
     # Battlenet Launcher is installed at path 1
     battlenetshortcutdirectory="\"$battlenet_path1\""
-    battlenetlaunchoptions="STEAM_COMPAT_DATA_PATH=\"/home/$USER/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/\" %command%"
+    battlenetlaunchoptions="STEAM_COMPAT_DATA_PATH=\"$HOME/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/\" %command%"
 elif [[ -f "$battlenet_path2" ]]; then
     # Battlenet Launcher is installed at path 2
     battlenetshortcutdirectory="\"$battlenet_path2\""
-    battlenetlaunchoptions="STEAM_COMPAT_DATA_PATH=\"/home/$USER/.local/share/Steam/steamapps/compatdata/Battle.netLauncher/\" %command%"
+    battlenetlaunchoptions="STEAM_COMPAT_DATA_PATH=\"$HOME/.local/share/Steam/steamapps/compatdata/Battle.netLauncher/\" %command%"
 fi
 if [[ -f "$eaapp_path1" ]]; then
     # EA App Launcher is installed at path 1
     eaappshortcutdirectory="\"$eaapp_path1\""
-    eaapplaunchoptions="STEAM_COMPAT_DATA_PATH=\"/home/$USER/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/\" %command%"
+    eaapplaunchoptions="STEAM_COMPAT_DATA_PATH=\"$HOME/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/\" %command%"
 elif [[ -f "$eaapp_path2" ]]; then
     # EA App Launcher is installed at path 2
     eaappshortcutdirectory="\"$eaapp_path2\""
-    eaapplaunchoptions="STEAM_COMPAT_DATA_PATH=\"/home/$USER/.local/share/Steam/steamapps/compatdata/TheEAappLauncher/\" %command%"
+    eaapplaunchoptions="STEAM_COMPAT_DATA_PATH=\"$HOME/.local/share/Steam/steamapps/compatdata/TheEAappLauncher/\" %command%"
 fi
 if [[ -f "$amazongames_path1" ]]; then
     # Amazon Games Launcher is installed at path 1
     amazonshortcutdirectory="\"$amazongames_path1\""
-    amazonlaunchoptions="STEAM_COMPAT_DATA_PATH=\"/home/$USER/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/\" %command%"
+    amazonlaunchoptions="STEAM_COMPAT_DATA_PATH=\"$HOME/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/\" %command%"
 elif [[ -f "$amazongames_path2" ]]; then
     # Amazon Games Launcher is installed at path 2
     amazonshortcutdirectory="\"$amazongames_path2\""
-    amazonlaunchoptions="STEAM_COMPAT_DATA_PATH=\"/home/$USER/.local/share/Steam/steamapps/compatdata/AmazonGamesLauncher/\" %command%"
+    amazonlaunchoptions="STEAM_COMPAT_DATA_PATH=\"$HOME/.local/share/Steam/steamapps/compatdata/AmazonGamesLauncher/\" %command%"
 fi
 if [[ -f "$itchio_path1" ]]; then
     # itchio Launcher is installed at path 1
     itchioshortcutdirectory="\"$itchio_path1\""
-    itchiolaunchoptions="STEAM_COMPAT_DATA_PATH=\"/home/$USER/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/\" %command%"
+    itchiolaunchoptions="STEAM_COMPAT_DATA_PATH=\"$HOME/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/\" %command%"
 elif [[ -f "$itchio_path2" ]]; then
     # itchio Launcher is installed at path 2
     itchioshortcutdirectory="\"$itchio_path2\""
-    itchiolaunchoptions="STEAM_COMPAT_DATA_PATH=\"/home/$USER/.local/share/Steam/steamapps/compatdata/itchioLauncher/\" %command%"
+    itchiolaunchoptions="STEAM_COMPAT_DATA_PATH=\"$HOME/.local/share/Steam/steamapps/compatdata/itchioLauncher/\" %command%"
 fi
 if [[ -f "$legacygames_path1" ]]; then
     # Legacy Games Launcher is installed at path 1
     legacyshortcutdirectory="\"$legacygames_path1\""
-    legacylaunchoptions="STEAM_COMPAT_DATA_PATH=\"/home/$USER/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/\" %command%"
+    legacylaunchoptions="STEAM_COMPAT_DATA_PATH=\"$HOME/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/\" %command%"
 elif [[ -f "$legacygames_path2" ]]; then
     # Legacy Games Launcher is installed at path 2
     legacyshortcutdirectory="\"$legacygames_path2\""
-    legacylaunchoptions="STEAM_COMPAT_DATA_PATH=\"/home/$USER/.local/share/Steam/steamapps/compatdata/LegacyGamesLauncher/\" %command%"
+    legacylaunchoptions="STEAM_COMPAT_DATA_PATH=\"$HOME/.local/share/Steam/steamapps/compatdata/LegacyGamesLauncher/\" %command%"
 fi
 if [[ -f "$humblegames_path1" ]]; then
     # Humble Games Launcher is installed at path 1
     humbleshortcutdirectory="\"$humblegames_path1\""
-    humblelaunchoptions="STEAM_COMPAT_DATA_PATH=\"/home/$USER/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/\" %command%"
+    humblelaunchoptions="STEAM_COMPAT_DATA_PATH=\"$HOME/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/\" %command%"
 elif [[ -f "$humblegames_path2" ]]; then
     # Humble Games Launcher is installed at path 2
     humbleshortcutdirectory="\"$humblegames_path2\""
-    humblelaunchoptions="STEAM_COMPAT_DATA_PATH=\"/home/$USER/.local/share/Steam/steamapps/compatdata/HumbleGamesLauncher/\" %command%"
+    humblelaunchoptions="STEAM_COMPAT_DATA_PATH=\"$HOME/.local/share/Steam/steamapps/compatdata/HumbleGamesLauncher/\" %command%"
 fi
 if [[ -f "$indiegala_path1" ]]; then
     # indiegala Launcher is installed at path 1
     indieshortcutdirectory="\"$indiegala_path1\""
-    indielaunchoptions="STEAM_COMPAT_DATA_PATH=\"/home/$USER/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/\" %command%"
+    indielaunchoptions="STEAM_COMPAT_DATA_PATH=\"$HOME/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/\" %command%"
 elif [[ -f "$indiegala_path2" ]]; then
     # indiegala Launcher is installed at path 2
     indieshortcutdirectory="\"$indiegala_path2\""
-    indielaunchoptions="STEAM_COMPAT_DATA_PATH=\"/home/$USER/.local/share/Steam/steamapps/compatdata/IndieGalaLauncher/\" %command%"
+    indielaunchoptions="STEAM_COMPAT_DATA_PATH=\"$HOME/.local/share/Steam/steamapps/compatdata/IndieGalaLauncher/\" %command%"
 fi
 if [[ -f "$rockstar_path1" ]]; then
     # rockstar Launcher is installed at path 1
     rockstarshortcutdirectory="\"$rockstar_path1\""
-    rockstarlaunchoptions="STEAM_COMPAT_DATA_PATH=\"/home/$USER/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/\" %command%"
+    rockstarlaunchoptions="STEAM_COMPAT_DATA_PATH=\"$HOME/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/\" %command%"
 elif [[ -f "$rockstar_path2" ]]; then
     # rockstar Launcher is installed at path 2
     rockstarshortcutdirectory="\"$rockstar_path2\""
-    rockstarlaunchoptions="STEAM_COMPAT_DATA_PATH=\"/home/$USER/.local/share/Steam/steamapps/compatdata/RockstarGamesLauncher/\" %command%"
+    rockstarlaunchoptions="STEAM_COMPAT_DATA_PATH=\"$HOME/.local/share/Steam/steamapps/compatdata/RockstarGamesLauncher/\" %command%"
 fi
 
 
