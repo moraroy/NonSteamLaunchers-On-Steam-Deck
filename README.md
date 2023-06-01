@@ -1,8 +1,11 @@
-<p align="center">
-  <img src="logo.png">
-</p>
 
-# NonSteamLaunchers 🚀
+<h1 align="center">
+  <img src="https://github.com/cchrkk/NSLOSD-DL/raw/main/logo.svg" width=40% height=auto
+  <br>
+  <br>
+  NonSteamLaunchers 🚀
+</h1>
+
 
 This script installs the latest GE-Proton, installs Non-Steam-Launchers under one unique Proton prefix folder in your compatdata folder path called "NonSteamLaunchers" and adds them to your Steam Library. 
 So you can use them on Desktop or in Game Mode.
