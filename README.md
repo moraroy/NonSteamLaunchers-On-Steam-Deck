@@ -81,7 +81,7 @@ If you have any suggestions or improvements for this script, feel free to open a
 You can donate me on [ko-fi](https://ko-fi.com/moraroy), [liberapay](https://liberapay.com/moraroy) or [sponsor me on github](https://github.com/sponsors/moraroy)
 
 <h1 align="center">
-📝 License
+License 📝
 </h1>
 
 
