@@ -28,8 +28,13 @@ So you can use them on Desktop or in Game Mode.
 
 
 # How to Install🔧
-+ Go to desktop mode, right click [HERE](https://github.com/moraroy/NonSteamLaunchers-On-Steam-Deck/raw/main/NonSteamLaunchers.desktop) and save the .desktop file to your Steam Deck desktop. 
-+ Go to your desktop, click the NonSteamLaunchers icon, it will download and run the latest NonSteamLaunchers.sh from this repository and run it. 
+<p align="center">
+  <a name="download button" href="https://github.com/moraroy/NonSteamLaunchers-On-Steam-Deck/raw/main/NonSteamLaunchers.desktop"><img src="https://user-images.githubusercontent.com/98482469/242361563-33f31d3d-9a69-4fca-a928-207a5d17a98f.png"  alt="Download decky" width="350px" style="padding-top: 15px;"></a>
+</p>
+<!--- Thanks https://github.com/Heus-Sueh -->
+
++ Go to desktop mode, right click the download button above and save the .desktop file to your Steam Deck desktop. 
++ Go to your desktop, click the NonSteamLaunchers icon, it will download and run the latest NonSteamLaunchers.sh from this repository and run it.
 + You will simply have to choose which launcher to install and let the script handle the rest. 💻 No files are left in your "Downloads" they are deleted after installation.
 + After running the script, launch Steam on your Steam Deck. You'll find the new launchers in your library under the non-steam tab. Click a launcher to see your installed games from that store, and launch them directly from Steam! Even in gamemode 🥳
 
