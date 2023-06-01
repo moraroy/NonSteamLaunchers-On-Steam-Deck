@@ -1,8 +1,11 @@
-<p align="center">
-  <img src="logo.png">
-</p>
 
-# NonSteamLaunchers 🚀
+<h1 align="center">
+  <img src="https://github.com/cchrkk/NSLOSD-DL/raw/main/logo.svg" width=40% height=auto
+  <br>
+  <br>
+  NonSteamLaunchers 🚀
+</h1>
+
 
 This script installs the latest GE-Proton, installs Non-Steam-Launchers under one unique Proton prefix folder in your compatdata folder path called "NonSteamLaunchers" and adds them to your Steam Library. 
 So you can use them on Desktop or in Game Mode.
@@ -29,7 +32,7 @@ So you can use them on Desktop or in Game Mode.
 
 # How to Install🔧
 <p align="center">
-  <a name="download button" href="https://github.com/moraroy/NonSteamLaunchers-On-Steam-Deck/raw/main/NonSteamLaunchers.desktop"><img src="https://user-images.githubusercontent.com/98482469/242361563-33f31d3d-9a69-4fca-a928-207a5d17a98f.png"  alt="Download decky" width="350px" style="padding-top: 15px;"></a>
+  <a name="download button" href="https://github.com/cchrkk/NSLOSD-DL/releases/download/DlLinkFix/NonSteamLaunchers.desktop"><img src="https://user-images.githubusercontent.com/98482469/242361563-33f31d3d-9a69-4fca-a928-207a5d17a98f.png"  alt="Download NonSteamLaunchers" width="350px" style="padding-top: 15px;"></a>
 </p>
 <!--- Thanks https://github.com/Heus-Sueh -->
 
