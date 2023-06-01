@@ -2248,7 +2248,7 @@ while pgrep steam > /dev/null; do sleep 1; done
 
 
 # Run the Python script to create a new entry for a Steam shortcut
-python -c "
+python3 -c "
 import sys
 import os
 import subprocess
