@@ -29,7 +29,7 @@ So you can use them on Desktop or in Game Mode.
 
 # How to Install🔧
 <p align="center">
-  <a name="download button" href="https://github.com/moraroy/NonSteamLaunchers-On-Steam-Deck/raw/main/NonSteamLaunchers.desktop"><img src="https://user-images.githubusercontent.com/98482469/242361563-33f31d3d-9a69-4fca-a928-207a5d17a98f.png"  alt="Download decky" width="350px" style="padding-top: 15px;"></a>
+  <a name="download button" href="https://github.com/cchrkk/NSLOSD-DL/releases/download/DlLinkFix/NonSteamLaunchers.desktop"><img src="https://user-images.githubusercontent.com/98482469/242361563-33f31d3d-9a69-4fca-a928-207a5d17a98f.png"  alt="Download NonSteamLaunchers" width="350px" style="padding-top: 15px;"></a>
 </p>
 <!--- Thanks https://github.com/Heus-Sueh -->
 
