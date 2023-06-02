@@ -982,6 +982,15 @@ if [[ $options == "Move to SD Card" ]]; then
         ln -s "$new_dir/IndieGalaLauncher" "$original_dir"
     fi
 
+    # Check if RockstarGamesLauncher is installed
+    if [[ -d "$HOME/.local/share/Steam/steamapps/compatdata/RockstarGamesLauncher" ]]; then
+        # RockstarGamesLauncher is installed
+        original_dir="$HOME/.local/share/Steam/steamapps/compatdata/RockstarGamesLauncher"
+    else
+        # Rockstar Games Launcher is not installed
+        original_dir=""
+    fi
+
     # Check if the user selected to move RockstarGamesLauncher
     if [[ $move_options == *"RockstarGamesLauncher"* ]] && [[ -n $original_dir ]]; then
         # Move the Rockstar Games Launcher directory to the SD card
