@@ -7,7 +7,7 @@ chmod +x "$0"
 
 set -x
 
-version=v2.85
+version=v2.86
 
 check_for_updates() {
     # Set the URL to the GitHub API for the repository
@@ -2247,6 +2247,33 @@ while pgrep steam > /dev/null; do sleep 1; done
 
 
 
+
+#Pre check for updating the config file
+
+# Set the default Steam directory
+steam_dir="$HOME/.steam/root"
+
+# Set the path to the config.vdf file
+config_vdf_path="$steam_dir/config/config.vdf"
+
+# Check if the config.vdf file exists
+if [ -f "$config_vdf_path" ]; then
+    # Create a backup of the config.vdf file
+    backup_path="$steam_dir/config/config.vdf.bak"
+    cp "$config_vdf_path" "$backup_path"
+
+    # Set the name of the compatibility tool to use
+    compat_tool_name="GE-Proton8-3"
+else
+    echo "Could not find config.vdf file"
+fi
+
+
+
+
+
+
+
 # Run the Python script to create a new entry for a Steam shortcut
 python3 -c "
 import sys
@@ -2255,6 +2282,7 @@ import subprocess
 sys.path.insert(0, os.path.expanduser('$HOME/Downloads/NonSteamLaunchersInstallation/vdf'))
 print(sys.path)  # Add this line to print the value of sys.path
 import vdf  # Updated import
+import binascii
 
 
 # Print the path to the file where the vdf module was loaded from
@@ -2294,10 +2322,28 @@ humbleshortcutdirectory = '$humbleshortcutdirectory'
 indieshortcutdirectory = '$indieshortcutdirectory'
 rockstarshortcutdirectory = '$rockstarshortcutdirectory'
 
+app_ids = []
+
+
+def get_steam_shortcut_id(exe, appname):
+    unique_id = ''.join([exe, appname])
+    id_int = binascii.crc32(str.encode(unique_id)) | 0x80000000
+    return id_int
+
+
+
+
+
 if epicshortcutdirectory != '':
+        exe = f'"{epicshortcutdirectory}"'
+        appname = 'Epic Games'
+
+        epicappid = get_steam_shortcut_id(exe, appname)
+        app_ids.append(epicappid)
+
         # Create a new entry for the Steam shortcut
         new_entry = {
-            'appid': '',
+            'appid': f'{str(epicappid)}',
             'AppName': 'Epic Games',
             'Exe': '$epicshortcutdirectory',
             'StartDir': '$epicshortcutdirectory',
@@ -2348,9 +2394,15 @@ if epicshortcutdirectory != '':
 
 
 if gogshortcutdirectory != '':
+        exe = f'"{gogshortcutdirectory}"'
+        appname = 'Gog Galaxy'
+
+        gogappid = get_steam_shortcut_id(exe, appname)
+        app_ids.append(gogappid)
+
         # Create a new entry for the Steam shortcut
         new_entry = {
-            'appid': '',
+            'appid': f'{str(gogappid)}',
             'AppName': 'Gog Galaxy',
             'Exe': '$gogshortcutdirectory',
             'StartDir': '$gogshortcutdirectory',
@@ -2405,9 +2457,15 @@ if gogshortcutdirectory != '':
 
 
 if uplayshortcutdirectory != '':
+        exe = f'"{uplayshortcutdirectory}"'
+        appname = 'Ubisoft Connect'
+
+        ubisoftappid = get_steam_shortcut_id(exe, appname)
+        app_ids.append(ubisoftappid)
+
         # Create a new entry for the Steam shortcut
         new_entry = {
-            'appid': '',
+            'appid': f'{str(ubisoftappid)}',
             'AppName': 'Ubisoft Connect',
             'Exe': '$uplayshortcutdirectory',
             'StartDir': '$uplayshortcutdirectory',
@@ -2456,9 +2514,15 @@ if uplayshortcutdirectory != '':
 
 
 if originshortcutdirectory != '':
+        exe = f'"{originshortcutdirectory}"'
+        appname = 'Origin'
+
+        originappid = get_steam_shortcut_id(exe, appname)
+        app_ids.append(originappid)
+
         # Create a new entry for the Steam shortcut
         new_entry = {
-            'appid': '',
+            'appid': f'{str(originappid)}',
             'AppName': 'Origin',
             'Exe': '$originshortcutdirectory',
             'StartDir': '$originshortcutdirectory',
@@ -2507,9 +2571,15 @@ if originshortcutdirectory != '':
 
 
 if battlenetshortcutdirectory != '':
+        exe = f'"{battlenetshortcutdirectory}"'
+        appname = 'Battle.net'
+
+        battlenetappid = get_steam_shortcut_id(exe, appname)
+        app_ids.append(battlenetappid)
+
         # Create a new entry for the Steam shortcut
         new_entry = {
-            'appid': '',
+            'appid': f'{str(battlenetappid)}',
             'AppName': 'Battle.net',
             'Exe': '$battlenetshortcutdirectory',
             'StartDir': '$battlenetshortcutdirectory',
@@ -2559,9 +2629,15 @@ if battlenetshortcutdirectory != '':
 
 
 if eaappshortcutdirectory != '':
+        exe = f'"{eaappshortcutdirectory}"'
+        appname = 'EA App'
+
+        eaappid = get_steam_shortcut_id(exe, appname)
+        app_ids.append(eaappid)
+
         # Create a new entry for the Steam shortcut
         new_entry = {
-            'appid': '',
+            'appid': f'{str(eaappid)}',
             'AppName': 'EA App',
             'Exe': '$eaappshortcutdirectory',
             'StartDir': '$eaappshortcutdirectory',
@@ -2610,9 +2686,15 @@ if eaappshortcutdirectory != '':
 
 
 if amazonshortcutdirectory != '':
+        exe = f'"{amazonshortcutdirectory}"'
+        appname = 'Amazon Games'
+
+        amazonappid = get_steam_shortcut_id(exe, appname)
+        app_ids.append(amazonappid)
+
         # Create a new entry for the Steam shortcut
         new_entry = {
-            'appid': '',
+            'appid': f'{str(amazonappid)}',
             'AppName': 'Amazon Games',
             'Exe': '$amazonshortcutdirectory',
             'StartDir': '$amazonshortcutdirectory',
@@ -2660,9 +2742,15 @@ if amazonshortcutdirectory != '':
                 shortcuts['shortcuts'][str(max_key + 1)] = new_entry
 
 if itchioshortcutdirectory != '':
+        exe = f'"{itchioshortcutdirectory}"'
+        appname = 'itch.io'
+
+        itchioappid = get_steam_shortcut_id(exe, appname)
+        app_ids.append(itchioappid)
+
         # Create a new entry for the Steam shortcut
         new_entry = {
-            'appid': '',
+            'appid': f'{str(itchioappid)}',
             'AppName': 'itch.io',
             'Exe': '$itchioshortcutdirectory',
             'StartDir': '$itchioshortcutdirectory',
@@ -2711,9 +2799,15 @@ if itchioshortcutdirectory != '':
 
 
 if legacyshortcutdirectory != '':
+        exe = f'"{legacyshortcutdirectory}"'
+        appname = 'Legacy games'
+
+        legacyappid = get_steam_shortcut_id(exe, appname)
+        app_ids.append(legacyappid)
+
         # Create a new entry for the Steam shortcut
         new_entry = {
-            'appid': '',
+            'appid': f'{str(legacyappid)}',
             'AppName': 'Legacy Games',
             'Exe': '$legacyshortcutdirectory',
             'StartDir': '$legacyshortcutdirectory',
@@ -2762,9 +2856,15 @@ if legacyshortcutdirectory != '':
 
 
 if humbleshortcutdirectory != '':
+        exe = f'"{humbleshortcutdirectory}"'
+        appname = 'Humble Games Collection'
+
+        humbleappid = get_steam_shortcut_id(exe, appname)
+        app_ids.append(humbleappid)
+
         # Create a new entry for the Steam shortcut
         new_entry = {
-            'appid': '',
+            'appid': f'{str(humbleappid)}',
             'AppName': 'Humble Games Collection',
             'Exe': '$humbleshortcutdirectory',
             'StartDir': '$humbleshortcutdirectory',
@@ -2814,9 +2914,15 @@ if humbleshortcutdirectory != '':
 
 
 if indieshortcutdirectory != '':
+        exe = f'"{indieshortcutdirectory}"'
+        appname = 'IndieGala'
+
+        indieappid = get_steam_shortcut_id(exe, appname)
+        app_ids.append(indieappid)
+
         # Create a new entry for the Steam shortcut
         new_entry = {
-            'appid': '',
+            'appid': f'{str(indieappid)}',
             'AppName': 'IndieGala',
             'Exe': '$indieshortcutdirectory',
             'StartDir': '$indieshortcutdirectory',
@@ -2865,10 +2971,18 @@ if indieshortcutdirectory != '':
 
 
 
+
+
 if rockstarshortcutdirectory != '':
+        exe = f'"{rockstarshortcutdirectory}"'
+        appname = 'Rockstar Games Launcher'
+
+        rockstarappid = get_steam_shortcut_id(exe, appname)
+        app_ids.append(rockstarappid)
+
         # Create a new entry for the Steam shortcut
         new_entry = {
-            'appid': '',
+            'appid': f'{str(rockstarappid)}',
             'AppName': 'Rockstar Games Launcher',
             'Exe': '$rockstarshortcutdirectory',
             'StartDir': '$rockstarshortcutdirectory',
@@ -2922,13 +3036,38 @@ if rockstarshortcutdirectory != '':
 
 
 
-
-
+print(f'app_ids: {app_ids}')
 
 
 # Save the updated shortcuts dictionary to the shortcuts.vdf file
 with open('$shortcuts_vdf_path', 'wb') as f:
-    vdf.binary_dump(shortcuts, f)"
+    vdf.binary_dump(shortcuts, f)
+
+
+
+
+
+
+
+
+#Update the config.vdf file
+with open('$config_vdf_path', 'r') as f:
+    config = vdf.load(f)
+
+for app_id in app_ids:
+    if str(app_id) in config['InstallConfigStore']['Software']['Valve']['Steam']['CompatToolMapping']:
+        config['InstallConfigStore']['Software']['Valve']['Steam']['CompatToolMapping'][str(app_id)]['name'] = '$compat_tool_name'
+        config['InstallConfigStore']['Software']['Valve']['Steam']['CompatToolMapping'][str(app_id)]['config'] = ''
+        config['InstallConfigStore']['Software']['Valve']['Steam']['CompatToolMapping'][str(app_id)]['priority'] = '250'
+    else:
+        config['InstallConfigStore']['Software']['Valve']['Steam']['CompatToolMapping'][str(app_id)] = {'name': '$compat_tool_name', 'config': '', 'priority': '250'}
+
+# Save the updated config dictionary to the config.vdf file
+with open('$config_vdf_path', 'w') as f:
+    vdf.dump(config, f)"
+
+
+
 
 
 
