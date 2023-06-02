@@ -1515,7 +1515,7 @@ done
 fi
 
 
-
+wait
 
 echo "80"
 echo "# Downloading & Installing Amazon Games...please wait..."
@@ -2063,7 +2063,7 @@ download_dir=~/Downloads/NonSteamLaunchersInstallation
 mkdir -p "$download_dir"
 
 # Check if setuptools is already installed
-if ! python -c "import setuptools" &> /dev/null; then
+if ! python3 -c "import setuptools" &> /dev/null; then
     # Download the latest version of setuptools from the Python Package Index
     download_url="https://files.pythonhosted.org/packages/03/20/630783571e76e5fa5f3e9f29398ca3ace377207b8196b54e0ffdf09f12c1/setuptools-67.8.0.tar.gz"
     wget -P "$download_dir" "$download_url"
@@ -2075,7 +2075,7 @@ if ! python -c "import setuptools" &> /dev/null; then
     cd "$download_dir/setuptools-67.8.0"
 
     # Install setuptools in a custom location
-    python setup.py install --prefix="$download_dir"
+    python3 setup.py install --prefix="$download_dir"
 fi
 
 
@@ -2090,7 +2090,7 @@ tar -xvf "$download_dir"/extended-setup-tools-*.tar.gz -C "$download_dir"
 cd "$download_dir"/extended-setup-tools-*/
 
 # Install extended-setup-tools in a custom location
-python setup.py install --prefix="$download_dir"
+python3 setup.py install --prefix="$download_dir"
 
 # Get the version of Python being used
 python_version=$(python -c 'import sys; print(f"{sys.version_info.major}.{sys.version_info.minor}")')
@@ -2125,7 +2125,7 @@ download_dir=~/Downloads/NonSteamLaunchersInstallation
 cd "$download_dir"
 
 # Install the vdf library in a custom location
-python setup.py install --prefix="$download_dir"
+python3 setup.py install --prefix="$download_dir"
 
 
 
