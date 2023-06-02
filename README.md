@@ -32,6 +32,7 @@ Supported Stores 🛍
 - Origin (only working way) ✔️
 - Rockstar Games Launcher ✔️
 - Ubisoft ✔️
+- Glyph ✔️
 
 <h1 align="center">
 How to Install🔧
