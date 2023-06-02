@@ -73,6 +73,8 @@ indiegala_path1="$HOME/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers
 indiegala_path2="$HOME/.local/share/Steam/steamapps/compatdata/IndieGalaLauncher/pfx/drive_c/Program Files/IGClient/IGClient.exe"
 rockstar_path1="$HOME/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/Program Files/Rockstar Games/Launcher/Launcher.exe"
 rockstar_path2="$HOME/.local/share/Steam/steamapps/compatdata/RockstarGamesLauncher/pfx/drive_c/Program Files/Rockstar Games/Launcher/Launcher.exe"
+glyph_path1="$HOME/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/Program Files (x86)/Glyph/GlyphClient.exe"
+glyph_path2="$HOME/.local/share/Steam/steamapps/compatdata/GlyphLauncher/pfx/drive_c/Program Files (x86)/Glyph/GlyphClient.exe"
 
 function CheckInstallations {
 # Check if Epic Games Launcher is installed
@@ -253,6 +255,21 @@ else
     # Rockstar is not installed
     rockstar_value="TRUE"
     rockstar_text="Rockstar Games Launcher"
+fi
+
+# Check if Glyph is installed
+if [[ -f "$glyph_path1" ]]; then
+    # Glyph is installed in path 1 on local drive
+    glyph_value="FALSE"
+    glyph_text="Glyph Launcher ===> $glyph_path1"
+elif [[ -f "$glyph_path2" ]]; then
+    # Glyph is installed in path 2 on local drive
+    glyph_value="FALSE"
+    glyph_text="Glyph Launcher ===> $glyph_path2"
+else
+    # Glyph is not installed
+    glyph_value="TRUE"
+    glyph_text="Glyph Launcher"
 fi }
 
 
@@ -382,6 +399,15 @@ function CheckInstallationDirectory {
     else
         # rockstar games launcher is not installed
         rockstargameslauncher_move_value="FALSE"
+    fi
+    
+    # Check if Glyph is installed
+    if [[ -d "$HOME/.local/share/Steam/steamapps/compatdata/GlyphLauncher" ]]; then
+        # Glyph is installed
+        glyphlauncher_move_value="TRUE"
+    else
+        # Glyph is not installed
+        glyphlauncher_move_value="FALSE"
     fi }
 
 
@@ -393,7 +419,7 @@ CheckInstallationDirectory
 
 
 # Display a list of options using zenity
-options=$(zenity --list --text="Which launchers do you want to download and install?" --checklist --column="$version" --column="Default = one App ID Installation" FALSE "Separate App IDs" $epic_games_value "$epic_games_text" $gog_galaxy_value "$gog_galaxy_text" $uplay_value "$uplay_text" $origin_value "$origin_text" $battlenet_value "$battlenet_text" $amazongames_value "$amazongames_text" $eaapp_value "$eaapp_text" $legacygames_value "$legacygames_text" $itchio_value "$itchio_text" $humblegames_value "$humblegames_text" $indiegala_value "$indiegala_text" $rockstar_value "$rockstar_text" --width=435 --height=480 --extra-button="Uninstall" --extra-button="Start Fresh" --extra-button="Move to SD Card")
+options=$(zenity --list --text="Which launchers do you want to download and install?" --checklist --column="$version" --column="Default = one App ID Installation" FALSE "Separate App IDs" $epic_games_value "$epic_games_text" $gog_galaxy_value "$gog_galaxy_text" $uplay_value "$uplay_text" $origin_value "$origin_text" $battlenet_value "$battlenet_text" $amazongames_value "$amazongames_text" $eaapp_value "$eaapp_text" $legacygames_value "$legacygames_text" $itchio_value "$itchio_text" $humblegames_value "$humblegames_text" $indiegala_value "$indiegala_text" $rockstar_value "$rockstar_text" $glyph_value "$glyph_text" --width=435 --height=480 --extra-button="Uninstall" --extra-button="Start Fresh" --extra-button="Move to SD Card")
 
 
 
@@ -486,6 +512,7 @@ if [[ $options == "Start Fresh" ]]; then
         unlink & rm -rf "$HOME/.local/share/Steam/steamapps/compatdata/HumbleGamesLauncher"
         unlink & rm -rf "$HOME/.local/share/Steam/steamapps/compatdata/IndieGalaLauncher"
         unlink & rm -rf "$HOME/.local/share/Steam/steamapps/compatdata/RockstarGamesLauncher"
+        unlink & rm -rf "$HOME/.local/share/Steam/steamapps/compatdata/GlyphLauncher"
         rm -rf "/run/media/mmcblk0p1/NonSteamLaunchers/"
         rm -rf "/run/media/mmcblk0p1/EpicGamesLauncher/"
         rm -rf "/run/media/mmcblk0p1/GogGalaxyLauncher/"
@@ -499,6 +526,7 @@ if [[ $options == "Start Fresh" ]]; then
         rm -rf "/run/media/mmcblk0p1/HumbleGamesLauncher/"
         rm -rf "/run/media/mmcblk0p1/IndieGalaLauncher/"
         rm -rf "/run/media/mmcblk0p1/RockstarGamesLauncher/"
+        rm -rf "/run/media/mmcblk0p1/GlyphLauncher/"
         rm -rf ~/Downloads/NonSteamLaunchersInstallation
 
         # Exit the script
@@ -531,7 +559,8 @@ if [[ $options == "Uninstall" ]]; then
         FALSE "itch.io" \
         FALSE "Humble Bundle" \
         FALSE "IndieGala" \
-        FALSE "Rockstar Games Launcher")
+        FALSE "Rockstar Games Launcher" \
+        FALSE "Glyph Launcher")
 
 
     if [[ $options != "" ]]; then
@@ -704,6 +733,20 @@ if [[ $options == "Uninstall" ]]; then
             rm -rf "$HOME/.local/share/Steam/steamapps/compatdata/RockstarGamesLauncher"
         fi
     fi
+
+    if [[ $options == *"Glyph Launcher"* ]]; then
+        # User selected to uninstall Glyph
+        # Check if Glyph was installed using the NonSteamLaunchers prefix
+        if [[ -f "$glyph_path1" ]]; then
+            # Glyph was installed using NonSteamLaunchers prefix
+            # Add code here to run the Glyph uninstaller
+            rm -rf "$HOME/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/Program Files (x86)/Glyph"
+        elif [[ -f "$glyph_path2" ]]; then
+            # Glyph was installed using a separate app ID
+            # Add code here to delete the GlyphLauncher app ID folder
+            rm -rf "$HOME/.local/share/Steam/steamapps/compatdata/GlyphLauncher"
+        fi
+    fi
     # Display a message to the user indicating that the operation was successful
         zenity --info --text="The selected launchers have now been deleted." --width=200 --height=150
     exit
@@ -753,7 +796,7 @@ if [[ $options == "Move to SD Card" ]]; then
     CheckInstallationDirectory
 
 
-    move_options=$(zenity --list --text="Which app IDs do you want to move to the SD card?" --checklist --column="Select" --column="App ID" $nonsteamlauncher_move_value "NonSteamLaunchers" $epicgameslauncher_move_value "EpicGamesLauncher" $goggalaxylauncher_move_value "GogGalaxyLauncher" $originlauncher_move_value "OriginLauncher" $uplaylauncher_move_value "UplayLauncher" $battlenetlauncher_move_value "Battle.netLauncher" $eaapplauncher_move_value "TheEAappLauncher" $amazongameslauncher_move_value "AmazonGamesLauncher" $itchiolauncher_move_value "itchioLauncher" $legacygameslauncher_move_value "LegacyGamesLauncher" $humblegameslauncher_move_value "HumbleGamesLauncher" $indiegalalauncher_move_value "IndieGalaLauncher" $rockstargameslauncher_move_value "RockstarGamesLauncher" --width=335 --height=470)
+    move_options=$(zenity --list --text="Which app IDs do you want to move to the SD card?" --checklist --column="Select" --column="App ID" $nonsteamlauncher_move_value "NonSteamLaunchers" $epicgameslauncher_move_value "EpicGamesLauncher" $goggalaxylauncher_move_value "GogGalaxyLauncher" $originlauncher_move_value "OriginLauncher" $uplaylauncher_move_value "UplayLauncher" $battlenetlauncher_move_value "Battle.netLauncher" $eaapplauncher_move_value "TheEAappLauncher" $amazongameslauncher_move_value "AmazonGamesLauncher" $itchiolauncher_move_value "itchioLauncher" $legacygameslauncher_move_value "LegacyGamesLauncher" $humblegameslauncher_move_value "HumbleGamesLauncher" $indiegalalauncher_move_value "IndieGalaLauncher" $rockstargameslauncher_move_value "RockstarGamesLauncher" $glyphlauncher_move_value "GlyphLauncher" --width=335 --height=470)
 
     # Check if the cancel button was clicked
     if [ $? -eq 0 ]; then
@@ -991,6 +1034,24 @@ if [[ $options == "Move to SD Card" ]]; then
         ln -s "$new_dir/RockstarGamesLauncher" "$original_dir"
     fi
 
+    # Check if Glyph is installed
+    if [[ -d "$HOME/.local/share/Steam/steamapps/compatdata/GlyphLauncher" ]]; then
+        # Glyph is installed
+        original_dir="$HOME/.local/share/Steam/steamapps/compatdata/GlyphLauncher"
+    else
+        # Glyph is not installed
+        original_dir=""
+    fi
+
+    # Check if the user selected to move Glyph
+    if [[ $move_options == *"GlyphLauncher"* ]] && [[ -n $original_dir ]]; then
+        # Move the Glyph directory to the SD card
+        mv "$original_dir" "$new_dir/GlyphLauncher"
+
+        # Create a symbolic link to the new directory
+        ln -s "$new_dir/GlyphLauncher" "$original_dir"
+    fi
+
     # Exit the script
     exit 1
 
@@ -1169,6 +1230,12 @@ rockstar_url=https://gamedownloads.rockstargames.com/public/installer/Rockstar-G
 
 # Set the path to save the twelfth file to
 rockstar_file=~/Downloads/NonSteamLaunchersInstallation/Rockstar-Games-Launcher.exe
+
+# Set the URL to download the Glyph Launcher file from
+glyph_url=https://glyph.dyn.triongames.com/glyph/live/GlyphInstall.exe
+
+# Set the path to save the Glyph Launcher to
+glyph_file=~/Downloads/NonSteamLaunchersInstallation/GlyphInstall.exe
 
 
 
@@ -1911,6 +1978,54 @@ fi
 wait
 
 
+echo "100"
+echo "# Downloading & Installing Glyph Launcher...please wait..."
+
+# Check if user selected Glyph
+if [[ $options == *"Glyph Launcher"* ]]; then
+    # User selected Glyph
+    echo "User selected Glyph Launcher"
+
+    if [[ ! -f "$glyph_path1" ]] && [[ ! -f "$glyph_path2" ]]; then
+        # Glyph is not installed
+
+        # Set the appid for Glyph
+        if [ "$use_separate_appids" = true ]; then
+            appid=GlyphLauncher
+        else
+            appid=NonSteamLaunchers
+        fi
+
+        # Create app id folder in compatdata folder if it doesn't exist
+        if [ ! -d "$HOME/.local/share/Steam/steamapps/compatdata/$appid" ]; then
+            mkdir -p "$HOME/.local/share/Steam/steamapps/compatdata/$appid"
+        fi
+
+        # Change working directory to Proton's
+        cd $proton_dir
+
+        # Set the STEAM_COMPAT_CLIENT_INSTALL_PATH environment variable
+        export STEAM_COMPAT_CLIENT_INSTALL_PATH="~/.local/share/Steam"
+
+        # Set the STEAM_COMPAT_DATA_PATH environment variable for Legacy Games Launcher
+        export STEAM_COMPAT_DATA_PATH=~/.local/share/Steam/steamapps/compatdata/$appid
+
+        # Download Glyph file
+        if [ ! -f "$glyph_file" ]; then
+            echo "Downloading Glyph file"
+            wget $glyph_url -O $glyph_file
+        fi
+
+          # Run the Glyph file using Proton with the /passive option
+          echo "Running Glyph Launcher file using Proton with the /passive option"
+          "$STEAM_RUNTIME" "$proton_dir/proton" run "$glyph_file"
+
+    fi
+fi
+# Wait for the Glyph file to finish running
+wait
+
+
 
 
 
@@ -1919,7 +2034,7 @@ wait
 # Delete NonSteamLaunchersInstallation subfolder in Downloads folder
 rm -rf ~/Downloads/NonSteamLaunchersInstallation
 
-echo "100"
+echo "101"
 echo "# Installation Complete - Steam will now restart. Your launchers will be in your library!...Food for thought...do Jedis use Force Compatability?"
 ) |
 zenity --progress \
@@ -2050,6 +2165,15 @@ elif [[ -f "$rockstar_path2" ]]; then
     # rockstar Launcher is installed at path 2
     rockstarshortcutdirectory="\"$rockstar_path2\""
     rockstarlaunchoptions="STEAM_COMPAT_DATA_PATH=\"$HOME/.local/share/Steam/steamapps/compatdata/RockstarGamesLauncher/\" %command%"
+fi
+if [[ -f "$glyph_path1" ]]; then
+    # Glyph is installed at path 1
+    glyphshortcutdirectory="\"$glyph_path1\""
+    glyphlaunchoptions="STEAM_COMPAT_DATA_PATH=\"$HOME/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/\" %command%"
+elif [[ -f "$glyph_path2" ]]; then
+    # Glyph is installed at path 2
+    glyphshortcutdirectory="\"$glyph_path2\""
+    glyphlaunchoptions="STEAM_COMPAT_DATA_PATH=\"$HOME/.local/share/Steam/steamapps/compatdata/GlyphLauncher/\" %command%"
 fi
 
 
@@ -2321,6 +2445,7 @@ legacyshortcutdirectory = '$legacyshortcutdirectory'
 humbleshortcutdirectory = '$humbleshortcutdirectory'
 indieshortcutdirectory = '$indieshortcutdirectory'
 rockstarshortcutdirectory = '$rockstarshortcutdirectory'
+glyphshortcutdirectory = '$glyphshortcutdirectory'
 
 app_ids = []
 
@@ -3029,6 +3154,62 @@ if rockstarshortcutdirectory != '':
                 # Add the new entry with a key value one higher than the current maximum
                 shortcuts['shortcuts'][str(max_key + 1)] = new_entry
 
+
+if glyphshortcutdirectory != '':
+        exe = f'"{glyphshortcutdirectory}"'
+        appname = 'Glyph Launcher'
+
+        glyphappid = get_steam_shortcut_id(exe, appname)
+        app_ids.append(glyphappid)
+
+        # Create a new entry for the Steam shortcut
+        new_entry = {
+            'appid': f'{str(glyphappid)}',
+            'AppName': 'Glyph Launcher',
+            'Exe': '$glyphshortcutdirectory',
+            'StartDir': '$glyphshortcutdirectory',
+            'icon': '',
+            'ShortcutPath': '',
+            'LaunchOptions': '$glyphlaunchoptions',
+            'IsHidden': 0,
+            'AllowDesktopConfig': 1,
+            'AllowOverlay': 1,
+            'OpenVR': 0,
+            'Devkit': 0,
+            'DevkitGameID': '',
+            'LastPlayTime': 0,
+            'tags': {
+                '0': 'favorite'
+            }
+        }
+
+        # Add the new entry to the shortcuts dictionary
+        entry_exists = False
+        if type(shortcuts['shortcuts']) == list:
+            for entry in shortcuts['shortcuts']:
+                entry.setdefault('AppName', '')
+                entry.setdefault('Exe', '')
+                if entry['AppName'] == new_entry['AppName'] and entry['Exe'] == new_entry['Exe']:
+                    entry_exists = True
+                    break
+            if not entry_exists:
+                shortcuts['shortcuts'].append(new_entry)
+        elif type(shortcuts['shortcuts']) == dict:
+            for key in shortcuts['shortcuts'].keys():
+                shortcuts['shortcuts'][key].setdefault('AppName', '')
+                shortcuts['shortcuts'][key].setdefault('Exe', '')
+                if shortcuts['shortcuts'][key]['AppName'] == new_entry['AppName'] and shortcuts['shortcuts'][key]['Exe'] == new_entry['Exe']:
+                    entry_exists = True
+                    break
+            if not entry_exists:
+                # Check if the shortcuts['shortcuts'] dictionary is empty
+                if not shortcuts['shortcuts']:
+                    max_key = -1
+                else:
+                    # Find the highest key value
+                    max_key = max(int(key) for key in shortcuts['shortcuts'].keys())
+                # Add the new entry with a key value one higher than the current maximum
+                shortcuts['shortcuts'][str(max_key + 1)] = new_entry
 
 
 
