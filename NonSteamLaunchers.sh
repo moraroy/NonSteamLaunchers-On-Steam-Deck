@@ -1844,20 +1844,20 @@ if [[ $options == *"Humble Games Collection"* ]]; then
     echo "User selected Humble Games Collection"
 
     if [[ ! -f "$HOME/.local/share/applications/Humble-scheme-handler.desktop" ]]; then
-        wget https://raw.githubusercontent.com/Zoullx/NonSteamLaunchers-On-Steam-Deck/fix-humble-login/humble-app/Humble-scheme-handler.desktop -O /tmp/Humble-scheme-handler.desktop
+        wget https://raw.githubusercontent.com/moraroy/NonSteamLaunchers-On-Steam-Deck/main/humble-app/Humble-scheme-handler.desktop -O /tmp/Humble-scheme-handler.desktop
         sed -i "s/APPID/$appid/" /tmp/Humble-scheme-handler.desktop
         desktop-file-install --rebuild-mime-info-cache --dir=$HOME/.local/share/applications /tmp/Humble-scheme-handler.desktop
         rm -rf /tmp/Humble-scheme-handler.desktop
     fi
 
     if [[ ! -f "$HOME/.local/share/Steam/steamapps/compatdata/$appid/pfx/handle-humble-scheme" ]]; then
-        wget https://raw.githubusercontent.com/Zoullx/NonSteamLaunchers-On-Steam-Deck/fix-humble-login/humble-app/handle-humble-scheme -O "$HOME/.local/share/Steam/steamapps/compatdata/$appid/pfx/handle-humble-scheme"
+        wget https://raw.githubusercontent.com/moraroy/NonSteamLaunchers-On-Steam-Deck/main/humble-app/handle-humble-scheme -O "$HOME/.local/share/Steam/steamapps/compatdata/$appid/pfx/handle-humble-scheme"
         sed -i "s/APPID/$appid/" "$HOME/.local/share/Steam/steamapps/compatdata/$appid/pfx/handle-humble-scheme"
         chmod +x "$HOME/.local/share/Steam/steamapps/compatdata/$appid/pfx/handle-humble-scheme"
     fi
 
     if [[ ! -f "$HOME/.local/share/Steam/steamapps/compatdata/$appid/pfx/start-humble.cmd" ]]; then
-        wget https://raw.githubusercontent.com/Zoullx/NonSteamLaunchers-On-Steam-Deck/fix-humble-login/humble-app/start-humble.cmd -O "$HOME/.local/share/Steam/steamapps/compatdata/$appid/pfx/start-humble.cmd"
+        wget https://raw.githubusercontent.com/moraroy/NonSteamLaunchers-On-Steam-Deck/main/humble-app/start-humble.cmd -O "$HOME/.local/share/Steam/steamapps/compatdata/$appid/pfx/start-humble.cmd"
     fi
 
     if [[ ! -f "$humblegames_path1" ]] && [[ ! -f "$humblegames_path2" ]]; then
