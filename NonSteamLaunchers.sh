@@ -2353,8 +2353,8 @@ if epicshortcutdirectory != '':
         # Create a new entry for the Steam shortcut
         new_entry = {
             'appid': f'{str(epicappid)}',
-            'AppName': 'Epic Games',
-            'Exe': '$epicshortcutdirectory',
+            'appname': 'Epic Games',
+            'exe': '$epicshortcutdirectory',
             'StartDir': '$epicshortcutdirectory',
             'icon': '',
             'ShortcutPath': '',
@@ -2375,18 +2375,18 @@ if epicshortcutdirectory != '':
         entry_exists = False
         if type(shortcuts['shortcuts']) == list:
             for entry in shortcuts['shortcuts']:
-                entry.setdefault('AppName', '')
-                entry.setdefault('Exe', '')
-                if entry['AppName'] == new_entry['AppName'] and entry['Exe'] == new_entry['Exe']:
+                entry.setdefault('appname', '')
+                entry.setdefault('exe', '')
+                if entry['appname'] == new_entry['appname'] and entry['exe'] == new_entry['exe']:
                     entry_exists = True
                     break
             if not entry_exists:
                 shortcuts['shortcuts'].append(new_entry)
         elif type(shortcuts['shortcuts']) == dict:
             for key in shortcuts['shortcuts'].keys():
-                shortcuts['shortcuts'][key].setdefault('AppName', '')
-                shortcuts['shortcuts'][key].setdefault('Exe', '')
-                if shortcuts['shortcuts'][key]['AppName'] == new_entry['AppName'] and shortcuts['shortcuts'][key]['Exe'] == new_entry['Exe']:
+                shortcuts['shortcuts'][key].setdefault('appname', '')
+                shortcuts['shortcuts'][key].setdefault('exe', '')
+                if shortcuts['shortcuts'][key]['appname'] == new_entry['appname'] and shortcuts['shortcuts'][key]['exe'] == new_entry['exe']:
                     entry_exists = True
                     break
             if not entry_exists:
@@ -2412,8 +2412,8 @@ if gogshortcutdirectory != '':
         # Create a new entry for the Steam shortcut
         new_entry = {
             'appid': f'{str(gogappid)}',
-            'AppName': 'Gog Galaxy',
-            'Exe': '$gogshortcutdirectory',
+            'appname': 'Gog Galaxy',
+            'exe': '$gogshortcutdirectory',
             'StartDir': '$gogshortcutdirectory',
             'icon': '',
             'ShortcutPath': '',
@@ -2434,18 +2434,18 @@ if gogshortcutdirectory != '':
         entry_exists = False
         if type(shortcuts['shortcuts']) == list:
             for entry in shortcuts['shortcuts']:
-                entry.setdefault('AppName', '')
-                entry.setdefault('Exe', '')
-                if entry['AppName'] == new_entry['AppName'] and entry['Exe'] == new_entry['Exe']:
+                entry.setdefault('appname', '')
+                entry.setdefault('exe', '')
+                if entry['appname'] == new_entry['appname'] and entry['exe'] == new_entry['exe']:
                     entry_exists = True
                     break
             if not entry_exists:
                 shortcuts['shortcuts'].append(new_entry)
         elif type(shortcuts['shortcuts']) == dict:
             for key in shortcuts['shortcuts'].keys():
-                shortcuts['shortcuts'][key].setdefault('AppName', '')
-                shortcuts['shortcuts'][key].setdefault('Exe', '')
-                if shortcuts['shortcuts'][key]['AppName'] == new_entry['AppName'] and shortcuts['shortcuts'][key]['Exe'] == new_entry['Exe']:
+                shortcuts['shortcuts'][key].setdefault('appname', '')
+                shortcuts['shortcuts'][key].setdefault('exe', '')
+                if shortcuts['shortcuts'][key]['appname'] == new_entry['appname'] and shortcuts['shortcuts'][key]['exe'] == new_entry['exe']:
                     entry_exists = True
                     break
             if not entry_exists:
@@ -2475,8 +2475,8 @@ if uplayshortcutdirectory != '':
         # Create a new entry for the Steam shortcut
         new_entry = {
             'appid': f'{str(ubisoftappid)}',
-            'AppName': 'Ubisoft Connect',
-            'Exe': '$uplayshortcutdirectory',
+            'appname': 'Ubisoft Connect',
+            'exe': '$uplayshortcutdirectory',
             'StartDir': '$uplayshortcutdirectory',
             'icon': '',
             'ShortcutPath': '',
@@ -2497,18 +2497,18 @@ if uplayshortcutdirectory != '':
         entry_exists = False
         if type(shortcuts['shortcuts']) == list:
             for entry in shortcuts['shortcuts']:
-                entry.setdefault('AppName', '')
-                entry.setdefault('Exe', '')
-                if entry['AppName'] == new_entry['AppName'] and entry['Exe'] == new_entry['Exe']:
+                entry.setdefault('appname', '')
+                entry.setdefault('exe', '')
+                if entry['appname'] == new_entry['appname'] and entry['exe'] == new_entry['exe']:
                     entry_exists = True
                     break
             if not entry_exists:
                 shortcuts['shortcuts'].append(new_entry)
         elif type(shortcuts['shortcuts']) == dict:
             for key in shortcuts['shortcuts'].keys():
-                shortcuts['shortcuts'][key].setdefault('AppName', '')
-                shortcuts['shortcuts'][key].setdefault('Exe', '')
-                if shortcuts['shortcuts'][key]['AppName'] == new_entry['AppName'] and shortcuts['shortcuts'][key]['Exe'] == new_entry['Exe']:
+                shortcuts['shortcuts'][key].setdefault('appname', '')
+                shortcuts['shortcuts'][key].setdefault('exe', '')
+                if shortcuts['shortcuts'][key]['appname'] == new_entry['appname'] and shortcuts['shortcuts'][key]['exe'] == new_entry['exe']:
                     entry_exists = True
                     break
             if not entry_exists:
@@ -2532,8 +2532,8 @@ if originshortcutdirectory != '':
         # Create a new entry for the Steam shortcut
         new_entry = {
             'appid': f'{str(originappid)}',
-            'AppName': 'Origin',
-            'Exe': '$originshortcutdirectory',
+            'appname': 'Origin',
+            'exe': '$originshortcutdirectory',
             'StartDir': '$originshortcutdirectory',
             'icon': '',
             'ShortcutPath': '',
@@ -2554,18 +2554,18 @@ if originshortcutdirectory != '':
         entry_exists = False
         if type(shortcuts['shortcuts']) == list:
             for entry in shortcuts['shortcuts']:
-                entry.setdefault('AppName', '')
-                entry.setdefault('Exe', '')
-                if entry['AppName'] == new_entry['AppName'] and entry['Exe'] == new_entry['Exe']:
+                entry.setdefault('appname', '')
+                entry.setdefault('exe', '')
+                if entry['appname'] == new_entry['appname'] and entry['exe'] == new_entry['exe']:
                     entry_exists = True
                     break
             if not entry_exists:
                 shortcuts['shortcuts'].append(new_entry)
         elif type(shortcuts['shortcuts']) == dict:
             for key in shortcuts['shortcuts'].keys():
-                shortcuts['shortcuts'][key].setdefault('AppName', '')
-                shortcuts['shortcuts'][key].setdefault('Exe', '')
-                if shortcuts['shortcuts'][key]['AppName'] == new_entry['AppName'] and shortcuts['shortcuts'][key]['Exe'] == new_entry['Exe']:
+                shortcuts['shortcuts'][key].setdefault('appname', '')
+                shortcuts['shortcuts'][key].setdefault('exe', '')
+                if shortcuts['shortcuts'][key]['appname'] == new_entry['appname'] and shortcuts['shortcuts'][key]['exe'] == new_entry['exe']:
                     entry_exists = True
                     break
             if not entry_exists:
@@ -2589,8 +2589,8 @@ if battlenetshortcutdirectory != '':
         # Create a new entry for the Steam shortcut
         new_entry = {
             'appid': f'{str(battlenetappid)}',
-            'AppName': 'Battle.net',
-            'Exe': '$battlenetshortcutdirectory',
+            'appname': 'Battle.net',
+            'exe': '$battlenetshortcutdirectory',
             'StartDir': '$battlenetshortcutdirectory',
             'icon': '',
             'ShortcutPath': '',
@@ -2611,18 +2611,18 @@ if battlenetshortcutdirectory != '':
         entry_exists = False
         if type(shortcuts['shortcuts']) == list:
             for entry in shortcuts['shortcuts']:
-                entry.setdefault('AppName', '')
-                entry.setdefault('Exe', '')
-                if entry['AppName'] == new_entry['AppName'] and entry['Exe'] == new_entry['Exe']:
+                entry.setdefault('appname', '')
+                entry.setdefault('exe', '')
+                if entry['appname'] == new_entry['appname'] and entry['exe'] == new_entry['exe']:
                     entry_exists = True
                     break
             if not entry_exists:
                 shortcuts['shortcuts'].append(new_entry)
         elif type(shortcuts['shortcuts']) == dict:
             for key in shortcuts['shortcuts'].keys():
-                shortcuts['shortcuts'][key].setdefault('AppName', '')
-                shortcuts['shortcuts'][key].setdefault('Exe', '')
-                if shortcuts['shortcuts'][key]['AppName'] == new_entry['AppName'] and shortcuts['shortcuts'][key]['Exe'] == new_entry['Exe']:
+                shortcuts['shortcuts'][key].setdefault('appname', '')
+                shortcuts['shortcuts'][key].setdefault('exe', '')
+                if shortcuts['shortcuts'][key]['appname'] == new_entry['appname'] and shortcuts['shortcuts'][key]['exe'] == new_entry['exe']:
                     entry_exists = True
                     break
             if not entry_exists:
@@ -2647,8 +2647,8 @@ if eaappshortcutdirectory != '':
         # Create a new entry for the Steam shortcut
         new_entry = {
             'appid': f'{str(eaappid)}',
-            'AppName': 'EA App',
-            'Exe': '$eaappshortcutdirectory',
+            'appname': 'EA App',
+            'exe': '$eaappshortcutdirectory',
             'StartDir': '$eaappshortcutdirectory',
             'icon': '',
             'ShortcutPath': '',
@@ -2669,18 +2669,18 @@ if eaappshortcutdirectory != '':
         entry_exists = False
         if type(shortcuts['shortcuts']) == list:
             for entry in shortcuts['shortcuts']:
-                entry.setdefault('AppName', '')
-                entry.setdefault('Exe', '')
-                if entry['AppName'] == new_entry['AppName'] and entry['Exe'] == new_entry['Exe']:
+                entry.setdefault('appname', '')
+                entry.setdefault('exe', '')
+                if entry['appname'] == new_entry['appname'] and entry['exe'] == new_entry['exe']:
                     entry_exists = True
                     break
             if not entry_exists:
                 shortcuts['shortcuts'].append(new_entry)
         elif type(shortcuts['shortcuts']) == dict:
             for key in shortcuts['shortcuts'].keys():
-                shortcuts['shortcuts'][key].setdefault('AppName', '')
-                shortcuts['shortcuts'][key].setdefault('Exe', '')
-                if shortcuts['shortcuts'][key]['AppName'] == new_entry['AppName'] and shortcuts['shortcuts'][key]['Exe'] == new_entry['Exe']:
+                shortcuts['shortcuts'][key].setdefault('appname', '')
+                shortcuts['shortcuts'][key].setdefault('exe', '')
+                if shortcuts['shortcuts'][key]['appname'] == new_entry['appname'] and shortcuts['shortcuts'][key]['exe'] == new_entry['exe']:
                     entry_exists = True
                     break
             if not entry_exists:
@@ -2704,8 +2704,8 @@ if amazonshortcutdirectory != '':
         # Create a new entry for the Steam shortcut
         new_entry = {
             'appid': f'{str(amazonappid)}',
-            'AppName': 'Amazon Games',
-            'Exe': '$amazonshortcutdirectory',
+            'appname': 'Amazon Games',
+            'exe': '$amazonshortcutdirectory',
             'StartDir': '$amazonshortcutdirectory',
             'icon': '',
             'ShortcutPath': '',
@@ -2726,18 +2726,18 @@ if amazonshortcutdirectory != '':
         entry_exists = False
         if type(shortcuts['shortcuts']) == list:
             for entry in shortcuts['shortcuts']:
-                entry.setdefault('AppName', '')
-                entry.setdefault('Exe', '')
-                if entry['AppName'] == new_entry['AppName'] and entry['Exe'] == new_entry['Exe']:
+                entry.setdefault('appname', '')
+                entry.setdefault('exe', '')
+                if entry['appname'] == new_entry['appname'] and entry['exe'] == new_entry['exe']:
                     entry_exists = True
                     break
             if not entry_exists:
                 shortcuts['shortcuts'].append(new_entry)
         elif type(shortcuts['shortcuts']) == dict:
             for key in shortcuts['shortcuts'].keys():
-                shortcuts['shortcuts'][key].setdefault('AppName', '')
-                shortcuts['shortcuts'][key].setdefault('Exe', '')
-                if shortcuts['shortcuts'][key]['AppName'] == new_entry['AppName'] and shortcuts['shortcuts'][key]['Exe'] == new_entry['Exe']:
+                shortcuts['shortcuts'][key].setdefault('appname', '')
+                shortcuts['shortcuts'][key].setdefault('exe', '')
+                if shortcuts['shortcuts'][key]['appname'] == new_entry['appname'] and shortcuts['shortcuts'][key]['exe'] == new_entry['exe']:
                     entry_exists = True
                     break
             if not entry_exists:
@@ -2760,8 +2760,8 @@ if itchioshortcutdirectory != '':
         # Create a new entry for the Steam shortcut
         new_entry = {
             'appid': f'{str(itchioappid)}',
-            'AppName': 'itch.io',
-            'Exe': '$itchioshortcutdirectory',
+            'appname': 'itch.io',
+            'exe': '$itchioshortcutdirectory',
             'StartDir': '$itchioshortcutdirectory',
             'icon': '',
             'ShortcutPath': '',
@@ -2782,18 +2782,18 @@ if itchioshortcutdirectory != '':
         entry_exists = False
         if type(shortcuts['shortcuts']) == list:
             for entry in shortcuts['shortcuts']:
-                entry.setdefault('AppName', '')
-                entry.setdefault('Exe', '')
-                if entry['AppName'] == new_entry['AppName'] and entry['Exe'] == new_entry['Exe']:
+                entry.setdefault('appname', '')
+                entry.setdefault('exe', '')
+                if entry['appname'] == new_entry['appname'] and entry['exe'] == new_entry['exe']:
                     entry_exists = True
                     break
             if not entry_exists:
                 shortcuts['shortcuts'].append(new_entry)
         elif type(shortcuts['shortcuts']) == dict:
             for key in shortcuts['shortcuts'].keys():
-                shortcuts['shortcuts'][key].setdefault('AppName', '')
-                shortcuts['shortcuts'][key].setdefault('Exe', '')
-                if shortcuts['shortcuts'][key]['AppName'] == new_entry['AppName'] and shortcuts['shortcuts'][key]['Exe'] == new_entry['Exe']:
+                shortcuts['shortcuts'][key].setdefault('appname', '')
+                shortcuts['shortcuts'][key].setdefault('exe', '')
+                if shortcuts['shortcuts'][key]['appname'] == new_entry['appname'] and shortcuts['shortcuts'][key]['exe'] == new_entry['exe']:
                     entry_exists = True
                     break
             if not entry_exists:
@@ -2817,8 +2817,8 @@ if legacyshortcutdirectory != '':
         # Create a new entry for the Steam shortcut
         new_entry = {
             'appid': f'{str(legacyappid)}',
-            'AppName': 'Legacy Games',
-            'Exe': '$legacyshortcutdirectory',
+            'appname': 'Legacy Games',
+            'exe': '$legacyshortcutdirectory',
             'StartDir': '$legacyshortcutdirectory',
             'icon': '',
             'ShortcutPath': '',
@@ -2839,18 +2839,18 @@ if legacyshortcutdirectory != '':
         entry_exists = False
         if type(shortcuts['shortcuts']) == list:
             for entry in shortcuts['shortcuts']:
-                entry.setdefault('AppName', '')
-                entry.setdefault('Exe', '')
-                if entry['AppName'] == new_entry['AppName'] and entry['Exe'] == new_entry['Exe']:
+                entry.setdefault('appname', '')
+                entry.setdefault('exe', '')
+                if entry['appname'] == new_entry['appname'] and entry['exe'] == new_entry['exe']:
                     entry_exists = True
                     break
             if not entry_exists:
                 shortcuts['shortcuts'].append(new_entry)
         elif type(shortcuts['shortcuts']) == dict:
             for key in shortcuts['shortcuts'].keys():
-                shortcuts['shortcuts'][key].setdefault('AppName', '')
-                shortcuts['shortcuts'][key].setdefault('Exe', '')
-                if shortcuts['shortcuts'][key]['AppName'] == new_entry['AppName'] and shortcuts['shortcuts'][key]['Exe'] == new_entry['Exe']:
+                shortcuts['shortcuts'][key].setdefault('appname', '')
+                shortcuts['shortcuts'][key].setdefault('exe', '')
+                if shortcuts['shortcuts'][key]['appname'] == new_entry['appname'] and shortcuts['shortcuts'][key]['exe'] == new_entry['exe']:
                     entry_exists = True
                     break
             if not entry_exists:
@@ -2874,8 +2874,8 @@ if humbleshortcutdirectory != '':
         # Create a new entry for the Steam shortcut
         new_entry = {
             'appid': f'{str(humbleappid)}',
-            'AppName': 'Humble Games Collection',
-            'Exe': '$humbleshortcutdirectory',
+            'appname': 'Humble Games Collection',
+            'exe': '$humbleshortcutdirectory',
             'StartDir': '$humbleshortcutdirectory',
             'icon': '',
             'ShortcutPath': '',
@@ -2896,18 +2896,18 @@ if humbleshortcutdirectory != '':
         entry_exists = False
         if type(shortcuts['shortcuts']) == list:
             for entry in shortcuts['shortcuts']:
-                entry.setdefault('AppName', '')
-                entry.setdefault('Exe', '')
-                if entry['AppName'] == new_entry['AppName'] and entry['Exe'] == new_entry['Exe']:
+                entry.setdefault('appname', '')
+                entry.setdefault('exe', '')
+                if entry['appname'] == new_entry['appname'] and entry['exe'] == new_entry['exe']:
                     entry_exists = True
                     break
             if not entry_exists:
                 shortcuts['shortcuts'].append(new_entry)
         elif type(shortcuts['shortcuts']) == dict:
             for key in shortcuts['shortcuts'].keys():
-                shortcuts['shortcuts'][key].setdefault('AppName', '')
-                shortcuts['shortcuts'][key].setdefault('Exe', '')
-                if shortcuts['shortcuts'][key]['AppName'] == new_entry['AppName'] and shortcuts['shortcuts'][key]['Exe'] == new_entry['Exe']:
+                shortcuts['shortcuts'][key].setdefault('appname', '')
+                shortcuts['shortcuts'][key].setdefault('exe', '')
+                if shortcuts['shortcuts'][key]['appname'] == new_entry['appname'] and shortcuts['shortcuts'][key]['exe'] == new_entry['exe']:
                     entry_exists = True
                     break
             if not entry_exists:
@@ -2932,8 +2932,8 @@ if indieshortcutdirectory != '':
         # Create a new entry for the Steam shortcut
         new_entry = {
             'appid': f'{str(indieappid)}',
-            'AppName': 'IndieGala',
-            'Exe': '$indieshortcutdirectory',
+            'appname': 'IndieGala',
+            'exe': '$indieshortcutdirectory',
             'StartDir': '$indieshortcutdirectory',
             'icon': '',
             'ShortcutPath': '',
@@ -2954,18 +2954,18 @@ if indieshortcutdirectory != '':
         entry_exists = False
         if type(shortcuts['shortcuts']) == list:
             for entry in shortcuts['shortcuts']:
-                entry.setdefault('AppName', '')
-                entry.setdefault('Exe', '')
-                if entry['AppName'] == new_entry['AppName'] and entry['Exe'] == new_entry['Exe']:
+                entry.setdefault('appname', '')
+                entry.setdefault('exe', '')
+                if entry['appname'] == new_entry['appname'] and entry['exe'] == new_entry['exe']:
                     entry_exists = True
                     break
             if not entry_exists:
                 shortcuts['shortcuts'].append(new_entry)
         elif type(shortcuts['shortcuts']) == dict:
             for key in shortcuts['shortcuts'].keys():
-                shortcuts['shortcuts'][key].setdefault('AppName', '')
-                shortcuts['shortcuts'][key].setdefault('Exe', '')
-                if shortcuts['shortcuts'][key]['AppName'] == new_entry['AppName'] and shortcuts['shortcuts'][key]['Exe'] == new_entry['Exe']:
+                shortcuts['shortcuts'][key].setdefault('appname', '')
+                shortcuts['shortcuts'][key].setdefault('exe', '')
+                if shortcuts['shortcuts'][key]['appname'] == new_entry['appname'] and shortcuts['shortcuts'][key]['exe'] == new_entry['exe']:
                     entry_exists = True
                     break
             if not entry_exists:
@@ -2992,8 +2992,8 @@ if rockstarshortcutdirectory != '':
         # Create a new entry for the Steam shortcut
         new_entry = {
             'appid': f'{str(rockstarappid)}',
-            'AppName': 'Rockstar Games Launcher',
-            'Exe': '$rockstarshortcutdirectory',
+            'appname': 'Rockstar Games Launcher',
+            'exe': '$rockstarshortcutdirectory',
             'StartDir': '$rockstarshortcutdirectory',
             'icon': '',
             'ShortcutPath': '',
@@ -3014,18 +3014,18 @@ if rockstarshortcutdirectory != '':
         entry_exists = False
         if type(shortcuts['shortcuts']) == list:
             for entry in shortcuts['shortcuts']:
-                entry.setdefault('AppName', '')
-                entry.setdefault('Exe', '')
-                if entry['AppName'] == new_entry['AppName'] and entry['Exe'] == new_entry['Exe']:
+                entry.setdefault('appname', '')
+                entry.setdefault('exe', '')
+                if entry['appname'] == new_entry['appname'] and entry['exe'] == new_entry['exe']:
                     entry_exists = True
                     break
             if not entry_exists:
                 shortcuts['shortcuts'].append(new_entry)
         elif type(shortcuts['shortcuts']) == dict:
             for key in shortcuts['shortcuts'].keys():
-                shortcuts['shortcuts'][key].setdefault('AppName', '')
-                shortcuts['shortcuts'][key].setdefault('Exe', '')
-                if shortcuts['shortcuts'][key]['AppName'] == new_entry['AppName'] and shortcuts['shortcuts'][key]['Exe'] == new_entry['Exe']:
+                shortcuts['shortcuts'][key].setdefault('appname', '')
+                shortcuts['shortcuts'][key].setdefault('exe', '')
+                if shortcuts['shortcuts'][key]['appname'] == new_entry['appname'] and shortcuts['shortcuts'][key]['exe'] == new_entry['exe']:
                     entry_exists = True
                     break
             if not entry_exists:
