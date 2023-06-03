@@ -3157,7 +3157,7 @@ if rockstarshortcutdirectory != '':
 
 if glyphshortcutdirectory != '':
         exe = f'"{glyphshortcutdirectory}"'
-        appname = 'Glyph Launcher'
+        appname = 'Glyph'
 
         glyphappid = get_steam_shortcut_id(exe, appname)
         app_ids.append(glyphappid)
@@ -3165,7 +3165,7 @@ if glyphshortcutdirectory != '':
         # Create a new entry for the Steam shortcut
         new_entry = {
             'appid': f'{str(glyphappid)}',
-            'AppName': 'Glyph Launcher',
+            'AppName': 'Glyph',
             'Exe': '$glyphshortcutdirectory',
             'StartDir': '$glyphshortcutdirectory',
             'icon': '',
