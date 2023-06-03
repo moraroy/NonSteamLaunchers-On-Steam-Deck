@@ -1843,16 +1843,31 @@ if [[ $options == *"Humble Games Collection"* ]]; then
     # User selected Humble Games Launcher
     echo "User selected Humble Games Collection"
 
+    if [[ ! -f "$HOME/.local/share/applications/Humble-scheme-handler.desktop" ]]; then
+        wget https://raw.githubusercontent.com/Zoullx/NonSteamLaunchers-On-Steam-Deck/fix-humble-login/humble-app/Humble-scheme-handler.desktop -O /tmp/Humble-scheme-handler.desktop
+        cat /tmp/Humble-scheme-handler.desktop | sed "s/{{APPID}}/$appid/" > /tmp/Humble-scheme-handler.desktop
+        desktop-file-install --rebuild-mime-info-cache --dir=$HOME/.local/share/applications /tmp/Humble-scheme-handler.desktop
+        rm -rf /tmp/Humble-scheme-handler.desktop
+    fi
 
+    if [[ ! -f "$HOME/.local/share/Steam/steamapps/compatdata/$appid/pfx/handle-humble-scheme" ]]; then
+        wget https://raw.githubusercontent.com/Zoullx/NonSteamLaunchers-On-Steam-Deck/fix-humble-login/humble-app/handle-humble-scheme -O "$HOME/.local/share/Steam/steamapps/compatdata/$appid/pfx/handle-humble-scheme"
+        cat "$HOME/.local/share/Steam/steamapps/compatdata/$appid/pfx/handle-humble-scheme" | sed "s/{{APPID}}/$appid/ > "$HOME/.local/share/Steam/steamapps/compatdata/$appid/pfx/handle-humble-scheme"
+        chmod +x "$HOME/.local/share/Steam/steamapps/compatdata/$appid/pfx/handle-humble-scheme"
+    fi
+
+    if [[ ! -f "$HOME/.local/share/Steam/steamapps/compatdata/$appid/pfx/start-humble.cmd" ]]; then
+        wget https://raw.githubusercontent.com/Zoullx/NonSteamLaunchers-On-Steam-Deck/fix-humble-login/humble-app/start-humble.cmd -O "$HOME/.local/share/Steam/steamapps/compatdata/$appid/pfx/start-humble.cmd"
+    fi
 
     if [[ ! -f "$humblegames_path1" ]] && [[ ! -f "$humblegames_path2" ]]; then
         # Humble Games Launcher is not installed
 
         # Set the appid for the Humble Games Launcher
         if [ "$use_separate_appids" = true ]; then
-        appid=HumbleGamesLauncher
+            appid=HumbleGamesLauncher
         else
-        appid=NonSteamLaunchers
+            appid=NonSteamLaunchers
         fi
 
 
@@ -2150,11 +2165,11 @@ elif [[ -f "$legacygames_path2" ]]; then
 fi
 if [[ -f "$humblegames_path1" ]]; then
     # Humble Games Launcher is installed at path 1
-    humbleshortcutdirectory="\"$humblegames_path1\""
+    humbleshortcutdirectory="\"$HOME/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/start-humble.cmd\""
     humblelaunchoptions="STEAM_COMPAT_DATA_PATH=\"$HOME/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/\" %command%"
 elif [[ -f "$humblegames_path2" ]]; then
     # Humble Games Launcher is installed at path 2
-    humbleshortcutdirectory="\"$humblegames_path2\""
+    humbleshortcutdirectory="\"$HOME/.local/share/Steam/steamapps/compatdata/HumbleGamesLauncher/pfx/start-humble.cmd\""
     humblelaunchoptions="STEAM_COMPAT_DATA_PATH=\"$HOME/.local/share/Steam/steamapps/compatdata/HumbleGamesLauncher/\" %command%"
 fi
 if [[ -f "$indiegala_path1" ]]; then
