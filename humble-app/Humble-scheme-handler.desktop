@@ -1,6 +1,6 @@
 [Desktop Entry]
 Name=Humble App (Login)
 Comment=Target for handling Humble App logins. You should not run this manually.
-Exec=/home/deck/.local/share/Steam/steamapps/compatdata/{{APPID}}/pfx/handle-humble-scheme %u
+Exec=/home/deck/.local/share/Steam/steamapps/compatdata/APPID/pfx/handle-humble-scheme %u
 Type=Application
 MimeType=x-scheme-handler/humble;

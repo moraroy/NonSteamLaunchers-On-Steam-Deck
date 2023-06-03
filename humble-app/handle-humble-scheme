@@ -3,9 +3,9 @@
 set -e
 
 export STEAM_COMPAT_CLIENT_INSTALL_PATH=~/.local/share/Steam
-export STEAM_COMPAT_DATA_PATH=~/.steam/steam/Steam/steamapps/compatdata/{{APPID}}
+export STEAM_COMPAT_DATA_PATH=~/.steam/steam/Steam/steamapps/compatdata/APPID
 FIXED_SCHEME="$(echo "$1" | sed "s/?/\//")"
 
-echo $FIXED_SCHEME > /home/deck/.local/share/Steam/steamapps/compatdata/{{APPID}}/pfx/drive_c/.auth
+echo $FIXED_SCHEME > /home/deck/.local/share/Steam/steamapps/compatdata/APPID/pfx/drive_c/.auth
 
-~/.steam/steam/steamapps/common/Proton\ -\ Experimental/proton run ~/.local/share/Steam/steamapps/compatdata/{{APPID}}/pfx/start-humble.cmd
+~/.steam/steam/steamapps/common/Proton\ -\ Experimental/proton run ~/.local/share/Steam/steamapps/compatdata/APPID/pfx/start-humble.cmd
