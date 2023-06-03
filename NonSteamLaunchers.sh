@@ -3165,8 +3165,8 @@ if glyphshortcutdirectory != '':
         # Create a new entry for the Steam shortcut
         new_entry = {
             'appid': f'{str(glyphappid)}',
-            'AppName': 'Glyph',
-            'Exe': '$glyphshortcutdirectory',
+            'appname': 'Glyph',
+            'exe': '$glyphshortcutdirectory',
             'StartDir': '$glyphshortcutdirectory',
             'icon': '',
             'ShortcutPath': '',
@@ -3187,18 +3187,18 @@ if glyphshortcutdirectory != '':
         entry_exists = False
         if type(shortcuts['shortcuts']) == list:
             for entry in shortcuts['shortcuts']:
-                entry.setdefault('AppName', '')
-                entry.setdefault('Exe', '')
-                if entry['AppName'] == new_entry['AppName'] and entry['Exe'] == new_entry['Exe']:
+                entry.setdefault('appname', '')
+                entry.setdefault('exe', '')
+                if entry['appname'] == new_entry['appname'] and entry['exe'] == new_entry['exe']:
                     entry_exists = True
                     break
             if not entry_exists:
                 shortcuts['shortcuts'].append(new_entry)
         elif type(shortcuts['shortcuts']) == dict:
             for key in shortcuts['shortcuts'].keys():
-                shortcuts['shortcuts'][key].setdefault('AppName', '')
-                shortcuts['shortcuts'][key].setdefault('Exe', '')
-                if shortcuts['shortcuts'][key]['AppName'] == new_entry['AppName'] and shortcuts['shortcuts'][key]['Exe'] == new_entry['Exe']:
+                shortcuts['shortcuts'][key].setdefault('appname', '')
+                shortcuts['shortcuts'][key].setdefault('exe', '')
+                if shortcuts['shortcuts'][key]['appname'] == new_entry['appname'] and shortcuts['shortcuts'][key]['exe'] == new_entry['exe']:
                     entry_exists = True
                     break
             if not entry_exists:
