@@ -33,6 +33,7 @@ Supported Stores 🛍
 - Rockstar Games Launcher ✔️
 - Ubisoft ✔️
 - Glyph ✔️
+- Minecraft ✔️
 
 <h1 align="center">
 How to Install🔧
