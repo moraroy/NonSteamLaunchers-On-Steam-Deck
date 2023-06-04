@@ -7,7 +7,7 @@ chmod +x "$0"
 
 set -x
 
-version=v2.86
+version=v2.88
 
 check_for_updates() {
     # Set the URL to the GitHub API for the repository
@@ -75,6 +75,8 @@ rockstar_path1="$HOME/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/
 rockstar_path2="$HOME/.local/share/Steam/steamapps/compatdata/RockstarGamesLauncher/pfx/drive_c/Program Files/Rockstar Games/Launcher/Launcher.exe"
 glyph_path1="$HOME/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/Program Files (x86)/Glyph/GlyphClient.exe"
 glyph_path2="$HOME/.local/share/Steam/steamapps/compatdata/GlyphLauncher/pfx/drive_c/Program Files (x86)/Glyph/GlyphClient.exe"
+minecraft_path1="$HOME/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/Program Files (x86)/Minecraft Launcher/MinecraftLauncher.exe"
+minecraft_path2="$HOME/.local/share/Steam/steamapps/compatdata/MinecraftLauncher/pfx/drive_c/Program Files (x86)/Minecraft Launcher/MinecraftLauncher.exe"
 
 function CheckInstallations {
 # Check if Epic Games Launcher is installed
@@ -270,6 +272,21 @@ else
     # Glyph is not installed
     glyph_value="TRUE"
     glyph_text="Glyph Launcher"
+fi
+
+# Check if Minecraft is installed
+if [[ -f "$minecraft_path1" ]]; then
+    # Minecraft is installed in path 1 on local drive
+    minecraft_value="FALSE"
+    minecraft_text="Minecraft ===> $minecraft_path1"
+elif [[ -f "$minecraft_path2" ]]; then
+    # Minecraft is installed in path 2 on local drive
+    minecraft_value="FALSE"
+    minecraft_text="Minecraft ===> $minecraft_path2"
+else
+    # Minecraft is not installed
+    minecraft_value="TRUE"
+    minecraft_text="Minecraft - Close black screen to continue installation"
 fi }
 
 
@@ -408,6 +425,15 @@ function CheckInstallationDirectory {
     else
         # Glyph is not installed
         glyphlauncher_move_value="FALSE"
+    fi
+
+    # Check if Minecraft is installed
+    if [[ -d "$HOME/.local/share/Steam/steamapps/compatdata/MinecraftLauncher" ]]; then
+        # Minecraft is installed
+        minecraftlauncher_move_value="TRUE"
+    else
+        # Minecraft is not installed
+        minecraftlauncher_move_value="FALSE"
     fi }
 
 
@@ -419,7 +445,7 @@ CheckInstallationDirectory
 
 
 # Display a list of options using zenity
-options=$(zenity --list --text="Which launchers do you want to download and install?" --checklist --column="$version" --column="Default = one App ID Installation" FALSE "Separate App IDs" $epic_games_value "$epic_games_text" $gog_galaxy_value "$gog_galaxy_text" $uplay_value "$uplay_text" $origin_value "$origin_text" $battlenet_value "$battlenet_text" $amazongames_value "$amazongames_text" $eaapp_value "$eaapp_text" $legacygames_value "$legacygames_text" $itchio_value "$itchio_text" $humblegames_value "$humblegames_text" $indiegala_value "$indiegala_text" $rockstar_value "$rockstar_text" $glyph_value "$glyph_text" --width=435 --height=507 --extra-button="Uninstall" --extra-button="Start Fresh" --extra-button="Move to SD Card")
+options=$(zenity --list --text="Which launchers do you want to download and install?" --checklist --column="$version" --column="Default = one App ID Installation" FALSE "Separate App IDs" $epic_games_value "$epic_games_text" $gog_galaxy_value "$gog_galaxy_text" $uplay_value "$uplay_text" $origin_value "$origin_text" $battlenet_value "$battlenet_text" $amazongames_value "$amazongames_text" $eaapp_value "$eaapp_text" $legacygames_value "$legacygames_text" $itchio_value "$itchio_text" $humblegames_value "$humblegames_text" $indiegala_value "$indiegala_text" $rockstar_value "$rockstar_text" $glyph_value "$glyph_text" $minecraft_value "$minecraft_text" --width=435 --height=534 --extra-button="Uninstall" --extra-button="Start Fresh" --extra-button="Move to SD Card")
 
 
 
@@ -513,6 +539,7 @@ if [[ $options == "Start Fresh" ]]; then
         unlink & rm -rf "$HOME/.local/share/Steam/steamapps/compatdata/IndieGalaLauncher"
         unlink & rm -rf "$HOME/.local/share/Steam/steamapps/compatdata/RockstarGamesLauncher"
         unlink & rm -rf "$HOME/.local/share/Steam/steamapps/compatdata/GlyphLauncher"
+        unlink & rm -rf "$HOME/.local/share/Steam/steamapps/compatdata/MinecraftLauncher"
         rm -rf "/run/media/mmcblk0p1/NonSteamLaunchers/"
         rm -rf "/run/media/mmcblk0p1/EpicGamesLauncher/"
         rm -rf "/run/media/mmcblk0p1/GogGalaxyLauncher/"
@@ -527,6 +554,7 @@ if [[ $options == "Start Fresh" ]]; then
         rm -rf "/run/media/mmcblk0p1/IndieGalaLauncher/"
         rm -rf "/run/media/mmcblk0p1/RockstarGamesLauncher/"
         rm -rf "/run/media/mmcblk0p1/GlyphLauncher/"
+        rm -rf "/run/media/mmcblk0p1/MinecraftLauncher/"
         rm -rf ~/Downloads/NonSteamLaunchersInstallation
 
         # Exit the script
@@ -547,7 +575,7 @@ if [[ $options == "Uninstall" ]]; then
         --title="Uninstall Launchers" \
         --text="Select the launchers you want to Uninstall..." \
         --column="Select" --column="This will delete the launcher and all of its games and files." \
-        --width=508 --height=445 \
+        --width=508 --height=507 \
         FALSE "Epic Games" \
         FALSE "Gog Galaxy" \
         FALSE "Uplay" \
@@ -560,7 +588,8 @@ if [[ $options == "Uninstall" ]]; then
         FALSE "Humble Bundle" \
         FALSE "IndieGala" \
         FALSE "Rockstar Games Launcher" \
-        FALSE "Glyph Launcher")
+        FALSE "Glyph Launcher" \
+        FALSE "Minecraft")
 
 
     if [[ $options != "" ]]; then
@@ -747,6 +776,20 @@ if [[ $options == "Uninstall" ]]; then
             rm -rf "$HOME/.local/share/Steam/steamapps/compatdata/GlyphLauncher"
         fi
     fi
+
+    if [[ $options == *"Minecraft"* ]]; then
+        # User selected to uninstall Minecraft
+        # Check if Minecraft was installed using the NonSteamLaunchers prefix
+        if [[ -f "$minecraft_path1" ]]; then
+            # Minecraft was installed using NonSteamLaunchers prefix
+            # Add code here to run the Minecraft uninstaller
+            rm -rf "$HOME/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/Program Files (x86)/Minecraft Launcher"
+        elif [[ -f "$minecraft_path2" ]]; then
+            # Minecraft was installed using a separate app ID
+            # Add code here to delete the MinecraftLauncher app ID folder
+            rm -rf "$HOME/.local/share/Steam/steamapps/compatdata/MinecraftLauncher"
+        fi
+    fi
     # Display a message to the user indicating that the operation was successful
         zenity --info --text="The selected launchers have now been deleted." --width=200 --height=150
     exit
@@ -796,7 +839,7 @@ if [[ $options == "Move to SD Card" ]]; then
     CheckInstallationDirectory
 
 
-    move_options=$(zenity --list --text="Which app IDs do you want to move to the SD card?" --checklist --column="Select" --column="App ID" $nonsteamlauncher_move_value "NonSteamLaunchers" $epicgameslauncher_move_value "EpicGamesLauncher" $goggalaxylauncher_move_value "GogGalaxyLauncher" $originlauncher_move_value "OriginLauncher" $uplaylauncher_move_value "UplayLauncher" $battlenetlauncher_move_value "Battle.netLauncher" $eaapplauncher_move_value "TheEAappLauncher" $amazongameslauncher_move_value "AmazonGamesLauncher" $itchiolauncher_move_value "itchioLauncher" $legacygameslauncher_move_value "LegacyGamesLauncher" $humblegameslauncher_move_value "HumbleGamesLauncher" $indiegalalauncher_move_value "IndieGalaLauncher" $rockstargameslauncher_move_value "RockstarGamesLauncher" $glyphlauncher_move_value "GlyphLauncher" --width=335 --height=470)
+    move_options=$(zenity --list --text="Which app IDs do you want to move to the SD card?" --checklist --column="Select" --column="App ID" $nonsteamlauncher_move_value "NonSteamLaunchers" $epicgameslauncher_move_value "EpicGamesLauncher" $goggalaxylauncher_move_value "GogGalaxyLauncher" $originlauncher_move_value "OriginLauncher" $uplaylauncher_move_value "UplayLauncher" $battlenetlauncher_move_value "Battle.netLauncher" $eaapplauncher_move_value "TheEAappLauncher" $amazongameslauncher_move_value "AmazonGamesLauncher" $itchiolauncher_move_value "itchioLauncher" $legacygameslauncher_move_value "LegacyGamesLauncher" $humblegameslauncher_move_value "HumbleGamesLauncher" $indiegalalauncher_move_value "IndieGalaLauncher" $rockstargameslauncher_move_value "RockstarGamesLauncher" $glyphlauncher_move_value "GlyphLauncher" $minecraftlauncher_move_value "MinecraftLauncher" --width=335 --height=524)
 
     # Check if the cancel button was clicked
     if [ $? -eq 0 ]; then
@@ -1061,6 +1104,24 @@ if [[ $options == "Move to SD Card" ]]; then
         ln -s "$new_dir/GlyphLauncher" "$original_dir"
     fi
 
+    # Check if Minecraft is installed
+    if [[ -d "$HOME/.local/share/Steam/steamapps/compatdata/MinecraftLauncher" ]]; then
+        # Minecraft is installed
+        original_dir="$HOME/.local/share/Steam/steamapps/compatdata/MinecraftLauncher"
+    else
+        # Minecraft is not installed
+        original_dir=""
+    fi
+
+    # Check if the user selected to move Minecraft
+    if [[ $move_options == *"MinecraftLauncher"* ]] && [[ -n $original_dir ]]; then
+        # Move the Glyph directory to the SD card
+        mv "$original_dir" "$new_dir/MinecraftLauncher"
+
+        # Create a symbolic link to the new directory
+        ln -s "$new_dir/MinecraftLauncher" "$original_dir"
+    fi
+
     # Exit the script
     exit 1
 
@@ -1245,6 +1306,12 @@ glyph_url=https://glyph.dyn.triongames.com/glyph/live/GlyphInstall.exe
 
 # Set the path to save the Glyph Launcher to
 glyph_file=~/Downloads/NonSteamLaunchersInstallation/GlyphInstall.exe
+
+# Set the URL to download the Minecraft Launcher file from
+minecraft_url=https://aka.ms/minecraftClientWindows
+
+# Set the path to save the Minecraft Launcher to
+minecraft_file=~/Downloads/NonSteamLaunchersInstallation/MinecraftInstaller.msi
 
 
 
@@ -1733,7 +1800,7 @@ done
 fi
 
 wait
-echo "95"
+echo "93"
 echo "# Downloading & Installing itch.io...please wait..."
 
 # Check if the user selected itchio Launcher
@@ -1783,7 +1850,7 @@ if [[ $options == *"itch.io"* ]]; then
 fi
 
 wait
-echo "98"
+echo "94"
 echo "# Downloading & Installing Legacy Games...please wait..."
 
 # Check if user selected Legacy Games
@@ -1835,7 +1902,7 @@ fi
 wait
 
 
-echo "99"
+echo "95"
 echo "# Downloading & Installing Humble Games Collection...please wait..."
 
 # Check if the user selected Humble Games Launcher
@@ -1902,7 +1969,7 @@ fi
 
 
 wait
-echo "98"
+echo "96"
 echo "# Downloading & Installing Indie Gala...please wait..."
 
 # Check if user selected indiegala
@@ -1954,7 +2021,7 @@ fi
 wait
 
 
-echo "99"
+echo "97"
 echo "# Downloading & Installing Rockstar Games Launcher...please wait..."
 
 # Check if user selected rockstar games launcher
@@ -2002,7 +2069,7 @@ fi
 wait
 
 
-echo "100"
+echo "98"
 echo "# Downloading & Installing Glyph Launcher...please wait..."
 
 # Check if user selected Glyph
@@ -2052,13 +2119,80 @@ wait
 
 
 
+echo "99"
+echo "# Downloading & Installing Minecraft Launcher...please wait..."
+
+# Check if user selected Minecraft
+if [[ $options == *"Minecraft"* ]]; then
+    # User selected Minecraft
+    echo "User selected Minecraft"
+
+    # Set the appid for Miencraft
+    if [ "$use_separate_appids" = true ]; then
+        appid=MinecraftLauncher
+    else
+        appid=NonSteamLaunchers
+    fi
+
+    # Set MinecraftLauncher.exe Variable
+    minecraftinstall_path="$HOME/.local/share/Steam/steamapps/compatdata/$appid/pfx/drive_c/Program Files (x86)/Minecraft Launcher/MinecraftLauncher.exe"
+
+    if [ ! -f "$minecraftinstall_path" ]; then
+        # Minecraft is not installed
+
+        # Create app id folder in compatdata folder if it doesn't exist
+        if [ ! -d "$HOME/.local/share/Steam/steamapps/compatdata/$appid" ]; then
+            mkdir -p "$HOME/.local/share/Steam/steamapps/compatdata/$appid"
+        fi
+
+        # Change working directory to Proton's
+        cd $proton_dir
+
+        # Set the STEAM_COMPAT_CLIENT_INSTALL_PATH environment variable
+        export STEAM_COMPAT_CLIENT_INSTALL_PATH="~/.local/share/Steam"
+
+        # Set the STEAM_COMPAT_DATA_PATH environment variable for Legacy Games Launcher
+        export STEAM_COMPAT_DATA_PATH=~/.local/share/Steam/steamapps/compatdata/$appid
+
+        # Download Minecraft file
+        if [ ! -f "$minecraft_file" ]; then
+            echo "Downloading Minecraft file"
+            wget $minecraft_url -O $minecraft_file
+        fi
+
+          # Run the Minecraft file using Proton with the /passive option
+          echo "Running Minecraft Launcher file using Proton with the /passive option"
+          "$STEAM_RUNTIME" "$proton_dir/proton" run MsiExec.exe /i "$minecraft_file" /q
+
+          if [ -f "$minecraftinstall_path" ]; then
+              # Run MinecraftLauncher.exe for the first time
+              "$STEAM_RUNTIME" "$proton_dir/proton" run "$minecraftinstall_path"
+          else
+              echo "Could not find MinecraftLauncher.exe at $minecraftinstall_path"
+          fi
+
+        echo "Minecraft is already installed at $minecraftinstall_path"
+    fi
+
+fi
+
+# Wait for the Minecraft file to finish running
+wait
+
+
+
+
+
+
+
+
 
 
 
 # Delete NonSteamLaunchersInstallation subfolder in Downloads folder
 rm -rf ~/Downloads/NonSteamLaunchersInstallation
 
-echo "101"
+echo "100"
 echo "# Installation Complete - Steam will now restart. Your launchers will be in your library!...Food for thought...do Jedis use Force Compatability?"
 ) |
 zenity --progress \
@@ -2165,11 +2299,11 @@ elif [[ -f "$legacygames_path2" ]]; then
 fi
 if [[ -f "$humblegames_path1" ]]; then
     # Humble Games Launcher is installed at path 1
-    humbleshortcutdirectory="\"$HOME/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/start-humble.cmd\""
+    humbleshortcutdirectory="\"$humblegames_path1\""
     humblelaunchoptions="STEAM_COMPAT_DATA_PATH=\"$HOME/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/\" %command%"
 elif [[ -f "$humblegames_path2" ]]; then
     # Humble Games Launcher is installed at path 2
-    humbleshortcutdirectory="\"$HOME/.local/share/Steam/steamapps/compatdata/HumbleGamesLauncher/pfx/start-humble.cmd\""
+    humbleshortcutdirectory="\"$humblegames_path2\""
     humblelaunchoptions="STEAM_COMPAT_DATA_PATH=\"$HOME/.local/share/Steam/steamapps/compatdata/HumbleGamesLauncher/\" %command%"
 fi
 if [[ -f "$indiegala_path1" ]]; then
@@ -2199,7 +2333,15 @@ elif [[ -f "$glyph_path2" ]]; then
     glyphshortcutdirectory="\"$glyph_path2\""
     glyphlaunchoptions="STEAM_COMPAT_DATA_PATH=\"$HOME/.local/share/Steam/steamapps/compatdata/GlyphLauncher/\" %command%"
 fi
-
+if [[ -f "$minecraft_path1" ]]; then
+    # Minecraft is installed at path 1
+    minecraftshortcutdirectory="\"$minecraft_path1\""
+    minecraftlaunchoptions="STEAM_COMPAT_DATA_PATH=\"$HOME/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/\" %command%"
+elif [[ -f "$minecraft_path2" ]]; then
+    # Minecraft is installed at path 2
+    minecraftshortcutdirectory="\"$minecraft_path2\""
+    minecraftlaunchoptions="STEAM_COMPAT_DATA_PATH=\"$HOME/.local/share/Steam/steamapps/compatdata/MinecraftLauncher/\" %command%"
+fi
 
 
 
@@ -2470,6 +2612,7 @@ humbleshortcutdirectory = '$humbleshortcutdirectory'
 indieshortcutdirectory = '$indieshortcutdirectory'
 rockstarshortcutdirectory = '$rockstarshortcutdirectory'
 glyphshortcutdirectory = '$glyphshortcutdirectory'
+minecraftshortcutdirectory = '$minecraftshortcutdirectory'
 
 app_ids = []
 
@@ -3234,6 +3377,66 @@ if glyphshortcutdirectory != '':
                     max_key = max(int(key) for key in shortcuts['shortcuts'].keys())
                 # Add the new entry with a key value one higher than the current maximum
                 shortcuts['shortcuts'][str(max_key + 1)] = new_entry
+
+
+if minecraftshortcutdirectory != '':
+        exe = f'"{minecraftshortcutdirectory}"'
+        appname = 'Minecraft'
+
+        minecraftappid = get_steam_shortcut_id(exe, appname)
+        app_ids.append(minecraftappid)
+
+        # Create a new entry for the Steam shortcut
+        new_entry = {
+            'appid': f'{str(minecraftappid)}',
+            'appname': 'Minecraft',
+            'exe': '$minecraftshortcutdirectory',
+            'StartDir': '$minecraftshortcutdirectory',
+            'icon': '',
+            'ShortcutPath': '',
+            'LaunchOptions': '$minecraftlaunchoptions',
+            'IsHidden': 0,
+            'AllowDesktopConfig': 1,
+            'AllowOverlay': 1,
+            'OpenVR': 0,
+            'Devkit': 0,
+            'DevkitGameID': '',
+            'LastPlayTime': 0,
+            'tags': {
+                '0': 'favorite'
+            }
+        }
+
+        # Add the new entry to the shortcuts dictionary
+        entry_exists = False
+        if type(shortcuts['shortcuts']) == list:
+            for entry in shortcuts['shortcuts']:
+                entry.setdefault('appname', '')
+                entry.setdefault('exe', '')
+                if entry['appname'] == new_entry['appname'] and entry['exe'] == new_entry['exe']:
+                    entry_exists = True
+                    break
+            if not entry_exists:
+                shortcuts['shortcuts'].append(new_entry)
+        elif type(shortcuts['shortcuts']) == dict:
+            for key in shortcuts['shortcuts'].keys():
+                shortcuts['shortcuts'][key].setdefault('appname', '')
+                shortcuts['shortcuts'][key].setdefault('exe', '')
+                if shortcuts['shortcuts'][key]['appname'] == new_entry['appname'] and shortcuts['shortcuts'][key]['exe'] == new_entry['exe']:
+                    entry_exists = True
+                    break
+            if not entry_exists:
+                # Check if the shortcuts['shortcuts'] dictionary is empty
+                if not shortcuts['shortcuts']:
+                    max_key = -1
+                else:
+                    # Find the highest key value
+                    max_key = max(int(key) for key in shortcuts['shortcuts'].keys())
+                # Add the new entry with a key value one higher than the current maximum
+                shortcuts['shortcuts'][str(max_key + 1)] = new_entry
+
+
+
 
 
 
