@@ -70,8 +70,6 @@ Currently Working On 👷‍♂️
 
 - Decky Loader Plugin ❌ 
 - Auto-download images and set them for library entries ❌ 
-- Fixing Humble Bundle login issue ❌ 
-- Add Minecraft Launcher (for Dungeons mostly) ❌ 
 - Integrate better with [BoilR](https://github.com/PhilipK/BoilR) ❌ 
 #
 
