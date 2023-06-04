@@ -226,7 +226,7 @@ elif [[ -f "$humblegames_path2" ]]; then
 else
     # Humble Games is not installed
     humblegames_value="TRUE"
-    humblegames_text="Humble Games Collection - Broken, Use at own risk"
+    humblegames_text="Humble Games Collection - Use Desktop Mode to sign in, then launch Game Mode"
 fi
 
 # Check if indiegala is installed
