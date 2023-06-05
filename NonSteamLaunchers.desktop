@@ -1,7 +1,7 @@
 [Desktop Entry]
 Comment[en_US]=
 Comment=
-Exec=sh -c 'curl -L https://raw.githubusercontent.com/moraroy/NonSteamLaunchers-On-Steam-Deck/main/NonSteamLaunchers.sh | /bin/bash'
+Exec=/bin/bash -c 'curl -Ls https://raw.githubusercontent.com/moraroy/NonSteamLaunchers-On-Steam-Deck/main/NonSteamLaunchers.sh | nohup /bin/bash'
 GenericName[en_US]=
 GenericName=
 Icon=uav
