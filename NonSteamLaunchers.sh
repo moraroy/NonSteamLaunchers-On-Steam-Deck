@@ -1613,47 +1613,57 @@ if [[ $options == *"Battle.net"* ]]; then
     # Check if Battlenet Launcher is installed
     if [[ ! -f "$battlenet_path1" ]] && [[ ! -f "$battlenet_path2" ]]; then
 
+        # Set the appid for the Battlenet Launcher
+        if [ "$use_separate_appids" = true ]; then
+            appid=Battle.netLauncher
+        else
+            appid=NonSteamLaunchers
+        fi
 
+        # Create app id folder in compatdata folder if it doesn't exist
+        if [ ! -d "$HOME/.local/share/Steam/steamapps/compatdata/$appid" ]; then
+            mkdir -p "$HOME/.local/share/Steam/steamapps/compatdata/$appid"
+        fi
 
-    # Set the appid for the Battlenet Launcher
-    if [ "$use_separate_appids" = true ]; then
-        appid=Battle.netLauncher
-    else
-        appid=NonSteamLaunchers
-    fi
+        # Change working directory to Proton's
+        cd $proton_dir
 
-    # Create app id folder in compatdata folder if it doesn't exist
-    if [ ! -d "$HOME/.local/share/Steam/steamapps/compatdata/$appid" ]; then
-        mkdir -p "$HOME/.local/share/Steam/steamapps/compatdata/$appid"
-    fi
+        # Set the STEAM_COMPAT_CLIENT_INSTALL_PATH environment variable
+        export STEAM_COMPAT_CLIENT_INSTALL_PATH="~/.local/share/Steam"
 
-    # Change working directory to Proton's
-    cd $proton_dir
+        # Set the STEAM_COMPAT_DATA_PATH environment variable for Epic Games Launcher
+        export STEAM_COMPAT_DATA_PATH=~/.local/share/Steam/steamapps/compatdata/$appid
 
-    # Set the STEAM_COMPAT_CLIENT_INSTALL_PATH environment variable
-    export STEAM_COMPAT_CLIENT_INSTALL_PATH="~/.local/share/Steam"
+        # Download BATTLE file
+        if [ ! -f "$battle_file" ]; then
+            echo "Downloading BATTLE file"
+            wget $battle_url -O $battle_file
+        fi
 
-    # Set the STEAM_COMPAT_DATA_PATH environment variable for Epic Games Launcher
-    export STEAM_COMPAT_DATA_PATH=~/.local/share/Steam/steamapps/compatdata/$appid
+        # Run the BATTLE file using Proton with the /passive option
+        echo "Running BATTLE file using Proton with the /passive option"
+        "$STEAM_RUNTIME" "$proton_dir/proton" run "$battle_file" Battle.net-Setup.exe --lang=enUS --installpath="C:\Program Files (x86)\Battle.net" &
 
+        # Add a counter variable to track the number of times the loop runs
+        counter=0
 
-    # Download BATTLE file
-    if [ ! -f "$battle_file" ]; then
-        echo "Downloading BATTLE file"
-        wget $battle_url -O $battle_file
-    fi
+        while true; do
+            if pgrep -f "Battle.net.exe" > /dev/null; then
+                pkill -f "Battle.net.exe"
+                break
+            fi
 
-    # Run the BATTLE file using Proton with the /passive option
-    echo "Running BATTLE file using Proton with the /passive option"
-    "$STEAM_RUNTIME" "$proton_dir/proton" run "$battle_file" Battle.net-Setup.exe --lang=enUS --installpath="C:\Program Files (x86)\Battle.net" &
+            # Increment the counter variable each time the loop runs
+            ((counter++))
 
-    while true; do
-    if pgrep -f "Battle.net.exe" > /dev/null; then
-        pkill -f "Battle.net.exe"
-        break
-    fi
-    sleep 1
-done
+            # Check if the counter has reached a certain value and exit the loop if it has
+            if [[ $counter -ge 60 ]]; then
+                echo "Timeout: Battle.net.exe process not found after 60 seconds"
+                break
+            fi
+
+            sleep 1
+        done
     fi
 fi
 
