@@ -30,8 +30,14 @@ check_for_updates
 
 
 
-
-
+# Check if the NonSteamLaunchersInstallation subfolder exists in the Downloads folder
+if [ -d "$HOME/Downloads/NonSteamLaunchersInstallation" ]; then
+    # Delete the NonSteamLaunchersInstallation subfolder
+    rm -rf "$HOME/Downloads/NonSteamLaunchersInstallation"
+    echo "Deleted NonSteamLaunchersInstallation subfolder"
+else
+    echo "NonSteamLaunchersInstallation subfolder does not exist"
+fi
 
 
 
