@@ -35,6 +35,14 @@ check_for_updates
 
 
 
+# Check if the NonSteamLaunchersInstallation subfolder exists in the Downloads folder
+if [ -d "$HOME/Downloads/NonSteamLaunchersInstallation" ]; then
+    # Delete the NonSteamLaunchersInstallation subfolder
+    rm -rf "$HOME/Downloads/NonSteamLaunchersInstallation"
+    echo "Deleted NonSteamLaunchersInstallation subfolder"
+else
+    echo "NonSteamLaunchersInstallation subfolder does not exist"
+fi
 
 
 
@@ -797,31 +805,6 @@ if [[ $options == "Uninstall" ]]; then
   fi
   exit
 fi
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -2575,6 +2558,21 @@ fi
 
 
 
+# Set the path to the local config.vdf file
+local_config_vdf_path="$HOME/.local/share/Steam/userdata/$steamid3/config/localconfig.vdf"
+
+# Check if the local config.vdf file exists
+if [ -f "$local_config_vdf_path" ]; then
+    # Create a backup of the local config.vdf file
+    cp "$local_config_vdf_path" "$local_config_vdf_path.bak"
+    echo "Created backup of local config.vdf file at $local_config_vdf_path.bak"
+else
+    echo "The local config.vdf file does not exist at $local_config_vdf_path"
+fi
+
+
+
+
 
 
 
@@ -2749,6 +2747,11 @@ with open('$config_vdf_path', 'w') as f:
 
 
 
+
+#Writes to the configset_controller_neptune.vdf file
+
+
+
 # Load the configset_controller_neptune.vdf file
 with open('$controller_config_path', 'r') as f:
     config = vdf.load(f)
@@ -2806,6 +2809,8 @@ config['controller_config']['glyph'] = {
 # Save the updated config dictionary to the configset_controller_neptune.vdf file
 with open('$controller_config_path', 'w') as f:
     vdf.dump(config, f)"
+
+
 
 
 
