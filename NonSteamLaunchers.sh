@@ -1650,19 +1650,10 @@ if [[ $options == *"Battle.net"* ]]; then
     fi
 
     # Run the BATTLE file using Proton with the /passive option
-    echo "Running BATTLE file using Proton with the /passive option"
-    "$STEAM_RUNTIME" "$proton_dir/proton" run "$battle_file" Battle.net-Setup.exe --lang=enUS --installpath="C:\Program Files (x86)\Battle.net" &
-
-    while true; do
-    if pgrep -f "Battle.net.exe" > /dev/null; then
-        pkill -f "Battle.net.exe"
-        break
-    fi
-    sleep 1
-done
+        echo "Running BATTLE file using Proton with the /passive option"
+        "$STEAM_RUNTIME" "$proton_dir/proton" run "$battle_file" Battle.net-Setup.exe --lang=enUS --installpath="C:\Program Files (x86)\Battle.net"
     fi
 fi
-
 
 wait
 
