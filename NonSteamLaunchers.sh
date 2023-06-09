@@ -7,7 +7,7 @@ chmod +x "$0"
 
 set -x
 
-version=v2.89
+version=v2.90
 
 check_for_updates() {
     # Set the URL to the GitHub API for the repository
@@ -2523,11 +2523,11 @@ fi
 nohup sh -c 'sleep 10; /usr/bin/steam' &
 
 # Close all instances of Steam
-killall steam
+killall steam &
 
 
 # Wait for the steam process to exit
-while pgrep steam > /dev/null; do sleep 1; done
+while pgrep steam > /dev/null; do sleep 1; done &
 
 
 
@@ -2705,7 +2705,7 @@ create_new_entry('$amazonshortcutdirectory', 'Amazon Games', '$amazonlaunchoptio
 create_new_entry('$itchioshortcutdirectory', 'itch.io', '$itchiolaunchoptions')
 create_new_entry('$legacyshortcutdirectory', 'Legacy Games', '$legacylaunchoptions')
 create_new_entry('$humbleshortcutdirectory', 'Humble Games Collection', '$humblelaunchoptions')
-create_new_entry('$indieshortcutdirectory', 'IndieGala', '$indielaunchoptions')
+create_new_entry('$indieshortcutdirectory', 'IndieGala Client', '$indielaunchoptions')
 create_new_entry('$rockstarshortcutdirectory', 'Rockstar Games Launcher', '$rockstarlaunchoptions')
 create_new_entry('$glyphshortcutdirectory', 'Glyph', '$glyphlaunchoptions')
 create_new_entry('$minecraftshortcutdirectory', 'Minecraft: Java Edition', '$minecraftlaunchoptions')
