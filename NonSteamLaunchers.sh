@@ -7,7 +7,7 @@ chmod +x "$0"
 
 set -x
 
-version=v2.89
+version=v2.91
 
 check_for_updates() {
     # Set the URL to the GitHub API for the repository
