@@ -7,7 +7,7 @@ chmod +x "$0"
 
 set -x
 
-version=v2.90
+version=v2.89
 
 check_for_updates() {
     # Set the URL to the GitHub API for the repository
@@ -52,7 +52,7 @@ fi
 
 
 
-
+#Game Launchers
 
 # Set the paths to the launcher executables
 epic_games_launcher_path1="$HOME/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/Program Files (x86)/Epic Games/Launcher/Portal/Binaries/Win32/EpicGamesLauncher.exe"
@@ -83,6 +83,42 @@ glyph_path1="$HOME/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx
 glyph_path2="$HOME/.local/share/Steam/steamapps/compatdata/GlyphLauncher/pfx/drive_c/Program Files (x86)/Glyph/GlyphClient.exe"
 minecraft_path1="$HOME/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/Program Files (x86)/Minecraft Launcher/MinecraftLauncher.exe"
 minecraft_path2="$HOME/.local/share/Steam/steamapps/compatdata/MinecraftLauncher/pfx/drive_c/Program Files (x86)/Minecraft Launcher/MinecraftLauncher.exe"
+
+
+#Mod Programs
+get_minion_path() {
+    launcher_name="$1"
+    minion_path="$HOME/.local/share/Steam/steamapps/compatdata/${launcher_name}/pfx/drive_c/users/steamuser/AppData/Local/Minion/Minion.exe"
+    echo "$minion_path"
+}
+
+minion_path1=$(get_minion_path "NonSteamLaunchers")
+minion_path2=$(get_minion_path "EpicGamesLauncher")
+minion_path3=$(get_minion_path "GogGalaxyLauncher")
+minion_path4=$(get_minion_path "OriginLauncher")
+minion_path5=$(get_minion_path "UplayLauncher")
+minion_path6=$(get_minion_path "Battle.netLauncher")
+minion_path7=$(get_minion_path "TheEAappLauncher")
+minion_path8=$(get_minion_path "AmazonGamesLauncher")
+minion_path9=$(get_minion_path "itchioLauncher")
+minion_path10=$(get_minion_path "LegacyGamesLauncher")
+minion_path11=$(get_minion_path "HumbleGamesLauncher")
+minion_path12=$(get_minion_path "IndieGalaLauncher")
+minion_path13=$(get_minion_path "RockstarGamesLauncher")
+minion_path14=$(get_minion_path "GlyphLauncher")
+minion_path15=$(get_minion_path "MinecraftLauncher")
+
+# Set the URL to download the Minion Launcher file from
+minion_url=https://cdn.mmoui.com/minion/v3/Minion3.0.5-32bit.exe
+
+# Set the path to save the Minion Launcher to
+minion_file=~/Downloads/NonSteamLaunchersInstallation/Minion3.0.5-32bit.exe
+
+
+
+
+
+
 
 function CheckInstallations {
 # Check if Epic Games Launcher is installed
@@ -450,18 +486,22 @@ CheckInstallations
 CheckInstallationDirectory
 
 
-# Display a list of options using zenity
-options=$(zenity --list --text="Which launchers do you want to download and install?" --checklist --column="$version" --column="Default = one App ID Installation" FALSE "Separate App IDs" $epic_games_value "$epic_games_text" $gog_galaxy_value "$gog_galaxy_text" $uplay_value "$uplay_text" $origin_value "$origin_text" $battlenet_value "$battlenet_text" $amazongames_value "$amazongames_text" $eaapp_value "$eaapp_text" $legacygames_value "$legacygames_text" $itchio_value "$itchio_text" $humblegames_value "$humblegames_text" $indiegala_value "$indiegala_text" $rockstar_value "$rockstar_text" $glyph_value "$glyph_text" $minecraft_value "$minecraft_text" --width=435 --height=534 --extra-button="Uninstall" --extra-button="Start Fresh" --extra-button="Move to SD Card")
+options=$(zenity --list --text="Which launchers do you want to download and install?" --checklist --column="$version" --column="Default = one App ID Installation" FALSE "Separate App IDs" $epic_games_value "$epic_games_text" $gog_galaxy_value "$gog_galaxy_text" $uplay_value "$uplay_text" $origin_value "$origin_text" $battlenet_value "$battlenet_text" $amazongames_value "$amazongames_text" $eaapp_value "$eaapp_text" $legacygames_value "$legacygames_text" $itchio_value "$itchio_text" $humblegames_value "$humblegames_text" $indiegala_value "$indiegala_text" $rockstar_value "$rockstar_text" $glyph_value "$glyph_text" $minecraft_value "$minecraft_text" --width=535 --height=534 --extra-button="Uninstall" --extra-button="Find Games" --extra-button="Start Fresh" --extra-button="Move to SD Card" --extra-button="Mods")
+
+
+
+
 
 
 
 
 # Check if the cancel button was clicked
-if [ $? -eq 1 ] && [[ $options != "Start Fresh" ]] && [[ $options != "Move to SD Card" ]] && [[ $options != "Uninstall" ]]; then
+if [ $? -eq 1 ] && [[ $options != "Start Fresh" ]] && [[ $options != "Move to SD Card" ]] && [[ $options != "Uninstall" ]] && [[ $options != "Mods" ]] && [[ $options != "Find Games" ]]; then
     # The cancel button was clicked
     echo "The cancel button was clicked"
     exit 1
 fi
+
 
 
 
@@ -519,6 +559,9 @@ if [[ -f "$eaapp_path1" ]] || [[ -f "$eaapp_path2" ]]; then
         exit 1
     fi
 fi
+
+
+
 
 
 
@@ -803,26 +846,6 @@ if [[ $options == "Uninstall" ]]; then
   fi
   exit
 fi
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -1132,6 +1155,64 @@ if [[ $options == "Move to SD Card" ]]; then
     exit 1
 
 fi
+
+
+
+
+
+# Check if the user clicked the "Mods" button
+if [[ $options == "Mods" ]]; then
+    # The Mods button was clicked
+    # Check which launchers are installed
+    CheckInstallationDirectory
+
+    move_options=$(zenity --list --text="Which app IDs do you want to install Mods to?" --checklist --column="Select" --column="Choose your Mod Program to add to AppId" $nonsteamlauncher_move_value "NonSteamLaunchers" $epicgameslauncher_move_value "EpicGamesLauncher" $goggalaxylauncher_move_value "GogGalaxyLauncher" $originlauncher_move_value "OriginLauncher" $uplaylauncher_move_value "UplayLauncher" $battlenetlauncher_move_value "Battle.netLauncher" $eaapplauncher_move_value "TheEAappLauncher" $amazongameslauncher_move_value "AmazonGamesLauncher" $itchiolauncher_move_value "itchioLauncher" $legacygameslauncher_move_value "LegacyGamesLauncher" $humblegameslauncher_move_value "HumbleGamesLauncher" $indiegalalauncher_move_value "IndieGalaLauncher" $rockstargameslauncher_move_value "RockstarGamesLauncher" $glyphlauncher_move_value "GlyphLauncher" $minecraftlauncher_move_value "MinecraftLauncher" TRUE "Minion" --width=415 --height=580)
+
+    # Check if the cancel button was clicked
+    if [ $? -eq 1 ]; then
+        # The cancel button was clicked
+        exit
+    fi
+fi
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# Check if the user clicked the "Find Games" button
+if [[ $options == "Find Games" ]]; then
+    # The Find Games button was clicked
+    # Check if the NonSteamLaunchersInstallation directory exists
+    if [[ ! -d "$HOME/Downloads/NonSteamLaunchersInstallation" ]]; then
+        # The directory does not exist, so create it
+        mkdir -p "$HOME/Downloads/NonSteamLaunchersInstallation"
+    fi
+
+    # Download the latest BoilR from GitHub (Linux version)
+    cd "$HOME/Downloads/NonSteamLaunchersInstallation"
+    wget https://github.com/PhilipK/BoilR/releases/download/v.1.8.0/linux_BoilR
+
+    # Add execute permissions to the linux_BoilR file
+    chmod +x linux_BoilR
+
+    # Run BoilR from the current directory
+    ./linux_BoilR
+
+    # Exit the script
+    exit
+fi
+
+
+
 
 
 
@@ -1643,7 +1724,7 @@ if [[ $options == *"Battle.net"* ]]; then
     export STEAM_COMPAT_DATA_PATH=~/.local/share/Steam/steamapps/compatdata/$appid
 
 
-    # Download BATTLE file
+      # Download BATTLE file
     if [ ! -f "$battle_file" ]; then
         echo "Downloading BATTLE file"
         wget $battle_url -O $battle_file
@@ -1797,7 +1878,7 @@ done
 fi
 
 wait
-echo "93"
+echo "92"
 echo "# Downloading & Installing itch.io...please wait..."
 
 # Check if the user selected itchio Launcher
@@ -1847,7 +1928,7 @@ if [[ $options == *"itch.io"* ]]; then
 fi
 
 wait
-echo "94"
+echo "93"
 echo "# Downloading & Installing Legacy Games...please wait..."
 
 # Check if user selected Legacy Games
@@ -1899,7 +1980,7 @@ fi
 wait
 
 
-echo "95"
+echo "94"
 echo "# Downloading & Installing Humble Games Collection...please wait..."
 
 # Check if the user selected Humble Games Launcher
@@ -1966,7 +2047,7 @@ fi
 
 
 wait
-echo "96"
+echo "95"
 echo "# Downloading & Installing Indie Gala...please wait..."
 
 # Check if user selected indiegala
@@ -2018,7 +2099,7 @@ fi
 wait
 
 
-echo "97"
+echo "96"
 echo "# Downloading & Installing Rockstar Games Launcher...please wait..."
 
 # Check if user selected rockstar games launcher
@@ -2066,7 +2147,7 @@ fi
 wait
 
 
-echo "98"
+echo "97"
 echo "# Downloading & Installing Glyph Launcher...please wait..."
 
 # Check if user selected Glyph
@@ -2116,7 +2197,7 @@ wait
 
 
 
-echo "99"
+echo "98"
 echo "# Downloading & Installing Minecraft Launcher...please wait..."
 
 # Check if user selected Minecraft
@@ -2176,9 +2257,60 @@ fi
 # Wait for the Minecraft file to finish running
 wait
 
+echo "99"
+echo "# Downloading & Installing Mods...please wait..."
 
 
+#Mods Installation
 
+
+# Split the move_options string into an array of selected launchers
+    IFS='|' read -ra selected_launchers <<< "$move_options"
+
+    for launcher in "${selected_launchers[@]}"; do
+        # Check if the user selected a launcher
+        if [[ "$launcher" != "Curseforge" && "$launcher" != "Minion" ]]; then
+            # The user selected a launcher
+
+            # Set the appid for the launcher
+            appid="$launcher"
+
+
+            # Create app id folder in compatdata folder if it doesn't exist
+            if [ ! -d "$HOME/.local/share/Steam/steamapps/compatdata/$appid" ]; then
+                mkdir -p "$HOME/.local/share/Steam/steamapps/compatdata/$appid"
+            fi
+
+            # Change working directory to Proton's
+            cd $proton_dir
+
+            # Set the STEAM_COMPAT_CLIENT_INSTALL_PATH environment variable
+            export STEAM_COMPAT_CLIENT_INSTALL_PATH="~/.local/share/Steam"
+
+            # Set the STEAM_COMPAT_DATA_PATH environment variable for the launcher
+            export STEAM_COMPAT_DATA_PATH=~/.local/share/Steam/steamapps/compatdata/$appid
+
+            # Get the path to the Minion.exe file for the launcher
+            minion_path=$(get_minion_path "$launcher")
+
+            # Check if Minion is installed
+            if [[ ! -f "$minion_path" ]]; then
+                # Minion is not installed
+
+
+                # Download minion file
+                if [ ! -f "$minion_file" ]; then
+                    echo "Downloading MSI file"
+                    wget $minion_url -O $minion_file
+                fi
+
+                # Run the minion file using Proton with the /passive option
+                echo "Running MSI file using Proton with the /passive option"
+                "$STEAM_RUNTIME" "$proton_dir/proton" run "$minion_file" /S
+            fi
+        fi
+    done
+wait
 
 
 
@@ -2244,7 +2376,7 @@ if [[ -f "$uplay_path1" ]]; then
     # Uplay Launcher is installed at path 1
     uplayshortcutdirectory="\"$uplay_path1\""
     uplaylaunchoptions="STEAM_COMPAT_DATA_PATH=\"$HOME/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/\" %command%"
-elif [[ -f "$origin_path2" ]]; then
+elif [[ -f "$uplay_path2" ]]; then
     # Uplay Launcher is installed at path 2
     uplayshortcutdirectory="\"$uplay_path2\""
     uplaylaunchoptions="STEAM_COMPAT_DATA_PATH=\"$HOME/.local/share/Steam/steamapps/compatdata/UplayLauncher/\" %command%"
@@ -2339,6 +2471,29 @@ elif [[ -f "$minecraft_path2" ]]; then
     minecraftshortcutdirectory="\"$minecraft_path2\""
     minecraftlaunchoptions="STEAM_COMPAT_DATA_PATH=\"$HOME/.local/share/Steam/steamapps/compatdata/MinecraftLauncher/\" %command%"
 fi
+
+
+#Mods Directory - #Checking Files For Shortcuts and Setting Directories For Shortcuts
+# Define an array of launcher names
+launchers=("NonSteamLaunchers" "EpicGamesLauncher" "GogGalaxyLauncher" "UplayLauncher" "OriginLauncher" "Battle.netLauncher" "TheEAappLauncher" "AmazonGamesLauncher" "LegacyGamesLauncher" "itchioLauncher" "HumbleBundleLauncher" "IndieGalaLauncher" "RockstarGamesLauncher" "GlyphLauncher" "MinecraftLauncher")
+
+# Iterate over each launcher in the launchers array
+for launcher in "${launchers[@]}"; do
+    # Get the path to the Minion.exe file for this launcher
+    minion_path=$(get_minion_path "$launcher")
+
+    # Check if Minion is installed for this launcher
+    if [[ -f "$minion_path" ]]; then
+        # Minion is installed for this launcher
+        minionshortcutdirectory="\"$minion_path\""
+        minionlaunchoptions="STEAM_COMPAT_DATA_PATH=\"$HOME/.local/share/Steam/steamapps/compatdata/$launcher/\" %command%"
+
+    fi
+done
+
+
+
+
 
 
 
@@ -2550,7 +2705,7 @@ if [ -f "$config_vdf_path" ]; then
     cp "$config_vdf_path" "$backup_path"
 
     # Set the name of the compatibility tool to use
-    compat_tool_name="GE-Proton8-3"
+    compat_tool_name="GE-Proton8-4"
 else
     echo "Could not find config.vdf file"
 fi
@@ -2627,6 +2782,9 @@ indieshortcutdirectory = '$indieshortcutdirectory'
 rockstarshortcutdirectory = '$rockstarshortcutdirectory'
 glyphshortcutdirectory = '$glyphshortcutdirectory'
 minecraftshortcutdirectory = '$minecraftshortcutdirectory'
+#Mods
+minionshortcutdirectory = '$minionshortcutdirectory'
+
 
 app_ids = []
 
@@ -2709,6 +2867,7 @@ create_new_entry('$indieshortcutdirectory', 'IndieGala Client', '$indielaunchopt
 create_new_entry('$rockstarshortcutdirectory', 'Rockstar Games Launcher', '$rockstarlaunchoptions')
 create_new_entry('$glyphshortcutdirectory', 'Glyph', '$glyphlaunchoptions')
 create_new_entry('$minecraftshortcutdirectory', 'Minecraft: Java Edition', '$minecraftlaunchoptions')
+create_new_entry('$minionshortcutdirectory', 'Minion', '$minionlaunchoptions')
 
 print(f'app_ids: {app_ids}')
 
@@ -2738,6 +2897,7 @@ for app_id in app_ids:
 # Save the updated config dictionary to the config.vdf file
 with open('$config_vdf_path', 'w') as f:
     vdf.dump(config, f)
+
 
 
 
@@ -2803,7 +2963,6 @@ config['controller_config']['glyph'] = {
 # Save the updated config dictionary to the configset_controller_neptune.vdf file
 with open('$controller_config_path', 'w') as f:
     vdf.dump(config, f)"
-
 
 
 
