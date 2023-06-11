@@ -1341,10 +1341,10 @@ origin_url=https://taskinoz.com/downloads/OriginSetup-10.5.119.52718.exe
 origin_file=~/Downloads/NonSteamLaunchersInstallation/OriginSetup-10.5.119.52718.exe
 
 # Set the URL to download the fifth file from
-battle_url=https://www.battle.net/download/getInstallerForGame?os=win
+battle_url="https://www.battle.net/download/getInstallerForGame?os=win&gameProgram=BATTLENET_APP&version=Live"
 
 # Set the path to save the fifth file to
-battle_file=~/Downloads/NonSteamLaunchersInstallation/BattleNetInstaller.exe
+battle_file=~/Downloads/NonSteamLaunchersInstallation/Battle.net-Setup.exe
 
 # Set the URL to download the sixth file from
 amazon_url=https://download.amazongames.com/AmazonGamesSetup.exe
