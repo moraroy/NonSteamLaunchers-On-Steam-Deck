@@ -7,7 +7,7 @@ chmod +x "$0"
 
 set -x
 
-version=v2.91
+version=v2.94
 
 check_for_updates() {
     # Set the URL to the GitHub API for the repository
@@ -119,6 +119,59 @@ minion_file=~/Downloads/NonSteamLaunchersInstallation/Minion3.0.5-32bit.exe
 
 
 
+get_vortex_path() {
+    launcher_name="$1"
+    vortex_path="$HOME/Desktop/compatdata/${launcher_name}/pfx/drive_c/Program Files/Black Tree Gaming Ltd/Vortex/Vortex.exe"
+    echo "$vortex_path"
+}
+
+vortex_path1=$(get_vortex_path "NonSteamLaunchers")
+vortex_path2=$(get_vortex_path "EpicGamesLauncher")
+vortex_path3=$(get_vortex_path "GogGalaxyLauncher")
+vortex_path4=$(get_vortex_path "OriginLauncher")
+vortex_path5=$(get_vortex_path "UplayLauncher")
+vortex_path6=$(get_vortex_path "Battle.netLauncher")
+vortex_path7=$(get_vortex_path "TheEAappLauncher")
+vortex_path8=$(get_vortex_path "AmazonGamesLauncher")
+vortex_path9=$(get_vortex_path "itchioLauncher")
+vortex_path10=$(get_vortex_path "LegacyGamesLauncher")
+vortex_path11=$(get_vortex_path "HumbleGamesLauncher")
+vortex_path12=$(get_vortex_path "IndieGalaLauncher")
+vortex_path13=$(get_vortex_path "RockstarGamesLauncher")
+vortex_path14=$(get_vortex_path "GlyphLauncher")
+vortex_path15=$(get_vortex_path "MinecraftLauncher")
+
+# Set the URL to download the Minion Launcher file from
+vortex_url=https://github.com/Nexus-Mods/Vortex/releases/download/v1.8.4/vortex-setup-1.8.4.exe
+
+# Set the path to save the Minion Launcher to
+vortex_file=~/Downloads/NonSteamLaunchersInstallation/vortex-setup-1.8.4.exe
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#Microsoft Edge File Path
+
+microsoftedge_installpath="/app/bin/edge"
+microsoftedge_path="/usr/bin/flatpak"
+
+
+
+
 
 function CheckInstallations {
 # Check if Epic Games Launcher is installed
@@ -132,7 +185,7 @@ elif [[ -f "$epic_games_launcher_path2" ]]; then
     epic_games_text="Epic Games ===> $epic_games_launcher_path2"
 else
     # Epic Games Launcher is not installed
-    epic_games_value="TRUE"
+    epic_games_value="FALSE"
     epic_games_text="Epic Games"
 fi
 
@@ -147,7 +200,7 @@ elif [[ -f "$gog_galaxy_path2" ]]; then
     gog_galaxy_text="GOG Galaxy ===> $gog_galaxy_path2"
 else
     # GOG Galaxy is not installed
-    gog_galaxy_value="TRUE"
+    gog_galaxy_value="FALSE"
     gog_galaxy_text="GOG Galaxy"
 fi
 
@@ -162,7 +215,7 @@ elif [[ -f "$origin_path2" ]]; then
     origin_text="Origin ===> $origin_path2"
 else
     # Origin is not installed
-    origin_value="TRUE"
+    origin_value="FALSE"
     origin_text="Origin"
 fi
 
@@ -177,7 +230,7 @@ elif [[ -f "$uplay_path2" ]]; then
     uplay_text="Uplay ===> $uplay_path2"
 else
     # Uplay is not installed
-    uplay_value="TRUE"
+    uplay_value="FALSE"
     uplay_text="Uplay"
 fi
 
@@ -192,7 +245,7 @@ elif [[ -f "$battlenet_path2" ]]; then
     battlenet_text="Battle.net ===> $battlenet_path2"
 else
     # Battle.net is not installed
-    battlenet_value="TRUE"
+    battlenet_value="FALSE"
     battlenet_text="Battle.net"
 fi
 
@@ -222,7 +275,7 @@ elif [[ -f "$amazongames_path2" ]]; then
     amazongames_text="Amazon Games ===> $amazongames_path2"
 else
     # Amazon Games is not installed
-    amazongames_value="TRUE"
+    amazongames_value="FALSE"
     amazongames_text="Amazon Games"
 fi
 
@@ -237,7 +290,7 @@ elif [[ -f "$itchio_path2" ]]; then
     itchio_text="itch.io ===> $itchio_path2"
 else
     # itch.io is not installed
-    itchio_value="TRUE"
+    itchio_value="FALSE"
     itchio_text="itch.io"
 fi
 
@@ -252,7 +305,7 @@ elif [[ -f "$legacygames_path2" ]]; then
     legacygames_text="Legacy Games ===> $legacygames_path2"
 else
     # Legacy Games is not installed
-    legacygames_value="TRUE"
+    legacygames_value="FALSE"
     legacygames_text="Legacy Games - Broken, Use at own risk"
 fi
 
@@ -267,7 +320,7 @@ elif [[ -f "$humblegames_path2" ]]; then
     humblegames_text="Humble Games Collection ===> $humblegames_path2"
 else
     # Humble Games is not installed
-    humblegames_value="TRUE"
+    humblegames_value="FALSE"
     humblegames_text="Humble Games Collection - Use Desktop Mode to sign in, then launch Game Mode"
 fi
 
@@ -282,7 +335,7 @@ elif [[ -f "$indiegala_path2" ]]; then
     indiegala_text="IndieGala ===> $indiegala_path2"
 else
     # indiegala is not installed
-    indiegala_value="TRUE"
+    indiegala_value="FALSE"
     indiegala_text="IndieGala"
 fi
 
@@ -297,7 +350,7 @@ elif [[ -f "$rockstar_path2" ]]; then
     rockstar_text="Rockstar Games Launcher ===> $rockstar_path2"
 else
     # Rockstar is not installed
-    rockstar_value="TRUE"
+    rockstar_value="FALSE"
     rockstar_text="Rockstar Games Launcher"
 fi
 
@@ -312,7 +365,7 @@ elif [[ -f "$glyph_path2" ]]; then
     glyph_text="Glyph Launcher ===> $glyph_path2"
 else
     # Glyph is not installed
-    glyph_value="TRUE"
+    glyph_value="FALSE"
     glyph_text="Glyph Launcher"
 fi
 
@@ -327,7 +380,7 @@ elif [[ -f "$minecraft_path2" ]]; then
     minecraft_text="Minecraft ===> $minecraft_path2"
 else
     # Minecraft is not installed
-    minecraft_value="TRUE"
+    minecraft_value="FALSE"
     minecraft_text="Minecraft - Close black screen to continue installation"
 fi }
 
@@ -486,7 +539,7 @@ CheckInstallations
 CheckInstallationDirectory
 
 
-options=$(zenity --list --text="Which launchers do you want to download and install?" --checklist --column="$version" --column="Default = one App ID Installation" FALSE "Separate App IDs" $epic_games_value "$epic_games_text" $gog_galaxy_value "$gog_galaxy_text" $uplay_value "$uplay_text" $origin_value "$origin_text" $battlenet_value "$battlenet_text" $amazongames_value "$amazongames_text" $eaapp_value "$eaapp_text" $legacygames_value "$legacygames_text" $itchio_value "$itchio_text" $humblegames_value "$humblegames_text" $indiegala_value "$indiegala_text" $rockstar_value "$rockstar_text" $glyph_value "$glyph_text" $minecraft_value "$minecraft_text" --width=535 --height=534 --extra-button="Uninstall" --extra-button="Find Games" --extra-button="Start Fresh" --extra-button="Move to SD Card" --extra-button="Mods")
+options=$(zenity --list --text="Which launchers do you want to download and install?" --checklist --column="$version" --column="Default = one App ID Installation" FALSE "Separate App IDs" $epic_games_value "$epic_games_text" $gog_galaxy_value "$gog_galaxy_text" $uplay_value "$uplay_text" $origin_value "$origin_text" $battlenet_value "$battlenet_text" $amazongames_value "$amazongames_text" $eaapp_value "$eaapp_text" $legacygames_value "$legacygames_text" $itchio_value "$itchio_text" $humblegames_value "$humblegames_text" $indiegala_value "$indiegala_text" $rockstar_value "$rockstar_text" $glyph_value "$glyph_text" $minecraft_value "$minecraft_text" FALSE "Xbox Game Pass" FALSE "GeForce Now" FALSE "Netflix" FALSE "Hulu" FALSE "Disney+" FALSE "Amazon Prime Video" FALSE "Youtube" --width=535 --height=740 --extra-button="Uninstall" --extra-button="Find Games" --extra-button="Start Fresh" --extra-button="Move to SD Card" --extra-button="Mods")
 
 
 
@@ -1166,7 +1219,7 @@ if [[ $options == "Mods" ]]; then
     # Check which launchers are installed
     CheckInstallationDirectory
 
-    move_options=$(zenity --list --text="Which app IDs do you want to install Mods to?" --checklist --column="Select" --column="Choose your Mod Program to add to AppId" $nonsteamlauncher_move_value "NonSteamLaunchers" $epicgameslauncher_move_value "EpicGamesLauncher" $goggalaxylauncher_move_value "GogGalaxyLauncher" $originlauncher_move_value "OriginLauncher" $uplaylauncher_move_value "UplayLauncher" $battlenetlauncher_move_value "Battle.netLauncher" $eaapplauncher_move_value "TheEAappLauncher" $amazongameslauncher_move_value "AmazonGamesLauncher" $itchiolauncher_move_value "itchioLauncher" $legacygameslauncher_move_value "LegacyGamesLauncher" $humblegameslauncher_move_value "HumbleGamesLauncher" $indiegalalauncher_move_value "IndieGalaLauncher" $rockstargameslauncher_move_value "RockstarGamesLauncher" $glyphlauncher_move_value "GlyphLauncher" $minecraftlauncher_move_value "MinecraftLauncher" TRUE "Minion" --width=415 --height=580)
+    move_options=$(zenity --list --text="Which app IDs do you want to install Mods to?" --checklist --column="Select" --column="Choose your Mod Program to add to AppId" $nonsteamlauncher_move_value "NonSteamLaunchers" $epicgameslauncher_move_value "EpicGamesLauncher" $goggalaxylauncher_move_value "GogGalaxyLauncher" $originlauncher_move_value "OriginLauncher" $uplaylauncher_move_value "UplayLauncher" $battlenetlauncher_move_value "Battle.netLauncher" $eaapplauncher_move_value "TheEAappLauncher" $amazongameslauncher_move_value "AmazonGamesLauncher" $itchiolauncher_move_value "itchioLauncher" $legacygameslauncher_move_value "LegacyGamesLauncher" $humblegameslauncher_move_value "HumbleGamesLauncher" $indiegalalauncher_move_value "IndieGalaLauncher" $rockstargameslauncher_move_value "RockstarGamesLauncher" $glyphlauncher_move_value "GlyphLauncher" $minecraftlauncher_move_value "MinecraftLauncher" TRUE "Minion" TRUE "Vortex" --width=415 --height=580)
 
     # Check if the cancel button was clicked
     if [ $? -eq 1 ]; then
@@ -1199,7 +1252,7 @@ if [[ $options == "Find Games" ]]; then
 
     # Download the latest BoilR from GitHub (Linux version)
     cd "$HOME/Downloads/NonSteamLaunchersInstallation"
-    wget https://github.com/PhilipK/BoilR/releases/download/v.1.8.0/linux_BoilR
+    wget https://github.com/PhilipK/BoilR/releases/download/v.1.9.1/linux_BoilR
 
     # Add execute permissions to the linux_BoilR file
     chmod +x linux_BoilR
@@ -1442,10 +1495,6 @@ if [[ $options == *"Epic Games"* ]]; then
     echo "User selected Epic Games"
 
 
-
-    if [[ ! -f "$epic_games_launcher_path1" ]] && [[ ! -f "$epic_games_launcher_path2" ]]; then
-        # Epic Games Launcher is not installed
-
         # Set the appid for the Epic Games Launcher
         if [ "$use_separate_appids" = true ]; then
         appid=EpicGamesLauncher
@@ -1479,8 +1528,6 @@ if [[ $options == *"Epic Games"* ]]; then
         echo "Running MSI file using Proton with the /passive option"
         "$STEAM_RUNTIME" "$proton_dir/proton" run MsiExec.exe /i "$msi_file" /qn
 
-
-    fi
 fi
 
 
@@ -1495,9 +1542,6 @@ if [[ $options == *"GOG Galaxy"* ]]; then
     # User selected GOG Galaxy
     echo "User selected GOG Galaxy"
 
-    # Check if Gog Galaxy Launcher is already installed
-    if [[ ! -f "$gog_galaxy_path1" ]] && [[ ! -f "$gog_galaxy_path2" ]]; then
-        # Gog Galaxy Launcher is not installed
 
         # Set the appid for the Gog Galaxy 2.0
         if [ "$use_separate_appids" = true ]; then
@@ -1562,7 +1606,6 @@ if [[ $options == *"GOG Galaxy"* ]]; then
     else
         # Gog Galaxy Launcher is already installed
         echo "Gog Galaxy Launcher is already installed"
-    fi
 
 fi
 
@@ -1577,15 +1620,6 @@ echo "# Downloading & Installing Uplay ...please wait..."
 if [[ $options == *"Uplay"* ]]; then
     # User selected Uplay
     echo "User selected Uplay"
-
-    # Check if Uplay Launcher is installed
-if [[ ! -f "$uplay_path1" ]] && [[ ! -f "$uplay_path2" ]]; then
-
-
-
-
-
-
 
 
 
@@ -1618,9 +1652,9 @@ if [[ ! -f "$uplay_path1" ]] && [[ ! -f "$uplay_path2" ]]; then
         wget $ubi_url -O $ubi_file
     fi
 
-  fi  # Run the UBI file using Proton with the /passive option
-echo "Running UBI file using Proton with the /passive option"
-"$STEAM_RUNTIME" "$proton_dir/proton" run "$ubi_file" /S
+    # Run the UBI file using Proton with the /passive option
+    echo "Running UBI file using Proton with the /passive option"
+    "$STEAM_RUNTIME" "$proton_dir/proton" run "$ubi_file" /S
 fi
 
 # Wait for the UBI file to finish running
@@ -1634,15 +1668,6 @@ echo "# Downloading & Installing Origin...please wait..."
 if [[ $options == *"Origin"* ]]; then
     # User selected Origin
     echo "User selected Origin"
-
-
-    # Check if Origin Launcher is installed
-    if [[ ! -f "$origin_path1" ]] && [[ ! -f "$origin_path2" ]]; then
-
-
-
-
-
 
 
     # Set the appid for the Origin Launcher
@@ -1685,7 +1710,7 @@ if [[ $options == *"Origin"* ]]; then
 
     # Wait for the ORIGIN file to finish running
     wait
-  fi
+
 fi
 
 wait
@@ -1696,9 +1721,6 @@ echo "# Downloading & Installing Battle.net...please wait..."
 if [[ $options == *"Battle.net"* ]]; then
     # User selected Battle.net
     echo "User selected Battle.net"
-
-    # Check if Battlenet Launcher is installed
-    if [[ ! -f "$battlenet_path1" ]] && [[ ! -f "$battlenet_path2" ]]; then
 
 
 
@@ -1732,11 +1754,10 @@ if [[ $options == *"Battle.net"* ]]; then
 
     # Run the BATTLE file using Proton with the /passive option
         echo "Running BATTLE file using Proton with the /passive option"
-        "$STEAM_RUNTIME" "$proton_dir/proton" run "$battle_file" Battle.net-Setup.exe --lang=enUS --installpath="C:\Program Files (x86)\Battle.net"
-    fi
+        "$STEAM_RUNTIME" "$proton_dir/proton" run "$battle_file"
+
 fi
 
-wait
 
 echo "80"
 echo "# Downloading & Installing Amazon Games...please wait..."
@@ -1745,12 +1766,6 @@ echo "# Downloading & Installing Amazon Games...please wait..."
 if [[ $options == *"Amazon Games"* ]]; then
     # User selected Amazon Games
     echo "User selected Amazon Games"
-
-    # Check if Amazon Games Launcher is installed
-    if [[ ! -f "$amazongames_path1" ]] && [[ ! -f "$amazongames_path2" ]]; then
-
-
-
 
 
 
@@ -1796,7 +1811,7 @@ if [[ $options == *"Amazon Games"* ]]; then
     fi
     sleep 1
 done
-    fi
+
     # Wait for the Amazon file to finish running
     wait
 fi
@@ -1814,15 +1829,6 @@ echo "# Downloading & Installing EA App...please wait..."
 if [[ $options == *"EA App"* ]]; then
     # User selected EA App
     echo "User selected EA App"
-
-
-
-    # Check if The EA App Launcher is installed
-    if [[ ! -f "$eaapp_path1" ]] && [[ ! -f "$eaapp_path2" ]]; then
-
-
-
-
 
 
 
@@ -1874,7 +1880,6 @@ done
 
     # Wait for the EA App file to finish running
     wait
-    fi
 fi
 
 wait
@@ -1885,11 +1890,6 @@ echo "# Downloading & Installing itch.io...please wait..."
 if [[ $options == *"itch.io"* ]]; then
     # User selected itchio Launcher
     echo "User selected itch.io"
-
-    # Check if itchio Launcher is installed
-    if [[ ! -f "$itchio_path1" ]] && [[ ! -f "$itchio_path2" ]]; then
-
-
 
 
 
@@ -1924,7 +1924,6 @@ if [[ $options == *"itch.io"* ]]; then
     # Run the itchio file using Proton with the /passive option
     echo "Running itchio file using Proton with the /passive option"
     "$STEAM_RUNTIME" "$proton_dir/proton" run "$itchio_file"
-  fi
 fi
 
 wait
@@ -1935,12 +1934,6 @@ echo "# Downloading & Installing Legacy Games...please wait..."
 if [[ $options == *"Legacy Games"* ]]; then
     # User selected Legacy Games
     echo "User selected Legacy Games"
-
-    if [[ ! -f "$legacygames_path1" ]] && [[ ! -f "$legacygames_path2" ]]; then
-        # Legacy Games Launcher is not installed
-
-
-
 
 
     # Set the appid for the Legacy Games Launcher
@@ -1974,7 +1967,6 @@ if [[ $options == *"Legacy Games"* ]]; then
       # Run the Legacy file using Proton with the /passive option
       echo "Running Legacy file using Proton with the /passive option"
       "$STEAM_RUNTIME" "$proton_dir/proton" run "$legacygames_file" /S
-  fi
 fi
 # Wait for the Legacy file to finish running
 wait
@@ -2005,8 +1997,6 @@ if [[ $options == *"Humble Games Collection"* ]]; then
         wget https://raw.githubusercontent.com/moraroy/NonSteamLaunchers-On-Steam-Deck/main/humble-app/start-humble.cmd -O "$HOME/.local/share/Steam/steamapps/compatdata/$appid/pfx/start-humble.cmd"
     fi
 
-    if [[ ! -f "$humblegames_path1" ]] && [[ ! -f "$humblegames_path2" ]]; then
-        # Humble Games Launcher is not installed
 
         # Set the appid for the Humble Games Launcher
         if [ "$use_separate_appids" = true ]; then
@@ -2041,8 +2031,6 @@ if [[ $options == *"Humble Games Collection"* ]]; then
         echo "Running Exe file using Proton with the /passive option"
         "$STEAM_RUNTIME" "$proton_dir/proton" run "$humblegames_file" /S /D="C:\Program Files\Humble App"
 
-
-    fi
 fi
 
 
@@ -2054,12 +2042,6 @@ echo "# Downloading & Installing Indie Gala...please wait..."
 if [[ $options == *"IndieGala"* ]]; then
     # User selected indiegala
     echo "User selected IndieGala"
-
-    if [[ ! -f "$indiegala_path1" ]] && [[ ! -f "$indiegala_path2" ]]; then
-        # indiegala Launcher is not installed
-
-
-
 
 
     # Set the appid for the indiegala Launcher
@@ -2093,7 +2075,6 @@ if [[ $options == *"IndieGala"* ]]; then
       # Run the indiegala file using Proton with the /passive option
       echo "Running IndieGala file using Proton with the /passive option"
       "$STEAM_RUNTIME" "$proton_dir/proton" run "$indiegala_file" /S
-  fi
 fi
 # Wait for the Indie file to finish running
 wait
@@ -2106,9 +2087,6 @@ echo "# Downloading & Installing Rockstar Games Launcher...please wait..."
 if [[ $options == *"Rockstar Games Launcher"* ]]; then
     # User selected rockstar games
     echo "User selected Rockstar Games Launcher"
-
-    if [[ ! -f "$rockstar_path1" ]] && [[ ! -f "$rockstar_path2" ]]; then
-        # rockstar games Launcher is not installed
 
         # Set the appid for the indiegala Launcher
         if [ "$use_separate_appids" = true ]; then
@@ -2141,7 +2119,6 @@ if [[ $options == *"Rockstar Games Launcher"* ]]; then
           echo "Running Rockstar Games Launcher file using Proton with the /passive option"
           "$STEAM_RUNTIME" "$proton_dir/proton" run "$rockstar_file"
 
-    fi
 fi
 # Wait for the rockstar file to finish running
 wait
@@ -2154,9 +2131,6 @@ echo "# Downloading & Installing Glyph Launcher...please wait..."
 if [[ $options == *"Glyph Launcher"* ]]; then
     # User selected Glyph
     echo "User selected Glyph Launcher"
-
-    if [[ ! -f "$glyph_path1" ]] && [[ ! -f "$glyph_path2" ]]; then
-        # Glyph is not installed
 
         # Set the appid for Glyph
         if [ "$use_separate_appids" = true ]; then
@@ -2189,7 +2163,6 @@ if [[ $options == *"Glyph Launcher"* ]]; then
           echo "Running Glyph Launcher file using Proton with the /passive option"
           "$STEAM_RUNTIME" "$proton_dir/proton" run "$glyph_file"
 
-    fi
 fi
 # Wait for the Glyph file to finish running
 wait
@@ -2215,8 +2188,6 @@ if [[ $options == *"Minecraft"* ]]; then
     # Set MinecraftLauncher.exe Variable
     minecraftinstall_path="$HOME/.local/share/Steam/steamapps/compatdata/$appid/pfx/drive_c/Program Files (x86)/Minecraft Launcher/MinecraftLauncher.exe"
 
-    if [ ! -f "$minecraftinstall_path" ]; then
-        # Minecraft is not installed
 
         # Create app id folder in compatdata folder if it doesn't exist
         if [ ! -d "$HOME/.local/share/Steam/steamapps/compatdata/$appid" ]; then
@@ -2250,12 +2221,50 @@ if [[ $options == *"Minecraft"* ]]; then
           fi
 
         echo "Minecraft is already installed at $minecraftinstall_path"
-    fi
 
 fi
 
 # Wait for the Minecraft file to finish running
 wait
+
+
+
+
+
+
+
+
+echo "98"
+echo "# Downloading and Installing Microsoft Edge...please wait..."
+
+# Check if user selected any of the options
+if [[ $options == *"Netflix"* ]] || [[ $options == *"Xbox Game Pass"* ]] || [[ $options == *"Geforce Now"* ]] || [[ $options == *"Hulu"* ]] || [[ $options == *"Disney+"* ]] || [[ $options == *"Amazon Prime Video"* ]] || [[ $options == *"Youtube"* ]]; then
+    # User selected one of the options
+    echo "User selected one of the options"
+
+    # Check if Microsoft Edge is already installed
+    if command -v microsoft-edge &> /dev/null; then
+        echo "Microsoft Edge is already installed"
+        flatpak --user override --filesystem=/run/udev:ro com.microsoft.Edge
+    else
+        # Install the Flatpak runtime
+        flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
+
+        # Install Microsoft Edge
+        flatpak install flathub com.microsoft.Edge
+
+        # Run the flatpak --user override command
+        flatpak --user override --filesystem=/run/udev:ro com.microsoft.Edge
+    fi
+fi
+
+# Wait for the Microsoft Edge file to finish running
+wait
+
+
+
+
+
 
 echo "99"
 echo "# Downloading & Installing Mods...please wait..."
@@ -2265,30 +2274,33 @@ echo "# Downloading & Installing Mods...please wait..."
 
 
 # Split the move_options string into an array of selected launchers
-    IFS='|' read -ra selected_launchers <<< "$move_options"
+IFS='|' read -ra selected_launchers <<< "$move_options"
 
-    for launcher in "${selected_launchers[@]}"; do
-        # Check if the user selected a launcher
-        if [[ "$launcher" != "Curseforge" && "$launcher" != "Minion" ]]; then
-            # The user selected a launcher
+for launcher in "${selected_launchers[@]}"; do
+    # Check if the user selected a launcher
+    if [[ "$launcher" != "Vortex" && "$launcher" != "Minion" ]]; then
+        # The user selected a launcher
 
-            # Set the appid for the launcher
-            appid="$launcher"
+        # Set the appid for the launcher
+        appid="$launcher"
 
+        # Create app id folder in compatdata folder if it doesn't exist
+        if [ ! -d "$HOME/.local/share/Steam/steamapps/compatdata/$appid" ]; then
+            mkdir -p "$HOME/.local/share/Steam/steamapps/compatdata/$appid"
+        fi
 
-            # Create app id folder in compatdata folder if it doesn't exist
-            if [ ! -d "$HOME/.local/share/Steam/steamapps/compatdata/$appid" ]; then
-                mkdir -p "$HOME/.local/share/Steam/steamapps/compatdata/$appid"
-            fi
+        # Change working directory to Proton's
+        cd $proton_dir
 
-            # Change working directory to Proton's
-            cd $proton_dir
+        # Set the STEAM_COMPAT_CLIENT_INSTALL_PATH environment variable
+        export STEAM_COMPAT_CLIENT_INSTALL_PATH="~/.local/share/Steam"
 
-            # Set the STEAM_COMPAT_CLIENT_INSTALL_PATH environment variable
-            export STEAM_COMPAT_CLIENT_INSTALL_PATH="~/.local/share/Steam"
+        # Set the STEAM_COMPAT_DATA_PATH environment variable for the launcher
+        export STEAM_COMPAT_DATA_PATH=~/.local/share/Steam/steamapps/compatdata/$appid
 
-            # Set the STEAM_COMPAT_DATA_PATH environment variable for the launcher
-            export STEAM_COMPAT_DATA_PATH=~/.local/share/Steam/steamapps/compatdata/$appid
+        # Check if the user selected Minion
+        if [[ " ${selected_launchers[@]} " =~ " Minion " ]]; then
+            # The user selected Minion
 
             # Get the path to the Minion.exe file for the launcher
             minion_path=$(get_minion_path "$launcher")
@@ -2296,7 +2308,6 @@ echo "# Downloading & Installing Mods...please wait..."
             # Check if Minion is installed
             if [[ ! -f "$minion_path" ]]; then
                 # Minion is not installed
-
 
                 # Download minion file
                 if [ ! -f "$minion_file" ]; then
@@ -2309,12 +2320,31 @@ echo "# Downloading & Installing Mods...please wait..."
                 "$STEAM_RUNTIME" "$proton_dir/proton" run "$minion_file" /S
             fi
         fi
-    done
-wait
 
+        # Check if the user selected Vortex
+        if [[ " ${selected_launchers[@]} " =~ " Vortex " ]]; then
+            # The user selected Vortex
 
+            # Get the path to the Vortex.exe file for the launcher
+            vortex_path=$(get_vortex_path "$launcher")
 
+            # Check if Vortex is installed
+            if [[ ! -f "$vortex_path" ]]; then
+                # Vortex is not installed
 
+                # Download vortex file
+                if [ ! -f "$vortex_file" ]; then
+                    echo "Downloading MSI file"
+                    wget $vortex_url -O $vortex_file
+                fi
+
+                # Run the vortex file using Proton with the /passive option
+                echo "Running MSI file using Proton with the /passive option"
+                "$STEAM_RUNTIME" "$proton_dir/proton" run "$vortex_file" /S
+          fi
+        fi
+    fi
+done
 
 
 
@@ -2487,9 +2517,72 @@ for launcher in "${launchers[@]}"; do
         # Minion is installed for this launcher
         minionshortcutdirectory="\"$minion_path\""
         minionlaunchoptions="STEAM_COMPAT_DATA_PATH=\"$HOME/.local/share/Steam/steamapps/compatdata/$launcher/\" %command%"
+    fi
+    # Get the path to the Vortex.exe file for this launcher
+    vortex_path=$(get_vortex_path "$launcher")
 
+    # Check if Vortex is installed for this launcher
+    if [[ -f "$vortex_path" ]]; then
+        # Vortex is installed for this launcher
+        vortexshortcutdirectory="\"$vortex_path\""
+        vortexlaunchoptions="STEAM_COMPAT_DATA_PATH=\"$HOME/.local/share/Steam/steamapps/compatdata/$launcher/\" %command%"
     fi
 done
+
+
+
+# Set Microsoft Edge options based on user's selection
+
+if [[ $options == *"Xbox Game Pass"* ]]; then
+    # User selected Xbox Game Pass
+    microsoftedgedirectory="\"$microsoftedge_path\""
+    xboxedgelaunchoptions="run --branch=stable --arch=x86_64 --command=/app/bin/edge --file-forwarding com.microsoft.Edge @@u @@ --window-size=1280,800 --force-device-scale-factor=1.00 --device-scale-factor=1.00 --kiosk "https://www.xbox.com/play" --enable-features=OverlayScrollbar"
+fi
+
+if [[ $options == *"Netflix"* ]]; then
+    # User selected Netflix
+    microsoftedgedirectory="\"$microsoftedge_path\""
+    netlfixedgelaunchoptions="run --branch=stable --arch=x86_64 --command=/app/bin/edge --file-forwarding com.microsoft.Edge @@u @@ --window-size=1280,800 --force-device-scale-factor=1.00 --device-scale-factor=1.00 --kiosk https://www.netflix.com --edge-kiosk-type=fullscreen --no-first-run --enable-features=OverlayScrollbar"
+fi
+
+if [[ $options == *"GeForce Now"* ]]; then
+    # User selected GeForce Now
+    microsoftedgedirectory="\"$microsoftedge_path\""
+    geforceedgelaunchoptions="run --branch=stable --arch=x86_64 --command=/app/bin/edge --file-forwarding com.microsoft.Edge @@u @@ --window-size=1280,800 --force-device-scale-factor=1.00 --device-scale-factor=1.00 --kiosk https://play.geforcenow.com --edge-kiosk-type=fullscreen --no-first-run --enable-features=OverlayScrollbar"
+fi
+
+if [[ $options == *"Hulu"* ]]; then
+    # User selected Hulu
+    microsoftedgedirectory="\"$microsoftedge_path\""
+    huluedgelaunchoptions="run --branch=stable --arch=x86_64 --command=/app/bin/edge --file-forwarding com.microsoft.Edge @@u @@ --window-size=1280,800 --force-device-scale-factor=1.00 --device-scale-factor=1.00 --kiosk https://www.hulu.com/welcome --edge-kiosk-type=fullscreen --no-first-run --enable-features=OverlayScrollbar"
+fi
+
+if [[ $options == *"Disney+"* ]]; then
+    # User selected Disney+
+    microsoftedgedirectory="\"$microsoftedge_path\""
+    disneyedgelaunchoptions="run --branch=stable --arch=x86_64 --command=/app/bin/edge --file-forwarding com.microsoft.Edge @@u @@ --window-size=1280,800 --force-device-scale-factor=1.00 --device-scale-factor=1.00 --kiosk https://www.disneyplus.com --edge-kiosk-type=fullscreen --no-first-run --enable-features=OverlayScrollbar"
+fi
+
+if [[ $options == *"Amazon Prime Video"* ]]; then
+    # User selected Amazon Prime Video
+    microsoftedgedirectory="\"$microsoftedge_path\""
+    amazonedgelaunchoptions="run --branch=stable --arch=x86_64 --command=/app/bin/edge --file-forwarding com.microsoft.Edge @@u @@ --window-size=1280,800 --force-device-scale-factor=1.00 --device-scale-factor=1.00 --kiosk https://www.amazon.com/primevideo --edge-kiosk-type=fullscreen --no-first-run --enable-features=OverlayScrollbar"
+fi
+
+if [[ $options == *"Youtube"* ]]; then
+    # User selected Youtube
+    microsoftedgedirectory="\"$microsoftedge_path\""
+    youtubeedgelaunchoptions="run --branch=stable --arch=x86_64 --command=/app/bin/edge --file-forwarding com.microsoft.Edge @@u @@ --window-size=1280,800 --force-device-scale-factor=1.00 --device-scale-factor=1.00 --kiosk https://www.youtube.com --edge-kiosk-type=fullscreen --no-first-run --enable-features=OverlayScrollbar"
+fi
+
+
+
+
+
+
+
+
+
 
 
 
@@ -2784,6 +2877,9 @@ glyphshortcutdirectory = '$glyphshortcutdirectory'
 minecraftshortcutdirectory = '$minecraftshortcutdirectory'
 #Mods
 minionshortcutdirectory = '$minionshortcutdirectory'
+vortexshortcutdirectory = '$vortexshortcutdirectory'
+#Streaming
+microsoftedgedirectory = '$microsoftedgedirectory'
 
 
 app_ids = []
@@ -2799,7 +2895,7 @@ def get_steam_shortcut_id(exe, appname):
 
 
 def create_new_entry(shortcutdirectory, appname, launchoptions):
-    if shortcutdirectory != '':
+    if shortcutdirectory != '' and launchoptions != '':
         exe = f'"{shortcutdirectory}"'
         appid = get_steam_shortcut_id(exe, appname)
         app_ids.append(appid)
@@ -2862,12 +2958,22 @@ create_new_entry('$eaappshortcutdirectory', 'EA App', '$eaapplaunchoptions')
 create_new_entry('$amazonshortcutdirectory', 'Amazon Games', '$amazonlaunchoptions')
 create_new_entry('$itchioshortcutdirectory', 'itch.io', '$itchiolaunchoptions')
 create_new_entry('$legacyshortcutdirectory', 'Legacy Games', '$legacylaunchoptions')
-create_new_entry('$humbleshortcutdirectory', 'Humble Games Collection', '$humblelaunchoptions')
+create_new_entry('$humbleshortcutdirectory', 'Humble Bundle', '$humblelaunchoptions')
 create_new_entry('$indieshortcutdirectory', 'IndieGala Client', '$indielaunchoptions')
 create_new_entry('$rockstarshortcutdirectory', 'Rockstar Games Launcher', '$rockstarlaunchoptions')
 create_new_entry('$glyphshortcutdirectory', 'Glyph', '$glyphlaunchoptions')
 create_new_entry('$minecraftshortcutdirectory', 'Minecraft: Java Edition', '$minecraftlaunchoptions')
 create_new_entry('$minionshortcutdirectory', 'Minion', '$minionlaunchoptions')
+create_new_entry('$vortexshortcutdirectory', 'Vortex', '$vortexlaunchoptions')
+create_new_entry('$microsoftedgedirectory', 'Xbox Games Pass', '$xboxedgelaunchoptions')
+create_new_entry('$microsoftedgedirectory', 'GeForce Now', '$geforceedgelaunchoptions')
+create_new_entry('$microsoftedgedirectory', 'Netflix', '$netlfixedgelaunchoptions')
+create_new_entry('$microsoftedgedirectory', 'Hulu', '$huluedgelaunchoptions')
+create_new_entry('$microsoftedgedirectory', 'Disney+', '$disneyedgelaunchoptions')
+create_new_entry('$microsoftedgedirectory', 'Amazon Prime Video', '$amazonedgelaunchoptions')
+create_new_entry('$microsoftedgedirectory', 'Youtube', '$youtubeedgelaunchoptions')
+
+
 
 print(f'app_ids: {app_ids}')
 
@@ -2882,23 +2988,31 @@ with open('$shortcuts_vdf_path', 'wb') as f:
 # Writes to the config.vdf File
 
 
-#Update the config.vdf file
+excluded_appids = [4095475158, 4094596394, 3583464505, 3908476730, 3728391057, 4238132300, 2295185386]
+
+# Update the config.vdf file
 with open('$config_vdf_path', 'r') as f:
     config = vdf.load(f)
 
+# Check if the CompatToolMapping key exists
+if 'CompatToolMapping' not in config['InstallConfigStore']['Software']['Valve']['Steam']:
+    # Create the CompatToolMapping key and set its value to an empty dictionary
+    config['InstallConfigStore']['Software']['Valve']['Steam']['CompatToolMapping'] = {}
+
 for app_id in app_ids:
-    if str(app_id) in config['InstallConfigStore']['Software']['Valve']['Steam']['CompatToolMapping']:
-        config['InstallConfigStore']['Software']['Valve']['Steam']['CompatToolMapping'][str(app_id)]['name'] = '$compat_tool_name'
-        config['InstallConfigStore']['Software']['Valve']['Steam']['CompatToolMapping'][str(app_id)]['config'] = ''
-        config['InstallConfigStore']['Software']['Valve']['Steam']['CompatToolMapping'][str(app_id)]['priority'] = '250'
-    else:
-        config['InstallConfigStore']['Software']['Valve']['Steam']['CompatToolMapping'][str(app_id)] = {'name': '$compat_tool_name', 'config': '', 'priority': '250'}
+    # Check if the app_id is in the list of excluded appids
+    if app_id not in excluded_appids:
+        # Update the CompatToolMapping for this app_id
+        if str(app_id) in config['InstallConfigStore']['Software']['Valve']['Steam']['CompatToolMapping']:
+            config['InstallConfigStore']['Software']['Valve']['Steam']['CompatToolMapping'][str(app_id)]['name'] = '$compat_tool_name'
+            config['InstallConfigStore']['Software']['Valve']['Steam']['CompatToolMapping'][str(app_id)]['config'] = ''
+            config['InstallConfigStore']['Software']['Valve']['Steam']['CompatToolMapping'][str(app_id)]['priority'] = '250'
+        else:
+            config['InstallConfigStore']['Software']['Valve']['Steam']['CompatToolMapping'][str(app_id)] = {'name': '$compat_tool_name', 'config': '', 'priority': '250'}
 
 # Save the updated config dictionary to the config.vdf file
 with open('$config_vdf_path', 'w') as f:
     vdf.dump(config, f)
-
-
 
 
 
@@ -2959,6 +3073,32 @@ config['controller_config']['minecraft java edition'] = {
 config['controller_config']['glyph'] = {
     'template': 'controller_neptune_webbrowser.vdf'
 }
+config['controller_config']['amazon prime video'] = {
+    'workshop': '2970669392'
+}
+config['controller_config']['hulu'] = {
+    'workshop': '2970669392'
+}
+config['controller_config']['netflix'] = {
+    'workshop': '2970669392'
+}
+config['controller_config']['disney+'] = {
+    'workshop': '2970669392'
+}
+config['controller_config']['youtube'] = {
+    'workshop': '2970669392'
+}
+config['controller_config']['geforce now'] = {
+    'template': 'controller_neptune_gamepad+mouse.vdf'
+}
+config['controller_config']['minion'] = {
+    'template': 'controller_neptune_webbrowser.vdf'
+}
+config['controller_config']['vortex'] = {
+    'template': 'controller_neptune_webbrowser.vdf'
+}
+
+
 
 # Save the updated config dictionary to the configset_controller_neptune.vdf file
 with open('$controller_config_path', 'w') as f:
