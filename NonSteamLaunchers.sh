@@ -2536,7 +2536,7 @@ done
 if [[ $options == *"Xbox Game Pass"* ]]; then
     # User selected Xbox Game Pass
     microsoftedgedirectory="\"$microsoftedge_path\""
-    xboxedgelaunchoptions="run --branch=stable --arch=x86_64 --command=/app/bin/edge --file-forwarding com.microsoft.Edge @@u @@ --window-size=1280,800 --force-device-scale-factor=1.00 --device-scale-factor=1.00 --kiosk "https://www.xbox.com/play" --enable-features=OverlayScrollbar"
+    xboxedgelaunchoptions="run --branch=stable --arch=x86_64 --command=/app/bin/edge --file-forwarding com.microsoft.Edge @@u @@ --window-size=1280,800 --force-device-scale-factor=1.00 --device-scale-factor=1.00 --kiosk https://www.xbox.com/play --enable-features=OverlayScrollbar"
 fi
 
 if [[ $options == *"Netflix"* ]]; then
