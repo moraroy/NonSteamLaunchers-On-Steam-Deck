@@ -2242,25 +2242,41 @@ if [[ $options == *"Netflix"* ]] || [[ $options == *"Xbox Game Pass"* ]] || [[ $
     # User selected one of the options
     echo "User selected one of the options"
 
-    # Check if Microsoft Edge is already installed
-    if command -v microsoft-edge &> /dev/null; then
-        echo "Microsoft Edge is already installed"
-        flatpak --user override --filesystem=/run/udev:ro com.microsoft.Edge
+    if [[ $options == *"Amazon Luna"* ]]; then
+        # Check if Google Chrome is already installed
+        if command -v google-chrome &> /dev/null; then
+            echo "Google Chrome is already installed"
+            flatpak --user override --filesystem=/run/udev:ro com.google.Chrome
+        else
+            # Install the Flatpak runtime
+            flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
+
+            # Install Google Chrome
+            flatpak install flathub com.google.Chrome
+
+            # Run the flatpak --user override command
+            flatpak --user override --filesystem=/run/udev:ro com.google.Chrome
+        fi
     else
-        # Install the Flatpak runtime
-        flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
+        # Check if Microsoft Edge is already installed
+        if command -v microsoft-edge &> /dev/null; then
+            echo "Microsoft Edge is already installed"
+            flatpak --user override --filesystem=/run/udev:ro com.microsoft.Edge
+        else
+            # Install the Flatpak runtime
+            flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
 
-        # Install Microsoft Edge
-        flatpak install flathub com.microsoft.Edge
+            # Install Microsoft Edge
+            flatpak install flathub com.microsoft.Edge
 
-        # Run the flatpak --user override command
-        flatpak --user override --filesystem=/run/udev:ro com.microsoft.Edge
+            # Run the flatpak --user override command
+            flatpak --user override --filesystem=/run/udev:ro com.microsoft.Edge
+        fi
     fi
 fi
 
 # Wait for the Microsoft Edge file to finish running
 wait
-
 
 
 
@@ -2578,7 +2594,7 @@ fi
 if [[ $options == *"Amazon Luna"* ]]; then
     # User selected Amazon Luna
     microsoftedgedirectory="\"$microsoftedge_path\""
-    lunaedgelaunchoptions="run --branch=stable --arch=x86_64 --command=/app/bin/edge --file-forwarding com.microsoft.Edge @@u @@ --window-size=1280,800 --force-device-scale-factor=1.00 --device-scale-factor=1.00 --kiosk https://luna.amazon.com/ --edge-kiosk-type=fullscreen --no-first-run --enable-features=OverlayScrollbar"
+    lunaedgelaunchoptions="run --branch=stable --arch=x86_64 --command=/app/bin/chrome --file-forwarding com.google.Chrome @@u @@ --window-size=1280,800 --force-device-scale-factor=1.00 --device-scale-factor=1.00 --kiosk https://luna.amazon.com/ --chrome-kiosk-type=fullscreen --no-first-run --enable-features=OverlayScrollbar"
 fi
 
 
