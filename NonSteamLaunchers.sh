@@ -7,7 +7,7 @@ chmod +x "$0"
 
 set -x
 
-version=v2.94
+version=v2.95
 
 check_for_updates() {
     # Set the URL to the GitHub API for the repository
@@ -539,7 +539,7 @@ CheckInstallations
 CheckInstallationDirectory
 
 
-options=$(zenity --list --text="Which launchers do you want to download and install?" --checklist --column="$version" --column="Default = one App ID Installation" FALSE "Separate App IDs" $epic_games_value "$epic_games_text" $gog_galaxy_value "$gog_galaxy_text" $uplay_value "$uplay_text" $origin_value "$origin_text" $battlenet_value "$battlenet_text" $amazongames_value "$amazongames_text" $eaapp_value "$eaapp_text" $legacygames_value "$legacygames_text" $itchio_value "$itchio_text" $humblegames_value "$humblegames_text" $indiegala_value "$indiegala_text" $rockstar_value "$rockstar_text" $glyph_value "$glyph_text" $minecraft_value "$minecraft_text" FALSE "Xbox Game Pass" FALSE "GeForce Now" FALSE "Netflix" FALSE "Hulu" FALSE "Disney+" FALSE "Amazon Prime Video" FALSE "Youtube" --width=535 --height=740 --extra-button="Uninstall" --extra-button="Find Games" --extra-button="Start Fresh" --extra-button="Move to SD Card" --extra-button="Mods")
+options=$(zenity --list --text="Which launchers do you want to download and install?" --checklist --column="$version" --column="Default = one App ID Installation" FALSE "Separate App IDs" $epic_games_value "$epic_games_text" $gog_galaxy_value "$gog_galaxy_text" $uplay_value "$uplay_text" $origin_value "$origin_text" $battlenet_value "$battlenet_text" $amazongames_value "$amazongames_text" $eaapp_value "$eaapp_text" $legacygames_value "$legacygames_text" $itchio_value "$itchio_text" $humblegames_value "$humblegames_text" $indiegala_value "$indiegala_text" $rockstar_value "$rockstar_text" $glyph_value "$glyph_text" $minecraft_value "$minecraft_text" FALSE "Xbox Game Pass" FALSE "GeForce Now" FALSE "Amazon Luna" FALSE "Netflix" FALSE "Hulu" FALSE "Disney+" FALSE "Amazon Prime Video" FALSE "Youtube" --width=535 --height=740 --extra-button="Uninstall" --extra-button="Find Games" --extra-button="Start Fresh" --extra-button="Move to SD Card" --extra-button="Mods")
 
 
 
@@ -2238,7 +2238,7 @@ echo "98"
 echo "# Downloading and Installing Microsoft Edge...please wait..."
 
 # Check if user selected any of the options
-if [[ $options == *"Netflix"* ]] || [[ $options == *"Xbox Game Pass"* ]] || [[ $options == *"Geforce Now"* ]] || [[ $options == *"Hulu"* ]] || [[ $options == *"Disney+"* ]] || [[ $options == *"Amazon Prime Video"* ]] || [[ $options == *"Youtube"* ]]; then
+if [[ $options == *"Netflix"* ]] || [[ $options == *"Xbox Game Pass"* ]] || [[ $options == *"Geforce Now"* ]] || [[ $options == *"Amazon Luna"* ]] || [[ $options == *"Hulu"* ]] || [[ $options == *"Disney+"* ]] || [[ $options == *"Amazon Prime Video"* ]] || [[ $options == *"Youtube"* ]]; then
     # User selected one of the options
     echo "User selected one of the options"
 
@@ -2575,7 +2575,11 @@ if [[ $options == *"Youtube"* ]]; then
     youtubeedgelaunchoptions="run --branch=stable --arch=x86_64 --command=/app/bin/edge --file-forwarding com.microsoft.Edge @@u @@ --window-size=1280,800 --force-device-scale-factor=1.00 --device-scale-factor=1.00 --kiosk https://www.youtube.com --edge-kiosk-type=fullscreen --no-first-run --enable-features=OverlayScrollbar"
 fi
 
-
+if [[ $options == *"Amazon Luna"* ]]; then
+    # User selected Amazon Luna
+    microsoftedgedirectory="\"$microsoftedge_path\""
+    lunaedgelaunchoptions="run --branch=stable --arch=x86_64 --command=/app/bin/edge --file-forwarding com.microsoft.Edge @@u @@ --window-size=1280,800 --force-device-scale-factor=1.00 --device-scale-factor=1.00 --kiosk https://luna.amazon.com/ --edge-kiosk-type=fullscreen --no-first-run --enable-features=OverlayScrollbar"
+fi
 
 
 
@@ -2897,12 +2901,15 @@ def get_steam_shortcut_id(exe, appname):
 def create_new_entry(shortcutdirectory, appname, launchoptions):
     if shortcutdirectory != '' and launchoptions != '':
         exe = f'"{shortcutdirectory}"'
-        appid = get_steam_shortcut_id(exe, appname)
-        app_ids.append(appid)
+        if shortcutdirectory != microsoftedgedirectory:
+            appid = get_steam_shortcut_id(exe, appname)
+            app_ids.append(appid)
+        else:
+            appid = None
 
         # Create a new entry for the Steam shortcut
         new_entry = {
-            'appid': f'{str(appid)}',
+            'appid': f'{str(appid)}' if appid is not None else '',
             'appname': appname,
             'exe': shortcutdirectory,
             'StartDir': shortcutdirectory,
@@ -2972,7 +2979,7 @@ create_new_entry('$microsoftedgedirectory', 'Hulu', '$huluedgelaunchoptions')
 create_new_entry('$microsoftedgedirectory', 'Disney+', '$disneyedgelaunchoptions')
 create_new_entry('$microsoftedgedirectory', 'Amazon Prime Video', '$amazonedgelaunchoptions')
 create_new_entry('$microsoftedgedirectory', 'Youtube', '$youtubeedgelaunchoptions')
-
+create_new_entry('$microsoftedgedirectory', 'Amazon Luna', '$lunaedgelaunchoptions')
 
 
 print(f'app_ids: {app_ids}')
@@ -2988,7 +2995,8 @@ with open('$shortcuts_vdf_path', 'wb') as f:
 # Writes to the config.vdf File
 
 
-excluded_appids = [4095475158, 4094596394, 3583464505, 3908476730, 3728391057, 4238132300, 2295185386]
+excluded_appids = []
+
 
 # Update the config.vdf file
 with open('$config_vdf_path', 'r') as f:
@@ -3089,6 +3097,9 @@ config['controller_config']['youtube'] = {
     'workshop': '2970669392'
 }
 config['controller_config']['geforce now'] = {
+    'template': 'controller_neptune_gamepad+mouse.vdf'
+}
+config['controller_config']['amazon luna'] = {
     'template': 'controller_neptune_gamepad+mouse.vdf'
 }
 config['controller_config']['minion'] = {
