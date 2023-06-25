@@ -36,6 +36,19 @@ Supported Stores 🛍
 - Minecraft ✔️
 
 <h1 align="center">
+Supported Streaming Sites 🌐
+</h1>
+
+- Xbox Game Pass ✔️
+- GeForce Now ✔️
+- Amazon Luna ✔️
+- Netflix ✔️
+- Amazon Prime Video ✔️
+- Disney+ ✔️
+- Hulu ✔️
+- Youtube ✔️
+
+<h1 align="center">
 How to Install🔧
 </h1>
 
