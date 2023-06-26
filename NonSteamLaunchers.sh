@@ -2617,35 +2617,15 @@ download_dir=~/Downloads/NonSteamLaunchersInstallation
 # Create the download directory if it doesn't exist
 mkdir -p "$download_dir"
 
-# Check if setuptools is already installed
-if ! python3 -c "import setuptools" &> /dev/null; then
-    # Download the latest version of setuptools from the Python Package Index
-    download_url="https://files.pythonhosted.org/packages/03/20/630783571e76e5fa5f3e9f29398ca3ace377207b8196b54e0ffdf09f12c1/setuptools-67.8.0.tar.gz"
-    wget -P "$download_dir" "$download_url"
-
-    # Extract the downloaded tar.gz file
-    tar -xvf "$download_dir/setuptools-67.8.0.tar.gz" -C "$download_dir"
-
-    # Change to the extracted directory
-    cd "$download_dir/setuptools-67.8.0"
-
-    # Install setuptools in a custom location
-    python3 setup.py install --prefix="$download_dir"
-fi
-
-
-# Download extended-setup-tools from the Python Package Index
-download_url="https://files.pythonhosted.org/packages/d2/a0/979ab67627f03da03eff3bc9d01c2969d89e33175764cdd5ec15a44efe50/extended-setup-tools-0.1.8.tar.gz"
+# Download the vdf module from the GitHub repository
+download_url="https://github.com/moraroy/NonSteamLaunchers-On-Steam-Deck/raw/main/Modules/vdf/__init__.py"
 wget -P "$download_dir" "$download_url"
 
-# Extract the downloaded tar.gz file
-tar -xvf "$download_dir"/extended-setup-tools-*.tar.gz -C "$download_dir"
+# Create a directory for the vdf module
+mkdir -p "$download_dir/lib/python$python_version/site-packages/vdf"
 
-# Change to the extracted directory
-cd "$download_dir"/extended-setup-tools-*/
-
-# Install extended-setup-tools in a custom location
-python3 setup.py install --prefix="$download_dir"
+# Move the downloaded file to the vdf module directory
+mv "$download_dir"/__init__.py "$download_dir/lib/python$python_version/site-packages/vdf/__init__.py"
 
 # Get the version of Python being used
 python_version=$(python -c 'import sys; print(f"{sys.version_info.major}.{sys.version_info.minor}")')
@@ -2653,43 +2633,6 @@ python_version=$(python -c 'import sys; print(f"{sys.version_info.major}.{sys.ve
 # Set the PYTHONPATH environment variable
 export PYTHONPATH="$download_dir/lib/python$python_version/site-packages:$PYTHONPATH"
 
-
-
-
-
-# Set the download directory
-download_dir=~/Downloads/NonSteamLaunchersInstallation
-
-# Create the download directory if it doesn't exist
-mkdir -p "$download_dir"
-
-# Download the python-vdf library from GitHub
-download_url="https://github.com/ValvePython/vdf/archive/refs/heads/master.zip"
-wget -P "$download_dir" "$download_url"
-
-# Extract the downloaded zip file
-unzip "$download_dir"/master.zip -d "$download_dir" > /dev/null
-
-# Move the extracted files to the desired location
-mv "$download_dir"/vdf-master/* "$download_dir"
-
-# Set the download directory
-download_dir=~/Downloads/NonSteamLaunchersInstallation
-
-# Change to the extracted directory
-cd "$download_dir"
-
-# Install the vdf library in a custom location
-python3 setup.py install --prefix="$download_dir"
-
-
-
-
-# Get the version of Python being used
-python_version=$(python -c 'import sys; print(f"{sys.version_info.major}.{sys.version_info.minor}")')
-
-# Set the PYTHONPATH environment variable
-export PYTHONPATH="$download_dir/lib/python$python_version/site-packages:$PYTHONPATH"
 
 
 
