@@ -7,7 +7,7 @@ chmod +x "$0"
 
 set -x
 
-version=v2.95
+version=v2.96
 
 check_for_updates() {
     # Set the URL to the GitHub API for the repository
@@ -25,7 +25,17 @@ check_for_updates() {
     fi
 }
 
-check_for_updates
+# Get the command line arguments
+args=("$@")
+
+# Check if any command line arguments were provided
+if [ ${#args[@]} -eq 0 ]; then
+    # No command line arguments were provided, so check for updates and display the zenity window if necessary
+    check_for_updates
+fi
+
+
+
 
 
 
@@ -539,7 +549,18 @@ CheckInstallations
 CheckInstallationDirectory
 
 
-options=$(zenity --list --text="Which launchers do you want to download and install?" --checklist --column="$version" --column="Default = one App ID Installation" FALSE "Separate App IDs" $epic_games_value "$epic_games_text" $gog_galaxy_value "$gog_galaxy_text" $uplay_value "$uplay_text" $origin_value "$origin_text" $battlenet_value "$battlenet_text" $amazongames_value "$amazongames_text" $eaapp_value "$eaapp_text" $legacygames_value "$legacygames_text" $itchio_value "$itchio_text" $humblegames_value "$humblegames_text" $indiegala_value "$indiegala_text" $rockstar_value "$rockstar_text" $glyph_value "$glyph_text" $minecraft_value "$minecraft_text" FALSE "Xbox Game Pass" FALSE "GeForce Now" FALSE "Amazon Luna" FALSE "Netflix" FALSE "Hulu" FALSE "Disney+" FALSE "Amazon Prime Video" FALSE "Youtube" --width=535 --height=740 --extra-button="Uninstall" --extra-button="Find Games" --extra-button="Start Fresh" --extra-button="Move to SD Card" --extra-button="Mods")
+# Get the command line arguments
+args=("$@")
+
+# Check if any command line arguments were provided
+if [ ${#args[@]} -eq 0 ]; then
+    # No command line arguments were provided, so display the zenity dialog
+    options=$(zenity --list --text="Which launchers do you want to download and install?" --checklist --column="$version" --column="Default = one App ID Installation" FALSE "Separate App IDs" $epic_games_value "$epic_games_text" $gog_galaxy_value "$gog_galaxy_text" $uplay_value "$uplay_text" $origin_value "$origin_text" $battlenet_value "$battlenet_text" $amazongames_value "$amazongames_text" $eaapp_value "$eaapp_text" $legacygames_value "$legacygames_text" $itchio_value "$itchio_text" $humblegames_value "$humblegames_text" $indiegala_value "$indiegala_text" $rockstar_value "$rockstar_text" $glyph_value "$glyph_text" $minecraft_value "$minecraft_text" FALSE "Xbox Game Pass" FALSE "GeForce Now" FALSE "Amazon Luna" FALSE "Netflix" FALSE "Hulu" FALSE "Disney+" FALSE "Amazon Prime Video" FALSE "Youtube" --width=535 --height=740 --extra-button="Uninstall" --extra-button="Find Games" --extra-button="Start Fresh" --extra-button="Move to SD Card" --extra-button="Mods")
+else
+    # Command line arguments were provided, so set the value of the options variable using the command line arguments
+    options="${args[@]}"
+fi
+
 
 
 
@@ -2367,6 +2388,9 @@ done
 # Delete NonSteamLaunchersInstallation subfolder in Downloads folder
 rm -rf ~/Downloads/NonSteamLaunchersInstallation
 
+
+
+
 echo "100"
 echo "# Installation Complete - Steam will now restart. Your launchers will be in your library!...Food for thought...do Jedis use Force Compatability?"
 ) |
@@ -2381,6 +2405,11 @@ if [ "$?" = -1 ] ; then
 fi
 
 wait
+
+
+
+
+
 
 
 
@@ -2617,21 +2646,19 @@ download_dir=~/Downloads/NonSteamLaunchersInstallation
 # Create the download directory if it doesn't exist
 mkdir -p "$download_dir"
 
-# Download the vdf module from the GitHub repository
-download_url="https://github.com/moraroy/NonSteamLaunchers-On-Steam-Deck/raw/main/Modules/vdf/__init__.py"
-wget -P "$download_dir" "$download_url"
+# Get the version of Python being used
+python_version=$(python -c 'import sys; print(f"{sys.version_info.major}.{sys.version_info.minor}")')
 
 # Create a directory for the vdf module
 mkdir -p "$download_dir/lib/python$python_version/site-packages/vdf"
 
-# Move the downloaded file to the vdf module directory
-mv "$download_dir"/__init__.py "$download_dir/lib/python$python_version/site-packages/vdf/__init__.py"
-
-# Get the version of Python being used
-python_version=$(python -c 'import sys; print(f"{sys.version_info.major}.{sys.version_info.minor}")')
+# Download the vdf module from the GitHub repository
+download_url="https://github.com/moraroy/NonSteamLaunchers-On-Steam-Deck/raw/main/Modules/vdf/__init__.py"
+wget -P "$download_dir/lib/python$python_version/site-packages/vdf" "$download_url"
 
 # Set the PYTHONPATH environment variable
-export PYTHONPATH="$download_dir/lib/python$python_version/site-packages:$PYTHONPATH"
+export PYTHONPATH="$download_dir/lib/python$python_version/site-packages/:$PYTHONPATH"
+
 
 
 
@@ -2794,7 +2821,7 @@ python3 -c "
 import sys
 import os
 import subprocess
-sys.path.insert(0, os.path.expanduser('$HOME/Downloads/NonSteamLaunchersInstallation/vdf'))
+sys.path.insert(0, os.path.expanduser('$HOME/Downloads/NonSteamLaunchersInstallation/lib/python$python_version/site-packages'))
 print(sys.path)  # Add this line to print the value of sys.path
 import vdf  # Updated import
 import binascii
