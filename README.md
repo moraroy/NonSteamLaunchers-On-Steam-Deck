@@ -38,9 +38,9 @@ Supported Stores 🛍
 - DMM Games Player ✔️
 
 <h1 align="center">
-Supported Streaming Sites 🌐 includes a "Shortcut Creator" for any website.
+Supported Streaming Sites for games and as well as any website. 🌐
 </h1>
-
+- Shortcut Creator ✔️
 - Xbox Game Pass ✔️
 - GeForce Now ✔️
 - Amazon Luna ✔️
