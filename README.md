@@ -38,7 +38,7 @@ Supported Stores 🛍
 - DMM Games Player ✔️
 
 <h1 align="center">
-Supported Streaming Sites 🌐
+Supported Streaming Sites 🌐 includes a "Shortcut Creator" for any website.
 </h1>
 
 - Xbox Game Pass ✔️
