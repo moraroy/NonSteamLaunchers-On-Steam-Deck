@@ -7,7 +7,7 @@ chmod +x "$0"
 
 set -x
 
-version=v2.96
+version=v2.97
 
 check_for_updates() {
     # Set the URL to the GitHub API for the repository
@@ -93,69 +93,10 @@ glyph_path1="$HOME/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx
 glyph_path2="$HOME/.local/share/Steam/steamapps/compatdata/GlyphLauncher/pfx/drive_c/Program Files (x86)/Glyph/GlyphClient.exe"
 minecraft_path1="$HOME/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/Program Files (x86)/Minecraft Launcher/MinecraftLauncher.exe"
 minecraft_path2="$HOME/.local/share/Steam/steamapps/compatdata/MinecraftLauncher/pfx/drive_c/Program Files (x86)/Minecraft Launcher/MinecraftLauncher.exe"
-
-
-#Mod Programs
-get_minion_path() {
-    launcher_name="$1"
-    minion_path="$HOME/.local/share/Steam/steamapps/compatdata/${launcher_name}/pfx/drive_c/users/steamuser/AppData/Local/Minion/Minion.exe"
-    echo "$minion_path"
-}
-
-minion_path1=$(get_minion_path "NonSteamLaunchers")
-minion_path2=$(get_minion_path "EpicGamesLauncher")
-minion_path3=$(get_minion_path "GogGalaxyLauncher")
-minion_path4=$(get_minion_path "OriginLauncher")
-minion_path5=$(get_minion_path "UplayLauncher")
-minion_path6=$(get_minion_path "Battle.netLauncher")
-minion_path7=$(get_minion_path "TheEAappLauncher")
-minion_path8=$(get_minion_path "AmazonGamesLauncher")
-minion_path9=$(get_minion_path "itchioLauncher")
-minion_path10=$(get_minion_path "LegacyGamesLauncher")
-minion_path11=$(get_minion_path "HumbleGamesLauncher")
-minion_path12=$(get_minion_path "IndieGalaLauncher")
-minion_path13=$(get_minion_path "RockstarGamesLauncher")
-minion_path14=$(get_minion_path "GlyphLauncher")
-minion_path15=$(get_minion_path "MinecraftLauncher")
-
-# Set the URL to download the Minion Launcher file from
-minion_url=https://cdn.mmoui.com/minion/v3/Minion3.0.5-32bit.exe
-
-# Set the path to save the Minion Launcher to
-minion_file=~/Downloads/NonSteamLaunchersInstallation/Minion3.0.5-32bit.exe
-
-
-
-
-
-
-get_vortex_path() {
-    launcher_name="$1"
-    vortex_path="$HOME/Desktop/compatdata/${launcher_name}/pfx/drive_c/Program Files/Black Tree Gaming Ltd/Vortex/Vortex.exe"
-    echo "$vortex_path"
-}
-
-vortex_path1=$(get_vortex_path "NonSteamLaunchers")
-vortex_path2=$(get_vortex_path "EpicGamesLauncher")
-vortex_path3=$(get_vortex_path "GogGalaxyLauncher")
-vortex_path4=$(get_vortex_path "OriginLauncher")
-vortex_path5=$(get_vortex_path "UplayLauncher")
-vortex_path6=$(get_vortex_path "Battle.netLauncher")
-vortex_path7=$(get_vortex_path "TheEAappLauncher")
-vortex_path8=$(get_vortex_path "AmazonGamesLauncher")
-vortex_path9=$(get_vortex_path "itchioLauncher")
-vortex_path10=$(get_vortex_path "LegacyGamesLauncher")
-vortex_path11=$(get_vortex_path "HumbleGamesLauncher")
-vortex_path12=$(get_vortex_path "IndieGalaLauncher")
-vortex_path13=$(get_vortex_path "RockstarGamesLauncher")
-vortex_path14=$(get_vortex_path "GlyphLauncher")
-vortex_path15=$(get_vortex_path "MinecraftLauncher")
-
-# Set the URL to download the Minion Launcher file from
-vortex_url=https://github.com/Nexus-Mods/Vortex/releases/download/v1.8.4/vortex-setup-1.8.4.exe
-
-# Set the path to save the Minion Launcher to
-vortex_file=~/Downloads/NonSteamLaunchersInstallation/vortex-setup-1.8.4.exe
+psplus_path1="$HOME/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/Program Files (x86)/PlayStationPlus/pspluslauncher.exe"
+psplus_path2="$HOME/.local/share/Steam/steamapps/compatdata/PlaystationPlusLauncher/pfx/drive_c/Program Files (x86)/PlayStationPlus/pspluslauncher.exe"
+dmm_path1="$HOME/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/Program Files/DMMGamePlayer/DMMGamePlayer.exe"
+dmm_path2="$HOME/.local/share/Steam/steamapps/compatdata/DMMGameLauncher/pfx/drive_c/Program Files/DMMGamePlayer/DMMGamePlayer.exe"
 
 
 
@@ -173,11 +114,12 @@ vortex_file=~/Downloads/NonSteamLaunchersInstallation/vortex-setup-1.8.4.exe
 
 
 
+#Chrome File Path
+#chrome_installpath="/app/bin/chrome"
+chrome_path="/usr/bin/flatpak"
+chrome_startdir="\"/usr/bin\""
 
-#Microsoft Edge File Path
 
-microsoftedge_installpath="/app/bin/edge"
-microsoftedge_path="/usr/bin/flatpak"
 
 
 
@@ -392,9 +334,37 @@ else
     # Minecraft is not installed
     minecraft_value="FALSE"
     minecraft_text="Minecraft - Close black screen to continue installation"
+fi
+
+# Check if PlaystationPlus is installed
+if [[ -f "$psplus_path1" ]]; then
+    # PlaystationPlus is installed in path 1 on local drive
+    psplus_value="FALSE"
+    psplus_text="Playstation Plus ===> $psplus_path1"
+elif [[ -f "$psplus_path2" ]]; then
+    # PlaystationPlus is installed in path 2 on local drive
+    psplus_value="FALSE"
+    psplus_text="Playstation Plus ===> $psplus_path2"
+else
+    # PlaystationPlus is not installed
+    psplus_value="FALSE"
+    psplus_text="Playstation Plus"
+fi
+
+# Check if DMM Player is installed
+if [[ -f "$dmm_path1" ]]; then
+    # DMM Player is installed in path 1 on local drive
+    dmm_value="FALSE"
+    dmm_text="DMM Games ===> $dmm_path1"
+elif [[ -f "$dmm_path2" ]]; then
+    # DMM Player is installed in path 2 on local drive
+    dmm_value="FALSE"
+    dmm_text="DMM Games ===> $dmm_path2"
+else
+    # DMM Player is not installed
+    dmm_value="FALSE"
+    dmm_text="DMM Games"
 fi }
-
-
 
 
 
@@ -539,8 +509,25 @@ function CheckInstallationDirectory {
     else
         # Minecraft is not installed
         minecraftlauncher_move_value="FALSE"
-    fi }
+    fi
 
+    # Check if PlaystationPlus is installed
+    if [[ -d "$HOME/.local/share/Steam/steamapps/compatdata/PlaystationPlusLauncher" ]]; then
+        # PlaystationPlus is installed
+        pspluslauncher_move_value="TRUE"
+    else
+        # PlaystationPlus is not installed
+        pspluslauncher_move_value="FALSE"
+    fi
+
+    # Check if DMM Player is installed
+    if [[ -d "$HOME/.local/share/Steam/steamapps/compatdata/DMMGameLauncher" ]]; then
+        # DMM Player is installed
+        dmmlauncher_move_value="TRUE"
+    else
+        # DMM Player is not installed
+        dmmlauncher_move_value="FALSE"
+    fi }
 
 
 
@@ -552,14 +539,41 @@ CheckInstallationDirectory
 # Get the command line arguments
 args=("$@")
 
+# Initialize an array to store the custom websites
+custom_websites=()
+
 # Check if any command line arguments were provided
 if [ ${#args[@]} -eq 0 ]; then
-    # No command line arguments were provided, so display the zenity dialog
-    options=$(zenity --list --text="Which launchers do you want to download and install?" --checklist --column="$version" --column="Default = one App ID Installation" FALSE "Separate App IDs" $epic_games_value "$epic_games_text" $gog_galaxy_value "$gog_galaxy_text" $uplay_value "$uplay_text" $origin_value "$origin_text" $battlenet_value "$battlenet_text" $amazongames_value "$amazongames_text" $eaapp_value "$eaapp_text" $legacygames_value "$legacygames_text" $itchio_value "$itchio_text" $humblegames_value "$humblegames_text" $indiegala_value "$indiegala_text" $rockstar_value "$rockstar_text" $glyph_value "$glyph_text" $minecraft_value "$minecraft_text" FALSE "Xbox Game Pass" FALSE "GeForce Now" FALSE "Amazon Luna" FALSE "Netflix" FALSE "Hulu" FALSE "Disney+" FALSE "Amazon Prime Video" FALSE "Youtube" --width=535 --height=740 --extra-button="Uninstall" --extra-button="Find Games" --extra-button="Start Fresh" --extra-button="Move to SD Card" --extra-button="Mods")
+    # No command line arguments were provided, so prompt the user to enter custom websites separated by commas
+    custom_websites_str=$(zenity --entry --title="Shortcut Creator" --text="Enter custom websites that you want shortcuts for, separated by commas. Leave blank and press ok if you dont want any. E.g. myspace.com, limewire.com, my.screenname.aol.com")
+
+    # Check if the user clicked the 'Cancel' button
+    if [ $? -eq 1 ]; then
+        # The user clicked the 'Cancel' button, so exit the script
+        echo "The cancel button was clicked"
+        exit 1
+    fi
+
+    # Split the custom_websites_str variable into an array using ',' as the delimiter
+    IFS=',' read -ra custom_websites <<< "$custom_websites_str"
+
+    # Display the main zenity window
+    selected_launchers=$(zenity --list --text="Which launchers do you want to download and install?" --checklist --column="$version" --column="Default = one App ID Installation" FALSE "Separate App IDs" $epic_games_value "$epic_games_text" $gog_galaxy_value "$gog_galaxy_text" $uplay_value "$uplay_text" $origin_value "$origin_text" $battlenet_value "$battlenet_text" $amazongames_value "$amazongames_text" $eaapp_value "$eaapp_text" $legacygames_value "$legacygames_text" $itchio_value "$itchio_text" $humblegames_value "$humblegames_text" $indiegala_value "$indiegala_text" $rockstar_value "$rockstar_text" $glyph_value "$glyph_text" $minecraft_value "$minecraft_text" $psplus_value "$psplus_text" $dmm_value "$dmm_text" FALSE "Xbox Game Pass" FALSE "GeForce Now" FALSE "Amazon Luna" FALSE "Netflix" FALSE "Hulu" FALSE "Disney+" FALSE "Amazon Prime Video" FALSE "Youtube" --width=535 --height=740 --extra-button="Uninstall" --extra-button="Find Games" --extra-button="Start Fresh" --extra-button="Move to SD Card")
 else
     # Command line arguments were provided, so set the value of the options variable using the command line arguments
-    options="${args[@]}"
+    selected_launchers="${args[0]}"
+    custom_websites+=("${args[@]:1}")
 fi
+
+# Print the selected launchers and custom websites
+echo "Selected launchers: $selected_launchers"
+echo "Custom websites: ${custom_websites[@]}"
+
+# Set the value of the options variable
+options="$selected_launchers"
+
+
+
 
 
 
@@ -570,7 +584,7 @@ fi
 
 
 # Check if the cancel button was clicked
-if [ $? -eq 1 ] && [[ $options != "Start Fresh" ]] && [[ $options != "Move to SD Card" ]] && [[ $options != "Uninstall" ]] && [[ $options != "Mods" ]] && [[ $options != "Find Games" ]]; then
+if [ $? -eq 1 ] && [[ $options != "Start Fresh" ]] && [[ $options != "Move to SD Card" ]] && [[ $options != "Uninstall" ]] && [[ $options != "Find Games" ]]; then
     # The cancel button was clicked
     echo "The cancel button was clicked"
     exit 1
@@ -580,12 +594,13 @@ fi
 
 
 
-# Check if no options were selected
-if [ -z "$options" ]; then
-    # No options were selected
-    zenity --error --text="No options were selected. The script will now exit." --width=200 --height=150
+# Check if no options were selected and no custom website was provided
+if [ -z "$options" ] && [ -z "$custom_websites" ]; then
+    # No options were selected and no custom website was provided
+    zenity --error --text="No options were selected and no custom website was provided. The script will now exit." --width=200 --height=150
     exit 1
 fi
+
 
 
 
@@ -663,6 +678,8 @@ if [[ $options == "Start Fresh" ]]; then
         unlink & rm -rf "$HOME/.local/share/Steam/steamapps/compatdata/RockstarGamesLauncher"
         unlink & rm -rf "$HOME/.local/share/Steam/steamapps/compatdata/GlyphLauncher"
         unlink & rm -rf "$HOME/.local/share/Steam/steamapps/compatdata/MinecraftLauncher"
+        unlink & rm -rf "$HOME/.local/share/Steam/steamapps/compatdata/PlaystationPlusLauncher"
+        unlink & rm -rf "$HOME/.local/share/Steam/steamapps/compatdata/DMMGameLauncher"
         rm -rf "/run/media/mmcblk0p1/NonSteamLaunchers/"
         rm -rf "/run/media/mmcblk0p1/EpicGamesLauncher/"
         rm -rf "/run/media/mmcblk0p1/GogGalaxyLauncher/"
@@ -678,6 +695,8 @@ if [[ $options == "Start Fresh" ]]; then
         rm -rf "/run/media/mmcblk0p1/RockstarGamesLauncher/"
         rm -rf "/run/media/mmcblk0p1/GlyphLauncher/"
         rm -rf "/run/media/mmcblk0p1/MinecraftLauncher/"
+        rm -rf "/run/media/mmcblk0p1/PlaystationPlusLauncher/"
+        rm -rf "/run/media/mmcblk0p1/DMMGameLauncher/"
         rm -rf ~/Downloads/NonSteamLaunchersInstallation
 
         # Exit the script
@@ -712,7 +731,9 @@ if [[ $options == "Uninstall" ]]; then
         FALSE "IndieGala" \
         FALSE "Rockstar Games Launcher" \
         FALSE "Glyph Launcher" \
-        FALSE "Minecraft")
+        FALSE "Minecraft"\
+        FALSE "Playstation Plus"\
+        FALSE "DMM Games")
 
 
     if [[ $options != "" ]]; then
@@ -913,6 +934,34 @@ if [[ $options == "Uninstall" ]]; then
             rm -rf "$HOME/.local/share/Steam/steamapps/compatdata/MinecraftLauncher"
         fi
     fi
+
+    if [[ $options == *"Playstation Plus"* ]]; then
+        # User selected to uninstall Playstation
+        # Check if Playstation was installed using the NonSteamLaunchers prefix
+        if [[ -f "$psplus_path1" ]]; then
+            # Playstation was installed using NonSteamLaunchers prefix
+            # Add code here to run the Playstation uninstaller
+            rm -rf "$HOME/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/Program Files (x86)/PlayStationPlus"
+        elif [[ -f "$psplus_path2" ]]; then
+            # Playstation was installed using a separate app ID
+            # Add code here to delete the PlaystationPlusLauncher app ID folder
+            rm -rf "$HOME/.local/share/Steam/steamapps/compatdata/PlaystationPlusLauncher"
+        fi
+    fi
+
+    if [[ $options == *"DMM Games"* ]]; then
+        # User selected to uninstall DMMGameLauncher
+        # Check if DMMGameLauncher was installed using the NonSteamLaunchers prefix
+        if [[ -f "$dmm_path1" ]]; then
+            # DMMGameLauncher was installed using NonSteamLaunchers prefix
+            # Add code here to run the DMMGameLauncher uninstaller
+            rm -rf "$HOME/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/Program Files (x86)/DMMGamePlayer"
+        elif [[ -f "$dmm_path2" ]]; then
+            # DMMGameLauncher was installed using a separate app ID
+            # Add code here to delete the DMMGameLauncher app ID folder
+            rm -rf "$HOME/.local/share/Steam/steamapps/compatdata/DMMGameLauncher"
+        fi
+    fi
     # Display a message to the user indicating that the operation was successful
         zenity --info --text="The selected launchers have now been deleted." --width=200 --height=150
     exit
@@ -942,7 +991,7 @@ if [[ $options == "Move to SD Card" ]]; then
     CheckInstallationDirectory
 
 
-    move_options=$(zenity --list --text="Which app IDs do you want to move to the SD card?" --checklist --column="Select" --column="App ID" $nonsteamlauncher_move_value "NonSteamLaunchers" $epicgameslauncher_move_value "EpicGamesLauncher" $goggalaxylauncher_move_value "GogGalaxyLauncher" $originlauncher_move_value "OriginLauncher" $uplaylauncher_move_value "UplayLauncher" $battlenetlauncher_move_value "Battle.netLauncher" $eaapplauncher_move_value "TheEAappLauncher" $amazongameslauncher_move_value "AmazonGamesLauncher" $itchiolauncher_move_value "itchioLauncher" $legacygameslauncher_move_value "LegacyGamesLauncher" $humblegameslauncher_move_value "HumbleGamesLauncher" $indiegalalauncher_move_value "IndieGalaLauncher" $rockstargameslauncher_move_value "RockstarGamesLauncher" $glyphlauncher_move_value "GlyphLauncher" $minecraftlauncher_move_value "MinecraftLauncher" --width=335 --height=524)
+    move_options=$(zenity --list --text="Which app IDs do you want to move to the SD card?" --checklist --column="Select" --column="App ID" $nonsteamlauncher_move_value "NonSteamLaunchers" $epicgameslauncher_move_value "EpicGamesLauncher" $goggalaxylauncher_move_value "GogGalaxyLauncher" $originlauncher_move_value "OriginLauncher" $uplaylauncher_move_value "UplayLauncher" $battlenetlauncher_move_value "Battle.netLauncher" $eaapplauncher_move_value "TheEAappLauncher" $amazongameslauncher_move_value "AmazonGamesLauncher" $itchiolauncher_move_value "itchioLauncher" $legacygameslauncher_move_value "LegacyGamesLauncher" $humblegameslauncher_move_value "HumbleGamesLauncher" $indiegalalauncher_move_value "IndieGalaLauncher" $rockstargameslauncher_move_value "RockstarGamesLauncher" $glyphlauncher_move_value "GlyphLauncher" $minecraftlauncher_move_value "MinecraftLauncher" $dmmlauncher_move_value "DMMGameLauncher" --width=335 --height=524)
 
     # Check if the cancel button was clicked
     if [ $? -eq 0 ]; then
@@ -1225,37 +1274,31 @@ if [[ $options == "Move to SD Card" ]]; then
         ln -s "$new_dir/MinecraftLauncher" "$original_dir"
     fi
 
+    # Check if the user selected to move Playstation
+    if [[ $move_options == *"Playstation Plus"* ]] && [[ -n $original_dir ]]; then
+        # Move the Playstation directory to the SD card
+        mv "$original_dir" "$new_dir/PlaystationPlusLauncher"
+
+        # Create a symbolic link to the new directory
+        ln -s "$new_dir/PlaystationPlusLauncher" "$original_dir"
+    fi
+
+    # Check if the user selected to move DMM Games
+    if [[ $move_options == *"DMM Games"* ]] && [[ -n $original_dir ]]; then
+        # Move the DMM Games directory to the SD card
+        mv "$original_dir" "$new_dir/DMMGameLauncher"
+
+        # Create a symbolic link to the new directory
+        ln -s "$new_dir/DMMGameLauncher" "$original_dir"
+    fi
+
+
+
+
     # Exit the script
     exit 1
 
 fi
-
-
-
-
-
-# Check if the user clicked the "Mods" button
-if [[ $options == "Mods" ]]; then
-    # The Mods button was clicked
-    # Check which launchers are installed
-    CheckInstallationDirectory
-
-    move_options=$(zenity --list --text="Which app IDs do you want to install Mods to?" --checklist --column="Select" --column="Choose your Mod Program to add to AppId" $nonsteamlauncher_move_value "NonSteamLaunchers" $epicgameslauncher_move_value "EpicGamesLauncher" $goggalaxylauncher_move_value "GogGalaxyLauncher" $originlauncher_move_value "OriginLauncher" $uplaylauncher_move_value "UplayLauncher" $battlenetlauncher_move_value "Battle.netLauncher" $eaapplauncher_move_value "TheEAappLauncher" $amazongameslauncher_move_value "AmazonGamesLauncher" $itchiolauncher_move_value "itchioLauncher" $legacygameslauncher_move_value "LegacyGamesLauncher" $humblegameslauncher_move_value "HumbleGamesLauncher" $indiegalalauncher_move_value "IndieGalaLauncher" $rockstargameslauncher_move_value "RockstarGamesLauncher" $glyphlauncher_move_value "GlyphLauncher" $minecraftlauncher_move_value "MinecraftLauncher" TRUE "Minion" TRUE "Vortex" --width=415 --height=580)
-
-    # Check if the cancel button was clicked
-    if [ $? -eq 1 ]; then
-        # The cancel button was clicked
-        exit
-    fi
-fi
-
-
-
-
-
-
-
-
 
 
 
@@ -1474,6 +1517,17 @@ minecraft_url=https://aka.ms/minecraftClientWindows
 # Set the path to save the Minecraft Launcher to
 minecraft_file=~/Downloads/NonSteamLaunchersInstallation/MinecraftInstaller.msi
 
+# Set the URL to download the Playstation Launcher file from
+psplus_url=https://download-psplus.playstation.com/downloads/psplus/pc/latest
+
+# Set the path to save the Playstation Launcher to
+psplus_file=~/Downloads/NonSteamLaunchersInstallation/PlayStationPlus-12.2.0.exe
+
+# Set the URL to download the Playstation Launcher file from
+dmm_url=https://apidgp-gameplayer.games.dmm.com/archive/latest?app=dgp5win
+
+# Set the path to save the Playstation Launcher to
+dmm_file=~/Downloads/NonSteamLaunchersInstallation/DMMGamePlayer-Setup-5.2.16.exe
 
 
 
@@ -1481,10 +1535,16 @@ echo "20"
 echo "# Creating files & folders"
 
 
-# Create app id folder in compatdata folder if it doesn't exist and if the user selected to use a single app ID folder
-if [ "$use_separate_appids" = false ] && [ ! -d "$HOME/.local/share/Steam/steamapps/compatdata/$appid" ]; then
-    mkdir -p "$HOME/.local/share/Steam/steamapps/compatdata/$appid"
+# Check if the user selected any launchers
+if [ -n "$options" ]; then
+    # User selected at least one launcher
+
+    # Create app id folder in compatdata folder if it doesn't exist and if the user selected to use a single app ID folder
+    if [ "$use_separate_appids" = false ] && [ ! -d "$HOME/.local/share/Steam/steamapps/compatdata/$appid" ]; then
+        mkdir -p "$HOME/.local/share/Steam/steamapps/compatdata/$appid"
+    fi
 fi
+
 
 
 # Change working directory to Proton's
@@ -1843,7 +1903,7 @@ fi
 
 wait
 
-echo "90"
+echo "88"
 echo "# Downloading & Installing EA App...please wait..."
 
 # Check if user selected EA App
@@ -1904,7 +1964,7 @@ done
 fi
 
 wait
-echo "92"
+echo "89"
 echo "# Downloading & Installing itch.io...please wait..."
 
 # Check if the user selected itchio Launcher
@@ -1948,7 +2008,7 @@ if [[ $options == *"itch.io"* ]]; then
 fi
 
 wait
-echo "93"
+echo "90"
 echo "# Downloading & Installing Legacy Games...please wait..."
 
 # Check if user selected Legacy Games
@@ -1993,7 +2053,7 @@ fi
 wait
 
 
-echo "94"
+echo "91"
 echo "# Downloading & Installing Humble Games Collection...please wait..."
 
 # Check if the user selected Humble Games Launcher
@@ -2056,7 +2116,7 @@ fi
 
 
 wait
-echo "95"
+echo "92"
 echo "# Downloading & Installing Indie Gala...please wait..."
 
 # Check if user selected indiegala
@@ -2101,7 +2161,7 @@ fi
 wait
 
 
-echo "96"
+echo "93"
 echo "# Downloading & Installing Rockstar Games Launcher...please wait..."
 
 # Check if user selected rockstar games launcher
@@ -2145,7 +2205,7 @@ fi
 wait
 
 
-echo "97"
+echo "94"
 echo "# Downloading & Installing Glyph Launcher...please wait..."
 
 # Check if user selected Glyph
@@ -2191,7 +2251,7 @@ wait
 
 
 
-echo "98"
+echo "95"
 echo "# Downloading & Installing Minecraft Launcher...please wait..."
 
 # Check if user selected Minecraft
@@ -2249,77 +2309,22 @@ fi
 wait
 
 
+echo "96"
+echo "# Downloading & Installing Playstation Plus...please wait..."
+
+# Check if the user selected Playstation Launcher
+if [[ $options == *"Playstation Plus"* ]]; then
+    # User selected PlayStation Plus Launcher
+    echo "User selected PlayStation Plus"
 
 
-
-
-
-
-echo "98"
-echo "# Downloading and Installing Microsoft Edge...please wait..."
-
-# Check if user selected any of the options
-if [[ $options == *"Netflix"* ]] || [[ $options == *"Xbox Game Pass"* ]] || [[ $options == *"Geforce Now"* ]] || [[ $options == *"Amazon Luna"* ]] || [[ $options == *"Hulu"* ]] || [[ $options == *"Disney+"* ]] || [[ $options == *"Amazon Prime Video"* ]] || [[ $options == *"Youtube"* ]]; then
-    # User selected one of the options
-    echo "User selected one of the options"
-
-    if [[ $options == *"Amazon Luna"* ]]; then
-        # Check if Google Chrome is already installed
-        if command -v google-chrome &> /dev/null; then
-            echo "Google Chrome is already installed"
-            flatpak --user override --filesystem=/run/udev:ro com.google.Chrome
+        # Set the appid for the PlayStation Plus Launcher
+        if [ "$use_separate_appids" = true ]; then
+        appid=PlaystationPlusLauncher
         else
-            # Install the Flatpak runtime
-            flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
-
-            # Install Google Chrome
-            flatpak install flathub com.google.Chrome
-
-            # Run the flatpak --user override command
-            flatpak --user override --filesystem=/run/udev:ro com.google.Chrome
+        appid=NonSteamLaunchers
         fi
-    else
-        # Check if Microsoft Edge is already installed
-        if command -v microsoft-edge &> /dev/null; then
-            echo "Microsoft Edge is already installed"
-            flatpak --user override --filesystem=/run/udev:ro com.microsoft.Edge
-        else
-            # Install the Flatpak runtime
-            flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
 
-            # Install Microsoft Edge
-            flatpak install flathub com.microsoft.Edge
-
-            # Run the flatpak --user override command
-            flatpak --user override --filesystem=/run/udev:ro com.microsoft.Edge
-        fi
-    fi
-fi
-
-# Wait for the Microsoft Edge file to finish running
-wait
-
-
-
-
-
-echo "99"
-echo "# Downloading & Installing Mods...please wait..."
-
-
-#Mods Installation
-
-
-# Split the move_options string into an array of selected launchers
-IFS='|' read -ra selected_launchers <<< "$move_options"
-
-for launcher in "${selected_launchers[@]}"; do
-    # Check if the user selected a launcher
-    if [[ "$launcher" != "Vortex" && "$launcher" != "Minion" ]]; then
-        # The user selected a launcher
-
-        # Set the appid for the launcher
-        appid="$launcher"
 
         # Create app id folder in compatdata folder if it doesn't exist
         if [ ! -d "$HOME/.local/share/Steam/steamapps/compatdata/$appid" ]; then
@@ -2332,56 +2337,116 @@ for launcher in "${selected_launchers[@]}"; do
         # Set the STEAM_COMPAT_CLIENT_INSTALL_PATH environment variable
         export STEAM_COMPAT_CLIENT_INSTALL_PATH="~/.local/share/Steam"
 
-        # Set the STEAM_COMPAT_DATA_PATH environment variable for the launcher
+        # Set the STEAM_COMPAT_DATA_PATH environment variable for Epic Games Launcher
         export STEAM_COMPAT_DATA_PATH=~/.local/share/Steam/steamapps/compatdata/$appid
 
-        # Check if the user selected Minion
-        if [[ " ${selected_launchers[@]} " =~ " Minion " ]]; then
-            # The user selected Minion
 
-            # Get the path to the Minion.exe file for the launcher
-            minion_path=$(get_minion_path "$launcher")
-
-            # Check if Minion is installed
-            if [[ ! -f "$minion_path" ]]; then
-                # Minion is not installed
-
-                # Download minion file
-                if [ ! -f "$minion_file" ]; then
-                    echo "Downloading MSI file"
-                    wget $minion_url -O $minion_file
-                fi
-
-                # Run the minion file using Proton with the /passive option
-                echo "Running MSI file using Proton with the /passive option"
-                "$STEAM_RUNTIME" "$proton_dir/proton" run "$minion_file" /S
-            fi
+        # Download MSI file
+        if [ ! -f "$psplus_file" ]; then
+            echo "Downloading MSI file"
+            wget $psplus_url -O $psplus_file
         fi
 
-        # Check if the user selected Vortex
-        if [[ " ${selected_launchers[@]} " =~ " Vortex " ]]; then
-            # The user selected Vortex
+        # Run the Playstation file using Proton with the /passive option
+        echo "Running Playstation file using Proton with the /passive option"
+        "$STEAM_RUNTIME" "$proton_dir/proton" run "$psplus_file" /q
 
-            # Get the path to the Vortex.exe file for the launcher
-            vortex_path=$(get_vortex_path "$launcher")
+fi
 
-            # Check if Vortex is installed
-            if [[ ! -f "$vortex_path" ]]; then
-                # Vortex is not installed
+wait
 
-                # Download vortex file
-                if [ ! -f "$vortex_file" ]; then
-                    echo "Downloading MSI file"
-                    wget $vortex_url -O $vortex_file
-                fi
 
-                # Run the vortex file using Proton with the /passive option
-                echo "Running MSI file using Proton with the /passive option"
-                "$STEAM_RUNTIME" "$proton_dir/proton" run "$vortex_file" /S
-          fi
+
+
+
+echo "97"
+echo "# Downloading & Installing DMM Games...please wait..."
+
+# Check if the user selected DMM Games Launcher
+if [[ $options == *"DMM Games"* ]]; then
+    # User selected DMM Games Launcher
+    echo "User selected DMM Games"
+
+
+        # Set the appid for the DMM Games Launcher
+        if [ "$use_separate_appids" = true ]; then
+        appid=DMMGameLauncher
+        else
+        appid=NonSteamLaunchers
         fi
+
+
+        # Create app id folder in compatdata folder if it doesn't exist
+        if [ ! -d "$HOME/.local/share/Steam/steamapps/compatdata/$appid" ]; then
+            mkdir -p "$HOME/.local/share/Steam/steamapps/compatdata/$appid"
+        fi
+
+        # Change working directory to Proton's
+        cd $proton_dir
+
+        # Set the STEAM_COMPAT_CLIENT_INSTALL_PATH environment variable
+        export STEAM_COMPAT_CLIENT_INSTALL_PATH="~/.local/share/Steam"
+
+        # Set the STEAM_COMPAT_DATA_PATH environment variable for Epic Games Launcher
+        export STEAM_COMPAT_DATA_PATH=~/.local/share/Steam/steamapps/compatdata/$appid
+
+
+        # Download DMM file
+        if [ ! -f "$dmm_file" ]; then
+            echo "Downloading DMM file"
+            wget $dmm_url -O $dmm_file
+        fi
+
+        # Run the DMM file using Proton with the /passive option
+        echo "Running DMM file using Proton with the /passive option"
+        "$STEAM_RUNTIME" "$proton_dir/proton" run "$dmm_file" /q
+
+fi
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+echo "99"
+echo "# Checking if Chrome is installed...please wait..."
+
+# Check if user selected any of the options
+if [[ $options == *"Netflix"* ]] || [[ $options == *"Xbox Game Pass"* ]] || [[ $options == *"Geforce Now"* ]] || [[ $options == *"Amazon Luna"* ]] || [[ $options == *"Hulu"* ]] || [[ $options == *"Disney+"* ]] || [[ $options == *"Amazon Prime Video"* ]] || [[ $options == *"Youtube"* ]]; then
+    # User selected one of the options
+    echo "User selected one of the options"
+
+    # Check if Google Chrome is already installed
+    if command -v google-chrome &> /dev/null; then
+        echo "Google Chrome is already installed"
+        flatpak --user override --filesystem=/run/udev:ro com.google.Chrome
+    else
+        # Install the Flatpak runtime
+        flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
+
+        # Install Google Chrome
+        flatpak install flathub com.google.Chrome
+
+        # Run the flatpak --user override command
+        flatpak --user override --filesystem=/run/udev:ro com.google.Chrome
     fi
-done
+fi
+
+#wait for Google Chrome to finish
+wait
+
+
 
 
 
@@ -2424,207 +2489,269 @@ if [[ -f "$epic_games_launcher_path1" ]]; then
     # Epic Games Launcher is installed at path 1
     epicshortcutdirectory="\"$epic_games_launcher_path1\""
     epiclaunchoptions="STEAM_COMPAT_DATA_PATH=\"$HOME/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/\" %command%"
+    epicstartingdir="\"$(dirname "$epic_games_launcher_path1")\""
 elif [[ -f "$epic_games_launcher_path2" ]]; then
     # Epic Games Launcher is installed at path 2
     epicshortcutdirectory="\"$epic_games_launcher_path2\""
     epiclaunchoptions="STEAM_COMPAT_DATA_PATH=\"$HOME/.local/share/Steam/steamapps/compatdata/EpicGamesLauncher/\" %command%"
+    epicstartingdir="\"$(dirname "$epic_games_launcher_path2")\""
 fi
 if [[ -f "$gog_galaxy_path1" ]]; then
     # Gog Galaxy Launcher is installed at path 1
     gogshortcutdirectory="\"$gog_galaxy_path1\""
     goglaunchoptions="STEAM_COMPAT_DATA_PATH=\"$HOME/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/\" %command%"
+    gogstartingdir="\"$(dirname "$gog_galaxy_path1")\""
 elif [[ -f "$gog_galaxy_path2" ]]; then
     # Gog Galaxy Launcher is installed at path 2
     gogshortcutdirectory="\"$gog_galaxy_path2\""
     goglaunchoptions="STEAM_COMPAT_DATA_PATH=\"$HOME/.local/share/Steam/steamapps/compatdata/GogGalaxyLauncher/\" %command%"
+    gogstartingdir="\"$(dirname "$gog_galaxy_path2")\""
 fi
 if [[ -f "$origin_path1" ]]; then
     # Origin Launcher is installed at path 1
     originshortcutdirectory="\"$origin_path1\""
     originlaunchoptions="STEAM_COMPAT_DATA_PATH=\"$HOME/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/\" %command%"
+    originstartingdir="\"$(dirname "$origin_path1")\""
 elif [[ -f "$origin_path2" ]]; then
     # Origin Launcher is installed at path 2
     originshortcutdirectory="\"$origin_path2\""
     originlaunchoptions="STEAM_COMPAT_DATA_PATH=\"$HOME/.local/share/Steam/steamapps/compatdata/OriginLauncher/\" %command%"
+    originstartingdir="\"$(dirname "$origin_path2")\""
 fi
 if [[ -f "$uplay_path1" ]]; then
     # Uplay Launcher is installed at path 1
     uplayshortcutdirectory="\"$uplay_path1\""
     uplaylaunchoptions="STEAM_COMPAT_DATA_PATH=\"$HOME/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/\" %command%"
+    uplaystartingdir="\"$(dirname "$uplay_path1")\""
 elif [[ -f "$uplay_path2" ]]; then
     # Uplay Launcher is installed at path 2
     uplayshortcutdirectory="\"$uplay_path2\""
     uplaylaunchoptions="STEAM_COMPAT_DATA_PATH=\"$HOME/.local/share/Steam/steamapps/compatdata/UplayLauncher/\" %command%"
+    uplaystartingdir="\"$(dirname "$uplay_path2")\""
 fi
 if [[ -f "$battlenet_path1" ]]; then
     # Battlenet Launcher is installed at path 1
     battlenetshortcutdirectory="\"$battlenet_path1\""
     battlenetlaunchoptions="STEAM_COMPAT_DATA_PATH=\"$HOME/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/\" %command%"
+    battlenetstartingdir="\"$(dirname "$battlenet_path1")\""
 elif [[ -f "$battlenet_path2" ]]; then
     # Battlenet Launcher is installed at path 2
     battlenetshortcutdirectory="\"$battlenet_path2\""
     battlenetlaunchoptions="STEAM_COMPAT_DATA_PATH=\"$HOME/.local/share/Steam/steamapps/compatdata/Battle.netLauncher/\" %command%"
+    battlenetstartingdir="\"$(dirname "$battlenet_path2")\""
 fi
 if [[ -f "$eaapp_path1" ]]; then
     # EA App Launcher is installed at path 1
     eaappshortcutdirectory="\"$eaapp_path1\""
     eaapplaunchoptions="STEAM_COMPAT_DATA_PATH=\"$HOME/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/\" %command%"
+    eaappstartingdir="\"$(dirname "$eaapp_path1")\""
 elif [[ -f "$eaapp_path2" ]]; then
     # EA App Launcher is installed at path 2
     eaappshortcutdirectory="\"$eaapp_path2\""
     eaapplaunchoptions="STEAM_COMPAT_DATA_PATH=\"$HOME/.local/share/Steam/steamapps/compatdata/TheEAappLauncher/\" %command%"
+    eaappstartingdir="\"$(dirname "$eaapp_path2")\""
 fi
 if [[ -f "$amazongames_path1" ]]; then
     # Amazon Games Launcher is installed at path 1
     amazonshortcutdirectory="\"$amazongames_path1\""
     amazonlaunchoptions="STEAM_COMPAT_DATA_PATH=\"$HOME/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/\" %command%"
+    amazonstartingdir="\"$(dirname "$amazongames_path1")\""
 elif [[ -f "$amazongames_path2" ]]; then
     # Amazon Games Launcher is installed at path 2
     amazonshortcutdirectory="\"$amazongames_path2\""
     amazonlaunchoptions="STEAM_COMPAT_DATA_PATH=\"$HOME/.local/share/Steam/steamapps/compatdata/AmazonGamesLauncher/\" %command%"
+    amazonstartingdir="\"$(dirname "$amazongames_path2")\""
 fi
 if [[ -f "$itchio_path1" ]]; then
     # itchio Launcher is installed at path 1
     itchioshortcutdirectory="\"$itchio_path1\""
     itchiolaunchoptions="STEAM_COMPAT_DATA_PATH=\"$HOME/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/\" %command%"
+    itchiostartingdir="\"$(dirname "$itchio_path1")\""
 elif [[ -f "$itchio_path2" ]]; then
     # itchio Launcher is installed at path 2
     itchioshortcutdirectory="\"$itchio_path2\""
     itchiolaunchoptions="STEAM_COMPAT_DATA_PATH=\"$HOME/.local/share/Steam/steamapps/compatdata/itchioLauncher/\" %command%"
+    itchiostartingdir="\"$(dirname "$itchio_path2")\""
 fi
 if [[ -f "$legacygames_path1" ]]; then
     # Legacy Games Launcher is installed at path 1
     legacyshortcutdirectory="\"$legacygames_path1\""
     legacylaunchoptions="STEAM_COMPAT_DATA_PATH=\"$HOME/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/\" %command%"
+    legacystartingdir="\"$(dirname "$legacygames_path1")\""
 elif [[ -f "$legacygames_path2" ]]; then
     # Legacy Games Launcher is installed at path 2
     legacyshortcutdirectory="\"$legacygames_path2\""
     legacylaunchoptions="STEAM_COMPAT_DATA_PATH=\"$HOME/.local/share/Steam/steamapps/compatdata/LegacyGamesLauncher/\" %command%"
+    legacystartingdir="\"$(dirname "$legacygames_path2")\""
 fi
 if [[ -f "$humblegames_path1" ]]; then
     # Humble Games Launcher is installed at path 1
     humbleshortcutdirectory="\"$humblegames_path1\""
     humblelaunchoptions="STEAM_COMPAT_DATA_PATH=\"$HOME/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/\" %command%"
+    humblestartingdir="\"$(dirname "$humblegames_path1")\""
 elif [[ -f "$humblegames_path2" ]]; then
     # Humble Games Launcher is installed at path 2
     humbleshortcutdirectory="\"$humblegames_path2\""
     humblelaunchoptions="STEAM_COMPAT_DATA_PATH=\"$HOME/.local/share/Steam/steamapps/compatdata/HumbleGamesLauncher/\" %command%"
+    humblestartingdir="\"$(dirname "$humblegames_path2")\""
 fi
 if [[ -f "$indiegala_path1" ]]; then
     # indiegala Launcher is installed at path 1
     indieshortcutdirectory="\"$indiegala_path1\""
     indielaunchoptions="STEAM_COMPAT_DATA_PATH=\"$HOME/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/\" %command%"
+    indiestartingdir="\"$(dirname "$indiegala_path1")\""
 elif [[ -f "$indiegala_path2" ]]; then
     # indiegala Launcher is installed at path 2
     indieshortcutdirectory="\"$indiegala_path2\""
     indielaunchoptions="STEAM_COMPAT_DATA_PATH=\"$HOME/.local/share/Steam/steamapps/compatdata/IndieGalaLauncher/\" %command%"
+    indiestartingdir="\"$(dirname "$indiegala_path2")\""
 fi
 if [[ -f "$rockstar_path1" ]]; then
     # rockstar Launcher is installed at path 1
     rockstarshortcutdirectory="\"$rockstar_path1\""
     rockstarlaunchoptions="STEAM_COMPAT_DATA_PATH=\"$HOME/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/\" %command%"
+    rockstarstartingdir="\"$(dirname "$rockstar_path1")\""
 elif [[ -f "$rockstar_path2" ]]; then
     # rockstar Launcher is installed at path 2
     rockstarshortcutdirectory="\"$rockstar_path2\""
     rockstarlaunchoptions="STEAM_COMPAT_DATA_PATH=\"$HOME/.local/share/Steam/steamapps/compatdata/RockstarGamesLauncher/\" %command%"
+    rockstarstartingdir="\"$(dirname "$rockstar_path2")\""
 fi
 if [[ -f "$glyph_path1" ]]; then
     # Glyph is installed at path 1
     glyphshortcutdirectory="\"$glyph_path1\""
     glyphlaunchoptions="STEAM_COMPAT_DATA_PATH=\"$HOME/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/\" %command%"
+    glyphstartingdir="\"$(dirname "$glyph_path1")\""
 elif [[ -f "$glyph_path2" ]]; then
     # Glyph is installed at path 2
     glyphshortcutdirectory="\"$glyph_path2\""
     glyphlaunchoptions="STEAM_COMPAT_DATA_PATH=\"$HOME/.local/share/Steam/steamapps/compatdata/GlyphLauncher/\" %command%"
+    glyphstartingdir="\"$(dirname "$glyph_path2")\""
 fi
 if [[ -f "$minecraft_path1" ]]; then
     # Minecraft is installed at path 1
     minecraftshortcutdirectory="\"$minecraft_path1\""
     minecraftlaunchoptions="STEAM_COMPAT_DATA_PATH=\"$HOME/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/\" %command%"
+    minecraftstartingdir="\"$(dirname "$minecraft_path1")\""
 elif [[ -f "$minecraft_path2" ]]; then
     # Minecraft is installed at path 2
     minecraftshortcutdirectory="\"$minecraft_path2\""
     minecraftlaunchoptions="STEAM_COMPAT_DATA_PATH=\"$HOME/.local/share/Steam/steamapps/compatdata/MinecraftLauncher/\" %command%"
+    minecraftstartingdir="\"$(dirname "$minecraft_path1")\""
+fi
+if [[ -f "$psplus_path1" ]]; then
+    # Playstation is installed at path 1
+    psplusshortcutdirectory="\"$psplus_path1\""
+    pspluslaunchoptions="STEAM_COMPAT_DATA_PATH=\"$HOME/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/\" %command%"
+    psplusstartingdir="\"$(dirname "$psplus_path1")\""
+elif [[ -f "$psplus_path2" ]]; then
+    # Playstation is installed at path 2
+    psplusshortcutdirectory="\"$psplus_path2\""
+    pspluslaunchoptions="STEAM_COMPAT_DATA_PATH=\"$HOME/.local/share/Steam/steamapps/compatdata/PlaystationPlusLauncher/\" %command%"
+    psplusstartingdir="\"$(dirname "$psplus_path2")\""
+fi
+if [[ -f "$dmm_path1" ]]; then
+    # DMM Games is installed at path 1
+    dmmshortcutdirectory="\"$dmm_path1\""
+    dmmlaunchoptions="STEAM_COMPAT_DATA_PATH=\"$HOME/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/\" %command%"
+    dmmstartingdir="\"$(dirname "$dmm_path1")\""
+elif [[ -f "$dmm_path2" ]]; then
+    # DMM Player is installed at path 2
+    dmmshortcutdirectory="\"$dmm_path2\""
+    dmmlaunchoptions="STEAM_COMPAT_DATA_PATH=\"$HOME/.local/share/Steam/steamapps/compatdata/DMMGameLauncher/\" %command%"
+    dmmstartingdir="\"$(dirname "$dmm_path2")\""
 fi
 
 
-#Mods Directory - #Checking Files For Shortcuts and Setting Directories For Shortcuts
-# Define an array of launcher names
-launchers=("NonSteamLaunchers" "EpicGamesLauncher" "GogGalaxyLauncher" "UplayLauncher" "OriginLauncher" "Battle.netLauncher" "TheEAappLauncher" "AmazonGamesLauncher" "LegacyGamesLauncher" "itchioLauncher" "HumbleBundleLauncher" "IndieGalaLauncher" "RockstarGamesLauncher" "GlyphLauncher" "MinecraftLauncher")
 
-# Iterate over each launcher in the launchers array
-for launcher in "${launchers[@]}"; do
-    # Get the path to the Minion.exe file for this launcher
-    minion_path=$(get_minion_path "$launcher")
-
-    # Check if Minion is installed for this launcher
-    if [[ -f "$minion_path" ]]; then
-        # Minion is installed for this launcher
-        minionshortcutdirectory="\"$minion_path\""
-        minionlaunchoptions="STEAM_COMPAT_DATA_PATH=\"$HOME/.local/share/Steam/steamapps/compatdata/$launcher/\" %command%"
-    fi
-    # Get the path to the Vortex.exe file for this launcher
-    vortex_path=$(get_vortex_path "$launcher")
-
-    # Check if Vortex is installed for this launcher
-    if [[ -f "$vortex_path" ]]; then
-        # Vortex is installed for this launcher
-        vortexshortcutdirectory="\"$vortex_path\""
-        vortexlaunchoptions="STEAM_COMPAT_DATA_PATH=\"$HOME/.local/share/Steam/steamapps/compatdata/$launcher/\" %command%"
-    fi
-done
-
-
-
-# Set Microsoft Edge options based on user's selection
+# Set Chrome options based on user's selection
 
 if [[ $options == *"Xbox Game Pass"* ]]; then
     # User selected Xbox Game Pass
-    microsoftedgedirectory="\"$microsoftedge_path\""
-    xboxedgelaunchoptions="run --branch=stable --arch=x86_64 --command=/app/bin/edge --file-forwarding com.microsoft.Edge @@u @@ --window-size=1280,800 --force-device-scale-factor=1.00 --device-scale-factor=1.00 --kiosk https://www.xbox.com/play --enable-features=OverlayScrollbar"
+    chromedirectory="\"$chrome_path\""
+    xboxchromelaunchoptions="run --branch=stable --arch=x86_64 --command=/app/bin/chrome --file-forwarding com.google.Chrome @@u @@ --window-size=1280,800 --force-device-scale-factor=1.00 --device-scale-factor=1.00 --kiosk https://www.xbox.com/play --chrome-kiosk-type=fullscreen --no-first-run --enable-features=OverlayScrollbar"
 fi
 
 if [[ $options == *"Netflix"* ]]; then
     # User selected Netflix
-    microsoftedgedirectory="\"$microsoftedge_path\""
-    netlfixedgelaunchoptions="run --branch=stable --arch=x86_64 --command=/app/bin/edge --file-forwarding com.microsoft.Edge @@u @@ --window-size=1280,800 --force-device-scale-factor=1.00 --device-scale-factor=1.00 --kiosk https://www.netflix.com --edge-kiosk-type=fullscreen --no-first-run --enable-features=OverlayScrollbar"
+    chromedirectory="\"$chrome_path\""
+    netlfixchromelaunchoptions="run --branch=stable --arch=x86_64 --command=/app/bin/chrome --file-forwarding com.google.Chrome @@u @@ --window-size=1280,800 --force-device-scale-factor=1.00 --device-scale-factor=1.00 --kiosk https://www.netflix.com --chrome-kiosk-type=fullscreen --no-first-run --enable-features=OverlayScrollbar"
 fi
 
 if [[ $options == *"GeForce Now"* ]]; then
     # User selected GeForce Now
-    microsoftedgedirectory="\"$microsoftedge_path\""
-    geforceedgelaunchoptions="run --branch=stable --arch=x86_64 --command=/app/bin/edge --file-forwarding com.microsoft.Edge @@u @@ --window-size=1280,800 --force-device-scale-factor=1.00 --device-scale-factor=1.00 --kiosk https://play.geforcenow.com --edge-kiosk-type=fullscreen --no-first-run --enable-features=OverlayScrollbar"
+    chromedirectory="\"$chrome_path\""
+    geforcechromelaunchoptions="run --branch=stable --arch=x86_64 --command=/app/bin/chrome --file-forwarding com.google.Chrome @@u @@ --window-size=1280,800 --force-device-scale-factor=1.00 --device-scale-factor=1.00 --kiosk https://play.geforcenow.com --chrome-kiosk-type=fullscreen --no-first-run --enable-features=OverlayScrollbar"
 fi
 
 if [[ $options == *"Hulu"* ]]; then
     # User selected Hulu
-    microsoftedgedirectory="\"$microsoftedge_path\""
-    huluedgelaunchoptions="run --branch=stable --arch=x86_64 --command=/app/bin/edge --file-forwarding com.microsoft.Edge @@u @@ --window-size=1280,800 --force-device-scale-factor=1.00 --device-scale-factor=1.00 --kiosk https://www.hulu.com/welcome --edge-kiosk-type=fullscreen --no-first-run --enable-features=OverlayScrollbar"
+    chromedirectory="\"$chrome_path\""
+    huluchromelaunchoptions="run --branch=stable --arch=x86_64 --command=/app/bin/chrome --file-forwarding com.google.Chrome @@u @@ --window-size=1280,800 --force-device-scale-factor=1.00 --device-scale-factor=1.00 --kiosk https://www.hulu.com/welcome --chrome-kiosk-type=fullscreen --no-first-run --enable-features=OverlayScrollbar"
 fi
 
 if [[ $options == *"Disney+"* ]]; then
     # User selected Disney+
-    microsoftedgedirectory="\"$microsoftedge_path\""
-    disneyedgelaunchoptions="run --branch=stable --arch=x86_64 --command=/app/bin/edge --file-forwarding com.microsoft.Edge @@u @@ --window-size=1280,800 --force-device-scale-factor=1.00 --device-scale-factor=1.00 --kiosk https://www.disneyplus.com --edge-kiosk-type=fullscreen --no-first-run --enable-features=OverlayScrollbar"
+    chromedirectory="\"$chrome_path\""
+    disneychromelaunchoptions="run --branch=stable --arch=x86_64 --command=/app/bin/chrome --file-forwarding com.google.Chrome @@u @@ --window-size=1280,800 --force-device-scale-factor=1.00 --device-scale-factor=1.00 --kiosk https://www.disneyplus.com --chrome-kiosk-type=fullscreen --no-first-run --enable-features=OverlayScrollbar"
 fi
 
 if [[ $options == *"Amazon Prime Video"* ]]; then
     # User selected Amazon Prime Video
-    microsoftedgedirectory="\"$microsoftedge_path\""
-    amazonedgelaunchoptions="run --branch=stable --arch=x86_64 --command=/app/bin/edge --file-forwarding com.microsoft.Edge @@u @@ --window-size=1280,800 --force-device-scale-factor=1.00 --device-scale-factor=1.00 --kiosk https://www.amazon.com/primevideo --edge-kiosk-type=fullscreen --no-first-run --enable-features=OverlayScrollbar"
+    chromedirectory="\"$chrome_path\""
+    amazonchromelaunchoptions="run --branch=stable --arch=x86_64 --command=/app/bin/chrome --file-forwarding com.google.Chrome @@u @@ --window-size=1280,800 --force-device-scale-factor=1.00 --device-scale-factor=1.00 --kiosk https://www.amazon.com/primevideo --chrome-kiosk-type=fullscreen --no-first-run --enable-features=OverlayScrollbar"
 fi
 
 if [[ $options == *"Youtube"* ]]; then
     # User selected Youtube
-    microsoftedgedirectory="\"$microsoftedge_path\""
-    youtubeedgelaunchoptions="run --branch=stable --arch=x86_64 --command=/app/bin/edge --file-forwarding com.microsoft.Edge @@u @@ --window-size=1280,800 --force-device-scale-factor=1.00 --device-scale-factor=1.00 --kiosk https://www.youtube.com --edge-kiosk-type=fullscreen --no-first-run --enable-features=OverlayScrollbar"
+    chromedirectory="\"$chrome_path\""
+    youtubechromelaunchoptions="run --branch=stable --arch=x86_64 --command=/app/bin/chrome --file-forwarding com.google.Chrome @@u @@ --window-size=1280,800 --force-device-scale-factor=1.00 --device-scale-factor=1.00 --kiosk https://www.youtube.com --chrome-kiosk-type=fullscreen --no-first-run --enable-features=OverlayScrollbar"
 fi
 
 if [[ $options == *"Amazon Luna"* ]]; then
     # User selected Amazon Luna
-    microsoftedgedirectory="\"$microsoftedge_path\""
-    lunaedgelaunchoptions="run --branch=stable --arch=x86_64 --command=/app/bin/chrome --file-forwarding com.google.Chrome @@u @@ --window-size=1280,800 --force-device-scale-factor=1.00 --device-scale-factor=1.00 --kiosk https://luna.amazon.com/ --chrome-kiosk-type=fullscreen --no-first-run --enable-features=OverlayScrollbar"
+    chromedirectory="\"$chrome_path\""
+    lunachromelaunchoptions="run --branch=stable --arch=x86_64 --command=/app/bin/chrome --file-forwarding com.google.Chrome @@u @@ --window-size=1280,800 --force-device-scale-factor=1.00 --device-scale-factor=1.00 --kiosk https://luna.amazon.com/ --chrome-kiosk-type=fullscreen --no-first-run --enable-features=OverlayScrollbar"
 fi
+
+# Check if any custom websites were provided
+if [ ${#custom_websites[@]} -gt 0 ]; then
+    # User entered one or more custom websites
+    # Set the chromedirectory variable
+    chromedirectory="\"$chrome_path\""
+
+    # Convert the custom_websites array to a string
+    custom_websites_str=$(IFS=", "; echo "${custom_websites[*]}")
+
+    # Iterate over each custom website
+    for custom_website in "${custom_websites[@]}"; do
+        # Remove any leading or trailing spaces from the custom website URL
+        custom_website="$(echo -e "${custom_website}" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')"
+
+        # Remove the 'http://' or 'https://' prefix and the 'www.' prefix, if present
+        clean_website="${custom_website#http://}"
+        clean_website="${clean_website#https://}"
+        clean_website="${clean_website#www.}"
+
+        # Extract the name of the website by removing everything after the first '/'
+        website_name="${clean_website%%/*}"
+
+        # Remove the top-level domain (e.g. '.com') from the website name
+        website_name="${website_name%.*}"
+
+        # Capitalize the first letter of the website name
+        website_name="$(tr '[:lower:]' '[:upper:]' <<< "${website_name:0:1}")${website_name:1}"
+
+        # Set the chromelaunchoptions variable for this website
+        chromelaunchoptions="run --branch=stable --arch=x86_64 --command=/app/bin/chrome --file-forwarding com.google.Chrome @@u @@ --window-size=1280,800 --force-device-scale-factor=1.00 --device-scale-factor=1.00 --kiosk https://$clean_website/ --chrome-kiosk-type=fullscreen --no-first-run --enable-features=OverlayScrollbar"
+    done
+fi
+
+
+
+
+
+
 
 
 
@@ -2865,11 +2992,12 @@ indieshortcutdirectory = '$indieshortcutdirectory'
 rockstarshortcutdirectory = '$rockstarshortcutdirectory'
 glyphshortcutdirectory = '$glyphshortcutdirectory'
 minecraftshortcutdirectory = '$minecraftshortcutdirectory'
-#Mods
-minionshortcutdirectory = '$minionshortcutdirectory'
-vortexshortcutdirectory = '$vortexshortcutdirectory'
+psplusshortcutdirectory = '$psplusshortcutdirectory'
+dmmshortcutdirectory = '$dmmshortcutdirectory'
 #Streaming
-microsoftedgedirectory = '$microsoftedgedirectory'
+chromedirectory = '$chromedirectory'
+websites_str = '$custom_websites_str'
+custom_websites = websites_str.split(', ')
 
 
 app_ids = []
@@ -2884,10 +3012,10 @@ def get_steam_shortcut_id(exe, appname):
 
 
 
-def create_new_entry(shortcutdirectory, appname, launchoptions):
+def create_new_entry(shortcutdirectory, appname, launchoptions, startingdir):
     if shortcutdirectory != '' and launchoptions != '':
         exe = f'"{shortcutdirectory}"'
-        if shortcutdirectory != microsoftedgedirectory:
+        if shortcutdirectory != chromedirectory:
             appid = get_steam_shortcut_id(exe, appname)
             app_ids.append(appid)
         else:
@@ -2898,7 +3026,7 @@ def create_new_entry(shortcutdirectory, appname, launchoptions):
             'appid': f'{str(appid)}' if appid is not None else '',
             'appname': appname,
             'exe': shortcutdirectory,
-            'StartDir': shortcutdirectory,
+            'StartDir': startingdir,
             'icon': '',
             'ShortcutPath': '',
             'LaunchOptions': launchoptions,
@@ -2942,30 +3070,56 @@ def create_new_entry(shortcutdirectory, appname, launchoptions):
                 # Add the new entry with a key value one higher than the current maximum
                 shortcuts['shortcuts'][str(max_key + 1)] = new_entry
 
-create_new_entry('$epicshortcutdirectory', 'Epic Games', '$epiclaunchoptions')
-create_new_entry('$gogshortcutdirectory', 'Gog Galaxy', '$goglaunchoptions')
-create_new_entry('$uplayshortcutdirectory', 'Ubisoft Connect', '$uplaylaunchoptions')
-create_new_entry('$originshortcutdirectory', 'Origin', '$originlaunchoptions')
-create_new_entry('$battlenetshortcutdirectory', 'Battle.net', '$battlenetlaunchoptions')
-create_new_entry('$eaappshortcutdirectory', 'EA App', '$eaapplaunchoptions')
-create_new_entry('$amazonshortcutdirectory', 'Amazon Games', '$amazonlaunchoptions')
-create_new_entry('$itchioshortcutdirectory', 'itch.io', '$itchiolaunchoptions')
-create_new_entry('$legacyshortcutdirectory', 'Legacy Games', '$legacylaunchoptions')
-create_new_entry('$humbleshortcutdirectory', 'Humble Bundle', '$humblelaunchoptions')
-create_new_entry('$indieshortcutdirectory', 'IndieGala Client', '$indielaunchoptions')
-create_new_entry('$rockstarshortcutdirectory', 'Rockstar Games Launcher', '$rockstarlaunchoptions')
-create_new_entry('$glyphshortcutdirectory', 'Glyph', '$glyphlaunchoptions')
-create_new_entry('$minecraftshortcutdirectory', 'Minecraft: Java Edition', '$minecraftlaunchoptions')
-create_new_entry('$minionshortcutdirectory', 'Minion', '$minionlaunchoptions')
-create_new_entry('$vortexshortcutdirectory', 'Vortex', '$vortexlaunchoptions')
-create_new_entry('$microsoftedgedirectory', 'Xbox Games Pass', '$xboxedgelaunchoptions')
-create_new_entry('$microsoftedgedirectory', 'GeForce Now', '$geforceedgelaunchoptions')
-create_new_entry('$microsoftedgedirectory', 'Netflix', '$netlfixedgelaunchoptions')
-create_new_entry('$microsoftedgedirectory', 'Hulu', '$huluedgelaunchoptions')
-create_new_entry('$microsoftedgedirectory', 'Disney+', '$disneyedgelaunchoptions')
-create_new_entry('$microsoftedgedirectory', 'Amazon Prime Video', '$amazonedgelaunchoptions')
-create_new_entry('$microsoftedgedirectory', 'Youtube', '$youtubeedgelaunchoptions')
-create_new_entry('$microsoftedgedirectory', 'Amazon Luna', '$lunaedgelaunchoptions')
+create_new_entry('$epicshortcutdirectory', 'Epic Games', '$epiclaunchoptions', '$epicstartingdir')
+create_new_entry('$gogshortcutdirectory', 'Gog Galaxy', '$goglaunchoptions', '$gogstartingdir')
+create_new_entry('$uplayshortcutdirectory', 'Ubisoft Connect', '$uplaylaunchoptions', '$uplaystartingdir')
+create_new_entry('$originshortcutdirectory', 'Origin', '$originlaunchoptions', '$originstartingdir')
+create_new_entry('$battlenetshortcutdirectory', 'Battle.net', '$battlenetlaunchoptions', '$battlenetstartingdir')
+create_new_entry('$eaappshortcutdirectory', 'EA App', '$eaapplaunchoptions', '$eaappstartingdir')
+create_new_entry('$amazonshortcutdirectory', 'Amazon Games', '$amazonlaunchoptions', '$amazonstartingdir')
+create_new_entry('$itchioshortcutdirectory', 'itch.io', '$itchiolaunchoptions', '$itchiostartingdir')
+create_new_entry('$legacyshortcutdirectory', 'Legacy Games', '$legacylaunchoptions', '$legacystartingdir')
+create_new_entry('$humbleshortcutdirectory', 'Humble Bundle', '$humblelaunchoptions', '$humblestartingdir')
+create_new_entry('$indieshortcutdirectory', 'IndieGala Client', '$indielaunchoptions', '$indiestartingdir')
+create_new_entry('$rockstarshortcutdirectory', 'Rockstar Games Launcher', '$rockstarlaunchoptions', '$rockstarstartingdir')
+create_new_entry('$glyphshortcutdirectory', 'Glyph', '$glyphlaunchoptions', '$glyphstartingdir')
+create_new_entry('$minecraftshortcutdirectory', 'Minecraft: Java Edition', '$minecraftlaunchoptions', '$minecraftstartingdir')
+create_new_entry('$psplusshortcutdirectory', 'Playstation Plus', '$pspluslaunchoptions', '$psplusstartingdir')
+create_new_entry('$dmmshortcutdirectory', 'DMM Games', '$dmmlaunchoptions', '$dmmstartingdir')
+create_new_entry('$chromedirectory', 'Xbox Games Pass', '$xboxchromelaunchoptions', '$chrome_startdir')
+create_new_entry('$chromedirectory', 'GeForce Now', '$geforcechromelaunchoptions', '$chrome_startdir')
+create_new_entry('$chromedirectory', 'Netflix', '$netlfixchromelaunchoptions', '$chrome_startdir')
+create_new_entry('$chromedirectory', 'Hulu', '$huluchromelaunchoptions', '$chrome_startdir')
+create_new_entry('$chromedirectory', 'Disney+', '$disneychromelaunchoptions', '$chrome_startdir')
+create_new_entry('$chromedirectory', 'Amazon Prime Video', '$amazonchromelaunchoptions', '$chrome_startdir')
+create_new_entry('$chromedirectory', 'Youtube', '$youtubechromelaunchoptions', '$chrome_startdir')
+create_new_entry('$chromedirectory', 'Amazon Luna', '$lunachromelaunchoptions', '$chrome_startdir')
+
+# Iterate over each custom website
+for custom_website in custom_websites:
+    # Remove any leading or trailing spaces from the custom website URL
+    custom_website = custom_website.strip()
+
+    # Remove the 'http://' or 'https://' prefix and the 'www.' prefix, if present
+    clean_website = custom_website.replace('http://', '').replace('https://', '').replace('www.', '')
+
+    # Extract the name of the website by removing everything after the first '/'
+    website_name = clean_website.split('/')[0]
+
+    # Remove the top-level domain (e.g. '.com') from the website name
+    website_name = website_name.rsplit('.', 1)[0]
+
+    # Capitalize the first letter of the website name
+    website_name = website_name.capitalize()
+
+    # Define the launch options for this website
+    chromelaunch_options = f'run --branch=stable --arch=x86_64 --command=/app/bin/chrome --file-forwarding com.google.Chrome @@u @@ --window-size=1280,800 --force-device-scale-factor=1.00 --device-scale-factor=1.00 --kiosk https://{clean_website}/ --chrome-kiosk-type=fullscreen --no-first-run --enable-features=OverlayScrollbar'
+
+
+    # Call the create_new_entry function for this website
+    create_new_entry('$chromedirectory', website_name, chromelaunch_options, '$chrome_startdir')
+
+
 
 
 print(f'app_ids: {app_ids}')
@@ -3064,7 +3218,13 @@ config['controller_config']['humble games collection'] = {
 config['controller_config']['minecraft java edition'] = {
     'workshop': '2980553929'
 }
+config['controller_config']['playstation plus'] = {
+    'workshop': 'controller_neptune_webbrowser.vdf'
+}
 config['controller_config']['glyph'] = {
+    'template': 'controller_neptune_webbrowser.vdf'
+}
+config['controller_config']['dmm games'] = {
     'template': 'controller_neptune_webbrowser.vdf'
 }
 config['controller_config']['amazon prime video'] = {
@@ -3087,12 +3247,6 @@ config['controller_config']['geforce now'] = {
 }
 config['controller_config']['amazon luna'] = {
     'template': 'controller_neptune_gamepad+mouse.vdf'
-}
-config['controller_config']['minion'] = {
-    'template': 'controller_neptune_webbrowser.vdf'
-}
-config['controller_config']['vortex'] = {
-    'template': 'controller_neptune_webbrowser.vdf'
 }
 
 
