@@ -34,6 +34,8 @@ Supported Stores 🛍
 - Ubisoft ✔️
 - Glyph ✔️
 - Minecraft ✔️
+- Playstation Plus ✔️
+- DMM Games Player ✔️
 
 <h1 align="center">
 Supported Streaming Sites 🌐
