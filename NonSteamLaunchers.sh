@@ -1363,7 +1363,7 @@ proton_dir=$(find ~/.steam/root/compatibilitytools.d -maxdepth 1 -type d -name "
 
 # Set the URLs to download GE-Proton from
 ge_proton_url1=https://github.com/GloriousEggroll/proton-ge-custom/releases/latest/download/GE-Proton.tar.gz
-ge_proton_url2=https://github.com/GloriousEggroll/proton-ge-custom/releases/download/GE-Proton8-8/GE-Proton8-8.tar.gz
+ge_proton_url2=https://github.com/GloriousEggroll/proton-ge-custom/releases/download/GE-Proton8-9/GE-Proton8-9.tar.gz
 
 
 
@@ -2915,7 +2915,7 @@ if [ -f "$config_vdf_path" ]; then
     cp "$config_vdf_path" "$backup_path"
 
     # Set the name of the compatibility tool to use
-    compat_tool_name="GE-Proton8-8"
+    compat_tool_name="GE-Proton8-9"
 else
     echo "Could not find config.vdf file"
 fi
