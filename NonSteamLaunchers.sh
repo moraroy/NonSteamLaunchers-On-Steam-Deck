@@ -2458,16 +2458,12 @@ rm -rf ~/Downloads/NonSteamLaunchersInstallation
 
 echo "100"
 echo "# Installation Complete - Steam will now restart. Your launchers will be in your library!...Food for thought...do Jedis use Force Compatability?"
+sleep 5
 ) |
 zenity --progress \
   --title="Update Status" \
   --text="Starting update...please wait..." --width=450 --height=350\
-  --percentage=0
-
-if [ "$?" = -1 ] ; then
-        zenity --error \
-          --text="Update canceled."
-fi
+  --percentage=0 --auto-close --no-cancel
 
 wait
 
