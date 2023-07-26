@@ -2731,6 +2731,9 @@ if [ ${#custom_websites[@]} -gt 0 ]; then
     # Convert the custom_websites array to a string
     custom_websites_str=$(IFS=", "; echo "${custom_websites[*]}")
 
+    # Initialize an associative array to keep track of the number of entries for each base URL
+    declare -A base_url_counts
+
     # Iterate over each custom website
     for custom_website in "${custom_websites[@]}"; do
         # Remove any leading or trailing spaces from the custom website URL
@@ -2749,6 +2752,16 @@ if [ ${#custom_websites[@]} -gt 0 ]; then
 
         # Capitalize the first letter of the website name
         website_name="$(tr '[:lower:]' '[:upper:]' <<< "${website_name:0:1}")${website_name:1}"
+
+        # Check if an entry has already been created for this base URL
+        if [[ ${base_url_counts[$website_name]} ]]; then
+            # An entry has already been created for this base URL, so increment the count and append it to the website name
+            ((base_url_counts[$website_name]++))
+            website_name="${website_name} ${base_url_counts[$website_name]}"
+        else
+            # This is the first entry for this base URL, so initialize the count to 1
+            base_url_counts[$website_name]=1
+        fi
 
         # Set the chromelaunchoptions variable for this website
         chromelaunchoptions="run --branch=stable --arch=x86_64 --command=/app/bin/chrome --file-forwarding com.google.Chrome @@u @@ --window-size=1280,800 --force-device-scale-factor=1.00 --device-scale-factor=1.00 --kiosk https://$clean_website/ --chrome-kiosk-type=fullscreen --no-first-run --enable-features=OverlayScrollbar"
@@ -3021,62 +3034,75 @@ def get_steam_shortcut_id(exe, appname):
 
 
 def create_new_entry(shortcutdirectory, appname, launchoptions, startingdir):
-    if shortcutdirectory != '' and launchoptions != '':
-        exe = f'"{shortcutdirectory}"'
-        if shortcutdirectory != chromedirectory:
-            appid = get_steam_shortcut_id(exe, appname)
-            app_ids.append(appid)
-        else:
-            appid = None
+    # Load the contents of the shortcuts.vdf file into a dictionary
+    with open('$shortcuts_vdf_path', 'rb') as f:
+        existing_shortcuts = vdf.binary_load(f)
 
-        # Create a new entry for the Steam shortcut
-        new_entry = {
-            'appid': f'{str(appid)}' if appid is not None else '',
-            'appname': appname,
-            'exe': shortcutdirectory,
-            'StartDir': startingdir,
-            'icon': '',
-            'ShortcutPath': '',
-            'LaunchOptions': launchoptions,
-            'IsHidden': 0,
-            'AllowDesktopConfig': 1,
-            'AllowOverlay': 1,
-            'OpenVR': 0,
-            'Devkit': 0,
-            'DevkitGameID': '',
-            'LastPlayTime': 0,
-            'tags': {
-                '0': 'favorite'
+    # Check if an entry with the same appname and exe values already exists
+    entry_exists = False
+    for entry in existing_shortcuts['shortcuts']:
+        if entry['appname'] == appname and entry['exe'] == shortcutdirectory:
+            entry_exists = True
+            break
+
+    # Only create a new entry if an existing entry was not found
+    if not entry_exists:
+        if shortcutdirectory != '' and launchoptions != '':
+            exe = f'"{shortcutdirectory}"'
+            if shortcutdirectory != chromedirectory:
+                appid = get_steam_shortcut_id(exe, appname)
+                app_ids.append(appid)
+            else:
+                appid = None
+
+            # Create a new entry for the Steam shortcut
+            new_entry = {
+                'appid': f'{str(appid)}' if appid is not None else '',
+                'appname': appname,
+                'exe': shortcutdirectory,
+                'StartDir': startingdir,
+                'icon': '',
+                'ShortcutPath': '',
+                'LaunchOptions': launchoptions,
+                'IsHidden': 0,
+                'AllowDesktopConfig': 1,
+                'AllowOverlay': 1,
+                'OpenVR': 0,
+                'Devkit': 0,
+                'DevkitGameID': '',
+                'LastPlayTime': 0,
+                'tags': {
+                    '0': 'favorite'
+                }
             }
-        }
 
-        # Add the new entry to the shortcuts dictionary
-        entry_exists = False
-        if type(shortcuts['shortcuts']) == list:
-            for entry in shortcuts['shortcuts']:
-                entry.setdefault('appname', '')
-                entry.setdefault('exe', '')
-                if entry['appname'] == new_entry['appname'] and entry['exe'] == new_entry['exe']:
-                    entry_exists = True
-                    break
-            if not entry_exists:
-                shortcuts['shortcuts'].append(new_entry)
-        elif type(shortcuts['shortcuts']) == dict:
-            for key in shortcuts['shortcuts'].keys():
-                shortcuts['shortcuts'][key].setdefault('appname', '')
-                shortcuts['shortcuts'][key].setdefault('exe', '')
-                if shortcuts['shortcuts'][key]['appname'] == new_entry['appname'] and shortcuts['shortcuts'][key]['exe'] == new_entry['exe']:
-                    entry_exists = True
-                    break
-            if not entry_exists:
-                # Check if the shortcuts['shortcuts'] dictionary is empty
-                if not shortcuts['shortcuts']:
-                    max_key = -1
-                else:
-                    # Find the highest key value
-                    max_key = max(int(key) for key in shortcuts['shortcuts'].keys())
-                # Add the new entry with a key value one higher than the current maximum
-                shortcuts['shortcuts'][str(max_key + 1)] = new_entry
+            # Add the new entry to the shortcuts dictionary
+            entry_exists = False
+            if type(shortcuts['shortcuts']) == list:
+                for entry in shortcuts['shortcuts']:
+                    entry.setdefault('appname', '')
+                    entry.setdefault('exe', '')
+                    if entry['appname'] == new_entry['appname'] and entry['exe'] == new_entry['exe']:
+                        entry_exists = True
+                        break
+                if not entry_exists:
+                    shortcuts['shortcuts'].append(new_entry)
+            elif type(shortcuts['shortcuts']) == dict:
+                for key in shortcuts['shortcuts'].keys():
+                    shortcuts['shortcuts'][key].setdefault('appname', '')
+                    shortcuts['shortcuts'][key].setdefault('exe', '')
+                    if shortcuts['shortcuts'][key]['appname'] == new_entry['appname'] and shortcuts['shortcuts'][key]['exe'] == new_entry['exe']:
+                        entry_exists = True
+                        break
+                if not entry_exists:
+                    # Check if the shortcuts['shortcuts'] dictionary is empty
+                    if not shortcuts['shortcuts']:
+                        max_key = -1
+                    else:
+                        # Find the highest key value
+                        max_key = max(int(key) for key in shortcuts['shortcuts'].keys())
+                    # Add the new entry with a key value one higher than the current maximum
+                    shortcuts['shortcuts'][str(max_key + 1)] = new_entry
 
 create_new_entry('$epicshortcutdirectory', 'Epic Games', '$epiclaunchoptions', '$epicstartingdir')
 create_new_entry('$gogshortcutdirectory', 'Gog Galaxy', '$goglaunchoptions', '$gogstartingdir')
