@@ -2961,6 +2961,7 @@ print(sys.path)  # Add this line to print the value of sys.path
 import vdf  # Updated import
 import binascii
 import re
+from urllib.parse import quote
 
 
 # Print the path to the file where the vdf module was loaded from
@@ -3110,6 +3111,9 @@ for custom_website in custom_websites:
     if custom_website:
         # Remove any leading or trailing spaces from the custom website URL
         custom_website = custom_website.strip()
+
+        # Encode the URL to replace special characters with their percent-encoded equivalents
+        custom_website = quote(custom_website, safe=':/')
 
         # Remove the 'http://' or 'https://' prefix and the 'www.' prefix, if present
         clean_website = custom_website.replace('http://', '').replace('https://', '').replace('www.', '')
