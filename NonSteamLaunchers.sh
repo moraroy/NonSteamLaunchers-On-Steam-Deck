@@ -2960,6 +2960,7 @@ sys.path.insert(0, os.path.expanduser('$HOME/Downloads/NonSteamLaunchersInstalla
 print(sys.path)  # Add this line to print the value of sys.path
 import vdf  # Updated import
 import binascii
+import re
 
 
 # Print the path to the file where the vdf module was loaded from
@@ -3113,20 +3114,31 @@ for custom_website in custom_websites:
         # Remove the 'http://' or 'https://' prefix and the 'www.' prefix, if present
         clean_website = custom_website.replace('http://', '').replace('https://', '').replace('www.', '')
 
-        # Extract the name of the website by removing everything after the first '/'
-        website_name = clean_website.split('/')[0]
+        # Define a regular expression pattern to extract the game name from the URL
+        pattern = r'/games/([\w-]+)'
 
-        # Remove the top-level domain (e.g. '.com') from the website name
-        website_name = website_name.rsplit('.', 1)[0]
+        # Use the regular expression to search for the game name in the custom website URL
+        match = re.search(pattern, custom_website)
 
-        # Capitalize the first letter of the website name
-        website_name = website_name.capitalize()
+        # Check if a match was found
+        if match:
+            # Extract the game name from the match object
+            game_name = match.group(1)
+
+            # Replace hyphens with spaces
+            game_name = game_name.replace('-', ' ')
+
+            # Capitalize the first letter of each word in the game name
+            game_name = game_name.title()
+        else:
+            # If no match was found, set the game name to an empty string
+            game_name = ''
 
         # Define the launch options for this website
         chromelaunch_options = f'run --branch=stable --arch=x86_64 --command=/app/bin/chrome --file-forwarding com.google.Chrome @@u @@ --window-size=1280,800 --force-device-scale-factor=1.00 --device-scale-factor=1.00 --kiosk https://{clean_website}/ --chrome-kiosk-type=fullscreen --no-first-run --enable-features=OverlayScrollbar'
 
         # Call the create_new_entry function for this website
-        create_new_entry('$chromedirectory', website_name, chromelaunch_options, '$chrome_startdir')
+        create_new_entry('$chromedirectory', game_name, chromelaunch_options, '$chrome_startdir')
 
 
 
