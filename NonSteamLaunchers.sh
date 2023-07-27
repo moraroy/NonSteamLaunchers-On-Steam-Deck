@@ -3131,15 +3131,14 @@ for custom_website in custom_websites:
             # Capitalize the first letter of each word in the game name
             game_name = game_name.title()
         else:
-            # If no match was found, set the game name to an empty string
-            game_name = ''
+            # Use the entire URL as the entry name
+            game_name = clean_website
 
         # Define the launch options for this website
         chromelaunch_options = f'run --branch=stable --arch=x86_64 --command=/app/bin/chrome --file-forwarding com.google.Chrome @@u @@ --window-size=1280,800 --force-device-scale-factor=1.00 --device-scale-factor=1.00 --kiosk https://{clean_website}/ --chrome-kiosk-type=fullscreen --no-first-run --enable-features=OverlayScrollbar'
 
         # Call the create_new_entry function for this website
         create_new_entry('$chromedirectory', game_name, chromelaunch_options, '$chrome_startdir')
-
 
 
 
