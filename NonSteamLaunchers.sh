@@ -700,6 +700,20 @@ if [[ $options == "Start Fresh" ]]; then
             fi
         fi
 
+        # Iterate over each folder in the compatdata directory
+        for folder_path in "$compatdata_dir"/*; do
+            # Check if the current item is a folder
+            if [ -d "$folder_path" ]; then
+                # Check if the folder is empty
+                if [ -z "$(ls -A "$folder_path")" ]; then
+                    # Delete the empty folder
+                    rmdir "$folder_path"
+                    echo "Deleted empty folder: $(basename "$folder_path")"
+                fi
+            fi
+        done
+
+
         rm -rf "/run/media/mmcblk0p1/NonSteamLaunchers/"
         rm -rf "/run/media/mmcblk0p1/EpicGamesLauncher/"
         rm -rf "/run/media/mmcblk0p1/GogGalaxyLauncher/"
@@ -3296,6 +3310,17 @@ config['controller_config']['amazon luna'] = {
 
 
 
+
+
+
+
+# Save the updated config dictionary to the configset_controller_neptune.vdf file
+with open('$controller_config_path', 'w') as f:
+    vdf.dump(config, f)
+
+
+
+
 # Define the path to the compatdata directory
 compatdata_dir = '$HOME/.local/share/Steam/steamapps/compatdata'
 
@@ -3320,13 +3345,14 @@ folder_names = {
 
 # Iterate over each launcher in the folder_names dictionary
 for launcher_name, folder in folder_names.items():
+    # Define the current path of the folder
+    current_path = os.path.join(compatdata_dir, folder)
+
     # Check if the folder exists
-    if os.path.exists(os.path.join(compatdata_dir, folder)):
+    if os.path.exists(current_path):
+        print(f'{launcher_name}: {folder} exists')
         # Get the app ID for this launcher from the app_id_to_name dictionary
         appid = next(key for key, value in app_id_to_name.items() if value == launcher_name)
-
-        # Define the current path of the folder
-        current_path = os.path.join(compatdata_dir, folder)
 
         # Define the new path of the folder
         new_path = os.path.join(compatdata_dir, str(appid))
@@ -3339,6 +3365,8 @@ for launcher_name, folder in folder_names.items():
 
         # Create a symbolic link to the renamed folder
         os.symlink(new_path, symlink_path)
+    else:
+        print(f'{launcher_name}: {folder} does not exist')
 
 # Check if the NonSteamLaunchers folder exists
 if os.path.exists(os.path.join(compatdata_dir, 'NonSteamLaunchers')):
@@ -3358,14 +3386,8 @@ if os.path.exists(os.path.join(compatdata_dir, 'NonSteamLaunchers')):
     symlink_path = os.path.join(compatdata_dir, 'NonSteamLaunchers')
 
     # Create a symbolic link to the renamed NonSteamLaunchers folder
-    os.symlink(new_path, symlink_path)
+    os.symlink(new_path, symlink_path)"
 
-
-
-
-# Save the updated config dictionary to the configset_controller_neptune.vdf file
-with open('$controller_config_path', 'w') as f:
-    vdf.dump(config, f)"
 
 
 
