@@ -542,6 +542,9 @@ args=("$@")
 # Initialize an array to store the custom websites
 custom_websites=()
 
+# Initialize a variable to store whether the "Separate App IDs" option is selected or not
+separate_app_ids=false
+
 # Check if any command line arguments were provided
 if [ ${#args[@]} -eq 0 ]; then
     # No command line arguments were provided, so display the main zenity window
@@ -555,29 +558,65 @@ if [ ${#args[@]} -eq 0 ]; then
         # The user did not click the 'Cancel' button or select one of the extra buttons, so prompt for custom websites
         custom_websites_str=$(zenity --entry --title="Shortcut Creator" --text="Enter custom websites that you want shortcuts for, separated by commas. Leave blank and press ok if you dont want any. E.g. myspace.com, limewire.com, my.screenname.aol.com")
 
-        # Check if the user clicked the 'Cancel' button
-        if [ $? -eq 1 ]; then
-            # The user clicked the 'Cancel' button, so exit the script
-            echo "The cancel button was clicked"
+        # Check if the user clicked the 'Cancel' button or entered an empty string
+        if [ $? -eq 1 ] || [ -z "$custom_websites_str" ]; then
+            # The user clicked the 'Cancel' button or entered an empty string, so exit the script
+            echo "The cancel button was clicked or no custom websites were entered"
             exit 1
         fi
 
         # Split the custom_websites_str variable into an array using ',' as the delimiter
         IFS=',' read -ra custom_websites <<< "$custom_websites_str"
-
     fi
 else
     # Command line arguments were provided, so set the value of the options variable using the command line arguments
-    selected_launchers="${args[0]}"
-    custom_websites+=("${args[@]:1}")
+
+    # Initialize an array to store the selected launchers
+    selected_launchers=()
+
+    for arg in "${args[@]}"; do
+        if [[ "$arg" =~ ^https?:// ]]; then
+            # Check if the arg is not an empty string before adding it to the custom_websites array
+            if [ -n "$arg" ]; then
+                custom_websites+=("$arg")
+            fi
+        else
+            selected_launchers+=("$arg")
+        fi
+    done
+
+    # Convert the selected_launchers array to a string by joining its elements with a `|` delimiter.
+    selected_launchers_str=$(IFS="|"; echo "${selected_launchers[*]}")
+
+    # Check if the `SEPARATE APP IDS - CHECK THIS TO SEPARATE YOUR PREFIX'S` option was included in the `selected_launchers` variable. If this option was included, set the value of the `separate_app_ids` variable to `true`, indicating that separate app IDs should be used. Otherwise, set it to `false`.
+    if [[ "${selected_launchers[@]}" =~ "SEPARATE APP IDS - CHECK THIS TO SEPARATE YOUR PREFIX'S" ]]; then
+        separate_app_ids=true
+    else
+        separate_app_ids=false
+    fi
 fi
+
 
 # Print the selected launchers and custom websites
 echo "Selected launchers: $selected_launchers"
+echo "Selected launchers: $selected_launchers_str"
 echo "Custom websites: ${custom_websites[@]}"
+echo "Separate App IDs: $separate_app_ids"
+
+
 
 # Set the value of the options variable
-options="$selected_launchers"
+if [ ${#args[@]} -eq 0 ]; then
+    # No command line arguments were provided, so set the value of the options variable using the selected_launchers variable
+    options="$selected_launchers"
+else
+    # Command line arguments were provided, so set the value of the options variable using the selected_launchers_str variable
+    options="$selected_launchers_str"
+fi
+
+
+
+
 
 # Check if the cancel button was clicked
 if [ $? -eq 1 ] && [[ $options != "Start Fresh" ]] && [[ $options != "Move to SD Card" ]] && [[ $options != "Uninstall" ]] && [[ $options != "Find Games" ]]; then
@@ -605,6 +644,9 @@ else
     # User did not select to use separate app IDs
     use_separate_appids=false
 fi
+
+
+
 
 
 
@@ -650,94 +692,105 @@ fi
 
 
 
-# Check if the Start Fresh button was clicked
-if [[ $options == "Start Fresh" ]]; then
-    # The Start Fresh button was clicked
-    if zenity --question --text="aaahhh it always feels good to start fresh :) but...This will delete the App ID folders you installed inside the steamapps/compatdata/ directory. This means anything youve installed (launchers or games) WITHIN THIS SCRIPT will be deleted if you have them there. Everything will be wiped. Are you sure?" --width=300 --height=260; then
-        # The user clicked the "Yes" button
-        # Define the path to the compatdata directory
-        compatdata_dir="$HOME/.local/share/Steam/steamapps/compatdata"
 
-        # Define an array of original folder names
-        folder_names=("EpicGamesLauncher" "GogGalaxyLauncher" "UplayLauncher" "OriginLauncher" "Battle.netLauncher" "TheEAappLauncher" "AmazonGamesLauncher" "itchioLauncher" "LegacyGamesLauncher" "HumbleGamesLauncher" "IndieGalaLauncher" "RockstarGamesLauncher" "GlyphLauncher" "MinecraftLauncher" "PlaystationPlusLauncher" "DMMGameLauncher")
+# Define the StartFreshFunction
+function StartFreshFunction {
+    # Define the path to the compatdata directory
+    compatdata_dir="$HOME/.local/share/Steam/steamapps/compatdata"
 
-        # Iterate over each folder name in the folder_names array
-        for folder in "${folder_names[@]}"; do
-            # Check if the folder exists
-            if [ -e "$compatdata_dir/$folder" ]; then
-                # Check if the folder is a symbolic link
-                if [ -L "$compatdata_dir/$folder" ]; then
-                    # Get the path of the target of the symbolic link
-                    target_path=$(readlink -f "$compatdata_dir/$folder")
+    # Define an array of original folder names
+    folder_names=("EpicGamesLauncher" "GogGalaxyLauncher" "UplayLauncher" "OriginLauncher" "Battle.netLauncher" "TheEAappLauncher" "AmazonGamesLauncher" "itchioLauncher" "LegacyGamesLauncher" "HumbleGamesLauncher" "IndieGalaLauncher" "RockstarGamesLauncher" "GlyphLauncher" "MinecraftLauncher" "PlaystationPlusLauncher" "DMMGameLauncher")
 
-                    # Delete the target of the symbolic link
-                    rm -rf "$target_path"
-
-                    # Delete the symbolic link
-                    unlink "$compatdata_dir/$folder"
-                else
-                    # Delete the folder
-                    rm -rf "$compatdata_dir/$folder"
-                fi
-            fi
-        done
-
-        # Check if the NonSteamLaunchers folder exists
-        if [ -e "$compatdata_dir/NonSteamLaunchers" ]; then
-            # Check if the NonSteamLaunchers folder is a symbolic link
-            if [ -L "$compatdata_dir/NonSteamLaunchers" ]; then
+    # Iterate over each folder name in the folder_names array
+    for folder in "${folder_names[@]}"; do
+        # Check if the folder exists
+        if [ -e "$compatdata_dir/$folder" ]; then
+            # Check if the folder is a symbolic link
+            if [ -L "$compatdata_dir/$folder" ]; then
                 # Get the path of the target of the symbolic link
-                target_path=$(readlink -f "$compatdata_dir/NonSteamLaunchers")
+                target_path=$(readlink -f "$compatdata_dir/$folder")
 
                 # Delete the target of the symbolic link
                 rm -rf "$target_path"
 
                 # Delete the symbolic link
-                unlink "$compatdata_dir/NonSteamLaunchers"
+                unlink "$compatdata_dir/$folder"
             else
-                # Delete the NonSteamLaunchers folder
-                rm -rf "$compatdata_dir/NonSteamLaunchers"
+                # Delete the folder
+                rm -rf "$compatdata_dir/$folder"
             fi
         fi
+    done
 
-        # Iterate over each folder in the compatdata directory
-        for folder_path in "$compatdata_dir"/*; do
-            # Check if the current item is a folder
-            if [ -d "$folder_path" ]; then
-                # Check if the folder is empty
-                if [ -z "$(ls -A "$folder_path")" ]; then
-                    # Delete the empty folder
-                    rmdir "$folder_path"
-                    echo "Deleted empty folder: $(basename "$folder_path")"
-                fi
+    # Check if the NonSteamLaunchers folder exists
+    if [ -e "$compatdata_dir/NonSteamLaunchers" ]; then
+        # Check if the NonSteamLaunchers folder is a symbolic link
+        if [ -L "$compatdata_dir/NonSteamLaunchers" ]; then
+            # Get the path of the target of the symbolic link
+            target_path=$(readlink -f "$compatdata_dir/NonSteamLaunchers")
+
+            # Delete the target of the symbolic link
+            rm -rf "$target_path"
+
+            # Delete the symbolic link
+            unlink "$compatdata_dir/NonSteamLaunchers"
+        else
+            # Delete the NonSteamLaunchers folder
+            rm -rf "$compatdata_dir/NonSteamLaunchers"
+        fi
+    fi
+
+    # Iterate over each folder in the compatdata directory
+    for folder_path in "$compatdata_dir"/*; do
+        # Check if the current item is a folder
+        if [ -d "$folder_path" ]; then
+            # Check if the folder is empty
+            if [ -z "$(ls -A "$folder_path")" ]; then
+                # Delete the empty folder
+                rmdir "$folder_path"
+                echo "Deleted empty folder: $(basename "$folder_path")"
             fi
-        done
+        fi
+    done
 
+    rm -rf "/run/media/mmcblk0p1/NonSteamLaunchers/"
+    rm -rf "/run/media/mmcblk0p1/EpicGamesLauncher/"
+    rm -rf "/run/media/mmcblk0p1/GogGalaxyLauncher/"
+    rm -rf "/run/media/mmcblk0p1/OriginLauncher/"
+    rm -rf "/run/media/mmcblk0p1/UplayLauncher/"
+    rm -rf "/run/media/mmcblk0p1/Battle.netLauncher/"
+    rm -rf "/run/media/mmcblk0p1/TheEAappLauncher/"
+    rm -rf "/run/media/mmcblk0p1/AmazonGamesLauncher/"
+    rm -rf "/run/media/mmcblk0p1/LegacyGamesLauncher/"
+    rm -rf "/run/media/mmcblk0p1/itchioLauncher/"
+    rm -rf "/run/media/mmcblk0p1/HumbleGamesLauncher/"
+    rm -rf "/run/media/mmcblk0p1/IndieGalaLauncher/"
+    rm -rf "/run/media/mmcblk0p1/RockstarGamesLauncher/"
+    rm -rf "/run/media/mmcblk0p1/GlyphLauncher/"
+    rm -rf "/run/media/mmcblk0p1/MinecraftLauncher/"
+    rm -rf "/run/media/mmcblk0p1/PlaystationPlusLauncher/"
+    rm -rf "/run/media/mmcblk0p1/DMMGameLauncher/"
+    rm -rf ~/Downloads/NonSteamLaunchersInstallation
 
-        rm -rf "/run/media/mmcblk0p1/NonSteamLaunchers/"
-        rm -rf "/run/media/mmcblk0p1/EpicGamesLauncher/"
-        rm -rf "/run/media/mmcblk0p1/GogGalaxyLauncher/"
-        rm -rf "/run/media/mmcblk0p1/OriginLauncher/"
-        rm -rf "/run/media/mmcblk0p1/UplayLauncher/"
-        rm -rf "/run/media/mmcblk0p1/Battle.netLauncher/"
-        rm -rf "/run/media/mmcblk0p1/TheEAappLauncher/"
-        rm -rf "/run/media/mmcblk0p1/AmazonGamesLauncher/"
-        rm -rf "/run/media/mmcblk0p1/LegacyGamesLauncher/"
-        rm -rf "/run/media/mmcblk0p1/itchioLauncher/"
-        rm -rf "/run/media/mmcblk0p1/HumbleGamesLauncher/"
-        rm -rf "/run/media/mmcblk0p1/IndieGalaLauncher/"
-        rm -rf "/run/media/mmcblk0p1/RockstarGamesLauncher/"
-        rm -rf "/run/media/mmcblk0p1/GlyphLauncher/"
-        rm -rf "/run/media/mmcblk0p1/MinecraftLauncher/"
-        rm -rf "/run/media/mmcblk0p1/PlaystationPlusLauncher/"
-        rm -rf "/run/media/mmcblk0p1/DMMGameLauncher/"
-        rm -rf ~/Downloads/NonSteamLaunchersInstallation
+    # Exit the script with exit code 0 to indicate success
+    exit 0
+}
 
-        # Exit the script with exit code 0 to indicate success
-        exit 0
+# Check if the Start Fresh button was clicked or if the Start Fresh option was passed as a command line argument
+if [[ $options == "Start Fresh" ]] || [[ $selected_launchers == "Start Fresh" ]]; then
+    # The Start Fresh button was clicked or the Start Fresh option was passed as a command line argument
+    if [ ${#args[@]} -eq 0 ]; then
+        # No command line arguments were provided, so display the zenity window
+        if zenity --question --text="aaahhh it always feels good to start fresh :) but...This will delete the App ID folders you installed inside the steamapps/compatdata/ directory. This means anything youve installed (launchers or games) WITHIN THIS SCRIPT will be deleted if you have them there. Everything will be wiped. Are you sure?" --width=300 --height=260; then
+            # The user clicked the "Yes" button, so call the StartFreshFunction
+            StartFreshFunction
+        else
+            # The user clicked the "No" button, so exit with exit code 0 to indicate success.
+            exit 0
+        fi
     else
-        # The user clicked the "No" button, so exit with exit code 0 to indicate success.
-        exit 0
+        # Command line arguments were provided, so skip displaying the zenity window and directly perform any necessary actions to start fresh by calling the StartFreshFunction
+        StartFreshFunction
     fi
 fi
 
