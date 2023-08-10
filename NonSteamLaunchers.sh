@@ -558,12 +558,7 @@ if [ ${#args[@]} -eq 0 ]; then
         # The user did not click the 'Cancel' button or select one of the extra buttons, so prompt for custom websites
         custom_websites_str=$(zenity --entry --title="Shortcut Creator" --text="Enter custom websites that you want shortcuts for, separated by commas. Leave blank and press ok if you dont want any. E.g. myspace.com, limewire.com, my.screenname.aol.com")
 
-        # Check if the user clicked the 'Cancel' button or entered an empty string
-        if [ $? -eq 1 ] || [ -z "$custom_websites_str" ]; then
-            # The user clicked the 'Cancel' button or entered an empty string, so exit the script
-            echo "The cancel button was clicked or no custom websites were entered"
-            exit 1
-        fi
+
 
         # Split the custom_websites_str variable into an array using ',' as the delimiter
         IFS=',' read -ra custom_websites <<< "$custom_websites_str"
