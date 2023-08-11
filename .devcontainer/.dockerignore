@@ -1,0 +1,13 @@
+!poetry.lock
+!pyproject.toml
+.cache
+.devcontainer
+.git
+.gitignore
+.pytest_cache
+.tool-versions
+.venv
+.vscode
+**/__pycache__
+Dockerfile*
+README.md
