@@ -1,0 +1,14 @@
+{
+  "[python]": {
+    "editor.insertSpaces": true,
+    "editor.tabSize": 4,
+  },
+    "python.testing.pytestArgs": [
+        "."
+    ],
+    // ! only disable analysis (pylance) if ruff is installed
+    // https://github.com/astral-sh/ruff-vscode
+    // "python.analysis.ignore": [
+    //   "*"
+    // ],
+}

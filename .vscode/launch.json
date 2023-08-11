@@ -1,0 +1,92 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    // pytest: https://stackoverflow.com/questions/70259564/how-to-debug-the-current-python-test-file-with-pytest-in-vs-code
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Python: Current File",
+            "type": "python",
+            "request": "launch",
+            "program": "${file}",
+            "console": "integratedTerminal",
+            "cwd": "${fileDirname}",
+            "pythonArgs": [
+                "-Xfrozen_modules=off"
+            ],
+            "env": {
+                "PYDEVD_DISABLE_FILE_VALIDATION": "1"
+            }
+            // "args": ["-i", "response.xml", "-o", "response.csv"],
+            // "args": ["-d", "/Volumes/Data"],
+            // "args": ["-f", "menubar.dmg"],
+            // "args": ["-h"],
+        },
+        {
+            "name": "Python: Django",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/manage.py",
+            "console": "integratedTerminal",
+            "args": [
+                "runserver"
+            ],
+            "django": true,
+            "justMyCode": true
+        },
+        {
+            "name": "Python: Flask",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/.venv/bin/flask",
+            "console": "integratedTerminal",
+            "args": [
+                "run",
+                "--host",
+                "0.0.0.0",
+                "--port",
+                "8000"
+            ],
+            "justMyCode": true
+        },
+        {
+            "name": "Python: Flet",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/.venv/bin/flet",
+            "console": "integratedTerminal",
+            "args": [
+                "run",
+                "main.py",
+                "-d"
+            ],
+            "env": {
+                "PYDEVD_DISABLE_FILE_VALIDATION": "1",
+            },
+            "justMyCode": true
+        },
+        {
+            "name": "Python: Debug Tests",
+            "type": "python",
+            "request": "launch",
+            "module": "pytest",
+            "args": [
+                "${file}"
+            ],
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "Node: Current File",
+            "type": "node",
+            "request": "launch",
+            "program": "${file}",
+            "console": "integratedTerminal",
+            "skipFiles": [
+                "<node_internals>/**"
+            ],
+            // "runtimeExecutable": "${env:HOME}/.n/bin/node"
+        }
+    ],
+    "ansible.python.interpreterPath": "${workspaceFolder}/.venv/bin/python"
+}
