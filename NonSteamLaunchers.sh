@@ -2739,15 +2739,15 @@ while steam_pid > /dev/null; do sleep 5; done
 # Pre check for updating the config file
 
 # Set the default Steam directory
-steam_dir="${logged_in_home}/.steam/root"
+steam_dir_root="${logged_in_home}/.steam/root"
 
 # Set the path to the config.vdf file
-config_vdf_path="${steam_dir}/config/config.vdf"
+config_vdf_path="${steam_dir_root}/config/config.vdf"
 
 # Check if the config.vdf file exists
 if [ -f "$config_vdf_path" ]; then
     # Create a backup of the config.vdf file
-    backup_path="${steam_dir}/config/config.vdf.bak"
+    backup_path="${steam_dir_root}/config/config.vdf.bak"
     cp "$config_vdf_path" "$backup_path"
 
     # Set the name of the compatibility tool to use
