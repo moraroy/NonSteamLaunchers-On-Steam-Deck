@@ -2,9 +2,6 @@
 
 # shellcheck disable=SC2155
 
-# Create a log file in the same directory as the desktop file/.sh file
-exec >> ${logged_in_home}/Downloads/NonSteamLaunchers-install.log 2>&1
-
 # TODO: this is silly -- if the script is being executed, doesn't need to mark itself as executable
 # * better to set permissions at a repo-level
 # * then an end user would have to explicitly call `chmod -x` to walk it back
@@ -14,8 +11,27 @@ set -x              # activate debugging (execution shown)
 set -o pipefail     # capture error from pipes
 # set -eu           # exit immediately, undefined vars are errors
 
+# ENVIRONMENT VARIABLES
+# $USER
+logged_in_user=$(logname)
+
+# $UID
+# logged_in_uid=$(id -u "${logged_in_user}")
+
+# $HOME
+logged_in_home=$(eval echo "~${logged_in_user}")
+
+# TODO: `/tmp` or `mktemp -d` might be a better option (see: EOF)
+# $PWD (working directory)
+download_dir="${logged_in_home}/Downloads/NonSteamLaunchersInstallation"
+
+# Create a log file in the same directory as the desktop file/.sh file
+exec >> ${logged_in_home}/Downloads/NonSteamLaunchers-install.log 2>&1
+
+# Version number (major.minor)
 version=v2.99
 
+# Check repo releases via GitHub API then display current stable version
 check_for_updates() {
     # Set the URL to the GitHub API for the repository
     local api_url="https://api.github.com/repos/moraroy/NonSteamLaunchers-On-Steam-Deck/releases/latest"
@@ -40,20 +56,6 @@ if [ ${#args[@]} -eq 0 ]; then
     # No command line arguments were provided, so check for updates and display the zenity window if necessary
     check_for_updates
 fi
-
-# ENVIRONMENT VARIABLES
-# $USER
-logged_in_user=$(logname)
-
-# $UID
-# logged_in_uid=$(id -u "${logged_in_user}")
-
-# $HOME
-logged_in_home=$(eval echo "~${logged_in_user}")
-
-# TODO: `/tmp` or `mktemp -d` might be a better option (see: EOF)
-# $PWD (working directory)
-download_dir="${logged_in_home}/Downloads/NonSteamLaunchersInstallation"
 
 # Check if the NonSteamLaunchersInstallation subfolder exists in the Downloads folder
 if [ -d "$download_dir" ]; then
