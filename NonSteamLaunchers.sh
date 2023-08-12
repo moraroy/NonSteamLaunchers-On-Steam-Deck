@@ -2650,9 +2650,9 @@ export PYTHONPATH="${download_dir}/lib/python${python_version}/site-packages/:$P
 steam_dir="${logged_in_home}/.local/share/Steam"
 
 # Check if the config.vdf file exists
-if [[ -f "$steam_dir/config/config.vdf" ]]; then
+if [[ -f "${steam_dir}/config/config.vdf" ]]; then
     # Get the steamid of the currently logged in user
-    steamid=$(grep -oP 'SteamID"\s+"\K[0-9]+' "$steam_dir/config/config.vdf" | head -n 1)
+    steamid=$(grep -oP 'SteamID"\s+"\K[0-9]+' "${steam_dir}/config/config.vdf" | head -n 1)
 
     # Print out the value of steamid for debugging purposes
     echo "steamid: $steamid"
@@ -2742,12 +2742,12 @@ while steam_pid > /dev/null; do sleep 5; done
 steam_dir="${logged_in_home}/.steam/root"
 
 # Set the path to the config.vdf file
-config_vdf_path="$steam_dir/config/config.vdf"
+config_vdf_path="${steam_dir}/config/config.vdf"
 
 # Check if the config.vdf file exists
 if [ -f "$config_vdf_path" ]; then
     # Create a backup of the config.vdf file
-    backup_path="$steam_dir/config/config.vdf.bak"
+    backup_path="${steam_dir}/config/config.vdf.bak"
     cp "$config_vdf_path" "$backup_path"
 
     # Set the name of the compatibility tool to use
