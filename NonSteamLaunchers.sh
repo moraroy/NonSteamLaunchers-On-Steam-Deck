@@ -11,7 +11,8 @@ exec >> ${logged_in_home}/Downloads/NonSteamLaunchers-install.log 2>&1
 chmod +x "$0"
 
 set -x              # activate debugging (execution shown)
-set -euo pipefail   # exit immediately, undefined vars are errors, capture error from pipes
+set -o pipefail     # capture error from pipes
+# set -eu           # exit immediately, undefined vars are errors
 
 version=v2.99
 
@@ -545,6 +546,7 @@ else
         fi
     done
 
+    # TODO: error handling for unbound variable $selected_launchers_str on line 564
     # Convert the selected_launchers array to a string by joining its elements with a `|` delimiter.
     selected_launchers_str=$(IFS="|"; echo "${selected_launchers[*]}")
 
@@ -2723,14 +2725,13 @@ fi
 # Detach script from Steam process
 nohup sh -c 'sleep 10; /usr/bin/steam' &
 
-# TODO: should probably verify exact process name (see below)
 # Close all instances of Steam
-killall steam
+steam_pid() { pgrep -x steam ; }
+steam_running=$(steam_pid)
+[[ -n "$steam_running" ]] && killall steam
 
-# TODO: control for exact process names (currently catches all processes with steam in name)
-# * possibly `pgrep -x steam`
 # Wait for the steam process to exit
-while pgrep steam > /dev/null; do sleep 1; done
+while steam_pid > /dev/null; do sleep 5; done
 
 # Pre check for updating the config file
 
@@ -3138,4 +3139,4 @@ if os.path.exists(os.path.join(compatdata_dir, 'NonSteamLaunchers')):
     os.symlink(new_path, symlink_path)"
 
 # Delete NonSteamLaunchersInstallation subfolder in Downloads folder
-rm -rf ~/Downloads/NonSteamLaunchersInstallation
+rm -rf "${logged_in_home}/Downloads/NonSteamLaunchersInstallation"
