@@ -3,7 +3,7 @@
 # shellcheck disable=SC2155
 
 # Create a log file in the same directory as the desktop file/.sh file
-exec >> $HOME/Downloads/NonSteamLaunchers-install.log 2>&1
+exec >> ${logged_in_home}/Downloads/NonSteamLaunchers-install.log 2>&1
 
 # TODO: this is silly -- if the script is being executed, doesn't need to mark itself as executable
 # * better to set permissions at a repo-level
@@ -40,10 +40,20 @@ if [ ${#args[@]} -eq 0 ]; then
     check_for_updates
 fi
 
+# environment variables
+# $USER
+logged_in_user=$(logname)
+
+# $UID
+# logged_in_uid=$(id -u "${logged_in_user}")
+
+# $HOME
+logged_in_home=$(eval echo "~${logged_in_user}")
+
 # Check if the NonSteamLaunchersInstallation subfolder exists in the Downloads folder
-if [ -d "$HOME/Downloads/NonSteamLaunchersInstallation" ]; then
+if [ -d "${logged_in_home}/Downloads/NonSteamLaunchersInstallation" ]; then
     # Delete the NonSteamLaunchersInstallation subfolder
-    rm -rf "$HOME/Downloads/NonSteamLaunchersInstallation"
+    rm -rf "${logged_in_home}/Downloads/NonSteamLaunchersInstallation"
     echo "Deleted NonSteamLaunchersInstallation subfolder"
 else
     echo "NonSteamLaunchersInstallation subfolder does not exist"
@@ -53,38 +63,38 @@ fi
 
 # TODO: parameterize hard-coded client versions (cf. 'app-25.6.2')
 # Set the paths to the launcher executables
-epic_games_launcher_path1="$HOME/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/Program Files (x86)/Epic Games/Launcher/Portal/Binaries/Win32/EpicGamesLauncher.exe"
-epic_games_launcher_path2="$HOME/.local/share/Steam/steamapps/compatdata/EpicGamesLauncher/pfx/drive_c/Program Files (x86)/Epic Games/Launcher/Portal/Binaries/Win32/EpicGamesLauncher.exe"
-gog_galaxy_path1="$HOME/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/Program Files (x86)/GOG Galaxy/GalaxyClient.exe"
-gog_galaxy_path2="$HOME/.local/share/Steam/steamapps/compatdata/GogGalaxyLauncher/pfx/drive_c/Program Files (x86)/GOG Galaxy/GalaxyClient.exe"
-origin_path1="$HOME/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/Program Files (x86)/Origin/Origin.exe"
-origin_path2="$HOME/.local/share/Steam/steamapps/compatdata/OriginLauncher/pfx/drive_c/Program Files (x86)/Origin/Origin.exe"
-uplay_path1="$HOME/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/Program Files (x86)/Ubisoft/Ubisoft Game Launcher/upc.exe"
-uplay_path2="$HOME/.local/share/Steam/steamapps/compatdata/UplayLauncher/pfx/drive_c/Program Files (x86)/Ubisoft/Ubisoft Game Launcher/upc.exe"
-battlenet_path1="$HOME/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/Program Files (x86)/Battle.net/Battle.net Launcher.exe"
-battlenet_path2="$HOME/.local/share/Steam/steamapps/compatdata/Battle.netLauncher/pfx/drive_c/Program Files (x86)/Battle.net/Battle.net Launcher.exe"
-eaapp_path1="$HOME/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/Program Files/Electronic Arts/EA Desktop/EA Desktop/EADesktop.exe"
-eaapp_path2="$HOME/.local/share/Steam/steamapps/compatdata/TheEAappLauncher/pfx/drive_c/Program Files/Electronic Arts/EA Desktop/EA Desktop/EADesktop.exe"
-amazongames_path1="$HOME/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/users/steamuser/AppData/Local/Amazon Games/App/Amazon Games.exe"
-amazongames_path2="$HOME/.local/share/Steam/steamapps/compatdata/AmazonGamesLauncher/pfx/drive_c/users/steamuser/AppData/Local/Amazon Games/App/Amazon Games.exe"
-itchio_path1="$HOME/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/users/steamuser/AppData/Local/itch/app-25.6.2/itch.exe"
-itchio_path2="$HOME/.local/share/Steam/steamapps/compatdata/itchioLauncher/pfx/drive_c/users/steamuser/AppData/Local/itch/app-25.6.2/itch.exe"
-legacygames_path1="$HOME/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/Program Files/Legacy Games/Legacy Games Launcher/Legacy Games Launcher.exe"
-legacygames_path2="$HOME/.local/share/Steam/steamapps/compatdata/LegacyGamesLauncher/pfx/drive_c/Program Files/Legacy Games/Legacy Games Launcher/Legacy Games Launcher.exe"
-humblegames_path1="$HOME/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/Program Files/Humble App/Humble App.exe"
-humblegames_path2="$HOME/.local/share/Steam/steamapps/compatdata/HumbleGamesLauncher/pfx/drive_c/Program Files/Humble App/Humble App.exe"
-indiegala_path1="$HOME/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/Program Files/IGClient/IGClient.exe"
-indiegala_path2="$HOME/.local/share/Steam/steamapps/compatdata/IndieGalaLauncher/pfx/drive_c/Program Files/IGClient/IGClient.exe"
-rockstar_path1="$HOME/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/Program Files/Rockstar Games/Launcher/Launcher.exe"
-rockstar_path2="$HOME/.local/share/Steam/steamapps/compatdata/RockstarGamesLauncher/pfx/drive_c/Program Files/Rockstar Games/Launcher/Launcher.exe"
-glyph_path1="$HOME/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/Program Files (x86)/Glyph/GlyphClient.exe"
-glyph_path2="$HOME/.local/share/Steam/steamapps/compatdata/GlyphLauncher/pfx/drive_c/Program Files (x86)/Glyph/GlyphClient.exe"
-minecraft_path1="$HOME/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/Program Files (x86)/Minecraft Launcher/MinecraftLauncher.exe"
-minecraft_path2="$HOME/.local/share/Steam/steamapps/compatdata/MinecraftLauncher/pfx/drive_c/Program Files (x86)/Minecraft Launcher/MinecraftLauncher.exe"
-psplus_path1="$HOME/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/Program Files (x86)/PlayStationPlus/pspluslauncher.exe"
-psplus_path2="$HOME/.local/share/Steam/steamapps/compatdata/PlaystationPlusLauncher/pfx/drive_c/Program Files (x86)/PlayStationPlus/pspluslauncher.exe"
-dmm_path1="$HOME/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/Program Files/DMMGamePlayer/DMMGamePlayer.exe"
-dmm_path2="$HOME/.local/share/Steam/steamapps/compatdata/DMMGameLauncher/pfx/drive_c/Program Files/DMMGamePlayer/DMMGamePlayer.exe"
+epic_games_launcher_path1="${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/Program Files (x86)/Epic Games/Launcher/Portal/Binaries/Win32/EpicGamesLauncher.exe"
+epic_games_launcher_path2="${logged_in_home}/.local/share/Steam/steamapps/compatdata/EpicGamesLauncher/pfx/drive_c/Program Files (x86)/Epic Games/Launcher/Portal/Binaries/Win32/EpicGamesLauncher.exe"
+gog_galaxy_path1="${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/Program Files (x86)/GOG Galaxy/GalaxyClient.exe"
+gog_galaxy_path2="${logged_in_home}/.local/share/Steam/steamapps/compatdata/GogGalaxyLauncher/pfx/drive_c/Program Files (x86)/GOG Galaxy/GalaxyClient.exe"
+origin_path1="${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/Program Files (x86)/Origin/Origin.exe"
+origin_path2="${logged_in_home}/.local/share/Steam/steamapps/compatdata/OriginLauncher/pfx/drive_c/Program Files (x86)/Origin/Origin.exe"
+uplay_path1="${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/Program Files (x86)/Ubisoft/Ubisoft Game Launcher/upc.exe"
+uplay_path2="${logged_in_home}/.local/share/Steam/steamapps/compatdata/UplayLauncher/pfx/drive_c/Program Files (x86)/Ubisoft/Ubisoft Game Launcher/upc.exe"
+battlenet_path1="${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/Program Files (x86)/Battle.net/Battle.net Launcher.exe"
+battlenet_path2="${logged_in_home}/.local/share/Steam/steamapps/compatdata/Battle.netLauncher/pfx/drive_c/Program Files (x86)/Battle.net/Battle.net Launcher.exe"
+eaapp_path1="${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/Program Files/Electronic Arts/EA Desktop/EA Desktop/EADesktop.exe"
+eaapp_path2="${logged_in_home}/.local/share/Steam/steamapps/compatdata/TheEAappLauncher/pfx/drive_c/Program Files/Electronic Arts/EA Desktop/EA Desktop/EADesktop.exe"
+amazongames_path1="${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/users/steamuser/AppData/Local/Amazon Games/App/Amazon Games.exe"
+amazongames_path2="${logged_in_home}/.local/share/Steam/steamapps/compatdata/AmazonGamesLauncher/pfx/drive_c/users/steamuser/AppData/Local/Amazon Games/App/Amazon Games.exe"
+itchio_path1="${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/users/steamuser/AppData/Local/itch/app-25.6.2/itch.exe"
+itchio_path2="${logged_in_home}/.local/share/Steam/steamapps/compatdata/itchioLauncher/pfx/drive_c/users/steamuser/AppData/Local/itch/app-25.6.2/itch.exe"
+legacygames_path1="${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/Program Files/Legacy Games/Legacy Games Launcher/Legacy Games Launcher.exe"
+legacygames_path2="${logged_in_home}/.local/share/Steam/steamapps/compatdata/LegacyGamesLauncher/pfx/drive_c/Program Files/Legacy Games/Legacy Games Launcher/Legacy Games Launcher.exe"
+humblegames_path1="${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/Program Files/Humble App/Humble App.exe"
+humblegames_path2="${logged_in_home}/.local/share/Steam/steamapps/compatdata/HumbleGamesLauncher/pfx/drive_c/Program Files/Humble App/Humble App.exe"
+indiegala_path1="${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/Program Files/IGClient/IGClient.exe"
+indiegala_path2="${logged_in_home}/.local/share/Steam/steamapps/compatdata/IndieGalaLauncher/pfx/drive_c/Program Files/IGClient/IGClient.exe"
+rockstar_path1="${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/Program Files/Rockstar Games/Launcher/Launcher.exe"
+rockstar_path2="${logged_in_home}/.local/share/Steam/steamapps/compatdata/RockstarGamesLauncher/pfx/drive_c/Program Files/Rockstar Games/Launcher/Launcher.exe"
+glyph_path1="${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/Program Files (x86)/Glyph/GlyphClient.exe"
+glyph_path2="${logged_in_home}/.local/share/Steam/steamapps/compatdata/GlyphLauncher/pfx/drive_c/Program Files (x86)/Glyph/GlyphClient.exe"
+minecraft_path1="${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/Program Files (x86)/Minecraft Launcher/MinecraftLauncher.exe"
+minecraft_path2="${logged_in_home}/.local/share/Steam/steamapps/compatdata/MinecraftLauncher/pfx/drive_c/Program Files (x86)/Minecraft Launcher/MinecraftLauncher.exe"
+psplus_path1="${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/Program Files (x86)/PlayStationPlus/pspluslauncher.exe"
+psplus_path2="${logged_in_home}/.local/share/Steam/steamapps/compatdata/PlaystationPlusLauncher/pfx/drive_c/Program Files (x86)/PlayStationPlus/pspluslauncher.exe"
+dmm_path1="${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/Program Files/DMMGamePlayer/DMMGamePlayer.exe"
+dmm_path2="${logged_in_home}/.local/share/Steam/steamapps/compatdata/DMMGameLauncher/pfx/drive_c/Program Files/DMMGamePlayer/DMMGamePlayer.exe"
 
 # Chrome File Path
 # chrome_installpath="/app/bin/chrome"
@@ -335,7 +345,7 @@ fi }
 # Verify launchers are installed
 function CheckInstallationDirectory {
     # Check if NonSteamLaunchers is installed
-    if [[ -d "$HOME/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers" ]]; then
+    if [[ -d "${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers" ]]; then
         # NonSteamLaunchers is installed
         nonsteamlauncher_move_value="TRUE"
     else
@@ -344,7 +354,7 @@ function CheckInstallationDirectory {
     fi
 
     # Check if EpicGamesLauncher is installed
-    if [[ -d "$HOME/.local/share/Steam/steamapps/compatdata/EpicGamesLauncher" ]]; then
+    if [[ -d "${logged_in_home}/.local/share/Steam/steamapps/compatdata/EpicGamesLauncher" ]]; then
         # EpicGamesLauncher is installed
         epicgameslauncher_move_value="TRUE"
     else
@@ -353,7 +363,7 @@ function CheckInstallationDirectory {
     fi
 
     # Check if GogGalaxyLauncher is installed
-    if [[ -d "$HOME/.local/share/Steam/steamapps/compatdata/GogGalaxyLauncher" ]]; then
+    if [[ -d "${logged_in_home}/.local/share/Steam/steamapps/compatdata/GogGalaxyLauncher" ]]; then
         # GogGalaxyLauncher is installed
         goggalaxylauncher_move_value="TRUE"
     else
@@ -362,7 +372,7 @@ function CheckInstallationDirectory {
     fi
 
     # Check if OriginLauncher is installed
-    if [[ -d "$HOME/.local/share/Steam/steamapps/compatdata/OriginLauncher" ]]; then
+    if [[ -d "${logged_in_home}/.local/share/Steam/steamapps/compatdata/OriginLauncher" ]]; then
         # OriginLauncher is installed
         originlauncher_move_value="TRUE"
     else
@@ -371,7 +381,7 @@ function CheckInstallationDirectory {
     fi
 
     # Check if UplayLauncher is installed
-    if [[ -d "$HOME/.local/share/Steam/steamapps/compatdata/UplayLauncher" ]]; then
+    if [[ -d "${logged_in_home}/.local/share/Steam/steamapps/compatdata/UplayLauncher" ]]; then
         # UplayLauncher is installed
         uplaylauncher_move_value="TRUE"
     else
@@ -380,7 +390,7 @@ function CheckInstallationDirectory {
     fi
 
     # Check if Battle.netLauncher is installed
-    if [[ -d "$HOME/.local/share/Steam/steamapps/compatdata/Battle.netLauncher" ]]; then
+    if [[ -d "${logged_in_home}/.local/share/Steam/steamapps/compatdata/Battle.netLauncher" ]]; then
         # Battle.netLauncher is installed
         battlenetlauncher_move_value="TRUE"
     else
@@ -389,7 +399,7 @@ function CheckInstallationDirectory {
     fi
 
     # Check if TheEAappLauncher is installed
-    if [[ -d "$HOME/.local/share/Steam/steamapps/compatdata/TheEAappLauncher" ]]; then
+    if [[ -d "${logged_in_home}/.local/share/Steam/steamapps/compatdata/TheEAappLauncher" ]]; then
         # TheEAappLauncher is installed
         eaapplauncher_move_value="TRUE"
     else
@@ -399,7 +409,7 @@ function CheckInstallationDirectory {
 
 
     # Check if AmazonGamesLauncher is installed
-    if [[ -d "$HOME/.local/share/Steam/steamapps/compatdata/AmazonGamesLauncher" ]]; then
+    if [[ -d "${logged_in_home}/.local/share/Steam/steamapps/compatdata/AmazonGamesLauncher" ]]; then
         # AmazonGamesLauncher is installed
         amazongameslauncher_move_value="TRUE"
     else
@@ -408,7 +418,7 @@ function CheckInstallationDirectory {
     fi
 
     # Check if itchioLauncher is installed
-    if [[ -d "$HOME/.local/share/Steam/steamapps/compatdata/itchioLauncher" ]]; then
+    if [[ -d "${logged_in_home}/.local/share/Steam/steamapps/compatdata/itchioLauncher" ]]; then
         # itchioLauncher is installed
         itchiolauncher_move_value="TRUE"
     else
@@ -417,7 +427,7 @@ function CheckInstallationDirectory {
     fi
 
     # Check if LegacyGamesLauncher is installed
-    if [[ -d "$HOME/.local/share/Steam/steamapps/compatdata/LegacyGamesLauncher" ]]; then
+    if [[ -d "${logged_in_home}/.local/share/Steam/steamapps/compatdata/LegacyGamesLauncher" ]]; then
         # LegacyGamesLauncher is installed
         legacygameslauncher_move_value="TRUE"
     else
@@ -426,7 +436,7 @@ function CheckInstallationDirectory {
     fi
 
     # Check if HumbleGamesLauncher is installed
-    if [[ -d "$HOME/.local/share/Steam/steamapps/compatdata/HumbleGamesLauncher" ]]; then
+    if [[ -d "${logged_in_home}/.local/share/Steam/steamapps/compatdata/HumbleGamesLauncher" ]]; then
         # HumbleGamesLauncher is installed
         humblegameslauncher_move_value="TRUE"
     else
@@ -435,7 +445,7 @@ function CheckInstallationDirectory {
     fi
 
     # Check if indiegala is installed
-    if [[ -d "$HOME/.local/share/Steam/steamapps/compatdata/IndieGalaLauncher" ]]; then
+    if [[ -d "${logged_in_home}/.local/share/Steam/steamapps/compatdata/IndieGalaLauncher" ]]; then
         # indiegalaLauncher is installed
         indiegalalauncher_move_value="TRUE"
     else
@@ -444,7 +454,7 @@ function CheckInstallationDirectory {
     fi
 
     # Check if rockstar is installed
-    if [[ -d "$HOME/.local/share/Steam/steamapps/compatdata/RockstarGamesLauncher" ]]; then
+    if [[ -d "${logged_in_home}/.local/share/Steam/steamapps/compatdata/RockstarGamesLauncher" ]]; then
         # rockstar games launcher is installed
         rockstargameslauncher_move_value="TRUE"
     else
@@ -453,7 +463,7 @@ function CheckInstallationDirectory {
     fi
 
     # Check if Glyph is installed
-    if [[ -d "$HOME/.local/share/Steam/steamapps/compatdata/GlyphLauncher" ]]; then
+    if [[ -d "${logged_in_home}/.local/share/Steam/steamapps/compatdata/GlyphLauncher" ]]; then
         # Glyph is installed
         glyphlauncher_move_value="TRUE"
     else
@@ -462,7 +472,7 @@ function CheckInstallationDirectory {
     fi
 
     # Check if Minecraft is installed
-    if [[ -d "$HOME/.local/share/Steam/steamapps/compatdata/MinecraftLauncher" ]]; then
+    if [[ -d "${logged_in_home}/.local/share/Steam/steamapps/compatdata/MinecraftLauncher" ]]; then
         # Minecraft is installed
         minecraftlauncher_move_value="TRUE"
     else
@@ -472,7 +482,7 @@ function CheckInstallationDirectory {
 
     # TODO: `pspluslauncher_move_value` is unused (SC2034)
     # Check if PlaystationPlus is installed
-    if [[ -d "$HOME/.local/share/Steam/steamapps/compatdata/PlaystationPlusLauncher" ]]; then
+    if [[ -d "${logged_in_home}/.local/share/Steam/steamapps/compatdata/PlaystationPlusLauncher" ]]; then
         # PlaystationPlus is installed
         pspluslauncher_move_value="TRUE"
     else
@@ -481,7 +491,7 @@ function CheckInstallationDirectory {
     fi
 
     # Check if DMM Player is installed
-    if [[ -d "$HOME/.local/share/Steam/steamapps/compatdata/DMMGameLauncher" ]]; then
+    if [[ -d "${logged_in_home}/.local/share/Steam/steamapps/compatdata/DMMGameLauncher" ]]; then
         # DMM Player is installed
         dmmlauncher_move_value="TRUE"
     else
@@ -538,6 +548,7 @@ else
     # Convert the selected_launchers array to a string by joining its elements with a `|` delimiter.
     selected_launchers_str=$(IFS="|"; echo "${selected_launchers[*]}")
 
+    # TODO: SC2199
     # Check if the `SEPARATE APP IDS - CHECK THIS TO SEPARATE YOUR PREFIX'S` option was included in the `selected_launchers` variable. If this option was included, set the value of the `separate_app_ids` variable to `true`, indicating that separate app IDs should be used. Otherwise, set it to `false`.
     if [[ "${selected_launchers[@]}" =~ "SEPARATE APP IDS - CHECK THIS TO SEPARATE YOUR PREFIX'S" ]]; then
         separate_app_ids=true
@@ -615,7 +626,7 @@ fi
 # Define the StartFreshFunction
 function StartFreshFunction {
     # Define the path to the compatdata directory
-    compatdata_dir="$HOME/.local/share/Steam/steamapps/compatdata"
+    compatdata_dir="${logged_in_home}/.local/share/Steam/steamapps/compatdata"
 
     # Define an array of original folder names
     folder_names=("EpicGamesLauncher" "GogGalaxyLauncher" "UplayLauncher" "OriginLauncher" "Battle.netLauncher" "TheEAappLauncher" "AmazonGamesLauncher" "itchioLauncher" "LegacyGamesLauncher" "HumbleGamesLauncher" "IndieGalaLauncher" "RockstarGamesLauncher" "GlyphLauncher" "MinecraftLauncher" "PlaystationPlusLauncher" "DMMGameLauncher")
@@ -750,11 +761,11 @@ if [[ $options == "Uninstall" ]]; then
         if [[ -f "$epic_games_launcher_path1" ]]; then
             # Epic Games Launcher was installed using the NonSteamLaunchers prefix
             # Add code here to run the Epic Games Launcher uninstaller
-            rm -rf "$HOME/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/Program Files (x86)/Epic Games"
+            rm -rf "${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/Program Files (x86)/Epic Games"
         elif [[ -f "$epic_games_launcher_path2" ]]; then
             # Epic Games Launcher was installed using a separate app ID
             # Add code here to delete the EpicGamesLauncher app ID folder
-            rm -rf "$HOME/.local/share/Steam/steamapps/compatdata/EpicGamesLauncher"
+            rm -rf "${logged_in_home}/.local/share/Steam/steamapps/compatdata/EpicGamesLauncher"
         fi
     fi
 
@@ -764,11 +775,11 @@ if [[ $options == "Uninstall" ]]; then
         if [[ -f "$gog_galaxy_path1" ]]; then
             # GOG Galaxy was installed using the NonSteamLaunchers prefix
             # Add code here to run the GOG Galaxy uninstaller
-            rm -rf "$HOME/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/Program Files (x86)/GOG Galaxy"
+            rm -rf "${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/Program Files (x86)/GOG Galaxy"
         elif [[ -f "$gog_galaxy_path2" ]]; then
             # GOG Galaxy was installed using a separate app ID
             # Add code here to delete the GogGalaxyLauncher app ID folder
-            rm -rf "$HOME/.local/share/Steam/steamapps/compatdata/GogGalaxyLauncher"
+            rm -rf "${logged_in_home}/.local/share/Steam/steamapps/compatdata/GogGalaxyLauncher"
         fi
     fi
 
@@ -778,11 +789,11 @@ if [[ $options == "Uninstall" ]]; then
         if [[ -f "$uplay_path1" ]]; then
             # Uplay was installed using the NonSteamLaunchers prefix
             # Add code here to run the Uplay uninstaller
-            rm -rf "$HOME/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/Program Files (x86)/Ubisoft"
+            rm -rf "${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/Program Files (x86)/Ubisoft"
         elif [[ -f "$uplay_path2" ]]; then
             # Uplay was installed using a separate app ID
             # Add code here to delete the UplayLauncher app ID folder
-            rm -rf "$HOME/.local/share/Steam/steamapps/compatdata/UplayLauncher"
+            rm -rf "${logged_in_home}/.local/share/Steam/steamapps/compatdata/UplayLauncher"
         fi
     fi
 
@@ -792,11 +803,11 @@ if [[ $options == "Uninstall" ]]; then
         if [[ -f "$origin_path1" ]]; then
             # Origin was installed using the NonSteamLaunchers prefix
             # Add code here to run the Origin uninstaller
-            rm -rf "$HOME/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/Program Files (x86)/Origin"
+            rm -rf "${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/Program Files (x86)/Origin"
         elif [[ -f "$origin_path2" ]]; then
             # Origin was installed using a separate app ID
             # Add code here to delete the OriginLauncher app ID folder
-            rm -rf "$HOME/.local/share/Steam/steamapps/compatdata/OriginLauncher"
+            rm -rf "${logged_in_home}/.local/share/Steam/steamapps/compatdata/OriginLauncher"
         fi
     fi
 
@@ -806,11 +817,11 @@ if [[ $options == "Uninstall" ]]; then
         if [[ -f "$battlenet_path1" ]]; then
             # Battle.net was installed using the NonSteamLaunchers prefix
             # Add code here to run the Battle.net uninstaller
-            rm -rf "$HOME/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/Program Files (x86)/Battle.net"
+            rm -rf "${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/Program Files (x86)/Battle.net"
         elif [[ -f "$battlenet_path2" ]]; then
             # Battle.net was installed using a separate app ID
             # Add code here to delete the Battle.netLauncher app ID folder
-            rm -rf "$HOME/.local/share/Steam/steamapps/compatdata/Battle.netLauncher"
+            rm -rf "${logged_in_home}/.local/share/Steam/steamapps/compatdata/Battle.netLauncher"
         fi
     fi
 
@@ -820,11 +831,11 @@ if [[ $options == "Uninstall" ]]; then
         if [[ -f "$eaapp_path1" ]]; then
             # EA App was installed using the NonSteamLaunchers prefix
             # Add code here to run the EA App uninstaller
-            rm -rf "$HOME/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/Program Files/Electronic Arts"
+            rm -rf "${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/Program Files/Electronic Arts"
         elif [[ -f "$eaapp_path2" ]]; then
             # EA App was installed using a separate app ID
             # Add code here to delete the EALauncher app ID folder
-            rm -rf "$HOME/.local/share/Steam/steamapps/compatdata/TheEAappLauncher"
+            rm -rf "${logged_in_home}/.local/share/Steam/steamapps/compatdata/TheEAappLauncher"
         fi
     fi
 
@@ -834,11 +845,11 @@ if [[ $options == "Uninstall" ]]; then
         if [[ -f "$amazongames_path1" ]]; then
             # Amazon Games was installed using the NonSteamLaunchers prefix
             # Add code here to run the Amazon Games uninstaller
-            rm -rf "$HOME/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/users/steamuser/AppData/Local/Amazon Games"
+            rm -rf "${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/users/steamuser/AppData/Local/Amazon Games"
         elif [[ -f "$amazongames_path2" ]]; then
             # Amazon Games was installed using a separate app ID
             # Add code here to delete the AmazonGamesLauncher app ID folder
-            rm -rf "$HOME/.local/share/Steam/steamapps/compatdata/AmazonGamesLauncher"
+            rm -rf "${logged_in_home}/.local/share/Steam/steamapps/compatdata/AmazonGamesLauncher"
         fi
     fi
 
@@ -848,11 +859,11 @@ if [[ $options == "Uninstall" ]]; then
         if [[ -f "$legacygames_path1" ]]; then
             # Legacy Games was installed using the NonSteamLaunchers prefix
             # Add code here to run the Legacy Games uninstaller
-            rm -rf "$HOME/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/Program Files/Legacy Games"
+            rm -rf "${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/Program Files/Legacy Games"
         elif [[ -f "$legacygames_path2" ]]; then
             # Legacy Games was installed using a separate app ID
             # Add code here to delete the LegacyGamesLauncher app ID folder
-            rm -rf "$HOME/.local/share/Steam/steamapps/compatdata/LegacyGamesLauncher"
+            rm -rf "${logged_in_home}/.local/share/Steam/steamapps/compatdata/LegacyGamesLauncher"
         fi
     fi
 
@@ -862,11 +873,11 @@ if [[ $options == "Uninstall" ]]; then
         if [[ -f "$itchio_path1" ]]; then
             # Itch.io was installed using the NonSteamLaunchers prefix
             # Add code here to run the Itch.io uninstaller
-            rm -rf "$HOME/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/users/steamuser/AppData/Local/itch"
+            rm -rf "${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/users/steamuser/AppData/Local/itch"
         elif [[ -f "$itchio_path2" ]]; then
             # Itch.io was installed using a separate app ID
             # Add code here to delete the Itch.ioLauncher app ID folder
-            rm -rf "$HOME/.local/share/Steam/steamapps/compatdata/itchioLauncher"
+            rm -rf "${logged_in_home}/.local/share/Steam/steamapps/compatdata/itchioLauncher"
         fi
     fi
 
@@ -876,11 +887,11 @@ if [[ $options == "Uninstall" ]]; then
         if [[ -f "$humblegames_path1" ]]; then
             # Humble Bundle was installed using the NonSteamLaunchers prefix
             # Add code here to run the Humble Bundle uninstaller
-            rm -rf "$HOME/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/Program Files/Humble App"
+            rm -rf "${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/Program Files/Humble App"
         elif [[ -f "$humblegames_path2" ]]; then
             # Humble Bundle was installed using a separate app ID
             # Add code here to delete the HumbleBundleLauncher app ID folder
-            rm -rf "$HOME/.local/share/Steam/steamapps/compatdata/HumbleGamesLauncher"
+            rm -rf "${logged_in_home}/.local/share/Steam/steamapps/compatdata/HumbleGamesLauncher"
         fi
     fi
 
@@ -890,11 +901,11 @@ if [[ $options == "Uninstall" ]]; then
         if [[ -f "$indiegala_path1" ]]; then
             # IndieGala was installed using the NonSteamLaunchers prefix
             # Add code here to run the IndieGala uninstaller
-            rm -rf "$HOME/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/Program Files/IGClient"
+            rm -rf "${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/Program Files/IGClient"
         elif [[ -f "$indiegala_path2" ]]; then
             # IndieGala was installed using a separate app ID
             # Add code here to delete the IndieGalaLauncher app ID folder
-            rm -rf "$HOME/.local/share/Steam/steamapps/compatdata/IndieGalaLauncher"
+            rm -rf "${logged_in_home}/.local/share/Steam/steamapps/compatdata/IndieGalaLauncher"
         fi
     fi
 
@@ -904,11 +915,11 @@ if [[ $options == "Uninstall" ]]; then
         if [[ -f "$rockstar_path1" ]]; then
             # Rockstar Games was installed using the NonSteamLaunchers prefix
             # Add code here to run the Rockstar Games uninstaller
-            rm -rf "$HOME/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/Program Files/Rockstar Games"
+            rm -rf "${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/Program Files/Rockstar Games"
         elif [[ -f "$rockstar_path2" ]]; then
             # Rockstar Games was installed using a separate app ID
             # Add code here to delete the RockstarGamesLauncher app ID folder
-            rm -rf "$HOME/.local/share/Steam/steamapps/compatdata/RockstarGamesLauncher"
+            rm -rf "${logged_in_home}/.local/share/Steam/steamapps/compatdata/RockstarGamesLauncher"
         fi
     fi
 
@@ -918,11 +929,11 @@ if [[ $options == "Uninstall" ]]; then
         if [[ -f "$glyph_path1" ]]; then
             # Glyph was installed using NonSteamLaunchers prefix
             # Add code here to run the Glyph uninstaller
-            rm -rf "$HOME/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/Program Files (x86)/Glyph"
+            rm -rf "${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/Program Files (x86)/Glyph"
         elif [[ -f "$glyph_path2" ]]; then
             # Glyph was installed using a separate app ID
             # Add code here to delete the GlyphLauncher app ID folder
-            rm -rf "$HOME/.local/share/Steam/steamapps/compatdata/GlyphLauncher"
+            rm -rf "${logged_in_home}/.local/share/Steam/steamapps/compatdata/GlyphLauncher"
         fi
     fi
 
@@ -932,11 +943,11 @@ if [[ $options == "Uninstall" ]]; then
         if [[ -f "$minecraft_path1" ]]; then
             # Minecraft was installed using NonSteamLaunchers prefix
             # Add code here to run the Minecraft uninstaller
-            rm -rf "$HOME/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/Program Files (x86)/Minecraft Launcher"
+            rm -rf "${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/Program Files (x86)/Minecraft Launcher"
         elif [[ -f "$minecraft_path2" ]]; then
             # Minecraft was installed using a separate app ID
             # Add code here to delete the MinecraftLauncher app ID folder
-            rm -rf "$HOME/.local/share/Steam/steamapps/compatdata/MinecraftLauncher"
+            rm -rf "${logged_in_home}/.local/share/Steam/steamapps/compatdata/MinecraftLauncher"
         fi
     fi
 
@@ -946,11 +957,11 @@ if [[ $options == "Uninstall" ]]; then
         if [[ -f "$psplus_path1" ]]; then
             # Playstation was installed using NonSteamLaunchers prefix
             # Add code here to run the Playstation uninstaller
-            rm -rf "$HOME/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/Program Files (x86)/PlayStationPlus"
+            rm -rf "${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/Program Files (x86)/PlayStationPlus"
         elif [[ -f "$psplus_path2" ]]; then
             # Playstation was installed using a separate app ID
             # Add code here to delete the PlaystationPlusLauncher app ID folder
-            rm -rf "$HOME/.local/share/Steam/steamapps/compatdata/PlaystationPlusLauncher"
+            rm -rf "${logged_in_home}/.local/share/Steam/steamapps/compatdata/PlaystationPlusLauncher"
         fi
     fi
 
@@ -960,11 +971,11 @@ if [[ $options == "Uninstall" ]]; then
         if [[ -f "$dmm_path1" ]]; then
             # DMMGameLauncher was installed using NonSteamLaunchers prefix
             # Add code here to run the DMMGameLauncher uninstaller
-            rm -rf "$HOME/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/Program Files (x86)/DMMGamePlayer"
+            rm -rf "${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/Program Files (x86)/DMMGamePlayer"
         elif [[ -f "$dmm_path2" ]]; then
             # DMMGameLauncher was installed using a separate app ID
             # Add code here to delete the DMMGameLauncher app ID folder
-            rm -rf "$HOME/.local/share/Steam/steamapps/compatdata/DMMGameLauncher"
+            rm -rf "${logged_in_home}/.local/share/Steam/steamapps/compatdata/DMMGameLauncher"
         fi
     fi
     # Display a message to the user indicating that the operation was successful
@@ -995,9 +1006,9 @@ if [[ $options == "Move to SD Card" ]]; then
     new_dir="/run/media/mmcblk0p1"
 
     # Check if NonSteamLaunchers is installed
-    if [[ -d "$HOME/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers" ]]; then
+    if [[ -d "${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers" ]]; then
         # NonSteamLaunchers is installed
-        original_dir="$HOME/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers"
+        original_dir="${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers"
     else
         # NonSteamLaunchers is not installed
         original_dir=""
@@ -1013,9 +1024,9 @@ if [[ $options == "Move to SD Card" ]]; then
     fi
 
     # Check if EpicGamesLauncher is installed
-    if [[ -d "$HOME/.local/share/Steam/steamapps/compatdata/EpicGamesLauncher" ]]; then
+    if [[ -d "${logged_in_home}/.local/share/Steam/steamapps/compatdata/EpicGamesLauncher" ]]; then
         # EpicGamesLauncher is installed
-        original_dir="$HOME/.local/share/Steam/steamapps/compatdata/EpicGamesLauncher"
+        original_dir="${logged_in_home}/.local/share/Steam/steamapps/compatdata/EpicGamesLauncher"
     else
         # EpicGamesLauncher is not installed
         original_dir=""
@@ -1031,9 +1042,9 @@ if [[ $options == "Move to SD Card" ]]; then
     fi
 
     # Check if GogGalaxyLauncher is installed
-    if [[ -d "$HOME/.local/share/Steam/steamapps/compatdata/GogGalaxyLauncher" ]]; then
+    if [[ -d "${logged_in_home}/.local/share/Steam/steamapps/compatdata/GogGalaxyLauncher" ]]; then
         # GogGalaxyLauncher is installed
-        original_dir="$HOME/.local/share/Steam/steamapps/compatdata/GogGalaxyLauncher"
+        original_dir="${logged_in_home}/.local/share/Steam/steamapps/compatdata/GogGalaxyLauncher"
     else
         # GogGalaxyLauncher is not installed
         original_dir=""
@@ -1049,9 +1060,9 @@ if [[ $options == "Move to SD Card" ]]; then
     fi
 
     # Check if OriginLauncher is installed
-    if [[ -d "$HOME/.local/share/Steam/steamapps/compatdata/OriginLauncher" ]]; then
+    if [[ -d "${logged_in_home}/.local/share/Steam/steamapps/compatdata/OriginLauncher" ]]; then
         # OriginLauncher is installed
-        original_dir="$HOME/.local/share/Steam/steamapps/compatdata/OriginLauncher"
+        original_dir="${logged_in_home}/.local/share/Steam/steamapps/compatdata/OriginLauncher"
     else
         # OriginLauncher is not installed
         original_dir=""
@@ -1067,9 +1078,9 @@ if [[ $options == "Move to SD Card" ]]; then
     fi
 
     # Check if UplayLauncher is installed
-    if [[ -d "$HOME/.local/share/Steam/steamapps/compatdata/UplayLauncher" ]]; then
+    if [[ -d "${logged_in_home}/.local/share/Steam/steamapps/compatdata/UplayLauncher" ]]; then
         # UplayLauncher is installed
-        original_dir="$HOME/.local/share/Steam/steamapps/compatdata/UplayLauncher"
+        original_dir="${logged_in_home}/.local/share/Steam/steamapps/compatdata/UplayLauncher"
     else
         # UplayLauncher is not installed
         original_dir=""
@@ -1085,9 +1096,9 @@ if [[ $options == "Move to SD Card" ]]; then
     fi
 
     # Check if Battle.netLauncher is installed
-    if [[ -d "$HOME/.local/share/Steam/steamapps/compatdata/Battle.netLauncher" ]]; then
+    if [[ -d "${logged_in_home}/.local/share/Steam/steamapps/compatdata/Battle.netLauncher" ]]; then
         # Battle.netLauncher is installed
-        original_dir="$HOME/.local/share/Steam/steamapps/compatdata/Battle.netLauncher"
+        original_dir="${logged_in_home}/.local/share/Steam/steamapps/compatdata/Battle.netLauncher"
     else
         # Battle.netLauncher is not installed
         original_dir=""
@@ -1103,9 +1114,9 @@ if [[ $options == "Move to SD Card" ]]; then
     fi
 
     # Check if TheEAappLauncher is installed
-    if [[ -d "$HOME/.local/share/Steam/steamapps/compatdata/TheEAappLauncher" ]]; then
+    if [[ -d "${logged_in_home}/.local/share/Steam/steamapps/compatdata/TheEAappLauncher" ]]; then
         # TheEAappLauncher is installed
-        original_dir="$HOME/.local/share/Steam/steamapps/compatdata/TheEAappLauncher"
+        original_dir="${logged_in_home}/.local/share/Steam/steamapps/compatdata/TheEAappLauncher"
     else
         # TheEAappLauncher is not installed
         original_dir=""
@@ -1121,9 +1132,9 @@ if [[ $options == "Move to SD Card" ]]; then
     fi
 
     # Check if AmazonGamesLauncher is installed
-    if [[ -d "$HOME/.local/share/Steam/steamapps/compatdata/AmazonGamesLauncher" ]]; then
+    if [[ -d "${logged_in_home}/.local/share/Steam/steamapps/compatdata/AmazonGamesLauncher" ]]; then
         # AmazonGamesLauncher is installed
-        original_dir="$HOME/.local/share/Steam/steamapps/compatdata/AmazonGamesLauncher"
+        original_dir="${logged_in_home}/.local/share/Steam/steamapps/compatdata/AmazonGamesLauncher"
     else
         # AmazonGamesLauncher is not installed
         original_dir=""
@@ -1139,9 +1150,9 @@ if [[ $options == "Move to SD Card" ]]; then
     fi
 
     # Check if itchioLauncher is installed
-    if [[ -d "$HOME/.local/share/Steam/steamapps/compatdata/itchioLauncher" ]]; then
+    if [[ -d "${logged_in_home}/.local/share/Steam/steamapps/compatdata/itchioLauncher" ]]; then
         # itchioLauncher is installed
-        original_dir="$HOME/.local/share/Steam/steamapps/compatdata/itchioLauncher"
+        original_dir="${logged_in_home}/.local/share/Steam/steamapps/compatdata/itchioLauncher"
     else
         # itchioLauncher is not installed
         original_dir=""
@@ -1157,9 +1168,9 @@ if [[ $options == "Move to SD Card" ]]; then
     fi
 
     # Check if LegacyGamesLauncher is installed
-    if [[ -d "$HOME/.local/share/Steam/steamapps/compatdata/LegacyGamesLauncher" ]]; then
+    if [[ -d "${logged_in_home}/.local/share/Steam/steamapps/compatdata/LegacyGamesLauncher" ]]; then
         # LegacyGamesLauncher is installed
-        original_dir="$HOME/.local/share/Steam/steamapps/compatdata/LegacyGamesLauncher"
+        original_dir="${logged_in_home}/.local/share/Steam/steamapps/compatdata/LegacyGamesLauncher"
     else
         # LegacyGamesLauncher is not installed
         original_dir=""
@@ -1175,9 +1186,9 @@ if [[ $options == "Move to SD Card" ]]; then
     fi
 
     # Check if HumbleGamesLauncher is installed
-    if [[ -d "$HOME/.local/share/Steam/steamapps/compatdata/HumbleGamesLauncher" ]]; then
+    if [[ -d "${logged_in_home}/.local/share/Steam/steamapps/compatdata/HumbleGamesLauncher" ]]; then
         # HumbleGamesLauncher is installed
-        original_dir="$HOME/.local/share/Steam/steamapps/compatdata/HumbleGamesLauncher"
+        original_dir="${logged_in_home}/.local/share/Steam/steamapps/compatdata/HumbleGamesLauncher"
     else
         # HumbleGamesLauncher is not installed
         original_dir=""
@@ -1193,9 +1204,9 @@ if [[ $options == "Move to SD Card" ]]; then
     fi
 
     # Check if IndieGalaLauncher is installed
-    if [[ -d "$HOME/.local/share/Steam/steamapps/compatdata/IndieGalaLauncher" ]]; then
+    if [[ -d "${logged_in_home}/.local/share/Steam/steamapps/compatdata/IndieGalaLauncher" ]]; then
         # IndieGalaLauncher is installed
-        original_dir="$HOME/.local/share/Steam/steamapps/compatdata/IndieGalaLauncher"
+        original_dir="${logged_in_home}/.local/share/Steam/steamapps/compatdata/IndieGalaLauncher"
     else
         # Indie Gala Launcher is not installed
         original_dir=""
@@ -1211,9 +1222,9 @@ if [[ $options == "Move to SD Card" ]]; then
     fi
 
     # Check if RockstarGamesLauncher is installed
-    if [[ -d "$HOME/.local/share/Steam/steamapps/compatdata/RockstarGamesLauncher" ]]; then
+    if [[ -d "${logged_in_home}/.local/share/Steam/steamapps/compatdata/RockstarGamesLauncher" ]]; then
         # RockstarGamesLauncher is installed
-        original_dir="$HOME/.local/share/Steam/steamapps/compatdata/RockstarGamesLauncher"
+        original_dir="${logged_in_home}/.local/share/Steam/steamapps/compatdata/RockstarGamesLauncher"
     else
         # Rockstar Games Launcher is not installed
         original_dir=""
@@ -1229,9 +1240,9 @@ if [[ $options == "Move to SD Card" ]]; then
     fi
 
     # Check if Glyph is installed
-    if [[ -d "$HOME/.local/share/Steam/steamapps/compatdata/GlyphLauncher" ]]; then
+    if [[ -d "${logged_in_home}/.local/share/Steam/steamapps/compatdata/GlyphLauncher" ]]; then
         # Glyph is installed
-        original_dir="$HOME/.local/share/Steam/steamapps/compatdata/GlyphLauncher"
+        original_dir="${logged_in_home}/.local/share/Steam/steamapps/compatdata/GlyphLauncher"
     else
         # Glyph is not installed
         original_dir=""
@@ -1247,9 +1258,9 @@ if [[ $options == "Move to SD Card" ]]; then
     fi
 
     # Check if Minecraft is installed
-    if [[ -d "$HOME/.local/share/Steam/steamapps/compatdata/MinecraftLauncher" ]]; then
+    if [[ -d "${logged_in_home}/.local/share/Steam/steamapps/compatdata/MinecraftLauncher" ]]; then
         # Minecraft is installed
-        original_dir="$HOME/.local/share/Steam/steamapps/compatdata/MinecraftLauncher"
+        original_dir="${logged_in_home}/.local/share/Steam/steamapps/compatdata/MinecraftLauncher"
     else
         # Minecraft is not installed
         original_dir=""
@@ -1292,14 +1303,14 @@ fi
 if [[ $options == "Find Games" ]]; then
     # The Find Games button was clicked
     # Check if the NonSteamLaunchersInstallation directory exists
-    if [[ ! -d "$HOME/Downloads/NonSteamLaunchersInstallation" ]]; then
+    if [[ ! -d "${logged_in_home}/Downloads/NonSteamLaunchersInstallation" ]]; then
         # The directory does not exist, so create it
-        mkdir -p "$HOME/Downloads/NonSteamLaunchersInstallation"
+        mkdir -p "${logged_in_home}/Downloads/NonSteamLaunchersInstallation"
     fi
 
     # Download the latest BoilR from GitHub (Linux version)
-    mkdir -p "$HOME/Downloads/NonSteamLaunchersInstallation"
-    cd "$HOME/Downloads/NonSteamLaunchersInstallation"
+    mkdir -p "${logged_in_home}/Downloads/NonSteamLaunchersInstallation"
+    cd "${logged_in_home}/Downloads/NonSteamLaunchersInstallation"
     wget https://github.com/PhilipK/BoilR/releases/download/v.1.9.1/linux_BoilR
 
     # Add execute permissions to the linux_BoilR file
@@ -1321,8 +1332,8 @@ echo "0"
 echo "# Detecting, Updating and Installing GE-Proton"
 
 # check to make sure compatabilitytools.d exists and makes it if it doesnt
-    if [ ! -d "$HOME/.steam/root/compatibilitytools.d" ]; then
-    mkdir -p "$HOME/.steam/root/compatibilitytools.d"
+    if [ ! -d "${logged_in_home}/.steam/root/compatibilitytools.d" ]; then
+    mkdir -p "${logged_in_home}/.steam/root/compatibilitytools.d"
 fi
 
 # Create NonSteamLaunchersInstallation subfolder in Downloads folder
@@ -1498,8 +1509,8 @@ if [ -n "$options" ]; then
     # User selected at least one launcher
 
     # Create app id folder in compatdata folder if it doesn't exist and if the user selected to use a single app ID folder
-    if [ "$use_separate_appids" = false ] && [ ! -d "$HOME/.local/share/Steam/steamapps/compatdata/$appid" ]; then
-        mkdir -p "$HOME/.local/share/Steam/steamapps/compatdata/$appid"
+    if [ "$use_separate_appids" = false ] && [ ! -d "${logged_in_home}/.local/share/Steam/steamapps/compatdata/$appid" ]; then
+        mkdir -p "${logged_in_home}/.local/share/Steam/steamapps/compatdata/$appid"
     fi
 fi
 
@@ -1507,13 +1518,13 @@ fi
 cd $proton_dir
 
 # Set the STEAM_RUNTIME environment variable
-export STEAM_RUNTIME="$HOME/.steam/root/ubuntu12_32/steam-runtime/run.sh"
+export STEAM_RUNTIME="${logged_in_home}/.steam/root/ubuntu12_32/steam-runtime/run.sh"
 
 # Set the STEAM_COMPAT_CLIENT_INSTALL_PATH environment variable
-export STEAM_COMPAT_CLIENT_INSTALL_PATH="$HOME/.local/share/Steam"
+export STEAM_COMPAT_CLIENT_INSTALL_PATH="${logged_in_home}/.local/share/Steam"
 
 # Set the STEAM_COMPAT_DATA_PATH environment variable for the first file
-export STEAM_COMPAT_DATA_PATH="$HOME/.local/share/Steam/steamapps/compatdata/${appid}"
+export STEAM_COMPAT_DATA_PATH="${logged_in_home}/.local/share/Steam/steamapps/compatdata/${appid}"
 
 wait
 echo "30"
@@ -1526,24 +1537,24 @@ if [[ $options == *"Epic Games"* ]]; then
 
     # Set the appid for the Epic Games Launcher
     if [ "$use_separate_appids" = true ]; then
-    appid=EpicGamesLauncher
+        appid=EpicGamesLauncher
     else
-    appid=NonSteamLaunchers
+        appid=NonSteamLaunchers
     fi
 
     # Create app id folder in compatdata folder if it doesn't exist
-    if [ ! -d "$HOME/.local/share/Steam/steamapps/compatdata/$appid" ]; then
-        mkdir -p "$HOME/.local/share/Steam/steamapps/compatdata/$appid"
+    if [ ! -d "${logged_in_home}/.local/share/Steam/steamapps/compatdata/$appid" ]; then
+        mkdir -p "${logged_in_home}/.local/share/Steam/steamapps/compatdata/$appid"
     fi
 
     # Change working directory to Proton's
     cd $proton_dir
 
     # Set the STEAM_COMPAT_CLIENT_INSTALL_PATH environment variable
-    export STEAM_COMPAT_CLIENT_INSTALL_PATH="$HOME/.local/share/Steam"
+    export STEAM_COMPAT_CLIENT_INSTALL_PATH="${logged_in_home}/.local/share/Steam"
 
     # Set the STEAM_COMPAT_DATA_PATH environment variable for Epic Games Launcher
-    export STEAM_COMPAT_DATA_PATH="$HOME/.local/share/Steam/steamapps/compatdata/${appid}"
+    export STEAM_COMPAT_DATA_PATH="${logged_in_home}/.local/share/Steam/steamapps/compatdata/${appid}"
 
     # Download MSI file
     if [ ! -f "$msi_file" ]; then
@@ -1575,18 +1586,18 @@ if [[ $options == *"GOG Galaxy"* ]]; then
     fi
 
     # Create app id folder in compatdata folder if it doesn't exist
-    if [ ! -d "$HOME/.local/share/Steam/steamapps/compatdata/$appid" ]; then
-        mkdir -p "$HOME/.local/share/Steam/steamapps/compatdata/$appid"
+    if [ ! -d "${logged_in_home}/.local/share/Steam/steamapps/compatdata/$appid" ]; then
+        mkdir -p "${logged_in_home}/.local/share/Steam/steamapps/compatdata/$appid"
     fi
 
     # Change working directory to Proton's
     cd "$proton_dir"
 
     # Set the STEAM_COMPAT_CLIENT_INSTALL_PATH environment variable
-    export STEAM_COMPAT_CLIENT_INSTALL_PATH="$HOME/.local/share/Steam"
+    export STEAM_COMPAT_CLIENT_INSTALL_PATH="${logged_in_home}/.local/share/Steam"
 
     # Set the STEAM_COMPAT_DATA_PATH environment variable for Epic Games Launcher
-    export STEAM_COMPAT_DATA_PATH="$HOME/.local/share/Steam/steamapps/compatdata/${appid}"
+    export STEAM_COMPAT_DATA_PATH="${logged_in_home}/.local/share/Steam/steamapps/compatdata/${appid}"
 
     # Download EXE file
     if [ ! -f "$exe_file" ]; then
@@ -1611,7 +1622,7 @@ if [[ $options == *"GOG Galaxy"* ]]; then
     done
 
     # Navigate to %LocalAppData%\Temp
-    cd "$HOME/.local/share/Steam/steamapps/compatdata/$appid/pfx/drive_c/users/steamuser/Temp"
+    cd "${logged_in_home}/.local/share/Steam/steamapps/compatdata/$appid/pfx/drive_c/users/steamuser/Temp"
 
     # Find the GalaxyInstaller_XXXXX folder and copy it to C:\Downloads
     galaxy_installer_folder=$(find . -maxdepth 1 -type d -name "GalaxyInstaller_*" | head -n1)
@@ -1648,18 +1659,18 @@ if [[ $options == *"Uplay"* ]]; then
     fi
 
     # Create app id folder in compatdata folder if it doesn't exist
-    if [ ! -d "$HOME/.local/share/Steam/steamapps/compatdata/$appid" ]; then
-        mkdir -p "$HOME/.local/share/Steam/steamapps/compatdata/$appid"
+    if [ ! -d "${logged_in_home}/.local/share/Steam/steamapps/compatdata/$appid" ]; then
+        mkdir -p "${logged_in_home}/.local/share/Steam/steamapps/compatdata/$appid"
     fi
 
     # Change working directory to Proton's
     cd $proton_dir
 
     # Set the STEAM_COMPAT_CLIENT_INSTALL_PATH environment variable
-    export STEAM_COMPAT_CLIENT_INSTALL_PATH="$HOME/.local/share/Steam"
+    export STEAM_COMPAT_CLIENT_INSTALL_PATH="${logged_in_home}/.local/share/Steam"
 
     # Set the STEAM_COMPAT_DATA_PATH environment variable for Epic Games Launcher
-    export STEAM_COMPAT_DATA_PATH="$HOME/.local/share/Steam/steamapps/compatdata/${appid}"
+    export STEAM_COMPAT_DATA_PATH="${logged_in_home}/.local/share/Steam/steamapps/compatdata/${appid}"
 
     # Download UBI file
     if [ ! -f "$ubi_file" ]; then
@@ -1690,18 +1701,18 @@ if [[ $options == *"Origin"* ]]; then
     fi
 
     # Create app id folder in compatdata folder if it doesn't exist
-    if [ ! -d "$HOME/.local/share/Steam/steamapps/compatdata/$appid" ]; then
-        mkdir -p "$HOME/.local/share/Steam/steamapps/compatdata/$appid"
+    if [ ! -d "${logged_in_home}/.local/share/Steam/steamapps/compatdata/$appid" ]; then
+        mkdir -p "${logged_in_home}/.local/share/Steam/steamapps/compatdata/$appid"
     fi
 
     # Change working directory to Proton's
     cd $proton_dir
 
     # Set the STEAM_COMPAT_CLIENT_INSTALL_PATH environment variable
-    export STEAM_COMPAT_CLIENT_INSTALL_PATH="$HOME/.local/share/Steam"
+    export STEAM_COMPAT_CLIENT_INSTALL_PATH="${logged_in_home}/.local/share/Steam"
 
     # Set the STEAM_COMPAT_DATA_PATH environment variable for Epic Games Launcher
-    export STEAM_COMPAT_DATA_PATH="$HOME/.local/share/Steam/steamapps/compatdata/${appid}"
+    export STEAM_COMPAT_DATA_PATH="${logged_in_home}/.local/share/Steam/steamapps/compatdata/${appid}"
 
     # Download ORIGIN file
     if [ ! -f "$origin_file" ]; then
@@ -1714,20 +1725,20 @@ if [[ $options == *"Origin"* ]]; then
     "$STEAM_RUNTIME" "$proton_dir/proton" run "$origin_file" /SILENT
 
     # Edit local.xml
-    sed -i 's|</Settings>|    <Setting value="true" key="MigrationDisabled" type="1"/>\n    <Setting key="UpdateURL" value="" type="10"/>\n    <Setting key="AutoPatchGlobal" value="false" type="1"/>\n    <Setting key="AutoUpdate" value="false" type="1"/>\n</Settings>|' "$HOME/.local/share/Steam/steamapps/compatdata/$appid/pfx/drive_c/ProgramData/Origin/local.xml"
+    sed -i 's|</Settings>|    <Setting value="true" key="MigrationDisabled" type="1"/>\n    <Setting key="UpdateURL" value="" type="10"/>\n    <Setting key="AutoPatchGlobal" value="false" type="1"/>\n    <Setting key="AutoUpdate" value="false" type="1"/>\n</Settings>|' "${logged_in_home}/.local/share/Steam/steamapps/compatdata/$appid/pfx/drive_c/ProgramData/Origin/local.xml"
 
     # Terminate any processes with the name Origin.exe
     pkill Origin.exe
 
     # Download version.dll file
-    if [ ! -f "$HOME/Downloads/NonSteamLaunchersInstallation/version.dll" ]; then
+    if [ ! -f "${logged_in_home}/Downloads/NonSteamLaunchersInstallation/version.dll" ]; then
         echo "Downloading version.dll file"
         wget https://github.com/p0358/Fuck_off_EA_App/releases/download/v2/version.dll -O ~/Downloads/NonSteamLaunchersInstallation/version.dll
     fi
 
     # Move version.dll file to desired location
     echo "Moving version.dll file to desired location"
-    mv ~/Downloads/NonSteamLaunchersInstallation/version.dll "$HOME/.local/share/Steam/steamapps/compatdata/$appid/pfx/drive_c/Program Files (x86)/Origin/"
+    mv ~/Downloads/NonSteamLaunchersInstallation/version.dll "${logged_in_home}/.local/share/Steam/steamapps/compatdata/$appid/pfx/drive_c/Program Files (x86)/Origin/"
 
     # Wait for the ORIGIN file to finish running
     wait
@@ -1750,18 +1761,18 @@ if [[ $options == *"Battle.net"* ]]; then
     fi
 
     # Create app id folder in compatdata folder if it doesn't exist
-    if [ ! -d "$HOME/.local/share/Steam/steamapps/compatdata/$appid" ]; then
-        mkdir -p "$HOME/.local/share/Steam/steamapps/compatdata/$appid"
+    if [ ! -d "${logged_in_home}/.local/share/Steam/steamapps/compatdata/$appid" ]; then
+        mkdir -p "${logged_in_home}/.local/share/Steam/steamapps/compatdata/$appid"
     fi
 
     # Change working directory to Proton's
     cd $proton_dir
 
     # Set the STEAM_COMPAT_CLIENT_INSTALL_PATH environment variable
-    export STEAM_COMPAT_CLIENT_INSTALL_PATH="$HOME/.local/share/Steam"
+    export STEAM_COMPAT_CLIENT_INSTALL_PATH="${logged_in_home}/.local/share/Steam"
 
     # Set the STEAM_COMPAT_DATA_PATH environment variable for Epic Games Launcher
-    export STEAM_COMPAT_DATA_PATH="$HOME/.local/share/Steam/steamapps/compatdata/${appid}"
+    export STEAM_COMPAT_DATA_PATH="${logged_in_home}/.local/share/Steam/steamapps/compatdata/${appid}"
 
     # Download BATTLE file
     if [ ! -f "$battle_file" ]; then
@@ -1792,18 +1803,18 @@ if [[ $options == *"Amazon Games"* ]]; then
     fi
 
     # Create app id folder in compatdata folder if it doesn't exist
-    if [ ! -d "$HOME/.local/share/Steam/steamapps/compatdata/$appid" ]; then
-        mkdir -p "$HOME/.local/share/Steam/steamapps/compatdata/$appid"
+    if [ ! -d "${logged_in_home}/.local/share/Steam/steamapps/compatdata/$appid" ]; then
+        mkdir -p "${logged_in_home}/.local/share/Steam/steamapps/compatdata/$appid"
     fi
 
     # Change working directory to Proton's
     cd $proton_dir
 
     # Set the STEAM_COMPAT_CLIENT_INSTALL_PATH environment variable
-    export STEAM_COMPAT_CLIENT_INSTALL_PATH="$HOME/.local/share/Steam"
+    export STEAM_COMPAT_CLIENT_INSTALL_PATH="${logged_in_home}/.local/share/Steam"
 
     # Set the STEAM_COMPAT_DATA_PATH environment variable for Amazon Games Launcher
-    export STEAM_COMPAT_DATA_PATH="$HOME/.local/share/Steam/steamapps/compatdata/${appid}"
+    export STEAM_COMPAT_DATA_PATH="${logged_in_home}/.local/share/Steam/steamapps/compatdata/${appid}"
 
     # Download Amazon file
     if [ ! -f "$amazon_file" ]; then
@@ -1845,18 +1856,18 @@ if [[ $options == *"EA App"* ]]; then
     fi
 
     # Create app id folder in compatdata folder if it doesn't exist
-    if [ ! -d "$HOME/.local/share/Steam/steamapps/compatdata/$appid" ]; then
-        mkdir -p "$HOME/.local/share/Steam/steamapps/compatdata/$appid"
+    if [ ! -d "${logged_in_home}/.local/share/Steam/steamapps/compatdata/$appid" ]; then
+        mkdir -p "${logged_in_home}/.local/share/Steam/steamapps/compatdata/$appid"
     fi
 
     # Change working directory to Proton's
     cd $proton_dir
 
     # Set the STEAM_COMPAT_CLIENT_INSTALL_PATH environment variable
-    export STEAM_COMPAT_CLIENT_INSTALL_PATH="$HOME/.local/share/Steam"
+    export STEAM_COMPAT_CLIENT_INSTALL_PATH="${logged_in_home}/.local/share/Steam"
 
     # Set the STEAM_COMPAT_DATA_PATH environment variable for Epic Games Launcher
-    export STEAM_COMPAT_DATA_PATH="$HOME/.local/share/Steam/steamapps/compatdata/${appid}"
+    export STEAM_COMPAT_DATA_PATH="${logged_in_home}/.local/share/Steam/steamapps/compatdata/${appid}"
 
     # Download EA App file
     if [ ! -f "$eaapp_file" ]; then
@@ -1902,18 +1913,18 @@ if [[ $options == *"itch.io"* ]]; then
     fi
 
     # Create app id folder in compatdata folder if it doesn't exist
-    if [ ! -d "$HOME/.local/share/Steam/steamapps/compatdata/$appid" ]; then
-        mkdir -p "$HOME/.local/share/Steam/steamapps/compatdata/$appid"
+    if [ ! -d "${logged_in_home}/.local/share/Steam/steamapps/compatdata/$appid" ]; then
+        mkdir -p "${logged_in_home}/.local/share/Steam/steamapps/compatdata/$appid"
     fi
 
     # Change working directory to Proton's
     cd $proton_dir
 
     # Set the STEAM_COMPAT_CLIENT_INSTALL_PATH environment variable
-    export STEAM_COMPAT_CLIENT_INSTALL_PATH="$HOME/.local/share/Steam"
+    export STEAM_COMPAT_CLIENT_INSTALL_PATH="${logged_in_home}/.local/share/Steam"
 
     # Set the STEAM_COMPAT_DATA_PATH environment variable for Epic Games Launcher
-    export STEAM_COMPAT_DATA_PATH="$HOME/.local/share/Steam/steamapps/compatdata/${appid}"
+    export STEAM_COMPAT_DATA_PATH="${logged_in_home}/.local/share/Steam/steamapps/compatdata/${appid}"
 
     # Download itchio file
     if [ ! -f "$itchio_file" ]; then
@@ -1943,18 +1954,18 @@ if [[ $options == *"Legacy Games"* ]]; then
     fi
 
     # Create app id folder in compatdata folder if it doesn't exist
-    if [ ! -d "$HOME/.local/share/Steam/steamapps/compatdata/$appid" ]; then
-        mkdir -p "$HOME/.local/share/Steam/steamapps/compatdata/$appid"
+    if [ ! -d "${logged_in_home}/.local/share/Steam/steamapps/compatdata/$appid" ]; then
+        mkdir -p "${logged_in_home}/.local/share/Steam/steamapps/compatdata/$appid"
     fi
 
     # Change working directory to Proton's
     cd $proton_dir
 
     # Set the STEAM_COMPAT_CLIENT_INSTALL_PATH environment variable
-    export STEAM_COMPAT_CLIENT_INSTALL_PATH="$HOME/.local/share/Steam"
+    export STEAM_COMPAT_CLIENT_INSTALL_PATH="${logged_in_home}/.local/share/Steam"
 
     # Set the STEAM_COMPAT_DATA_PATH environment variable for Legacy Games Launcher
-    export STEAM_COMPAT_DATA_PATH="$HOME/.local/share/Steam/steamapps/compatdata/${appid}"
+    export STEAM_COMPAT_DATA_PATH="${logged_in_home}/.local/share/Steam/steamapps/compatdata/${appid}"
 
     # Download Legacy file
     if [ ! -f "$legacygames_file" ]; then
@@ -1978,21 +1989,21 @@ if [[ $options == *"Humble Games Collection"* ]]; then
     # User selected Humble Games Launcher
     echo "User selected Humble Games Collection"
 
-    if [[ ! -f "$HOME/.local/share/applications/Humble-scheme-handler.desktop" ]]; then
+    if [[ ! -f "${logged_in_home}/.local/share/applications/Humble-scheme-handler.desktop" ]]; then
         wget https://raw.githubusercontent.com/moraroy/NonSteamLaunchers-On-Steam-Deck/main/humble-app/Humble-scheme-handler.desktop -O /tmp/Humble-scheme-handler.desktop
         sed -i "s/APPID/$appid/" /tmp/Humble-scheme-handler.desktop
-        desktop-file-install --rebuild-mime-info-cache --dir=$HOME/.local/share/applications /tmp/Humble-scheme-handler.desktop
+        desktop-file-install --rebuild-mime-info-cache --dir=${logged_in_home}/.local/share/applications /tmp/Humble-scheme-handler.desktop
         rm -rf /tmp/Humble-scheme-handler.desktop
     fi
 
-    if [[ ! -f "$HOME/.local/share/Steam/steamapps/compatdata/$appid/pfx/handle-humble-scheme" ]]; then
-        wget https://raw.githubusercontent.com/moraroy/NonSteamLaunchers-On-Steam-Deck/main/humble-app/handle-humble-scheme -O "$HOME/.local/share/Steam/steamapps/compatdata/$appid/pfx/handle-humble-scheme"
-        sed -i "s/APPID/$appid/" "$HOME/.local/share/Steam/steamapps/compatdata/$appid/pfx/handle-humble-scheme"
-        chmod +x "$HOME/.local/share/Steam/steamapps/compatdata/$appid/pfx/handle-humble-scheme"
+    if [[ ! -f "${logged_in_home}/.local/share/Steam/steamapps/compatdata/$appid/pfx/handle-humble-scheme" ]]; then
+        wget https://raw.githubusercontent.com/moraroy/NonSteamLaunchers-On-Steam-Deck/main/humble-app/handle-humble-scheme -O "${logged_in_home}/.local/share/Steam/steamapps/compatdata/$appid/pfx/handle-humble-scheme"
+        sed -i "s/APPID/$appid/" "${logged_in_home}/.local/share/Steam/steamapps/compatdata/$appid/pfx/handle-humble-scheme"
+        chmod +x "${logged_in_home}/.local/share/Steam/steamapps/compatdata/$appid/pfx/handle-humble-scheme"
     fi
 
-    if [[ ! -f "$HOME/.local/share/Steam/steamapps/compatdata/$appid/pfx/start-humble.cmd" ]]; then
-        wget https://raw.githubusercontent.com/moraroy/NonSteamLaunchers-On-Steam-Deck/main/humble-app/start-humble.cmd -O "$HOME/.local/share/Steam/steamapps/compatdata/$appid/pfx/start-humble.cmd"
+    if [[ ! -f "${logged_in_home}/.local/share/Steam/steamapps/compatdata/$appid/pfx/start-humble.cmd" ]]; then
+        wget https://raw.githubusercontent.com/moraroy/NonSteamLaunchers-On-Steam-Deck/main/humble-app/start-humble.cmd -O "${logged_in_home}/.local/share/Steam/steamapps/compatdata/$appid/pfx/start-humble.cmd"
     fi
 
     # Set the appid for the Humble Games Launcher
@@ -2003,18 +2014,18 @@ if [[ $options == *"Humble Games Collection"* ]]; then
     fi
 
     # Create app id folder in compatdata folder if it doesn't exist
-    if [ ! -d "$HOME/.local/share/Steam/steamapps/compatdata/$appid" ]; then
-        mkdir -p "$HOME/.local/share/Steam/steamapps/compatdata/$appid"
+    if [ ! -d "${logged_in_home}/.local/share/Steam/steamapps/compatdata/$appid" ]; then
+        mkdir -p "${logged_in_home}/.local/share/Steam/steamapps/compatdata/$appid"
     fi
 
     # Change working directory to Proton's
     cd $proton_dir
 
     # Set the STEAM_COMPAT_CLIENT_INSTALL_PATH environment variable
-    export STEAM_COMPAT_CLIENT_INSTALL_PATH="$HOME/.local/share/Steam"
+    export STEAM_COMPAT_CLIENT_INSTALL_PATH="${logged_in_home}/.local/share/Steam"
 
     # Set the STEAM_COMPAT_DATA_PATH environment variable for Humble Games Launcher
-    export STEAM_COMPAT_DATA_PATH="$HOME/.local/share/Steam/steamapps/compatdata/${appid}"
+    export STEAM_COMPAT_DATA_PATH="${logged_in_home}/.local/share/Steam/steamapps/compatdata/${appid}"
 
     # Download exe file
     if [ ! -f "$humblegames_file" ]; then
@@ -2044,18 +2055,18 @@ if [[ $options == *"IndieGala"* ]]; then
     fi
 
     # Create app id folder in compatdata folder if it doesn't exist
-    if [ ! -d "$HOME/.local/share/Steam/steamapps/compatdata/$appid" ]; then
-        mkdir -p "$HOME/.local/share/Steam/steamapps/compatdata/$appid"
+    if [ ! -d "${logged_in_home}/.local/share/Steam/steamapps/compatdata/$appid" ]; then
+        mkdir -p "${logged_in_home}/.local/share/Steam/steamapps/compatdata/$appid"
     fi
 
     # Change working directory to Proton's
     cd $proton_dir
 
     # Set the STEAM_COMPAT_CLIENT_INSTALL_PATH environment variable
-    export STEAM_COMPAT_CLIENT_INSTALL_PATH="$HOME/.local/share/Steam"
+    export STEAM_COMPAT_CLIENT_INSTALL_PATH="${logged_in_home}/.local/share/Steam"
 
     # Set the STEAM_COMPAT_DATA_PATH environment variable for Legacy Games Launcher
-    export STEAM_COMPAT_DATA_PATH="$HOME/.local/share/Steam/steamapps/compatdata/${appid}"
+    export STEAM_COMPAT_DATA_PATH="${logged_in_home}/.local/share/Steam/steamapps/compatdata/${appid}"
 
     # Download indiegala file
     if [ ! -f "$indiegala_file" ]; then
@@ -2087,18 +2098,18 @@ if [[ $options == *"Rockstar Games Launcher"* ]]; then
     fi
 
     # Create app id folder in compatdata folder if it doesn't exist
-    if [ ! -d "$HOME/.local/share/Steam/steamapps/compatdata/$appid" ]; then
-        mkdir -p "$HOME/.local/share/Steam/steamapps/compatdata/$appid"
+    if [ ! -d "${logged_in_home}/.local/share/Steam/steamapps/compatdata/$appid" ]; then
+        mkdir -p "${logged_in_home}/.local/share/Steam/steamapps/compatdata/$appid"
     fi
 
     # Change working directory to Proton's
     cd $proton_dir
 
     # Set the STEAM_COMPAT_CLIENT_INSTALL_PATH environment variable
-    export STEAM_COMPAT_CLIENT_INSTALL_PATH="$HOME/.local/share/Steam"
+    export STEAM_COMPAT_CLIENT_INSTALL_PATH="${logged_in_home}/.local/share/Steam"
 
     # Set the STEAM_COMPAT_DATA_PATH environment variable for Legacy Games Launcher
-    export STEAM_COMPAT_DATA_PATH="$HOME/.local/share/Steam/steamapps/compatdata/${appid}"
+    export STEAM_COMPAT_DATA_PATH="${logged_in_home}/.local/share/Steam/steamapps/compatdata/${appid}"
 
     # Download rockstar games file
     if [ ! -f "$rockstar_file" ]; then
@@ -2130,18 +2141,18 @@ if [[ $options == *"Glyph Launcher"* ]]; then
     fi
 
     # Create app id folder in compatdata folder if it doesn't exist
-    if [ ! -d "$HOME/.local/share/Steam/steamapps/compatdata/$appid" ]; then
-        mkdir -p "$HOME/.local/share/Steam/steamapps/compatdata/$appid"
+    if [ ! -d "${logged_in_home}/.local/share/Steam/steamapps/compatdata/$appid" ]; then
+        mkdir -p "${logged_in_home}/.local/share/Steam/steamapps/compatdata/$appid"
     fi
 
     # Change working directory to Proton's
     cd $proton_dir
 
     # Set the STEAM_COMPAT_CLIENT_INSTALL_PATH environment variable
-    export STEAM_COMPAT_CLIENT_INSTALL_PATH="$HOME/.local/share/Steam"
+    export STEAM_COMPAT_CLIENT_INSTALL_PATH="${logged_in_home}/.local/share/Steam"
 
     # Set the STEAM_COMPAT_DATA_PATH environment variable for Legacy Games Launcher
-    export STEAM_COMPAT_DATA_PATH="$HOME/.local/share/Steam/steamapps/compatdata/${appid}"
+    export STEAM_COMPAT_DATA_PATH="${logged_in_home}/.local/share/Steam/steamapps/compatdata/${appid}"
 
     # Download Glyph file
     if [ ! -f "$glyph_file" ]; then
@@ -2173,21 +2184,21 @@ if [[ $options == *"Minecraft"* ]]; then
     fi
 
     # Set MinecraftLauncher.exe Variable
-    minecraftinstall_path="$HOME/.local/share/Steam/steamapps/compatdata/$appid/pfx/drive_c/Program Files (x86)/Minecraft Launcher/MinecraftLauncher.exe"
+    minecraftinstall_path="${logged_in_home}/.local/share/Steam/steamapps/compatdata/$appid/pfx/drive_c/Program Files (x86)/Minecraft Launcher/MinecraftLauncher.exe"
 
     # Create app id folder in compatdata folder if it doesn't exist
-    if [ ! -d "$HOME/.local/share/Steam/steamapps/compatdata/$appid" ]; then
-        mkdir -p "$HOME/.local/share/Steam/steamapps/compatdata/$appid"
+    if [ ! -d "${logged_in_home}/.local/share/Steam/steamapps/compatdata/$appid" ]; then
+        mkdir -p "${logged_in_home}/.local/share/Steam/steamapps/compatdata/$appid"
     fi
 
     # Change working directory to Proton's
     cd $proton_dir
 
     # Set the STEAM_COMPAT_CLIENT_INSTALL_PATH environment variable
-    export STEAM_COMPAT_CLIENT_INSTALL_PATH="$HOME/.local/share/Steam"
+    export STEAM_COMPAT_CLIENT_INSTALL_PATH="${logged_in_home}/.local/share/Steam"
 
     # Set the STEAM_COMPAT_DATA_PATH environment variable for Legacy Games Launcher
-    export STEAM_COMPAT_DATA_PATH="$HOME/.local/share/Steam/steamapps/compatdata/${appid}"
+    export STEAM_COMPAT_DATA_PATH="${logged_in_home}/.local/share/Steam/steamapps/compatdata/${appid}"
 
     # Download Minecraft file
     if [ ! -f "$minecraft_file" ]; then
@@ -2228,18 +2239,18 @@ if [[ $options == *"Playstation Plus"* ]]; then
     fi
 
     # Create app id folder in compatdata folder if it doesn't exist
-    if [ ! -d "$HOME/.local/share/Steam/steamapps/compatdata/$appid" ]; then
-        mkdir -p "$HOME/.local/share/Steam/steamapps/compatdata/$appid"
+    if [ ! -d "${logged_in_home}/.local/share/Steam/steamapps/compatdata/$appid" ]; then
+        mkdir -p "${logged_in_home}/.local/share/Steam/steamapps/compatdata/$appid"
     fi
 
     # Change working directory to Proton's
     cd $proton_dir
 
     # Set the STEAM_COMPAT_CLIENT_INSTALL_PATH environment variable
-    export STEAM_COMPAT_CLIENT_INSTALL_PATH="$HOME/.local/share/Steam"
+    export STEAM_COMPAT_CLIENT_INSTALL_PATH="${logged_in_home}/.local/share/Steam"
 
     # Set the STEAM_COMPAT_DATA_PATH environment variable for Epic Games Launcher
-    export STEAM_COMPAT_DATA_PATH="$HOME/.local/share/Steam/steamapps/compatdata/${appid}"
+    export STEAM_COMPAT_DATA_PATH="${logged_in_home}/.local/share/Steam/steamapps/compatdata/${appid}"
 
     # Download MSI file
     if [ ! -f "$psplus_file" ]; then
@@ -2270,18 +2281,18 @@ if [[ $options == *"DMM Games"* ]]; then
     fi
 
     # Create app id folder in compatdata folder if it doesn't exist
-    if [ ! -d "$HOME/.local/share/Steam/steamapps/compatdata/$appid" ]; then
-        mkdir -p "$HOME/.local/share/Steam/steamapps/compatdata/$appid"
+    if [ ! -d "${logged_in_home}/.local/share/Steam/steamapps/compatdata/$appid" ]; then
+        mkdir -p "${logged_in_home}/.local/share/Steam/steamapps/compatdata/$appid"
     fi
 
     # Change working directory to Proton's
     cd $proton_dir
 
     # Set the STEAM_COMPAT_CLIENT_INSTALL_PATH environment variable
-    export STEAM_COMPAT_CLIENT_INSTALL_PATH="$HOME/.local/share/Steam"
+    export STEAM_COMPAT_CLIENT_INSTALL_PATH="${logged_in_home}/.local/share/Steam"
 
     # Set the STEAM_COMPAT_DATA_PATH environment variable for Epic Games Launcher
-    export STEAM_COMPAT_DATA_PATH="$HOME/.local/share/Steam/steamapps/compatdata/${appid}"
+    export STEAM_COMPAT_DATA_PATH="${logged_in_home}/.local/share/Steam/steamapps/compatdata/${appid}"
 
     # Download DMM file
     if [ ! -f "$dmm_file" ]; then
@@ -2322,7 +2333,7 @@ fi
 wait
 
 # Delete NonSteamLaunchersInstallation subfolder in Downloads folder
-rm -rf "$HOME/Downloads/NonSteamLaunchersInstallation"
+rm -rf "${logged_in_home}/Downloads/NonSteamLaunchersInstallation"
 
     echo "100"
     echo "# Installation Complete - Steam will now restart. Your launchers will be in your library!...Food for thought...do Jedis use Force Compatability?"
@@ -2338,192 +2349,192 @@ wait
 if [[ -f "$epic_games_launcher_path1" ]]; then
     # Epic Games Launcher is installed at path 1
     epicshortcutdirectory="\"$epic_games_launcher_path1\""
-    epiclaunchoptions="STEAM_COMPAT_DATA_PATH=\"$HOME/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/\" %command%"
+    epiclaunchoptions="STEAM_COMPAT_DATA_PATH=\"${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/\" %command%"
     epicstartingdir="\"$(dirname "$epic_games_launcher_path1")\""
 elif [[ -f "$epic_games_launcher_path2" ]]; then
     # Epic Games Launcher is installed at path 2
     epicshortcutdirectory="\"$epic_games_launcher_path2\""
-    epiclaunchoptions="STEAM_COMPAT_DATA_PATH=\"$HOME/.local/share/Steam/steamapps/compatdata/EpicGamesLauncher/\" %command%"
+    epiclaunchoptions="STEAM_COMPAT_DATA_PATH=\"${logged_in_home}/.local/share/Steam/steamapps/compatdata/EpicGamesLauncher/\" %command%"
     epicstartingdir="\"$(dirname "$epic_games_launcher_path2")\""
 fi
 
 if [[ -f "$gog_galaxy_path1" ]]; then
     # Gog Galaxy Launcher is installed at path 1
     gogshortcutdirectory="\"$gog_galaxy_path1\""
-    goglaunchoptions="STEAM_COMPAT_DATA_PATH=\"$HOME/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/\" %command%"
+    goglaunchoptions="STEAM_COMPAT_DATA_PATH=\"${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/\" %command%"
     gogstartingdir="\"$(dirname "$gog_galaxy_path1")\""
 elif [[ -f "$gog_galaxy_path2" ]]; then
     # Gog Galaxy Launcher is installed at path 2
     gogshortcutdirectory="\"$gog_galaxy_path2\""
-    goglaunchoptions="STEAM_COMPAT_DATA_PATH=\"$HOME/.local/share/Steam/steamapps/compatdata/GogGalaxyLauncher/\" %command%"
+    goglaunchoptions="STEAM_COMPAT_DATA_PATH=\"${logged_in_home}/.local/share/Steam/steamapps/compatdata/GogGalaxyLauncher/\" %command%"
     gogstartingdir="\"$(dirname "$gog_galaxy_path2")\""
 fi
 
 if [[ -f "$origin_path1" ]]; then
     # Origin Launcher is installed at path 1
     originshortcutdirectory="\"$origin_path1\""
-    originlaunchoptions="STEAM_COMPAT_DATA_PATH=\"$HOME/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/\" %command%"
+    originlaunchoptions="STEAM_COMPAT_DATA_PATH=\"${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/\" %command%"
     originstartingdir="\"$(dirname "$origin_path1")\""
 elif [[ -f "$origin_path2" ]]; then
     # Origin Launcher is installed at path 2
     originshortcutdirectory="\"$origin_path2\""
-    originlaunchoptions="STEAM_COMPAT_DATA_PATH=\"$HOME/.local/share/Steam/steamapps/compatdata/OriginLauncher/\" %command%"
+    originlaunchoptions="STEAM_COMPAT_DATA_PATH=\"${logged_in_home}/.local/share/Steam/steamapps/compatdata/OriginLauncher/\" %command%"
     originstartingdir="\"$(dirname "$origin_path2")\""
 fi
 
 if [[ -f "$uplay_path1" ]]; then
     # Uplay Launcher is installed at path 1
     uplayshortcutdirectory="\"$uplay_path1\""
-    uplaylaunchoptions="STEAM_COMPAT_DATA_PATH=\"$HOME/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/\" %command%"
+    uplaylaunchoptions="STEAM_COMPAT_DATA_PATH=\"${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/\" %command%"
     uplaystartingdir="\"$(dirname "$uplay_path1")\""
 elif [[ -f "$uplay_path2" ]]; then
     # Uplay Launcher is installed at path 2
     uplayshortcutdirectory="\"$uplay_path2\""
-    uplaylaunchoptions="STEAM_COMPAT_DATA_PATH=\"$HOME/.local/share/Steam/steamapps/compatdata/UplayLauncher/\" %command%"
+    uplaylaunchoptions="STEAM_COMPAT_DATA_PATH=\"${logged_in_home}/.local/share/Steam/steamapps/compatdata/UplayLauncher/\" %command%"
     uplaystartingdir="\"$(dirname "$uplay_path2")\""
 fi
 
 if [[ -f "$battlenet_path1" ]]; then
     # Battlenet Launcher is installed at path 1
     battlenetshortcutdirectory="\"$battlenet_path1\""
-    battlenetlaunchoptions="STEAM_COMPAT_DATA_PATH=\"$HOME/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/\" %command%"
+    battlenetlaunchoptions="STEAM_COMPAT_DATA_PATH=\"${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/\" %command%"
     battlenetstartingdir="\"$(dirname "$battlenet_path1")\""
 elif [[ -f "$battlenet_path2" ]]; then
     # Battlenet Launcher is installed at path 2
     battlenetshortcutdirectory="\"$battlenet_path2\""
-    battlenetlaunchoptions="STEAM_COMPAT_DATA_PATH=\"$HOME/.local/share/Steam/steamapps/compatdata/Battle.netLauncher/\" %command%"
+    battlenetlaunchoptions="STEAM_COMPAT_DATA_PATH=\"${logged_in_home}/.local/share/Steam/steamapps/compatdata/Battle.netLauncher/\" %command%"
     battlenetstartingdir="\"$(dirname "$battlenet_path2")\""
 fi
 
 if [[ -f "$eaapp_path1" ]]; then
     # EA App Launcher is installed at path 1
     eaappshortcutdirectory="\"$eaapp_path1\""
-    eaapplaunchoptions="STEAM_COMPAT_DATA_PATH=\"$HOME/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/\" %command%"
+    eaapplaunchoptions="STEAM_COMPAT_DATA_PATH=\"${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/\" %command%"
     eaappstartingdir="\"$(dirname "$eaapp_path1")\""
 elif [[ -f "$eaapp_path2" ]]; then
     # EA App Launcher is installed at path 2
     eaappshortcutdirectory="\"$eaapp_path2\""
-    eaapplaunchoptions="STEAM_COMPAT_DATA_PATH=\"$HOME/.local/share/Steam/steamapps/compatdata/TheEAappLauncher/\" %command%"
+    eaapplaunchoptions="STEAM_COMPAT_DATA_PATH=\"${logged_in_home}/.local/share/Steam/steamapps/compatdata/TheEAappLauncher/\" %command%"
     eaappstartingdir="\"$(dirname "$eaapp_path2")\""
 fi
 
 if [[ -f "$amazongames_path1" ]]; then
     # Amazon Games Launcher is installed at path 1
     amazonshortcutdirectory="\"$amazongames_path1\""
-    amazonlaunchoptions="STEAM_COMPAT_DATA_PATH=\"$HOME/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/\" %command%"
+    amazonlaunchoptions="STEAM_COMPAT_DATA_PATH=\"${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/\" %command%"
     amazonstartingdir="\"$(dirname "$amazongames_path1")\""
 elif [[ -f "$amazongames_path2" ]]; then
     # Amazon Games Launcher is installed at path 2
     amazonshortcutdirectory="\"$amazongames_path2\""
-    amazonlaunchoptions="STEAM_COMPAT_DATA_PATH=\"$HOME/.local/share/Steam/steamapps/compatdata/AmazonGamesLauncher/\" %command%"
+    amazonlaunchoptions="STEAM_COMPAT_DATA_PATH=\"${logged_in_home}/.local/share/Steam/steamapps/compatdata/AmazonGamesLauncher/\" %command%"
     amazonstartingdir="\"$(dirname "$amazongames_path2")\""
 fi
 
 if [[ -f "$itchio_path1" ]]; then
     # itchio Launcher is installed at path 1
     itchioshortcutdirectory="\"$itchio_path1\""
-    itchiolaunchoptions="STEAM_COMPAT_DATA_PATH=\"$HOME/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/\" %command%"
+    itchiolaunchoptions="STEAM_COMPAT_DATA_PATH=\"${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/\" %command%"
     itchiostartingdir="\"$(dirname "$itchio_path1")\""
 elif [[ -f "$itchio_path2" ]]; then
     # itchio Launcher is installed at path 2
     itchioshortcutdirectory="\"$itchio_path2\""
-    itchiolaunchoptions="STEAM_COMPAT_DATA_PATH=\"$HOME/.local/share/Steam/steamapps/compatdata/itchioLauncher/\" %command%"
+    itchiolaunchoptions="STEAM_COMPAT_DATA_PATH=\"${logged_in_home}/.local/share/Steam/steamapps/compatdata/itchioLauncher/\" %command%"
     itchiostartingdir="\"$(dirname "$itchio_path2")\""
 fi
 
 if [[ -f "$legacygames_path1" ]]; then
     # Legacy Games Launcher is installed at path 1
     legacyshortcutdirectory="\"$legacygames_path1\""
-    legacylaunchoptions="STEAM_COMPAT_DATA_PATH=\"$HOME/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/\" %command%"
+    legacylaunchoptions="STEAM_COMPAT_DATA_PATH=\"${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/\" %command%"
     legacystartingdir="\"$(dirname "$legacygames_path1")\""
 elif [[ -f "$legacygames_path2" ]]; then
     # Legacy Games Launcher is installed at path 2
     legacyshortcutdirectory="\"$legacygames_path2\""
-    legacylaunchoptions="STEAM_COMPAT_DATA_PATH=\"$HOME/.local/share/Steam/steamapps/compatdata/LegacyGamesLauncher/\" %command%"
+    legacylaunchoptions="STEAM_COMPAT_DATA_PATH=\"${logged_in_home}/.local/share/Steam/steamapps/compatdata/LegacyGamesLauncher/\" %command%"
     legacystartingdir="\"$(dirname "$legacygames_path2")\""
 fi
 
 if [[ -f "$humblegames_path1" ]]; then
     # Humble Games Launcher is installed at path 1
     humbleshortcutdirectory="\"$humblegames_path1\""
-    humblelaunchoptions="STEAM_COMPAT_DATA_PATH=\"$HOME/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/\" %command%"
+    humblelaunchoptions="STEAM_COMPAT_DATA_PATH=\"${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/\" %command%"
     humblestartingdir="\"$(dirname "$humblegames_path1")\""
 elif [[ -f "$humblegames_path2" ]]; then
     # Humble Games Launcher is installed at path 2
     humbleshortcutdirectory="\"$humblegames_path2\""
-    humblelaunchoptions="STEAM_COMPAT_DATA_PATH=\"$HOME/.local/share/Steam/steamapps/compatdata/HumbleGamesLauncher/\" %command%"
+    humblelaunchoptions="STEAM_COMPAT_DATA_PATH=\"${logged_in_home}/.local/share/Steam/steamapps/compatdata/HumbleGamesLauncher/\" %command%"
     humblestartingdir="\"$(dirname "$humblegames_path2")\""
 fi
 
 if [[ -f "$indiegala_path1" ]]; then
     # indiegala Launcher is installed at path 1
     indieshortcutdirectory="\"$indiegala_path1\""
-    indielaunchoptions="STEAM_COMPAT_DATA_PATH=\"$HOME/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/\" %command%"
+    indielaunchoptions="STEAM_COMPAT_DATA_PATH=\"${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/\" %command%"
     indiestartingdir="\"$(dirname "$indiegala_path1")\""
 elif [[ -f "$indiegala_path2" ]]; then
     # indiegala Launcher is installed at path 2
     indieshortcutdirectory="\"$indiegala_path2\""
-    indielaunchoptions="STEAM_COMPAT_DATA_PATH=\"$HOME/.local/share/Steam/steamapps/compatdata/IndieGalaLauncher/\" %command%"
+    indielaunchoptions="STEAM_COMPAT_DATA_PATH=\"${logged_in_home}/.local/share/Steam/steamapps/compatdata/IndieGalaLauncher/\" %command%"
     indiestartingdir="\"$(dirname "$indiegala_path2")\""
 fi
 
 if [[ -f "$rockstar_path1" ]]; then
     # rockstar Launcher is installed at path 1
     rockstarshortcutdirectory="\"$rockstar_path1\""
-    rockstarlaunchoptions="STEAM_COMPAT_DATA_PATH=\"$HOME/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/\" %command%"
+    rockstarlaunchoptions="STEAM_COMPAT_DATA_PATH=\"${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/\" %command%"
     rockstarstartingdir="\"$(dirname "$rockstar_path1")\""
 elif [[ -f "$rockstar_path2" ]]; then
     # rockstar Launcher is installed at path 2
     rockstarshortcutdirectory="\"$rockstar_path2\""
-    rockstarlaunchoptions="STEAM_COMPAT_DATA_PATH=\"$HOME/.local/share/Steam/steamapps/compatdata/RockstarGamesLauncher/\" %command%"
+    rockstarlaunchoptions="STEAM_COMPAT_DATA_PATH=\"${logged_in_home}/.local/share/Steam/steamapps/compatdata/RockstarGamesLauncher/\" %command%"
     rockstarstartingdir="\"$(dirname "$rockstar_path2")\""
 fi
 
 if [[ -f "$glyph_path1" ]]; then
     # Glyph is installed at path 1
     glyphshortcutdirectory="\"$glyph_path1\""
-    glyphlaunchoptions="STEAM_COMPAT_DATA_PATH=\"$HOME/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/\" %command%"
+    glyphlaunchoptions="STEAM_COMPAT_DATA_PATH=\"${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/\" %command%"
     glyphstartingdir="\"$(dirname "$glyph_path1")\""
 elif [[ -f "$glyph_path2" ]]; then
     # Glyph is installed at path 2
     glyphshortcutdirectory="\"$glyph_path2\""
-    glyphlaunchoptions="STEAM_COMPAT_DATA_PATH=\"$HOME/.local/share/Steam/steamapps/compatdata/GlyphLauncher/\" %command%"
+    glyphlaunchoptions="STEAM_COMPAT_DATA_PATH=\"${logged_in_home}/.local/share/Steam/steamapps/compatdata/GlyphLauncher/\" %command%"
     glyphstartingdir="\"$(dirname "$glyph_path2")\""
 fi
 
 if [[ -f "$minecraft_path1" ]]; then
     # Minecraft is installed at path 1
     minecraftshortcutdirectory="\"$minecraft_path1\""
-    minecraftlaunchoptions="STEAM_COMPAT_DATA_PATH=\"$HOME/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/\" %command%"
+    minecraftlaunchoptions="STEAM_COMPAT_DATA_PATH=\"${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/\" %command%"
     minecraftstartingdir="\"$(dirname "$minecraft_path1")\""
 elif [[ -f "$minecraft_path2" ]]; then
     # Minecraft is installed at path 2
     minecraftshortcutdirectory="\"$minecraft_path2\""
-    minecraftlaunchoptions="STEAM_COMPAT_DATA_PATH=\"$HOME/.local/share/Steam/steamapps/compatdata/MinecraftLauncher/\" %command%"
+    minecraftlaunchoptions="STEAM_COMPAT_DATA_PATH=\"${logged_in_home}/.local/share/Steam/steamapps/compatdata/MinecraftLauncher/\" %command%"
     minecraftstartingdir="\"$(dirname "$minecraft_path1")\""
 fi
 
 if [[ -f "$psplus_path1" ]]; then
     # Playstation is installed at path 1
     psplusshortcutdirectory="\"$psplus_path1\""
-    pspluslaunchoptions="STEAM_COMPAT_DATA_PATH=\"$HOME/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/\" %command%"
+    pspluslaunchoptions="STEAM_COMPAT_DATA_PATH=\"${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/\" %command%"
     psplusstartingdir="\"$(dirname "$psplus_path1")\""
 elif [[ -f "$psplus_path2" ]]; then
     # Playstation is installed at path 2
     psplusshortcutdirectory="\"$psplus_path2\""
-    pspluslaunchoptions="STEAM_COMPAT_DATA_PATH=\"$HOME/.local/share/Steam/steamapps/compatdata/PlaystationPlusLauncher/\" %command%"
+    pspluslaunchoptions="STEAM_COMPAT_DATA_PATH=\"${logged_in_home}/.local/share/Steam/steamapps/compatdata/PlaystationPlusLauncher/\" %command%"
     psplusstartingdir="\"$(dirname "$psplus_path2")\""
 fi
 
 if [[ -f "$dmm_path1" ]]; then
     # DMM Games is installed at path 1
     dmmshortcutdirectory="\"$dmm_path1\""
-    dmmlaunchoptions="STEAM_COMPAT_DATA_PATH=\"$HOME/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/\" %command%"
+    dmmlaunchoptions="STEAM_COMPAT_DATA_PATH=\"${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/\" %command%"
     dmmstartingdir="\"$(dirname "$dmm_path1")\""
 elif [[ -f "$dmm_path2" ]]; then
     # DMM Player is installed at path 2
     dmmshortcutdirectory="\"$dmm_path2\""
-    dmmlaunchoptions="STEAM_COMPAT_DATA_PATH=\"$HOME/.local/share/Steam/steamapps/compatdata/DMMGameLauncher/\" %command%"
+    dmmlaunchoptions="STEAM_COMPAT_DATA_PATH=\"${logged_in_home}/.local/share/Steam/steamapps/compatdata/DMMGameLauncher/\" %command%"
     dmmstartingdir="\"$(dirname "$dmm_path2")\""
 fi
 
@@ -2631,7 +2642,7 @@ wget -P "$download_dir/lib/python$python_version/site-packages/vdf" "$download_u
 export PYTHONPATH="$download_dir/lib/python$python_version/site-packages/:$PYTHONPATH"
 
 # Set the default Steam directory
-steam_dir="$HOME/.local/share/Steam"
+steam_dir="${logged_in_home}/.local/share/Steam"
 
 # Check if the config.vdf file exists
 if [[ -f "$steam_dir/config/config.vdf" ]]; then
@@ -2724,7 +2735,7 @@ while pgrep steam > /dev/null; do sleep 1; done
 # Pre check for updating the config file
 
 # Set the default Steam directory
-steam_dir="$HOME/.steam/root"
+steam_dir="${logged_in_home}/.steam/root"
 
 # Set the path to the config.vdf file
 config_vdf_path="$steam_dir/config/config.vdf"
@@ -2742,7 +2753,7 @@ else
 fi
 
 # Set the path to the configset_controller_neptune.vdf file
-controller_config_path="$HOME/.local/share/Steam/steamapps/common/Steam Controller Configs/$steamid3/config/configset_controller_neptune.vdf"
+controller_config_path="${logged_in_home}/.local/share/Steam/steamapps/common/Steam Controller Configs/$steamid3/config/configset_controller_neptune.vdf"
 
 # Check if the configset_controller_neptune.vdf file exists
 if [[ -f "$controller_config_path" ]]; then
@@ -2759,7 +2770,7 @@ python3 -c "
 import sys
 import os
 import subprocess
-sys.path.insert(0, os.path.expanduser('$HOME/Downloads/NonSteamLaunchersInstallation/lib/python$python_version/site-packages'))
+sys.path.insert(0, os.path.expanduser('${logged_in_home}/Downloads/NonSteamLaunchersInstallation/lib/python$python_version/site-packages'))
 print(sys.path)  # Add this line to print the value of sys.path
 import vdf  # Updated import
 import binascii
@@ -3060,7 +3071,7 @@ with open('$controller_config_path', 'w') as f:
     vdf.dump(config, f)
 
 # Define the path to the compatdata directory
-compatdata_dir = '$HOME/.local/share/Steam/steamapps/compatdata'
+compatdata_dir = '${logged_in_home}/.local/share/Steam/steamapps/compatdata'
 
 # Define a dictionary of original folder names
 folder_names = {
