@@ -415,7 +415,6 @@ function CheckInstallationDirectory {
         eaapplauncher_move_value="FALSE"
     fi
 
-
     # Check if AmazonGamesLauncher is installed
     if [[ -d "${logged_in_home}/.local/share/Steam/steamapps/compatdata/AmazonGamesLauncher" ]]; then
         # AmazonGamesLauncher is installed
