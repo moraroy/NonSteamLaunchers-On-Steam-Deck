@@ -53,12 +53,12 @@ logged_in_home=$(eval echo "~${logged_in_user}")
 
 # TODO: `/tmp` or `mktemp -d` might be a better option (see: EOF)
 # $PWD (working directory)
-install_dir="${logged_in_home}/Downloads/NonSteamLaunchersInstallation"
+download_dir="${logged_in_home}/Downloads/NonSteamLaunchersInstallation"
 
 # Check if the NonSteamLaunchersInstallation subfolder exists in the Downloads folder
-if [ -d "$install_dir" ]; then
+if [ -d "$download_dir" ]; then
     # Delete the NonSteamLaunchersInstallation subfolder
-    rm -rf "$install_dir"
+    rm -rf "$download_dir"
     echo "Deleted NonSteamLaunchersInstallation subfolder"
 else
     echo "NonSteamLaunchersInstallation subfolder does not exist"
@@ -708,7 +708,7 @@ function StartFreshFunction {
     rm -rf "/run/media/mmcblk0p1/MinecraftLauncher/"
     rm -rf "/run/media/mmcblk0p1/PlaystationPlusLauncher/"
     rm -rf "/run/media/mmcblk0p1/DMMGameLauncher/"
-    rm -rf ~/Downloads/NonSteamLaunchersInstallation
+    rm -rf ${logged_in_home}/Downloads/NonSteamLaunchersInstallation
 
     # Exit the script with exit code 0 to indicate success
     exit 0
@@ -1309,14 +1309,14 @@ fi
 if [[ $options == "Find Games" ]]; then
     # The Find Games button was clicked
     # Check if the NonSteamLaunchersInstallation directory exists
-    if [[ ! -d "$install_dir" ]]; then
+    if [[ ! -d "$download_dir" ]]; then
         # The directory does not exist, so create it
-        mkdir -p "$install_dir"
+        mkdir -p "$download_dir"
     fi
 
     # Download the latest BoilR from GitHub (Linux version)
-    mkdir -p "$install_dir"
-    cd "$install_dir"
+    mkdir -p "$download_dir"
+    cd "$download_dir"
     wget https://github.com/PhilipK/BoilR/releases/download/v.1.9.1/linux_BoilR
 
     # Add execute permissions to the linux_BoilR file
@@ -1343,7 +1343,7 @@ echo "# Detecting, Updating and Installing GE-Proton"
 fi
 
 # Create NonSteamLaunchersInstallation subfolder in Downloads folder
-mkdir -p ~/Downloads/NonSteamLaunchersInstallation
+mkdir -p ${logged_in_home}/Downloads/NonSteamLaunchersInstallation
 
 # Set the path to the Proton directory
 proton_dir=$(find ~/.steam/root/compatibilitytools.d -maxdepth 1 -type d -name "GE-Proton*" | sort -V | tail -n1)
@@ -1356,20 +1356,20 @@ ge_proton_url2=https://github.com/GloriousEggroll/proton-ge-custom/releases/down
 if [ -z "$proton_dir" ]; then
     # Download GE-Proton using the first URL
     echo "Downloading GE-Proton using the first URL"
-    wget $ge_proton_url1 -O ~/Downloads/NonSteamLaunchersInstallation/GE-Proton.tar.gz
+    wget $ge_proton_url1 -O ${logged_in_home}/Downloads/NonSteamLaunchersInstallation/GE-Proton.tar.gz
 
     # Check if the download succeeded
     if [ $? -ne 0 ]; then
         # Download GE-Proton using the second URL
         echo "Downloading GE-Proton using the second URL"
-        wget $ge_proton_url2 -O ~/Downloads/NonSteamLaunchersInstallation/GE-Proton.tar.gz
+        wget $ge_proton_url2 -O ${logged_in_home}/Downloads/NonSteamLaunchersInstallation/GE-Proton.tar.gz
     fi
 
     # Check if either download succeeded
     if [ $? -eq 0 ]; then
         # Install GE-Proton
         echo "Installing GE-Proton"
-        tar -xvf ~/Downloads/NonSteamLaunchersInstallation/GE-Proton.tar.gz -C ~/.steam/root/compatibilitytools.d/
+        tar -xvf ${logged_in_home}/Downloads/NonSteamLaunchersInstallation/GE-Proton.tar.gz -C ~/.steam/root/compatibilitytools.d/
         proton_dir=$(find ~/.steam/root/compatibilitytools.d -maxdepth 1 -type d -name "GE-Proton*" | sort -V | tail -n1)
     else
         # Handle download failure
@@ -1383,20 +1383,20 @@ installed_version=$(basename $proton_dir | sed 's/GE-Proton-//')
     if [ "$installed_version" != "$latest_version" ]; then
         # Download GE-Proton using the first URL
         echo "Downloading GE-Proton using the first URL"
-        wget $ge_proton_url1 -O ~/Downloads/NonSteamLaunchersInstallation/GE-Proton.tar.gz
+        wget $ge_proton_url1 -O ${logged_in_home}/Downloads/NonSteamLaunchersInstallation/GE-Proton.tar.gz
 
         # Check if the download succeeded
         if [ $? -ne 0 ]; then
             # Download GE-Proton using the second URL
             echo "Downloading GE-Proton using the second URL"
-            wget $ge_proton_url2 -O ~/Downloads/NonSteamLaunchersInstallation/GE-Proton.tar.gz
+            wget $ge_proton_url2 -O ${logged_in_home}/Downloads/NonSteamLaunchersInstallation/GE-Proton.tar.gz
         fi
 
         # Check if either download succeeded
         if [ $? -eq 0 ]; then
             # Install GE-Proton
             echo "Installing GE-Proton"
-            tar -xvf ~/Downloads/NonSteamLaunchersInstallation/GE-Proton.tar.gz -C ~/.steam/root/compatibilitytools.d/
+            tar -xvf ${logged_in_home}/Downloads/NonSteamLaunchersInstallation/GE-Proton.tar.gz -C ~/.steam/root/compatibilitytools.d/
             proton_dir=$(find ~/.steam/root/compatibilitytools.d -maxdepth 1 -type d -name "GE-Proton*" | sort -V | tail -n1)
         else
             # Handle download failure
@@ -1415,97 +1415,97 @@ appid=NonSteamLaunchers
 msi_url=https://launcher-public-service-prod06.ol.epicgames.com/launcher/api/installer/download/EpicGamesLauncherInstaller.msi
 
 # Set the path to save the MSI file to
-msi_file=~/Downloads/NonSteamLaunchersInstallation/EpicGamesLauncherInstaller.msi
+msi_file=${logged_in_home}/Downloads/NonSteamLaunchersInstallation/EpicGamesLauncherInstaller.msi
 
 # Set the URL to download the second file from
 exe_url=https://webinstallers.gog-statics.com/download/GOG_Galaxy_2.0.exe
 
 # Set the path to save the second file to
-exe_file=~/Downloads/NonSteamLaunchersInstallation/GOG_Galaxy_2.0.exe
+exe_file=${logged_in_home}/Downloads/NonSteamLaunchersInstallation/GOG_Galaxy_2.0.exe
 
 # Set the URL to download the third file from
 ubi_url=https://ubi.li/4vxt9
 
 # Set the path to save the third file to
-ubi_file=~/Downloads/NonSteamLaunchersInstallation/UplayInstaller.exe
+ubi_file=${logged_in_home}/Downloads/NonSteamLaunchersInstallation/UplayInstaller.exe
 
 # Set the URL to download the fourth file from
 origin_url=https://eaassets-a.akamaihd.net/Origin-Client-Download/origin/live/OriginThinSetup.exe
 
 # Set the path to save the fourth file to
-origin_file=~/Downloads/NonSteamLaunchersInstallation/OriginThinSetup.exe
+origin_file=${logged_in_home}/Downloads/NonSteamLaunchersInstallation/OriginThinSetup.exe
 
 # Set the URL to download the fifth file from
 battle_url="https://www.battle.net/download/getInstallerForGame?os=win&gameProgram=BATTLENET_APP&version=Live"
 
 # Set the path to save the fifth file to
-battle_file=~/Downloads/NonSteamLaunchersInstallation/Battle.net-Setup.exe
+battle_file=${logged_in_home}/Downloads/NonSteamLaunchersInstallation/Battle.net-Setup.exe
 
 # Set the URL to download the sixth file from
 amazon_url=https://download.amazongames.com/AmazonGamesSetup.exe
 
 # Set the path to save the sixth file to
-amazon_file=~/Downloads/NonSteamLaunchersInstallation/AmazonGamesSetup.exe
+amazon_file=${logged_in_home}/Downloads/NonSteamLaunchersInstallation/AmazonGamesSetup.exe
 
 # Set the URL to download the seventh file from
 eaapp_url=https://origin-a.akamaihd.net/EA-Desktop-Client-Download/installer-releases/EAappInstaller.exe
 
 # Set the path to save the seventh file to
-eaapp_file=~/Downloads/NonSteamLaunchersInstallation/EAappInstaller.exe
+eaapp_file=${logged_in_home}/Downloads/NonSteamLaunchersInstallation/EAappInstaller.exe
 
 # Set the URL to download the eighth file from
 itchio_url=https://itch.io/app/download?platform=windows
 
 # Set the path to save the eighth file to
-itchio_file=~/Downloads/NonSteamLaunchersInstallation/itch-setup.exe
+itchio_file=${logged_in_home}/Downloads/NonSteamLaunchersInstallation/itch-setup.exe
 
 # Set the URL to download the ninth file from
 legacygames_url=https://cdn.legacygames.com/LegacyGamesLauncher/legacy-games-launcher-setup-1.10.0-x64-full.exe
 
 # Set the path to save the ninth file to
-legacygames_file=~/Downloads/NonSteamLaunchersInstallation/legacy-games-launcher-setup-1.10.0-x64-full.exe
+legacygames_file=${logged_in_home}/Downloads/NonSteamLaunchersInstallation/legacy-games-launcher-setup-1.10.0-x64-full.exe
 
 # Set the URL to download the tenth file from
 humblegames_url=https://www.humblebundle.com/app/download
 
 # Set the path to save the tenth file to
-humblegames_file=~/Downloads/NonSteamLaunchersInstallation/Humble-App-Setup-1.1.8+411.exe
+humblegames_file=${logged_in_home}/Downloads/NonSteamLaunchersInstallation/Humble-App-Setup-1.1.8+411.exe
 
 # Set the URL to download the eleventh file from
 indiegala_url=https://content.indiegalacdn.com/common/IGClientSetup.exe
 
 # Set the path to save the eleventh file to
-indiegala_file=~/Downloads/NonSteamLaunchersInstallation/IGClientSetup.exe
+indiegala_file=${logged_in_home}/Downloads/NonSteamLaunchersInstallation/IGClientSetup.exe
 
 # Set the URL to download the twelfth file from
 rockstar_url=https://gamedownloads.rockstargames.com/public/installer/Rockstar-Games-Launcher.exe
 
 # Set the path to save the twelfth file to
-rockstar_file=~/Downloads/NonSteamLaunchersInstallation/Rockstar-Games-Launcher.exe
+rockstar_file=${logged_in_home}/Downloads/NonSteamLaunchersInstallation/Rockstar-Games-Launcher.exe
 
 # Set the URL to download the Glyph Launcher file from
 glyph_url=https://glyph.dyn.triongames.com/glyph/live/GlyphInstall.exe
 
 # Set the path to save the Glyph Launcher to
-glyph_file=~/Downloads/NonSteamLaunchersInstallation/GlyphInstall.exe
+glyph_file=${logged_in_home}/Downloads/NonSteamLaunchersInstallation/GlyphInstall.exe
 
 # Set the URL to download the Minecraft Launcher file from
 minecraft_url=https://aka.ms/minecraftClientWindows
 
 # Set the path to save the Minecraft Launcher to
-minecraft_file=~/Downloads/NonSteamLaunchersInstallation/MinecraftInstaller.msi
+minecraft_file=${logged_in_home}/Downloads/NonSteamLaunchersInstallation/MinecraftInstaller.msi
 
 # Set the URL to download the Playstation Launcher file from
 psplus_url=https://download-psplus.playstation.com/downloads/psplus/pc/latest
 
 # Set the path to save the Playstation Launcher to
-psplus_file=~/Downloads/NonSteamLaunchersInstallation/PlayStationPlus-12.2.0.exe
+psplus_file=${logged_in_home}/Downloads/NonSteamLaunchersInstallation/PlayStationPlus-12.2.0.exe
 
 # Set the URL to download the Playstation Launcher file from
 dmm_url=https://apidgp-gameplayer.games.dmm.com/archive/latest?app=dgp5win
 
 # Set the path to save the Playstation Launcher to
-dmm_file=~/Downloads/NonSteamLaunchersInstallation/DMMGamePlayer-Setup-5.2.16.exe
+dmm_file=${logged_in_home}/Downloads/NonSteamLaunchersInstallation/DMMGamePlayer-Setup-5.2.16.exe
 
 echo "20"
 echo "# Creating files & folders"
@@ -1632,10 +1632,10 @@ if [[ $options == *"GOG Galaxy"* ]]; then
 
     # Find the GalaxyInstaller_XXXXX folder and copy it to C:\Downloads
     galaxy_installer_folder=$(find . -maxdepth 1 -type d -name "GalaxyInstaller_*" | head -n1)
-    cp -r "$galaxy_installer_folder" ~/Downloads/NonSteamLaunchersInstallation/
+    cp -r "$galaxy_installer_folder" ${logged_in_home}/Downloads/NonSteamLaunchersInstallation/
 
     # Navigate to the C:\Downloads\GalaxyInstaller_XXXXX folder
-    cd ~/Downloads/NonSteamLaunchersInstallation/"$(basename $galaxy_installer_folder)"
+    cd ${logged_in_home}/Downloads/NonSteamLaunchersInstallation/"$(basename $galaxy_installer_folder)"
 
     # Run GalaxySetup.exe with the /VERYSILENT and /NORESTART options
     echo "Running GalaxySetup.exe with the /VERYSILENT and /NORESTART options"
@@ -1739,12 +1739,12 @@ if [[ $options == *"Origin"* ]]; then
     # Download version.dll file
     if [ ! -f "${logged_in_home}/Downloads/NonSteamLaunchersInstallation/version.dll" ]; then
         echo "Downloading version.dll file"
-        wget https://github.com/p0358/Fuck_off_EA_App/releases/download/v2/version.dll -O ~/Downloads/NonSteamLaunchersInstallation/version.dll
+        wget https://github.com/p0358/Fuck_off_EA_App/releases/download/v2/version.dll -O ${logged_in_home}/Downloads/NonSteamLaunchersInstallation/version.dll
     fi
 
     # Move version.dll file to desired location
     echo "Moving version.dll file to desired location"
-    mv ~/Downloads/NonSteamLaunchersInstallation/version.dll "${logged_in_home}/.local/share/Steam/steamapps/compatdata/$appid/pfx/drive_c/Program Files (x86)/Origin/"
+    mv ${logged_in_home}/Downloads/NonSteamLaunchersInstallation/version.dll "${logged_in_home}/.local/share/Steam/steamapps/compatdata/$appid/pfx/drive_c/Program Files (x86)/Origin/"
 
     # Wait for the ORIGIN file to finish running
     wait
@@ -2339,7 +2339,7 @@ fi
 wait
 
 # Delete NonSteamLaunchersInstallation subfolder in Downloads folder
-rm -rf "$install_dir"
+rm -rf "$download_dir"
 
     echo "100"
     echo "# Installation Complete - Steam will now restart. Your launchers will be in your library!...Food for thought...do Jedis use Force Compatability?"
@@ -2628,9 +2628,6 @@ if [ ${#custom_websites[@]} -gt 0 ]; then
     done
 fi
 
-# Set the download directory
-download_dir=~/Downloads/NonSteamLaunchersInstallation
-
 # Create the download directory if it doesn't exist
 mkdir -p "$download_dir"
 
@@ -2638,14 +2635,14 @@ mkdir -p "$download_dir"
 python_version=$(python -c 'import sys; print(f"{sys.version_info.major}.{sys.version_info.minor}")')
 
 # Create a directory for the vdf module
-mkdir -p "$download_dir/lib/python$python_version/site-packages/vdf"
+mkdir -p "${download_dir}/lib/python${python_version}/site-packages/vdf"
 
 # Download the vdf module from the GitHub repository
 download_url="https://github.com/moraroy/NonSteamLaunchers-On-Steam-Deck/raw/main/Modules/vdf/__init__.py"
-wget -P "$download_dir/lib/python$python_version/site-packages/vdf" "$download_url"
+wget -P "${download_dir}/lib/python${python_version}/site-packages/vdf" "$download_url"
 
 # Set the PYTHONPATH environment variable
-export PYTHONPATH="$download_dir/lib/python$python_version/site-packages/:$PYTHONPATH"
+export PYTHONPATH="${download_dir}/lib/python${python_version}/site-packages/:$PYTHONPATH"
 
 # Set the default Steam directory
 steam_dir="${logged_in_home}/.local/share/Steam"
@@ -3144,4 +3141,4 @@ if os.path.exists(os.path.join(compatdata_dir, 'NonSteamLaunchers')):
 
 # TODO: might be better to relocate temp files to `/tmp` or even use `mktemp -d` since `rm -rf` is potentially dangerous without the `-i` flag
 # Delete NonSteamLaunchersInstallation subfolder in Downloads folder
-rm -rf "$install_dir"
+rm -rf "$download_dir"
