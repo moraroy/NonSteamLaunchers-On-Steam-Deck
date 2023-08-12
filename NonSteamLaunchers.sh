@@ -1324,7 +1324,7 @@ if [[ $options == "Find Games" ]]; then
     # Add execute permissions to the linux_BoilR file
     chmod +x linux_BoilR
 
-    # TODO: brittle subshell proces; should create working directory variable and launch explicitly with `bash -c "linux_BoilR"`
+    # TODO: brittle subshell proces; should ~~create working directory variable~~ [edit: `download_dir`] and launch explicitly with `bash -c "linux_BoilR"`
     # Run BoilR from the current directory
     ./linux_BoilR
 
