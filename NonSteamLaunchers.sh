@@ -1,13 +1,19 @@
-#!/bin/bash
+#!/usr/bin/env bash
+
+# shellcheck disable=SC2155
 
 # Create a log file in the same directory as the desktop file/.sh file
 exec >> $HOME/Downloads/NonSteamLaunchers-install.log 2>&1
 
+# TODO: this is silly -- if the script is being executed, doesn't need to mark itself as executable
+# * better to set permissions at a repo-level
+# * then an end user would have to explicitly call `chmod -x` to walk it back
 chmod +x "$0"
 
-set -x
+set -x              # activate debugging (execution shown)
+set -euo pipefail   # exit immediately, undefined vars are errors, capture error from pipes
 
-version=v2.98
+version=v2.99
 
 check_for_updates() {
     # Set the URL to the GitHub API for the repository
@@ -34,12 +40,6 @@ if [ ${#args[@]} -eq 0 ]; then
     check_for_updates
 fi
 
-
-
-
-
-
-
 # Check if the NonSteamLaunchersInstallation subfolder exists in the Downloads folder
 if [ -d "$HOME/Downloads/NonSteamLaunchersInstallation" ]; then
     # Delete the NonSteamLaunchersInstallation subfolder
@@ -49,21 +49,9 @@ else
     echo "NonSteamLaunchersInstallation subfolder does not exist"
 fi
 
+# Game Launchers
 
-
-
-
-
-
-
-
-
-
-
-
-
-#Game Launchers
-
+# TODO: parameterize hard-coded client versions (cf. 'app-25.6.2')
 # Set the paths to the launcher executables
 epic_games_launcher_path1="$HOME/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/Program Files (x86)/Epic Games/Launcher/Portal/Binaries/Win32/EpicGamesLauncher.exe"
 epic_games_launcher_path2="$HOME/.local/share/Steam/steamapps/compatdata/EpicGamesLauncher/pfx/drive_c/Program Files (x86)/Epic Games/Launcher/Portal/Binaries/Win32/EpicGamesLauncher.exe"
@@ -98,35 +86,13 @@ psplus_path2="$HOME/.local/share/Steam/steamapps/compatdata/PlaystationPlusLaunc
 dmm_path1="$HOME/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/Program Files/DMMGamePlayer/DMMGamePlayer.exe"
 dmm_path2="$HOME/.local/share/Steam/steamapps/compatdata/DMMGameLauncher/pfx/drive_c/Program Files/DMMGamePlayer/DMMGamePlayer.exe"
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-#Chrome File Path
-#chrome_installpath="/app/bin/chrome"
+# Chrome File Path
+# chrome_installpath="/app/bin/chrome"
 chrome_path="/usr/bin/flatpak"
 chrome_startdir="\"/usr/bin\""
 
-
-
-
-
-
-
-function CheckInstallations {
 # Check if Epic Games Launcher is installed
+function CheckInstallations {
 if [[ -f "$epic_games_launcher_path1" ]]; then
     # Epic Games Launcher is installed in path 1
     epic_games_value="FALSE"
@@ -366,14 +332,7 @@ else
     dmm_text="DMM Games"
 fi }
 
-
-
-
-
-
-
-
-
+# Verify launchers are installed
 function CheckInstallationDirectory {
     # Check if NonSteamLaunchers is installed
     if [[ -d "$HOME/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers" ]]; then
@@ -492,7 +451,7 @@ function CheckInstallationDirectory {
         # rockstar games launcher is not installed
         rockstargameslauncher_move_value="FALSE"
     fi
-    
+
     # Check if Glyph is installed
     if [[ -d "$HOME/.local/share/Steam/steamapps/compatdata/GlyphLauncher" ]]; then
         # Glyph is installed
@@ -511,6 +470,7 @@ function CheckInstallationDirectory {
         minecraftlauncher_move_value="FALSE"
     fi
 
+    # TODO: `pspluslauncher_move_value` is unused (SC2034)
     # Check if PlaystationPlus is installed
     if [[ -d "$HOME/.local/share/Steam/steamapps/compatdata/PlaystationPlusLauncher" ]]; then
         # PlaystationPlus is installed
@@ -529,12 +489,9 @@ function CheckInstallationDirectory {
         dmmlauncher_move_value="FALSE"
     fi }
 
-
-
 # Check which app IDs are installed
 CheckInstallations
 CheckInstallationDirectory
-
 
 # Get the command line arguments
 args=("$@")
@@ -557,8 +514,6 @@ if [ ${#args[@]} -eq 0 ]; then
     else
         # The user did not click the 'Cancel' button or select one of the extra buttons, so prompt for custom websites
         custom_websites_str=$(zenity --entry --title="Shortcut Creator" --text="Enter custom websites that you want shortcuts for, separated by commas. Leave blank and press ok if you dont want any. E.g. myspace.com, limewire.com, my.screenname.aol.com")
-
-
 
         # Split the custom_websites_str variable into an array using ',' as the delimiter
         IFS=',' read -ra custom_websites <<< "$custom_websites_str"
@@ -591,14 +546,12 @@ else
     fi
 fi
 
-
+# TODO: SC2145
 # Print the selected launchers and custom websites
 echo "Selected launchers: $selected_launchers"
 echo "Selected launchers: $selected_launchers_str"
 echo "Custom websites: ${custom_websites[@]}"
 echo "Separate App IDs: $separate_app_ids"
-
-
 
 # Set the value of the options variable
 if [ ${#args[@]} -eq 0 ]; then
@@ -608,10 +561,6 @@ else
     # Command line arguments were provided, so set the value of the options variable using the selected_launchers_str variable
     options="$selected_launchers_str"
 fi
-
-
-
-
 
 # Check if the cancel button was clicked
 if [ $? -eq 1 ] && [[ $options != "Start Fresh" ]] && [[ $options != "Move to SD Card" ]] && [[ $options != "Uninstall" ]] && [[ $options != "Find Games" ]]; then
@@ -627,10 +576,6 @@ if [ -z "$options" ] && [ -z "$custom_websites" ]; then
     exit 1
 fi
 
-
-
-
-
 # Check if the user selected to use separate app IDs
 if [[ $options == *"SEPARATE APP IDS - CHECK THIS TO SEPARATE YOUR PREFIX'S"* ]]; then
     # User selected to use separate app IDs
@@ -640,21 +585,12 @@ else
     use_separate_appids=false
 fi
 
-
-
-
-
-
-
 # Check if the user selected both Origin and EA App
 if [[ $options == *"Origin"* ]] && [[ $options == *"EA App"* ]] && [ "$use_separate_appids" = false ]; then
     # User selected both Origin and EA App without selecting separate app IDs
     zenity --error --text="You cannot select both Origin and EA App at the same time unless you select separate app IDs." --width=200 --height=150
     exit 1
 fi
-
-
-
 
 # Check if Origin is already installed
 if [[ -f "$origin_path1" ]] || [[ -f "$origin_path2" ]]; then
@@ -666,9 +602,6 @@ if [[ -f "$origin_path1" ]] || [[ -f "$origin_path2" ]]; then
     fi
 fi
 
-
-
-
 # Check if EA App is already installed
 if [[ -f "$eaapp_path1" ]] || [[ -f "$eaapp_path2" ]]; then
     # EA App is installed
@@ -678,15 +611,6 @@ if [[ -f "$eaapp_path1" ]] || [[ -f "$eaapp_path2" ]]; then
         exit 1
     fi
 fi
-
-
-
-
-
-
-
-
-
 
 # Define the StartFreshFunction
 function StartFreshFunction {
@@ -699,20 +623,21 @@ function StartFreshFunction {
     # Iterate over each folder name in the folder_names array
     for folder in "${folder_names[@]}"; do
         # Check if the folder exists
-        if [ -e "$compatdata_dir/$folder" ]; then
+        if [ -e "${compatdata_dir}/${folder}" ]; then
             # Check if the folder is a symbolic link
-            if [ -L "$compatdata_dir/$folder" ]; then
+            if [ -L "${compatdata_dir}/${folder}" ]; then
                 # Get the path of the target of the symbolic link
-                target_path=$(readlink -f "$compatdata_dir/$folder")
+                target_path=$(readlink -f "${compatdata_dir}/${folder}")
 
                 # Delete the target of the symbolic link
                 rm -rf "$target_path"
 
                 # Delete the symbolic link
-                unlink "$compatdata_dir/$folder"
+                unlink "${compatdata_dir}/${folder}"
             else
                 # Delete the folder
-                rm -rf "$compatdata_dir/$folder"
+                # shellcheck disable=SC2115
+                rm -rf "${compatdata_dir}/${folder}"
             fi
         fi
     done
@@ -748,6 +673,7 @@ function StartFreshFunction {
         fi
     done
 
+    # TODO: declare array and use find/for loop to avoid duplicate `rm` processes
     rm -rf "/run/media/mmcblk0p1/NonSteamLaunchers/"
     rm -rf "/run/media/mmcblk0p1/EpicGamesLauncher/"
     rm -rf "/run/media/mmcblk0p1/GogGalaxyLauncher/"
@@ -789,7 +715,6 @@ if [[ $options == "Start Fresh" ]] || [[ $selected_launchers == "Start Fresh" ]]
     fi
 fi
 
-
 if [[ $options == "Uninstall" ]]; then
 # Check if the cancel button was clicked
     # The OK button was not clicked
@@ -815,7 +740,6 @@ if [[ $options == "Uninstall" ]]; then
         FALSE "Minecraft"\
         FALSE "Playstation Plus"\
         FALSE "DMM Games")
-
 
     if [[ $options != "" ]]; then
         # The Uninstall button was clicked
@@ -1051,26 +975,12 @@ if [[ $options == "Uninstall" ]]; then
   exit
 fi
 
-
-
-
-
-
-
-
-
-
-
-
-
-
 if [[ $options == "Move to SD Card" ]]; then
     # The Move to SD Card button was clicked
     # Check which app IDs are installed
 
     # Add similar checks for other app IDs here
     CheckInstallationDirectory
-
 
     move_options=$(zenity --list --text="Which app IDs do you want to move to the SD card?" --checklist --column="Select" --column="App ID" $nonsteamlauncher_move_value "NonSteamLaunchers" $epicgameslauncher_move_value "EpicGamesLauncher" $goggalaxylauncher_move_value "GogGalaxyLauncher" $originlauncher_move_value "OriginLauncher" $uplaylauncher_move_value "UplayLauncher" $battlenetlauncher_move_value "Battle.netLauncher" $eaapplauncher_move_value "TheEAappLauncher" $amazongameslauncher_move_value "AmazonGamesLauncher" $itchiolauncher_move_value "itchioLauncher" $legacygameslauncher_move_value "LegacyGamesLauncher" $humblegameslauncher_move_value "HumbleGamesLauncher" $indiegalalauncher_move_value "IndieGalaLauncher" $rockstargameslauncher_move_value "RockstarGamesLauncher" $glyphlauncher_move_value "GlyphLauncher" $minecraftlauncher_move_value "MinecraftLauncher" $dmmlauncher_move_value "DMMGameLauncher" --width=335 --height=524)
 
@@ -1084,95 +994,94 @@ if [[ $options == "Move to SD Card" ]]; then
     # Set the path to the new directory on the SD card
     new_dir="/run/media/mmcblk0p1"
 
-
     # Check if NonSteamLaunchers is installed
     if [[ -d "$HOME/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers" ]]; then
-    # NonSteamLaunchers is installed
-    original_dir="$HOME/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers"
+        # NonSteamLaunchers is installed
+        original_dir="$HOME/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers"
     else
-    # NonSteamLaunchers is not installed
-    original_dir=""
+        # NonSteamLaunchers is not installed
+        original_dir=""
     fi
 
     # Check if the user selected to move NonSteamLaunchers
     if [[ $move_options == *"NonSteamLaunchers"* ]] && [[ -n $original_dir ]]; then
-    # Move the NonSteamLaunchers directory to the SD card
-    mv "$original_dir" "$new_dir/NonSteamLaunchers"
+        # Move the NonSteamLaunchers directory to the SD card
+        mv "$original_dir" "$new_dir/NonSteamLaunchers"
 
-    # Create a symbolic link to the new directory
-    ln -s "$new_dir/NonSteamLaunchers" "$original_dir"
+        # Create a symbolic link to the new directory
+        ln -s "$new_dir/NonSteamLaunchers" "$original_dir"
     fi
 
     # Check if EpicGamesLauncher is installed
     if [[ -d "$HOME/.local/share/Steam/steamapps/compatdata/EpicGamesLauncher" ]]; then
-    # EpicGamesLauncher is installed
-    original_dir="$HOME/.local/share/Steam/steamapps/compatdata/EpicGamesLauncher"
+        # EpicGamesLauncher is installed
+        original_dir="$HOME/.local/share/Steam/steamapps/compatdata/EpicGamesLauncher"
     else
-    # EpicGamesLauncher is not installed
-    original_dir=""
+        # EpicGamesLauncher is not installed
+        original_dir=""
     fi
 
     # Check if the user selected to move EpicGamesLauncher
     if [[ $move_options == *"EpicGamesLauncher"* ]] && [[ -n $original_dir ]]; then
-    # Move the EpicGamesLauncher directory to the SD card
-    mv "$original_dir" "$new_dir/EpicGamesLauncher"
+        # Move the EpicGamesLauncher directory to the SD card
+        mv "$original_dir" "$new_dir/EpicGamesLauncher"
 
-    # Create a symbolic link to the new directory
-    ln -s "$new_dir/EpicGamesLauncher" "$original_dir"
+        # Create a symbolic link to the new directory
+        ln -s "$new_dir/EpicGamesLauncher" "$original_dir"
     fi
 
     # Check if GogGalaxyLauncher is installed
     if [[ -d "$HOME/.local/share/Steam/steamapps/compatdata/GogGalaxyLauncher" ]]; then
-    # GogGalaxyLauncher is installed
-    original_dir="$HOME/.local/share/Steam/steamapps/compatdata/GogGalaxyLauncher"
+        # GogGalaxyLauncher is installed
+        original_dir="$HOME/.local/share/Steam/steamapps/compatdata/GogGalaxyLauncher"
     else
-    # GogGalaxyLauncher is not installed
-    original_dir=""
+        # GogGalaxyLauncher is not installed
+        original_dir=""
     fi
 
     # Check if the user selected to move GogGalaxyLauncher
     if [[ $move_options == *"GogGalaxyLauncher"* ]] && [[ -n $original_dir ]]; then
-    # Move the GogGalaxyLauncher directory to the SD card
-    mv "$original_dir" "$new_dir/GogGalaxyLauncher"
+        # Move the GogGalaxyLauncher directory to the SD card
+        mv "$original_dir" "$new_dir/GogGalaxyLauncher"
 
-    # Create a symbolic link to the new directory
-    ln -s "$new_dir/GogGalaxyLauncher" "$original_dir"
+        # Create a symbolic link to the new directory
+        ln -s "$new_dir/GogGalaxyLauncher" "$original_dir"
     fi
 
     # Check if OriginLauncher is installed
     if [[ -d "$HOME/.local/share/Steam/steamapps/compatdata/OriginLauncher" ]]; then
-    # OriginLauncher is installed
-    original_dir="$HOME/.local/share/Steam/steamapps/compatdata/OriginLauncher"
+        # OriginLauncher is installed
+        original_dir="$HOME/.local/share/Steam/steamapps/compatdata/OriginLauncher"
     else
-    # OriginLauncher is not installed
-    original_dir=""
+        # OriginLauncher is not installed
+        original_dir=""
     fi
 
     # Check if the user selected to move OriginLauncher
     if [[ $move_options == *"OriginLauncher"* ]] && [[ -n $original_dir ]]; then
-    # Move the OriginLauncher directory to the SD card
-    mv "$original_dir" "$new_dir/OriginLauncher"
+        # Move the OriginLauncher directory to the SD card
+        mv "$original_dir" "$new_dir/OriginLauncher"
 
-    # Create a symbolic link to the new directory
-    ln -s "$new_dir/OriginLauncher" "$original_dir"
+        # Create a symbolic link to the new directory
+        ln -s "$new_dir/OriginLauncher" "$original_dir"
     fi
 
     # Check if UplayLauncher is installed
     if [[ -d "$HOME/.local/share/Steam/steamapps/compatdata/UplayLauncher" ]]; then
-    # UplayLauncher is installed
-    original_dir="$HOME/.local/share/Steam/steamapps/compatdata/UplayLauncher"
+        # UplayLauncher is installed
+        original_dir="$HOME/.local/share/Steam/steamapps/compatdata/UplayLauncher"
     else
-    # UplayLauncher is not installed
-    original_dir=""
+        # UplayLauncher is not installed
+        original_dir=""
     fi
 
     # Check if the user selected to move UplayLauncher
     if [[ $move_options == *"UplayLauncher"* ]] && [[ -n $original_dir ]]; then
-    # Move the UplayLauncher directory to the SD card
-    mv "$original_dir" "$new_dir/UplayLauncher"
+        # Move the UplayLauncher directory to the SD card
+        mv "$original_dir" "$new_dir/UplayLauncher"
 
-    # Create a symbolic link to the new directory
-    ln -s "$new_dir/UplayLauncher" "$original_dir"
+        # Create a symbolic link to the new directory
+        ln -s "$new_dir/UplayLauncher" "$original_dir"
     fi
 
     # Check if Battle.netLauncher is installed
@@ -1258,11 +1167,11 @@ if [[ $options == "Move to SD Card" ]]; then
 
     # Check if the user selected to move LegacyGamesLauncher
     if [[ $move_options == *"LegacyGamesLauncher"* ]] && [[ -n $original_dir ]]; then
-    # Move the LegacyGamesLauncher directory to the SD card
-    mv "$original_dir" "$new_dir/LegacyGamesLauncher"
+        # Move the LegacyGamesLauncher directory to the SD card
+        mv "$original_dir" "$new_dir/LegacyGamesLauncher"
 
-    # Create a symbolic link to the new directory
-    ln -s "$new_dir/LegacyGamesLauncher" "$original_dir"
+        # Create a symbolic link to the new directory
+        ln -s "$new_dir/LegacyGamesLauncher" "$original_dir"
     fi
 
     # Check if HumbleGamesLauncher is installed
@@ -1373,18 +1282,11 @@ if [[ $options == "Move to SD Card" ]]; then
         ln -s "$new_dir/DMMGameLauncher" "$original_dir"
     fi
 
-
-
-
+    # TODO: verfiy non-zero exit is necessary
+    # ! Why the non-zero return?
     # Exit the script
     exit 1
-
 fi
-
-
-
-
-
 
 # Check if the user clicked the "Find Games" button
 if [[ $options == "Find Games" ]]; then
@@ -1396,12 +1298,14 @@ if [[ $options == "Find Games" ]]; then
     fi
 
     # Download the latest BoilR from GitHub (Linux version)
+    mkdir -p "$HOME/Downloads/NonSteamLaunchersInstallation"
     cd "$HOME/Downloads/NonSteamLaunchersInstallation"
     wget https://github.com/PhilipK/BoilR/releases/download/v.1.9.1/linux_BoilR
 
     # Add execute permissions to the linux_BoilR file
     chmod +x linux_BoilR
 
+    # TODO: brittle subshell proces; should create working directory variable and launch explicitly with `bash -c "linux_BoilR"`
     # Run BoilR from the current directory
     ./linux_BoilR
 
@@ -1409,19 +1313,9 @@ if [[ $options == "Find Games" ]]; then
     exit
 fi
 
-
-
-
-
-
-
-
-
-
-
+# TODO: probably better to break this subshell into a function that can then be redirected to zenity
+# Massive subshell pipes into `zenity --progress` around L2320 for GUI rendering
 (
-
-
 
 echo "0"
 echo "# Detecting, Updating and Installing GE-Proton"
@@ -1430,11 +1324,6 @@ echo "# Detecting, Updating and Installing GE-Proton"
     if [ ! -d "$HOME/.steam/root/compatibilitytools.d" ]; then
     mkdir -p "$HOME/.steam/root/compatibilitytools.d"
 fi
-
-
-
-
-
 
 # Create NonSteamLaunchersInstallation subfolder in Downloads folder
 mkdir -p ~/Downloads/NonSteamLaunchersInstallation
@@ -1445,10 +1334,6 @@ proton_dir=$(find ~/.steam/root/compatibilitytools.d -maxdepth 1 -type d -name "
 # Set the URLs to download GE-Proton from
 ge_proton_url1=https://github.com/GloriousEggroll/proton-ge-custom/releases/latest/download/GE-Proton.tar.gz
 ge_proton_url2=https://github.com/GloriousEggroll/proton-ge-custom/releases/download/GE-Proton8-11/GE-Proton8-11.tar.gz
-
-
-
-
 
 # Check if GE-Proton is installed
 if [ -z "$proton_dir" ]; then
@@ -1503,13 +1388,8 @@ installed_version=$(basename $proton_dir | sed 's/GE-Proton-//')
     fi
 fi
 
-
-
-
 echo "10"
 echo "# Setting files in their place"
-
-
 
 # Set the appid for the non-Steam game
 appid=NonSteamLaunchers
@@ -1610,11 +1490,8 @@ dmm_url=https://apidgp-gameplayer.games.dmm.com/archive/latest?app=dgp5win
 # Set the path to save the Playstation Launcher to
 dmm_file=~/Downloads/NonSteamLaunchersInstallation/DMMGamePlayer-Setup-5.2.16.exe
 
-
-
 echo "20"
 echo "# Creating files & folders"
-
 
 # Check if the user selected any launchers
 if [ -n "$options" ]; then
@@ -1626,26 +1503,17 @@ if [ -n "$options" ]; then
     fi
 fi
 
-
-
 # Change working directory to Proton's
 cd $proton_dir
 
 # Set the STEAM_RUNTIME environment variable
 export STEAM_RUNTIME="$HOME/.steam/root/ubuntu12_32/steam-runtime/run.sh"
 
-
 # Set the STEAM_COMPAT_CLIENT_INSTALL_PATH environment variable
-export STEAM_COMPAT_CLIENT_INSTALL_PATH="~/.local/share/Steam"
+export STEAM_COMPAT_CLIENT_INSTALL_PATH="$HOME/.local/share/Steam"
 
 # Set the STEAM_COMPAT_DATA_PATH environment variable for the first file
-export STEAM_COMPAT_DATA_PATH=~/.local/share/Steam/steamapps/compatdata/$appid
-
-
-
-
-
-
+export STEAM_COMPAT_DATA_PATH="$HOME/.local/share/Steam/steamapps/compatdata/${appid}"
 
 wait
 echo "30"
@@ -1656,135 +1524,121 @@ if [[ $options == *"Epic Games"* ]]; then
     # User selected Epic Games Launcher
     echo "User selected Epic Games"
 
+    # Set the appid for the Epic Games Launcher
+    if [ "$use_separate_appids" = true ]; then
+    appid=EpicGamesLauncher
+    else
+    appid=NonSteamLaunchers
+    fi
 
-        # Set the appid for the Epic Games Launcher
-        if [ "$use_separate_appids" = true ]; then
-        appid=EpicGamesLauncher
-        else
-        appid=NonSteamLaunchers
-        fi
+    # Create app id folder in compatdata folder if it doesn't exist
+    if [ ! -d "$HOME/.local/share/Steam/steamapps/compatdata/$appid" ]; then
+        mkdir -p "$HOME/.local/share/Steam/steamapps/compatdata/$appid"
+    fi
 
+    # Change working directory to Proton's
+    cd $proton_dir
 
-        # Create app id folder in compatdata folder if it doesn't exist
-        if [ ! -d "$HOME/.local/share/Steam/steamapps/compatdata/$appid" ]; then
-            mkdir -p "$HOME/.local/share/Steam/steamapps/compatdata/$appid"
-        fi
+    # Set the STEAM_COMPAT_CLIENT_INSTALL_PATH environment variable
+    export STEAM_COMPAT_CLIENT_INSTALL_PATH="$HOME/.local/share/Steam"
 
-        # Change working directory to Proton's
-        cd $proton_dir
+    # Set the STEAM_COMPAT_DATA_PATH environment variable for Epic Games Launcher
+    export STEAM_COMPAT_DATA_PATH="$HOME/.local/share/Steam/steamapps/compatdata/${appid}"
 
-        # Set the STEAM_COMPAT_CLIENT_INSTALL_PATH environment variable
-        export STEAM_COMPAT_CLIENT_INSTALL_PATH="~/.local/share/Steam"
+    # Download MSI file
+    if [ ! -f "$msi_file" ]; then
+        echo "Downloading MSI file"
+        wget $msi_url -O $msi_file
+    fi
 
-        # Set the STEAM_COMPAT_DATA_PATH environment variable for Epic Games Launcher
-        export STEAM_COMPAT_DATA_PATH=~/.local/share/Steam/steamapps/compatdata/$appid
-
-
-        # Download MSI file
-        if [ ! -f "$msi_file" ]; then
-            echo "Downloading MSI file"
-            wget $msi_url -O $msi_file
-        fi
-
-        # Run the MSI file using Proton with the /passive option
-        echo "Running MSI file using Proton with the /passive option"
-        "$STEAM_RUNTIME" "$proton_dir/proton" run MsiExec.exe /i "$msi_file" /qn
-
+    # Run the MSI file using Proton with the /passive option
+    echo "Running MSI file using Proton with the /passive option"
+    "$STEAM_RUNTIME" "$proton_dir/proton" run MsiExec.exe /i "$msi_file" /qn
 fi
 
-
+# TODO: capture PID of each `wait` process to make sure it's not an infinite loop
 # Wait for the MSI file to finish running
 wait
 echo "40"
 echo "# Downloading & Installing Gog Galaxy...please wait..."
-
 
 # Check if the user selected GOG Galaxy
 if [[ $options == *"GOG Galaxy"* ]]; then
     # User selected GOG Galaxy
     echo "User selected GOG Galaxy"
 
-
-        # Set the appid for the Gog Galaxy 2.0
-        if [ "$use_separate_appids" = true ]; then
-            appid=GogGalaxyLauncher
-        else
-            appid=NonSteamLaunchers
-        fi
-
-        # Create app id folder in compatdata folder if it doesn't exist
-        if [ ! -d "$HOME/.local/share/Steam/steamapps/compatdata/$appid" ]; then
-            mkdir -p "$HOME/.local/share/Steam/steamapps/compatdata/$appid"
-        fi
-
-        # Change working directory to Proton's
-        cd $proton_dir
-
-        # Set the STEAM_COMPAT_CLIENT_INSTALL_PATH environment variable
-        export STEAM_COMPAT_CLIENT_INSTALL_PATH="~/.local/share/Steam"
-
-        # Set the STEAM_COMPAT_DATA_PATH environment variable for Epic Games Launcher
-        export STEAM_COMPAT_DATA_PATH=~/.local/share/Steam/steamapps/compatdata/$appid
-
-        # Download EXE file
-        if [ ! -f "$exe_file" ]; then
-            echo "Downloading EXE file"
-            wget $exe_url -O $exe_file
-        fi
-
-        # Run the EXE file using Proton without the /passive option
-        echo "Running EXE file using Proton without the /passive option"
-        "$STEAM_RUNTIME" "$proton_dir/proton" run "$exe_file" &
-
-        echo "45"
-        echo "# Downloading & Installing Gog Galaxy...Please wait..."
-
-        # Cancel & Exit the GOG Galaxy Setup Wizard
-        while true; do
-            if pgrep -f "GalaxySetup.tmp" > /dev/null; then
-                pkill -f "GalaxySetup.tmp"
-                break
-            fi
-            sleep 1
-        done
-
-        # Navigate to %LocalAppData%\Temp
-        cd "$HOME/.local/share/Steam/steamapps/compatdata/$appid/pfx/drive_c/users/steamuser/Temp"
-
-        # Find the GalaxyInstaller_XXXXX folder and copy it to C:\Downloads
-        galaxy_installer_folder=$(find . -maxdepth 1 -type d -name "GalaxyInstaller_*" | head -n1)
-        cp -r "$galaxy_installer_folder" ~/Downloads/NonSteamLaunchersInstallation/
-
-        # Navigate to the C:\Downloads\GalaxyInstaller_XXXXX folder
-        cd ~/Downloads/NonSteamLaunchersInstallation/"$(basename $galaxy_installer_folder)"
-
-        # Run GalaxySetup.exe with the /VERYSILENT and /NORESTART options
-        echo "Running GalaxySetup.exe with the /VERYSILENT and /NORESTART options"
-        "$STEAM_RUNTIME" "$proton_dir/proton" run GalaxySetup.exe /VERYSILENT /NORESTART
-
-        # Wait for the EXE file to finish running
-        wait
-
+    # Set the appid for the Gog Galaxy 2.0
+    if [ "$use_separate_appids" = true ]; then
+        appid=GogGalaxyLauncher
     else
-        # Gog Galaxy Launcher is already installed
-        echo "Gog Galaxy Launcher is already installed"
+        appid=NonSteamLaunchers
+    fi
 
+    # Create app id folder in compatdata folder if it doesn't exist
+    if [ ! -d "$HOME/.local/share/Steam/steamapps/compatdata/$appid" ]; then
+        mkdir -p "$HOME/.local/share/Steam/steamapps/compatdata/$appid"
+    fi
+
+    # Change working directory to Proton's
+    cd "$proton_dir"
+
+    # Set the STEAM_COMPAT_CLIENT_INSTALL_PATH environment variable
+    export STEAM_COMPAT_CLIENT_INSTALL_PATH="$HOME/.local/share/Steam"
+
+    # Set the STEAM_COMPAT_DATA_PATH environment variable for Epic Games Launcher
+    export STEAM_COMPAT_DATA_PATH="$HOME/.local/share/Steam/steamapps/compatdata/${appid}"
+
+    # Download EXE file
+    if [ ! -f "$exe_file" ]; then
+        echo "Downloading EXE file"
+        wget $exe_url -O $exe_file
+    fi
+
+    # Run the EXE file using Proton without the /passive option
+    echo "Running EXE file using Proton without the /passive option"
+    "$STEAM_RUNTIME" "$proton_dir/proton" run "$exe_file" &
+
+    echo "45"
+    echo "# Downloading & Installing Gog Galaxy...Please wait..."
+
+    # Cancel & Exit the GOG Galaxy Setup Wizard
+    while true; do
+        if pgrep -f "GalaxySetup.tmp" > /dev/null; then
+            pkill -f "GalaxySetup.tmp"
+            break
+        fi
+        sleep 1
+    done
+
+    # Navigate to %LocalAppData%\Temp
+    cd "$HOME/.local/share/Steam/steamapps/compatdata/$appid/pfx/drive_c/users/steamuser/Temp"
+
+    # Find the GalaxyInstaller_XXXXX folder and copy it to C:\Downloads
+    galaxy_installer_folder=$(find . -maxdepth 1 -type d -name "GalaxyInstaller_*" | head -n1)
+    cp -r "$galaxy_installer_folder" ~/Downloads/NonSteamLaunchersInstallation/
+
+    # Navigate to the C:\Downloads\GalaxyInstaller_XXXXX folder
+    cd ~/Downloads/NonSteamLaunchersInstallation/"$(basename $galaxy_installer_folder)"
+
+    # Run GalaxySetup.exe with the /VERYSILENT and /NORESTART options
+    echo "Running GalaxySetup.exe with the /VERYSILENT and /NORESTART options"
+    "$STEAM_RUNTIME" "$proton_dir/proton" run GalaxySetup.exe /VERYSILENT /NORESTART
+
+    # Wait for the EXE file to finish running
+    wait
+else
+    # Gog Galaxy Launcher is already installed
+    echo "Gog Galaxy Launcher is already installed"
 fi
-
-
 
 wait
 echo "50"
 echo "# Downloading & Installing Uplay ...please wait..."
 
-
 # Check if user selected Uplay
 if [[ $options == *"Uplay"* ]]; then
     # User selected Uplay
     echo "User selected Uplay"
-
-
-
 
     # Set the appid for the Ubisoft Launcher
     if [ "$use_separate_appids" = true ]; then
@@ -1802,11 +1656,10 @@ if [[ $options == *"Uplay"* ]]; then
     cd $proton_dir
 
     # Set the STEAM_COMPAT_CLIENT_INSTALL_PATH environment variable
-    export STEAM_COMPAT_CLIENT_INSTALL_PATH="~/.local/share/Steam"
+    export STEAM_COMPAT_CLIENT_INSTALL_PATH="$HOME/.local/share/Steam"
 
     # Set the STEAM_COMPAT_DATA_PATH environment variable for Epic Games Launcher
-    export STEAM_COMPAT_DATA_PATH=~/.local/share/Steam/steamapps/compatdata/$appid
-
+    export STEAM_COMPAT_DATA_PATH="$HOME/.local/share/Steam/steamapps/compatdata/${appid}"
 
     # Download UBI file
     if [ ! -f "$ubi_file" ]; then
@@ -1824,13 +1677,10 @@ wait
 echo "60"
 echo "# Downloading & Installing Origin...please wait..."
 
-
-
 # Check if user selected Origin
 if [[ $options == *"Origin"* ]]; then
     # User selected Origin
     echo "User selected Origin"
-
 
     # Set the appid for the Origin Launcher
     if [ "$use_separate_appids" = true ]; then
@@ -1848,11 +1698,10 @@ if [[ $options == *"Origin"* ]]; then
     cd $proton_dir
 
     # Set the STEAM_COMPAT_CLIENT_INSTALL_PATH environment variable
-    export STEAM_COMPAT_CLIENT_INSTALL_PATH="~/.local/share/Steam"
+    export STEAM_COMPAT_CLIENT_INSTALL_PATH="$HOME/.local/share/Steam"
 
     # Set the STEAM_COMPAT_DATA_PATH environment variable for Epic Games Launcher
-    export STEAM_COMPAT_DATA_PATH=~/.local/share/Steam/steamapps/compatdata/$appid
-
+    export STEAM_COMPAT_DATA_PATH="$HOME/.local/share/Steam/steamapps/compatdata/${appid}"
 
     # Download ORIGIN file
     if [ ! -f "$origin_file" ]; then
@@ -1871,7 +1720,7 @@ if [[ $options == *"Origin"* ]]; then
     pkill Origin.exe
 
     # Download version.dll file
-    if [ ! -f "~/Downloads/NonSteamLaunchersInstallation/version.dll" ]; then
+    if [ ! -f "$HOME/Downloads/NonSteamLaunchersInstallation/version.dll" ]; then
         echo "Downloading version.dll file"
         wget https://github.com/p0358/Fuck_off_EA_App/releases/download/v2/version.dll -O ~/Downloads/NonSteamLaunchersInstallation/version.dll
     fi
@@ -1880,10 +1729,8 @@ if [[ $options == *"Origin"* ]]; then
     echo "Moving version.dll file to desired location"
     mv ~/Downloads/NonSteamLaunchersInstallation/version.dll "$HOME/.local/share/Steam/steamapps/compatdata/$appid/pfx/drive_c/Program Files (x86)/Origin/"
 
-
     # Wait for the ORIGIN file to finish running
     wait
-
 fi
 
 wait
@@ -1894,8 +1741,6 @@ echo "# Downloading & Installing Battle.net...please wait..."
 if [[ $options == *"Battle.net"* ]]; then
     # User selected Battle.net
     echo "User selected Battle.net"
-
-
 
     # Set the appid for the Battlenet Launcher
     if [ "$use_separate_appids" = true ]; then
@@ -1913,22 +1758,20 @@ if [[ $options == *"Battle.net"* ]]; then
     cd $proton_dir
 
     # Set the STEAM_COMPAT_CLIENT_INSTALL_PATH environment variable
-    export STEAM_COMPAT_CLIENT_INSTALL_PATH="~/.local/share/Steam"
+    export STEAM_COMPAT_CLIENT_INSTALL_PATH="$HOME/.local/share/Steam"
 
     # Set the STEAM_COMPAT_DATA_PATH environment variable for Epic Games Launcher
-    export STEAM_COMPAT_DATA_PATH=~/.local/share/Steam/steamapps/compatdata/$appid
+    export STEAM_COMPAT_DATA_PATH="$HOME/.local/share/Steam/steamapps/compatdata/${appid}"
 
-
-      # Download BATTLE file
+    # Download BATTLE file
     if [ ! -f "$battle_file" ]; then
         echo "Downloading BATTLE file"
         wget $battle_url -O $battle_file
     fi
 
     # Run the BATTLE file using Proton with the /passive option
-        echo "Running BATTLE file using Proton with the /passive option"
-        "$STEAM_RUNTIME" "$proton_dir/proton" run "$battle_file" Battle.net-Setup.exe --lang=enUS --installpath="C:\Program Files (x86)\Battle.net"
-
+    echo "Running BATTLE file using Proton with the /passive option"
+    "$STEAM_RUNTIME" "$proton_dir/proton" run "$battle_file" Battle.net-Setup.exe --lang=enUS --installpath="C:\Program Files (x86)\Battle.net"
 fi
 
 wait
@@ -1940,9 +1783,6 @@ echo "# Downloading & Installing Amazon Games...please wait..."
 if [[ $options == *"Amazon Games"* ]]; then
     # User selected Amazon Games
     echo "User selected Amazon Games"
-
-
-
 
     # Set the appid for the Amazon Games Launcher
     if [ "$use_separate_appids" = true ]; then
@@ -1960,11 +1800,10 @@ if [[ $options == *"Amazon Games"* ]]; then
     cd $proton_dir
 
     # Set the STEAM_COMPAT_CLIENT_INSTALL_PATH environment variable
-    export STEAM_COMPAT_CLIENT_INSTALL_PATH="~/.local/share/Steam"
+    export STEAM_COMPAT_CLIENT_INSTALL_PATH="$HOME/.local/share/Steam"
 
     # Set the STEAM_COMPAT_DATA_PATH environment variable for Amazon Games Launcher
-    export STEAM_COMPAT_DATA_PATH=~/.local/share/Steam/steamapps/compatdata/$appid
-
+    export STEAM_COMPAT_DATA_PATH="$HOME/.local/share/Steam/steamapps/compatdata/${appid}"
 
     # Download Amazon file
     if [ ! -f "$amazon_file" ]; then
@@ -1972,27 +1811,21 @@ if [[ $options == *"Amazon Games"* ]]; then
         wget $amazon_url -O $amazon_file
     fi
 
-
     # Run the Amazon file using Proton with the /passive option
     echo "Running Amazon file using Proton with the /passive option"
-    "$STEAM_RUNTIME" "$proton_dir/proton" run "$amazon_file" &
-
+    "$STEAM_RUNTIME" "${proton_dir}/proton" run "$amazon_file" &
 
     while true; do
-    if pgrep -f "Amazon Games.exe" > /dev/null; then
-        pkill -f "Amazon Games.exe"
-        break
-    fi
-    sleep 1
-done
+        if pgrep -f "Amazon Games.exe" > /dev/null; then
+            pkill -f "Amazon Games.exe"
+            break
+        fi
+        sleep 1
+    done
 
     # Wait for the Amazon file to finish running
     wait
 fi
-
-
-
-
 
 wait
 
@@ -2003,8 +1836,6 @@ echo "# Downloading & Installing EA App...please wait..."
 if [[ $options == *"EA App"* ]]; then
     # User selected EA App
     echo "User selected EA App"
-
-
 
     # Set the appid for the EA App Launcher
     if [ "$use_separate_appids" = true ]; then
@@ -2022,11 +1853,10 @@ if [[ $options == *"EA App"* ]]; then
     cd $proton_dir
 
     # Set the STEAM_COMPAT_CLIENT_INSTALL_PATH environment variable
-    export STEAM_COMPAT_CLIENT_INSTALL_PATH="~/.local/share/Steam"
+    export STEAM_COMPAT_CLIENT_INSTALL_PATH="$HOME/.local/share/Steam"
 
     # Set the STEAM_COMPAT_DATA_PATH environment variable for Epic Games Launcher
-    export STEAM_COMPAT_DATA_PATH=~/.local/share/Steam/steamapps/compatdata/$appid
-
+    export STEAM_COMPAT_DATA_PATH="$HOME/.local/share/Steam/steamapps/compatdata/${appid}"
 
     # Download EA App file
     if [ ! -f "$eaapp_file" ]; then
@@ -2034,23 +1864,22 @@ if [[ $options == *"EA App"* ]]; then
         wget $eaapp_url -O $eaapp_file
     fi
 
-
     # Run the EA App file using Proton with the /passive option
     echo "Running EA App file using Proton with the /passive option"
     "$STEAM_RUNTIME" "$proton_dir/proton" run "$eaapp_file" /quiet
 
     counter=0
-while true; do
-    if pgrep -f "EABackgroundService.exe" > /dev/null; then
-        pkill -f "EABackgroundService.exe"
-        break
-    fi
-    sleep 1
-    counter=$((counter + 1))
-    if [ $counter -ge 10 ]; then
-        break
-    fi
-done
+    while true; do
+        if pgrep -f "EABackgroundService.exe" > /dev/null; then
+            pkill -f "EABackgroundService.exe"
+            break
+        fi
+        sleep 1
+        counter=$((counter + 1))
+        if [ $counter -ge 10 ]; then
+            break
+        fi
+    done
 
     # Wait for the EA App file to finish running
     wait
@@ -2064,8 +1893,6 @@ echo "# Downloading & Installing itch.io...please wait..."
 if [[ $options == *"itch.io"* ]]; then
     # User selected itchio Launcher
     echo "User selected itch.io"
-
-
 
     # Set the appid for the itchio Launcher
     if [ "$use_separate_appids" = true ]; then
@@ -2083,11 +1910,10 @@ if [[ $options == *"itch.io"* ]]; then
     cd $proton_dir
 
     # Set the STEAM_COMPAT_CLIENT_INSTALL_PATH environment variable
-    export STEAM_COMPAT_CLIENT_INSTALL_PATH="~/.local/share/Steam"
+    export STEAM_COMPAT_CLIENT_INSTALL_PATH="$HOME/.local/share/Steam"
 
     # Set the STEAM_COMPAT_DATA_PATH environment variable for Epic Games Launcher
-    export STEAM_COMPAT_DATA_PATH=~/.local/share/Steam/steamapps/compatdata/$appid
-
+    export STEAM_COMPAT_DATA_PATH="$HOME/.local/share/Steam/steamapps/compatdata/${appid}"
 
     # Download itchio file
     if [ ! -f "$itchio_file" ]; then
@@ -2109,7 +1935,6 @@ if [[ $options == *"Legacy Games"* ]]; then
     # User selected Legacy Games
     echo "User selected Legacy Games"
 
-
     # Set the appid for the Legacy Games Launcher
     if [ "$use_separate_appids" = true ]; then
         appid=LegacyGamesLauncher
@@ -2126,11 +1951,10 @@ if [[ $options == *"Legacy Games"* ]]; then
     cd $proton_dir
 
     # Set the STEAM_COMPAT_CLIENT_INSTALL_PATH environment variable
-    export STEAM_COMPAT_CLIENT_INSTALL_PATH="~/.local/share/Steam"
+    export STEAM_COMPAT_CLIENT_INSTALL_PATH="$HOME/.local/share/Steam"
 
     # Set the STEAM_COMPAT_DATA_PATH environment variable for Legacy Games Launcher
-    export STEAM_COMPAT_DATA_PATH=~/.local/share/Steam/steamapps/compatdata/$appid
-
+    export STEAM_COMPAT_DATA_PATH="$HOME/.local/share/Steam/steamapps/compatdata/${appid}"
 
     # Download Legacy file
     if [ ! -f "$legacygames_file" ]; then
@@ -2138,13 +1962,13 @@ if [[ $options == *"Legacy Games"* ]]; then
         wget $legacygames_url -O $legacygames_file
     fi
 
-      # Run the Legacy file using Proton with the /passive option
-      echo "Running Legacy file using Proton with the /passive option"
-      "$STEAM_RUNTIME" "$proton_dir/proton" run "$legacygames_file" /S
+    # Run the Legacy file using Proton with the /passive option
+    echo "Running Legacy file using Proton with the /passive option"
+    "$STEAM_RUNTIME" "$proton_dir/proton" run "$legacygames_file" /S
 fi
+
 # Wait for the Legacy file to finish running
 wait
-
 
 echo "91"
 echo "# Downloading & Installing Humble Games Collection...please wait..."
@@ -2171,42 +1995,37 @@ if [[ $options == *"Humble Games Collection"* ]]; then
         wget https://raw.githubusercontent.com/moraroy/NonSteamLaunchers-On-Steam-Deck/main/humble-app/start-humble.cmd -O "$HOME/.local/share/Steam/steamapps/compatdata/$appid/pfx/start-humble.cmd"
     fi
 
+    # Set the appid for the Humble Games Launcher
+    if [ "$use_separate_appids" = true ]; then
+        appid=HumbleGamesLauncher
+    else
+        appid=NonSteamLaunchers
+    fi
 
-        # Set the appid for the Humble Games Launcher
-        if [ "$use_separate_appids" = true ]; then
-            appid=HumbleGamesLauncher
-        else
-            appid=NonSteamLaunchers
-        fi
+    # Create app id folder in compatdata folder if it doesn't exist
+    if [ ! -d "$HOME/.local/share/Steam/steamapps/compatdata/$appid" ]; then
+        mkdir -p "$HOME/.local/share/Steam/steamapps/compatdata/$appid"
+    fi
 
+    # Change working directory to Proton's
+    cd $proton_dir
 
-        # Create app id folder in compatdata folder if it doesn't exist
-        if [ ! -d "$HOME/.local/share/Steam/steamapps/compatdata/$appid" ]; then
-            mkdir -p "$HOME/.local/share/Steam/steamapps/compatdata/$appid"
-        fi
+    # Set the STEAM_COMPAT_CLIENT_INSTALL_PATH environment variable
+    export STEAM_COMPAT_CLIENT_INSTALL_PATH="$HOME/.local/share/Steam"
 
-        # Change working directory to Proton's
-        cd $proton_dir
+    # Set the STEAM_COMPAT_DATA_PATH environment variable for Humble Games Launcher
+    export STEAM_COMPAT_DATA_PATH="$HOME/.local/share/Steam/steamapps/compatdata/${appid}"
 
-        # Set the STEAM_COMPAT_CLIENT_INSTALL_PATH environment variable
-        export STEAM_COMPAT_CLIENT_INSTALL_PATH="~/.local/share/Steam"
+    # Download exe file
+    if [ ! -f "$humblegames_file" ]; then
+        echo "Downloading MSI file"
+        wget $humblegames_url -O $humblegames_file
+    fi
 
-        # Set the STEAM_COMPAT_DATA_PATH environment variable for Humble Games Launcher
-        export STEAM_COMPAT_DATA_PATH=~/.local/share/Steam/steamapps/compatdata/$appid
-
-
-        # Download exe file
-        if [ ! -f "$humblegames_file" ]; then
-            echo "Downloading MSI file"
-            wget $humblegames_url -O $humblegames_file
-        fi
-
-        # Run the exe file using Proton with the /passive option
-        echo "Running Exe file using Proton with the /passive option"
-        "$STEAM_RUNTIME" "$proton_dir/proton" run "$humblegames_file" /S /D="C:\Program Files\Humble App"
-
+    # Run the exe file using Proton with the /passive option
+    echo "Running Exe file using Proton with the /passive option"
+    "$STEAM_RUNTIME" "$proton_dir/proton" run "$humblegames_file" /S /D="C:\Program Files\Humble App"
 fi
-
 
 wait
 echo "92"
@@ -2216,7 +2035,6 @@ echo "# Downloading & Installing Indie Gala...please wait..."
 if [[ $options == *"IndieGala"* ]]; then
     # User selected indiegala
     echo "User selected IndieGala"
-
 
     # Set the appid for the indiegala Launcher
     if [ "$use_separate_appids" = true ]; then
@@ -2234,11 +2052,10 @@ if [[ $options == *"IndieGala"* ]]; then
     cd $proton_dir
 
     # Set the STEAM_COMPAT_CLIENT_INSTALL_PATH environment variable
-    export STEAM_COMPAT_CLIENT_INSTALL_PATH="~/.local/share/Steam"
+    export STEAM_COMPAT_CLIENT_INSTALL_PATH="$HOME/.local/share/Steam"
 
     # Set the STEAM_COMPAT_DATA_PATH environment variable for Legacy Games Launcher
-    export STEAM_COMPAT_DATA_PATH=~/.local/share/Steam/steamapps/compatdata/$appid
-
+    export STEAM_COMPAT_DATA_PATH="$HOME/.local/share/Steam/steamapps/compatdata/${appid}"
 
     # Download indiegala file
     if [ ! -f "$indiegala_file" ]; then
@@ -2250,9 +2067,9 @@ if [[ $options == *"IndieGala"* ]]; then
       echo "Running IndieGala file using Proton with the /passive option"
       "$STEAM_RUNTIME" "$proton_dir/proton" run "$indiegala_file" /S
 fi
+
 # Wait for the Indie file to finish running
 wait
-
 
 echo "93"
 echo "# Downloading & Installing Rockstar Games Launcher...please wait..."
@@ -2262,41 +2079,40 @@ if [[ $options == *"Rockstar Games Launcher"* ]]; then
     # User selected rockstar games
     echo "User selected Rockstar Games Launcher"
 
-        # Set the appid for the indiegala Launcher
-        if [ "$use_separate_appids" = true ]; then
-            appid=RockstarGamesLauncher
-        else
-            appid=NonSteamLaunchers
-        fi
+    # Set the appid for the indiegala Launcher
+    if [ "$use_separate_appids" = true ]; then
+        appid=RockstarGamesLauncher
+    else
+        appid=NonSteamLaunchers
+    fi
 
-        # Create app id folder in compatdata folder if it doesn't exist
-        if [ ! -d "$HOME/.local/share/Steam/steamapps/compatdata/$appid" ]; then
-            mkdir -p "$HOME/.local/share/Steam/steamapps/compatdata/$appid"
-        fi
+    # Create app id folder in compatdata folder if it doesn't exist
+    if [ ! -d "$HOME/.local/share/Steam/steamapps/compatdata/$appid" ]; then
+        mkdir -p "$HOME/.local/share/Steam/steamapps/compatdata/$appid"
+    fi
 
-        # Change working directory to Proton's
-        cd $proton_dir
+    # Change working directory to Proton's
+    cd $proton_dir
 
-        # Set the STEAM_COMPAT_CLIENT_INSTALL_PATH environment variable
-        export STEAM_COMPAT_CLIENT_INSTALL_PATH="~/.local/share/Steam"
+    # Set the STEAM_COMPAT_CLIENT_INSTALL_PATH environment variable
+    export STEAM_COMPAT_CLIENT_INSTALL_PATH="$HOME/.local/share/Steam"
 
-        # Set the STEAM_COMPAT_DATA_PATH environment variable for Legacy Games Launcher
-        export STEAM_COMPAT_DATA_PATH=~/.local/share/Steam/steamapps/compatdata/$appid
+    # Set the STEAM_COMPAT_DATA_PATH environment variable for Legacy Games Launcher
+    export STEAM_COMPAT_DATA_PATH="$HOME/.local/share/Steam/steamapps/compatdata/${appid}"
 
-        # Download rockstar games file
-        if [ ! -f "$rockstar_file" ]; then
-            echo "Downloading rockstar file"
-            wget $rockstar_url -O $rockstar_file
-        fi
+    # Download rockstar games file
+    if [ ! -f "$rockstar_file" ]; then
+        echo "Downloading rockstar file"
+        wget $rockstar_url -O $rockstar_file
+    fi
 
-          # Run the rockstar file using Proton with the /passive option
-          echo "Running Rockstar Games Launcher file using Proton with the /passive option"
-          "$STEAM_RUNTIME" "$proton_dir/proton" run "$rockstar_file"
-
+    # Run the rockstar file using Proton with the /passive option
+    echo "Running Rockstar Games Launcher file using Proton with the /passive option"
+    "$STEAM_RUNTIME" "$proton_dir/proton" run "$rockstar_file"
 fi
+
 # Wait for the rockstar file to finish running
 wait
-
 
 echo "94"
 echo "# Downloading & Installing Glyph Launcher...please wait..."
@@ -2306,43 +2122,40 @@ if [[ $options == *"Glyph Launcher"* ]]; then
     # User selected Glyph
     echo "User selected Glyph Launcher"
 
-        # Set the appid for Glyph
-        if [ "$use_separate_appids" = true ]; then
-            appid=GlyphLauncher
-        else
-            appid=NonSteamLaunchers
-        fi
+    # Set the appid for Glyph
+    if [ "$use_separate_appids" = true ]; then
+        appid=GlyphLauncher
+    else
+        appid=NonSteamLaunchers
+    fi
 
-        # Create app id folder in compatdata folder if it doesn't exist
-        if [ ! -d "$HOME/.local/share/Steam/steamapps/compatdata/$appid" ]; then
-            mkdir -p "$HOME/.local/share/Steam/steamapps/compatdata/$appid"
-        fi
+    # Create app id folder in compatdata folder if it doesn't exist
+    if [ ! -d "$HOME/.local/share/Steam/steamapps/compatdata/$appid" ]; then
+        mkdir -p "$HOME/.local/share/Steam/steamapps/compatdata/$appid"
+    fi
 
-        # Change working directory to Proton's
-        cd $proton_dir
+    # Change working directory to Proton's
+    cd $proton_dir
 
-        # Set the STEAM_COMPAT_CLIENT_INSTALL_PATH environment variable
-        export STEAM_COMPAT_CLIENT_INSTALL_PATH="~/.local/share/Steam"
+    # Set the STEAM_COMPAT_CLIENT_INSTALL_PATH environment variable
+    export STEAM_COMPAT_CLIENT_INSTALL_PATH="$HOME/.local/share/Steam"
 
-        # Set the STEAM_COMPAT_DATA_PATH environment variable for Legacy Games Launcher
-        export STEAM_COMPAT_DATA_PATH=~/.local/share/Steam/steamapps/compatdata/$appid
+    # Set the STEAM_COMPAT_DATA_PATH environment variable for Legacy Games Launcher
+    export STEAM_COMPAT_DATA_PATH="$HOME/.local/share/Steam/steamapps/compatdata/${appid}"
 
-        # Download Glyph file
-        if [ ! -f "$glyph_file" ]; then
-            echo "Downloading Glyph file"
-            wget $glyph_url -O $glyph_file
-        fi
+    # Download Glyph file
+    if [ ! -f "$glyph_file" ]; then
+        echo "Downloading Glyph file"
+        wget $glyph_url -O $glyph_file
+    fi
 
-          # Run the Glyph file using Proton with the /passive option
-          echo "Running Glyph Launcher file using Proton with the /passive option"
-          "$STEAM_RUNTIME" "$proton_dir/proton" run "$glyph_file"
-
+    # Run the Glyph file using Proton with the /passive option
+    echo "Running Glyph Launcher file using Proton with the /passive option"
+    "$STEAM_RUNTIME" "$proton_dir/proton" run "$glyph_file"
 fi
+
 # Wait for the Glyph file to finish running
 wait
-
-
-
 
 echo "95"
 echo "# Downloading & Installing Minecraft Launcher...please wait..."
@@ -2362,45 +2175,42 @@ if [[ $options == *"Minecraft"* ]]; then
     # Set MinecraftLauncher.exe Variable
     minecraftinstall_path="$HOME/.local/share/Steam/steamapps/compatdata/$appid/pfx/drive_c/Program Files (x86)/Minecraft Launcher/MinecraftLauncher.exe"
 
+    # Create app id folder in compatdata folder if it doesn't exist
+    if [ ! -d "$HOME/.local/share/Steam/steamapps/compatdata/$appid" ]; then
+        mkdir -p "$HOME/.local/share/Steam/steamapps/compatdata/$appid"
+    fi
 
-        # Create app id folder in compatdata folder if it doesn't exist
-        if [ ! -d "$HOME/.local/share/Steam/steamapps/compatdata/$appid" ]; then
-            mkdir -p "$HOME/.local/share/Steam/steamapps/compatdata/$appid"
-        fi
+    # Change working directory to Proton's
+    cd $proton_dir
 
-        # Change working directory to Proton's
-        cd $proton_dir
+    # Set the STEAM_COMPAT_CLIENT_INSTALL_PATH environment variable
+    export STEAM_COMPAT_CLIENT_INSTALL_PATH="$HOME/.local/share/Steam"
 
-        # Set the STEAM_COMPAT_CLIENT_INSTALL_PATH environment variable
-        export STEAM_COMPAT_CLIENT_INSTALL_PATH="~/.local/share/Steam"
+    # Set the STEAM_COMPAT_DATA_PATH environment variable for Legacy Games Launcher
+    export STEAM_COMPAT_DATA_PATH="$HOME/.local/share/Steam/steamapps/compatdata/${appid}"
 
-        # Set the STEAM_COMPAT_DATA_PATH environment variable for Legacy Games Launcher
-        export STEAM_COMPAT_DATA_PATH=~/.local/share/Steam/steamapps/compatdata/$appid
+    # Download Minecraft file
+    if [ ! -f "$minecraft_file" ]; then
+        echo "Downloading Minecraft file"
+        wget $minecraft_url -O $minecraft_file
+    fi
 
-        # Download Minecraft file
-        if [ ! -f "$minecraft_file" ]; then
-            echo "Downloading Minecraft file"
-            wget $minecraft_url -O $minecraft_file
-        fi
+    # Run the Minecraft file using Proton with the /passive option
+    echo "Running Minecraft Launcher file using Proton with the /passive option"
+    "$STEAM_RUNTIME" "$proton_dir/proton" run MsiExec.exe /i "$minecraft_file" /q
 
-          # Run the Minecraft file using Proton with the /passive option
-          echo "Running Minecraft Launcher file using Proton with the /passive option"
-          "$STEAM_RUNTIME" "$proton_dir/proton" run MsiExec.exe /i "$minecraft_file" /q
+    if [ -f "$minecraftinstall_path" ]; then
+        # Run MinecraftLauncher.exe for the first time
+        "$STEAM_RUNTIME" "$proton_dir/proton" run "$minecraftinstall_path"
+    else
+        echo "Could not find MinecraftLauncher.exe at $minecraftinstall_path"
+    fi
 
-          if [ -f "$minecraftinstall_path" ]; then
-              # Run MinecraftLauncher.exe for the first time
-              "$STEAM_RUNTIME" "$proton_dir/proton" run "$minecraftinstall_path"
-          else
-              echo "Could not find MinecraftLauncher.exe at $minecraftinstall_path"
-          fi
-
-        echo "Minecraft is already installed at $minecraftinstall_path"
-
+    echo "Minecraft is already installed at $minecraftinstall_path"
 fi
 
 # Wait for the Minecraft file to finish running
 wait
-
 
 echo "96"
 echo "# Downloading & Installing Playstation Plus...please wait..."
@@ -2410,47 +2220,39 @@ if [[ $options == *"Playstation Plus"* ]]; then
     # User selected PlayStation Plus Launcher
     echo "User selected PlayStation Plus"
 
+    # Set the appid for the PlayStation Plus Launcher
+    if [ "$use_separate_appids" = true ]; then
+    appid=PlaystationPlusLauncher
+    else
+    appid=NonSteamLaunchers
+    fi
 
-        # Set the appid for the PlayStation Plus Launcher
-        if [ "$use_separate_appids" = true ]; then
-        appid=PlaystationPlusLauncher
-        else
-        appid=NonSteamLaunchers
-        fi
+    # Create app id folder in compatdata folder if it doesn't exist
+    if [ ! -d "$HOME/.local/share/Steam/steamapps/compatdata/$appid" ]; then
+        mkdir -p "$HOME/.local/share/Steam/steamapps/compatdata/$appid"
+    fi
 
+    # Change working directory to Proton's
+    cd $proton_dir
 
-        # Create app id folder in compatdata folder if it doesn't exist
-        if [ ! -d "$HOME/.local/share/Steam/steamapps/compatdata/$appid" ]; then
-            mkdir -p "$HOME/.local/share/Steam/steamapps/compatdata/$appid"
-        fi
+    # Set the STEAM_COMPAT_CLIENT_INSTALL_PATH environment variable
+    export STEAM_COMPAT_CLIENT_INSTALL_PATH="$HOME/.local/share/Steam"
 
-        # Change working directory to Proton's
-        cd $proton_dir
+    # Set the STEAM_COMPAT_DATA_PATH environment variable for Epic Games Launcher
+    export STEAM_COMPAT_DATA_PATH="$HOME/.local/share/Steam/steamapps/compatdata/${appid}"
 
-        # Set the STEAM_COMPAT_CLIENT_INSTALL_PATH environment variable
-        export STEAM_COMPAT_CLIENT_INSTALL_PATH="~/.local/share/Steam"
+    # Download MSI file
+    if [ ! -f "$psplus_file" ]; then
+        echo "Downloading MSI file"
+        wget $psplus_url -O $psplus_file
+    fi
 
-        # Set the STEAM_COMPAT_DATA_PATH environment variable for Epic Games Launcher
-        export STEAM_COMPAT_DATA_PATH=~/.local/share/Steam/steamapps/compatdata/$appid
-
-
-        # Download MSI file
-        if [ ! -f "$psplus_file" ]; then
-            echo "Downloading MSI file"
-            wget $psplus_url -O $psplus_file
-        fi
-
-        # Run the Playstation file using Proton with the /passive option
-        echo "Running Playstation file using Proton with the /passive option"
-        "$STEAM_RUNTIME" "$proton_dir/proton" run "$psplus_file" /q
-
+    # Run the Playstation file using Proton with the /passive option
+    echo "Running Playstation file using Proton with the /passive option"
+    "$STEAM_RUNTIME" "$proton_dir/proton" run "$psplus_file" /q
 fi
 
 wait
-
-
-
-
 
 echo "97"
 echo "# Downloading & Installing DMM Games...please wait..."
@@ -2460,57 +2262,37 @@ if [[ $options == *"DMM Games"* ]]; then
     # User selected DMM Games Launcher
     echo "User selected DMM Games"
 
+    # Set the appid for the DMM Games Launcher
+    if [ "$use_separate_appids" = true ]; then
+    appid=DMMGameLauncher
+    else
+    appid=NonSteamLaunchers
+    fi
 
-        # Set the appid for the DMM Games Launcher
-        if [ "$use_separate_appids" = true ]; then
-        appid=DMMGameLauncher
-        else
-        appid=NonSteamLaunchers
-        fi
+    # Create app id folder in compatdata folder if it doesn't exist
+    if [ ! -d "$HOME/.local/share/Steam/steamapps/compatdata/$appid" ]; then
+        mkdir -p "$HOME/.local/share/Steam/steamapps/compatdata/$appid"
+    fi
 
+    # Change working directory to Proton's
+    cd $proton_dir
 
-        # Create app id folder in compatdata folder if it doesn't exist
-        if [ ! -d "$HOME/.local/share/Steam/steamapps/compatdata/$appid" ]; then
-            mkdir -p "$HOME/.local/share/Steam/steamapps/compatdata/$appid"
-        fi
+    # Set the STEAM_COMPAT_CLIENT_INSTALL_PATH environment variable
+    export STEAM_COMPAT_CLIENT_INSTALL_PATH="$HOME/.local/share/Steam"
 
-        # Change working directory to Proton's
-        cd $proton_dir
+    # Set the STEAM_COMPAT_DATA_PATH environment variable for Epic Games Launcher
+    export STEAM_COMPAT_DATA_PATH="$HOME/.local/share/Steam/steamapps/compatdata/${appid}"
 
-        # Set the STEAM_COMPAT_CLIENT_INSTALL_PATH environment variable
-        export STEAM_COMPAT_CLIENT_INSTALL_PATH="~/.local/share/Steam"
+    # Download DMM file
+    if [ ! -f "$dmm_file" ]; then
+        echo "Downloading DMM file"
+        wget $dmm_url -O $dmm_file
+    fi
 
-        # Set the STEAM_COMPAT_DATA_PATH environment variable for Epic Games Launcher
-        export STEAM_COMPAT_DATA_PATH=~/.local/share/Steam/steamapps/compatdata/$appid
-
-
-        # Download DMM file
-        if [ ! -f "$dmm_file" ]; then
-            echo "Downloading DMM file"
-            wget $dmm_url -O $dmm_file
-        fi
-
-        # Run the DMM file using Proton with the /passive option
-        echo "Running DMM file using Proton with the /passive option"
-        "$STEAM_RUNTIME" "$proton_dir/proton" run "$dmm_file" /q
-
+    # Run the DMM file using Proton with the /passive option
+    echo "Running DMM file using Proton with the /passive option"
+    "$STEAM_RUNTIME" "$proton_dir/proton" run "$dmm_file" /q
 fi
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 echo "99"
 echo "# Checking if Chrome is installed...please wait..."
@@ -2536,18 +2318,11 @@ if [[ $options == *"Netflix"* ]] || [[ $options == *"Xbox Game Pass"* ]] || [[ $
     fi
 fi
 
-#wait for Google Chrome to finish
+# wait for Google Chrome to finish
 wait
 
-
-
-
-
 # Delete NonSteamLaunchersInstallation subfolder in Downloads folder
-rm -rf ~/Downloads/NonSteamLaunchersInstallation
-
-
-
+rm -rf "$HOME/Downloads/NonSteamLaunchersInstallation"
 
     echo "100"
     echo "# Installation Complete - Steam will now restart. Your launchers will be in your library!...Food for thought...do Jedis use Force Compatability?"
@@ -2559,20 +2334,7 @@ zenity --progress \
 
 wait
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-#Checking Files For Shortcuts and Setting Directories For Shortcuts
+# Checking Files For Shortcuts and Setting Directories For Shortcuts
 if [[ -f "$epic_games_launcher_path1" ]]; then
     # Epic Games Launcher is installed at path 1
     epicshortcutdirectory="\"$epic_games_launcher_path1\""
@@ -2584,6 +2346,7 @@ elif [[ -f "$epic_games_launcher_path2" ]]; then
     epiclaunchoptions="STEAM_COMPAT_DATA_PATH=\"$HOME/.local/share/Steam/steamapps/compatdata/EpicGamesLauncher/\" %command%"
     epicstartingdir="\"$(dirname "$epic_games_launcher_path2")\""
 fi
+
 if [[ -f "$gog_galaxy_path1" ]]; then
     # Gog Galaxy Launcher is installed at path 1
     gogshortcutdirectory="\"$gog_galaxy_path1\""
@@ -2595,6 +2358,7 @@ elif [[ -f "$gog_galaxy_path2" ]]; then
     goglaunchoptions="STEAM_COMPAT_DATA_PATH=\"$HOME/.local/share/Steam/steamapps/compatdata/GogGalaxyLauncher/\" %command%"
     gogstartingdir="\"$(dirname "$gog_galaxy_path2")\""
 fi
+
 if [[ -f "$origin_path1" ]]; then
     # Origin Launcher is installed at path 1
     originshortcutdirectory="\"$origin_path1\""
@@ -2606,6 +2370,7 @@ elif [[ -f "$origin_path2" ]]; then
     originlaunchoptions="STEAM_COMPAT_DATA_PATH=\"$HOME/.local/share/Steam/steamapps/compatdata/OriginLauncher/\" %command%"
     originstartingdir="\"$(dirname "$origin_path2")\""
 fi
+
 if [[ -f "$uplay_path1" ]]; then
     # Uplay Launcher is installed at path 1
     uplayshortcutdirectory="\"$uplay_path1\""
@@ -2617,6 +2382,7 @@ elif [[ -f "$uplay_path2" ]]; then
     uplaylaunchoptions="STEAM_COMPAT_DATA_PATH=\"$HOME/.local/share/Steam/steamapps/compatdata/UplayLauncher/\" %command%"
     uplaystartingdir="\"$(dirname "$uplay_path2")\""
 fi
+
 if [[ -f "$battlenet_path1" ]]; then
     # Battlenet Launcher is installed at path 1
     battlenetshortcutdirectory="\"$battlenet_path1\""
@@ -2628,6 +2394,7 @@ elif [[ -f "$battlenet_path2" ]]; then
     battlenetlaunchoptions="STEAM_COMPAT_DATA_PATH=\"$HOME/.local/share/Steam/steamapps/compatdata/Battle.netLauncher/\" %command%"
     battlenetstartingdir="\"$(dirname "$battlenet_path2")\""
 fi
+
 if [[ -f "$eaapp_path1" ]]; then
     # EA App Launcher is installed at path 1
     eaappshortcutdirectory="\"$eaapp_path1\""
@@ -2639,6 +2406,7 @@ elif [[ -f "$eaapp_path2" ]]; then
     eaapplaunchoptions="STEAM_COMPAT_DATA_PATH=\"$HOME/.local/share/Steam/steamapps/compatdata/TheEAappLauncher/\" %command%"
     eaappstartingdir="\"$(dirname "$eaapp_path2")\""
 fi
+
 if [[ -f "$amazongames_path1" ]]; then
     # Amazon Games Launcher is installed at path 1
     amazonshortcutdirectory="\"$amazongames_path1\""
@@ -2650,6 +2418,7 @@ elif [[ -f "$amazongames_path2" ]]; then
     amazonlaunchoptions="STEAM_COMPAT_DATA_PATH=\"$HOME/.local/share/Steam/steamapps/compatdata/AmazonGamesLauncher/\" %command%"
     amazonstartingdir="\"$(dirname "$amazongames_path2")\""
 fi
+
 if [[ -f "$itchio_path1" ]]; then
     # itchio Launcher is installed at path 1
     itchioshortcutdirectory="\"$itchio_path1\""
@@ -2661,6 +2430,7 @@ elif [[ -f "$itchio_path2" ]]; then
     itchiolaunchoptions="STEAM_COMPAT_DATA_PATH=\"$HOME/.local/share/Steam/steamapps/compatdata/itchioLauncher/\" %command%"
     itchiostartingdir="\"$(dirname "$itchio_path2")\""
 fi
+
 if [[ -f "$legacygames_path1" ]]; then
     # Legacy Games Launcher is installed at path 1
     legacyshortcutdirectory="\"$legacygames_path1\""
@@ -2672,6 +2442,7 @@ elif [[ -f "$legacygames_path2" ]]; then
     legacylaunchoptions="STEAM_COMPAT_DATA_PATH=\"$HOME/.local/share/Steam/steamapps/compatdata/LegacyGamesLauncher/\" %command%"
     legacystartingdir="\"$(dirname "$legacygames_path2")\""
 fi
+
 if [[ -f "$humblegames_path1" ]]; then
     # Humble Games Launcher is installed at path 1
     humbleshortcutdirectory="\"$humblegames_path1\""
@@ -2683,6 +2454,7 @@ elif [[ -f "$humblegames_path2" ]]; then
     humblelaunchoptions="STEAM_COMPAT_DATA_PATH=\"$HOME/.local/share/Steam/steamapps/compatdata/HumbleGamesLauncher/\" %command%"
     humblestartingdir="\"$(dirname "$humblegames_path2")\""
 fi
+
 if [[ -f "$indiegala_path1" ]]; then
     # indiegala Launcher is installed at path 1
     indieshortcutdirectory="\"$indiegala_path1\""
@@ -2694,6 +2466,7 @@ elif [[ -f "$indiegala_path2" ]]; then
     indielaunchoptions="STEAM_COMPAT_DATA_PATH=\"$HOME/.local/share/Steam/steamapps/compatdata/IndieGalaLauncher/\" %command%"
     indiestartingdir="\"$(dirname "$indiegala_path2")\""
 fi
+
 if [[ -f "$rockstar_path1" ]]; then
     # rockstar Launcher is installed at path 1
     rockstarshortcutdirectory="\"$rockstar_path1\""
@@ -2705,6 +2478,7 @@ elif [[ -f "$rockstar_path2" ]]; then
     rockstarlaunchoptions="STEAM_COMPAT_DATA_PATH=\"$HOME/.local/share/Steam/steamapps/compatdata/RockstarGamesLauncher/\" %command%"
     rockstarstartingdir="\"$(dirname "$rockstar_path2")\""
 fi
+
 if [[ -f "$glyph_path1" ]]; then
     # Glyph is installed at path 1
     glyphshortcutdirectory="\"$glyph_path1\""
@@ -2716,6 +2490,7 @@ elif [[ -f "$glyph_path2" ]]; then
     glyphlaunchoptions="STEAM_COMPAT_DATA_PATH=\"$HOME/.local/share/Steam/steamapps/compatdata/GlyphLauncher/\" %command%"
     glyphstartingdir="\"$(dirname "$glyph_path2")\""
 fi
+
 if [[ -f "$minecraft_path1" ]]; then
     # Minecraft is installed at path 1
     minecraftshortcutdirectory="\"$minecraft_path1\""
@@ -2727,6 +2502,7 @@ elif [[ -f "$minecraft_path2" ]]; then
     minecraftlaunchoptions="STEAM_COMPAT_DATA_PATH=\"$HOME/.local/share/Steam/steamapps/compatdata/MinecraftLauncher/\" %command%"
     minecraftstartingdir="\"$(dirname "$minecraft_path1")\""
 fi
+
 if [[ -f "$psplus_path1" ]]; then
     # Playstation is installed at path 1
     psplusshortcutdirectory="\"$psplus_path1\""
@@ -2738,6 +2514,7 @@ elif [[ -f "$psplus_path2" ]]; then
     pspluslaunchoptions="STEAM_COMPAT_DATA_PATH=\"$HOME/.local/share/Steam/steamapps/compatdata/PlaystationPlusLauncher/\" %command%"
     psplusstartingdir="\"$(dirname "$psplus_path2")\""
 fi
+
 if [[ -f "$dmm_path1" ]]; then
     # DMM Games is installed at path 1
     dmmshortcutdirectory="\"$dmm_path1\""
@@ -2749,8 +2526,6 @@ elif [[ -f "$dmm_path2" ]]; then
     dmmlaunchoptions="STEAM_COMPAT_DATA_PATH=\"$HOME/.local/share/Steam/steamapps/compatdata/DMMGameLauncher/\" %command%"
     dmmstartingdir="\"$(dirname "$dmm_path2")\""
 fi
-
-
 
 # Set Chrome options based on user's selection
 
@@ -2830,30 +2605,11 @@ if [ ${#custom_websites[@]} -gt 0 ]; then
         # Capitalize the first letter of the website name
         website_name="$(tr '[:lower:]' '[:upper:]' <<< "${website_name:0:1}")${website_name:1}"
 
+        # TODO: `chromelaunchoptions` is unused (SC2034)
         # Set the chromelaunchoptions variable for this website
         chromelaunchoptions="run --branch=stable --arch=x86_64 --command=/app/bin/chrome --file-forwarding com.google.Chrome @@u @@ --window-size=1280,800 --force-device-scale-factor=1.00 --device-scale-factor=1.00 --kiosk https://$clean_website/ --chrome-kiosk-type=fullscreen --no-first-run --enable-features=OverlayScrollbar"
     done
 fi
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 # Set the download directory
 download_dir=~/Downloads/NonSteamLaunchersInstallation
@@ -2873,12 +2629,6 @@ wget -P "$download_dir/lib/python$python_version/site-packages/vdf" "$download_u
 
 # Set the PYTHONPATH environment variable
 export PYTHONPATH="$download_dir/lib/python$python_version/site-packages/:$PYTHONPATH"
-
-
-
-
-
-
 
 # Set the default Steam directory
 steam_dir="$HOME/.local/share/Steam"
@@ -2901,11 +2651,9 @@ if [[ -f "$steam_dir/config/config.vdf" ]]; then
     most_recent=0
 
     # Loop through all the userdata folders
-    for USERDATA_FOLDER in ~/.steam/root/userdata/*
-    do
+    for USERDATA_FOLDER in ~/.steam/root/userdata/*; do
         # Check if the current userdata folder is not the "0" or "anonymous" folder
-        if [[ "$USERDATA_FOLDER" != *"/0" ]] && [[ "$USERDATA_FOLDER" != *"/anonymous" ]]
-        then
+        if [[ "$USERDATA_FOLDER" != *"/0" ]] && [[ "$USERDATA_FOLDER" != *"/anonymous" ]]; then
             # Get the access time of the current userdata folder
             access_time=$(stat -c %X "$USERDATA_FOLDER")
 
@@ -2913,8 +2661,7 @@ if [[ -f "$steam_dir/config/config.vdf" ]]; then
             userdata_steamid3=$(basename "$USERDATA_FOLDER")
 
             # Check if userdata_steamid3 matches steamid3 and if access time is more recent than most recent access time
-            if [[ $userdata_steamid3 -eq $steamid3 ]] && [[ $access_time -gt $most_recent ]]
-            then
+            if [[ $userdata_steamid3 -eq $steamid3 ]] && [[ $access_time -gt $most_recent ]]; then
                 # The access time of current userdata folder is more recent and steamid3 matches
                 # Set userdata_folder variable
                 userdata_folder="$USERDATA_FOLDER"
@@ -2924,7 +2671,6 @@ if [[ -f "$steam_dir/config/config.vdf" ]]; then
             fi
         fi
     done
-
 else
     echo "Could not find config.vdf file"
 fi
@@ -2958,37 +2704,24 @@ if [[ -n "$userdata_folder" ]]; then
             shortcuts_vdf_path="$config_dir/shortcuts.vdf"
         fi
     fi
-
 else
     # Userdata folder was not found
     echo "Current user's userdata folder not found"
 fi
 
-
-
-
-
-
-
-
-
 # Detach script from Steam process
 nohup sh -c 'sleep 10; /usr/bin/steam' &
 
+# TODO: should probably verify exact process name (see below)
 # Close all instances of Steam
 killall steam
 
-
+# TODO: control for exact process names (currently catches all processes with steam in name)
+# * possibly `pgrep -x steam`
 # Wait for the steam process to exit
 while pgrep steam > /dev/null; do sleep 1; done
 
-
-
-
-
-
-
-#Pre check for updating the config file
+# Pre check for updating the config file
 
 # Set the default Steam directory
 steam_dir="$HOME/.steam/root"
@@ -3008,9 +2741,6 @@ else
     echo "Could not find config.vdf file"
 fi
 
-
-
-
 # Set the path to the configset_controller_neptune.vdf file
 controller_config_path="$HOME/.local/share/Steam/steamapps/common/Steam Controller Configs/$steamid3/config/configset_controller_neptune.vdf"
 
@@ -3022,15 +2752,8 @@ else
     echo "Could not find $controller_config_path"
 fi
 
-
-
-
-
-
-
-
-
-
+# TODO: relocate to standalone python script
+# ! editorconfig will likely break this since bash uses tabs and python needs 4 spaces
 # Run the Python script to create a new entry for a Steam shortcut
 python3 -c "
 import sys
@@ -3045,8 +2768,6 @@ import re
 
 # Print the path to the file where the vdf module was loaded from
 print(vdf.__file__)
-
-
 
 # Load the shortcuts.vdf file
 with open('$shortcuts_vdf_path', 'rb') as f:
@@ -3064,7 +2785,6 @@ if isinstance(shortcuts['shortcuts'], dict):
         # Check the type of the value
         if not isinstance(value, (str, int, dict)):
             pass
-
 
 # Define the path of the Launchers
 epicshortcutdirectory = '$epicshortcutdirectory'
@@ -3088,7 +2808,6 @@ chromedirectory = '$chromedirectory'
 websites_str = '$custom_websites_str'
 custom_websites = websites_str.split(', ')
 
-
 app_ids = []
 
 
@@ -3098,8 +2817,8 @@ def get_steam_shortcut_id(exe, appname):
     return id_int
 
 
-
 app_id_to_name = {}
+
 
 def create_new_entry(shortcutdirectory, appname, launchoptions, startingdir):
     if shortcutdirectory != '' and launchoptions != '':
@@ -3221,23 +2940,15 @@ for custom_website in custom_websites:
         # Call the create_new_entry function for this website
         create_new_entry('$chromedirectory', game_name, chromelaunch_options, '$chrome_startdir')
 
-
-
 print(f'app_id_to_name: {app_id_to_name}')
 
 # Save the updated shortcuts dictionary to the shortcuts.vdf file
 with open('$shortcuts_vdf_path', 'wb') as f:
     vdf.binary_dump(shortcuts, f)
 
-
-
-
-
 # Writes to the config.vdf File
 
-
 excluded_appids = []
-
 
 # Update the config.vdf file
 with open('$config_vdf_path', 'r') as f:
@@ -3262,12 +2973,6 @@ for app_id in app_ids:
 # Save the updated config dictionary to the config.vdf file
 with open('$config_vdf_path', 'w') as f:
     vdf.dump(config, f)
-
-
-
-
-
-
 
 # Load the configset_controller_neptune.vdf file
 with open('$controller_config_path', 'r') as f:
@@ -3350,24 +3055,9 @@ config['controller_config']['amazon luna'] = {
     'template': 'controller_neptune_gamepad+mouse.vdf'
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
 # Save the updated config dictionary to the configset_controller_neptune.vdf file
 with open('$controller_config_path', 'w') as f:
     vdf.dump(config, f)
-
-
-
 
 # Define the path to the compatdata directory
 compatdata_dir = '$HOME/.local/share/Steam/steamapps/compatdata'
@@ -3436,11 +3126,5 @@ if os.path.exists(os.path.join(compatdata_dir, 'NonSteamLaunchers')):
     # Create a symbolic link to the renamed NonSteamLaunchers folder
     os.symlink(new_path, symlink_path)"
 
-
-
-
-
-
 # Delete NonSteamLaunchersInstallation subfolder in Downloads folder
 rm -rf ~/Downloads/NonSteamLaunchersInstallation
-
