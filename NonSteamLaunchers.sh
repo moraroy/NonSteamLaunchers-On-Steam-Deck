@@ -3138,5 +3138,6 @@ if os.path.exists(os.path.join(compatdata_dir, 'NonSteamLaunchers')):
     # Create a symbolic link to the renamed NonSteamLaunchers folder
     os.symlink(new_path, symlink_path)"
 
+# TODO: might be better to relocate temp files to `/tmp` or even use `mktemp -d` since `rm -rf` is potentially dangerous without the `-i` flag
 # Delete NonSteamLaunchersInstallation subfolder in Downloads folder
 rm -rf "${logged_in_home}/Downloads/NonSteamLaunchersInstallation"
