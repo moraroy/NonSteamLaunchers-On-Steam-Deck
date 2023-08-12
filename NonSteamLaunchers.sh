@@ -41,7 +41,7 @@ if [ ${#args[@]} -eq 0 ]; then
     check_for_updates
 fi
 
-# environment variables
+# ENVIRONMENT VARIABLES
 # $USER
 logged_in_user=$(logname)
 
@@ -51,10 +51,14 @@ logged_in_user=$(logname)
 # $HOME
 logged_in_home=$(eval echo "~${logged_in_user}")
 
+# TODO: `/tmp` or `mktemp -d` might be a better option (see: EOF)
+# $PWD (working directory)
+install_dir="${logged_in_home}/Downloads/NonSteamLaunchersInstallation"
+
 # Check if the NonSteamLaunchersInstallation subfolder exists in the Downloads folder
-if [ -d "${logged_in_home}/Downloads/NonSteamLaunchersInstallation" ]; then
+if [ -d "$install_dir" ]; then
     # Delete the NonSteamLaunchersInstallation subfolder
-    rm -rf "${logged_in_home}/Downloads/NonSteamLaunchersInstallation"
+    rm -rf "$install_dir"
     echo "Deleted NonSteamLaunchersInstallation subfolder"
 else
     echo "NonSteamLaunchersInstallation subfolder does not exist"
@@ -1305,14 +1309,14 @@ fi
 if [[ $options == "Find Games" ]]; then
     # The Find Games button was clicked
     # Check if the NonSteamLaunchersInstallation directory exists
-    if [[ ! -d "${logged_in_home}/Downloads/NonSteamLaunchersInstallation" ]]; then
+    if [[ ! -d "$install_dir" ]]; then
         # The directory does not exist, so create it
-        mkdir -p "${logged_in_home}/Downloads/NonSteamLaunchersInstallation"
+        mkdir -p "$install_dir"
     fi
 
     # Download the latest BoilR from GitHub (Linux version)
-    mkdir -p "${logged_in_home}/Downloads/NonSteamLaunchersInstallation"
-    cd "${logged_in_home}/Downloads/NonSteamLaunchersInstallation"
+    mkdir -p "$install_dir"
+    cd "$install_dir"
     wget https://github.com/PhilipK/BoilR/releases/download/v.1.9.1/linux_BoilR
 
     # Add execute permissions to the linux_BoilR file
@@ -2335,7 +2339,7 @@ fi
 wait
 
 # Delete NonSteamLaunchersInstallation subfolder in Downloads folder
-rm -rf "${logged_in_home}/Downloads/NonSteamLaunchersInstallation"
+rm -rf "$install_dir"
 
     echo "100"
     echo "# Installation Complete - Steam will now restart. Your launchers will be in your library!...Food for thought...do Jedis use Force Compatability?"
@@ -3140,4 +3144,4 @@ if os.path.exists(os.path.join(compatdata_dir, 'NonSteamLaunchers')):
 
 # TODO: might be better to relocate temp files to `/tmp` or even use `mktemp -d` since `rm -rf` is potentially dangerous without the `-i` flag
 # Delete NonSteamLaunchersInstallation subfolder in Downloads folder
-rm -rf "${logged_in_home}/Downloads/NonSteamLaunchersInstallation"
+rm -rf "$install_dir"
