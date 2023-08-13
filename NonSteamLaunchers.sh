@@ -3127,12 +3127,6 @@ if os.path.exists(os.path.join(compatdata_dir, 'NonSteamLaunchers')):
     # Define the new path of the NonSteamLaunchers folder
     new_path = os.path.join(compatdata_dir, str(first_app_id))
 
-    # Check if the NonSteamLaunchers directory is empty
-    if os.listdir(current_path):
-        # The directory is not empty, so move its contents to the new location
-        for filename in os.listdir(current_path):
-            shutil.move(os.path.join(current_path, filename), new_path)
-
     # Rename the NonSteamLaunchers folder
     os.rename(current_path, new_path)
 
@@ -3140,7 +3134,7 @@ if os.path.exists(os.path.join(compatdata_dir, 'NonSteamLaunchers')):
     symlink_path = os.path.join(compatdata_dir, 'NonSteamLaunchers')
 
     # Create a symbolic link to the renamed NonSteamLaunchers folder
-    os.symlink(new_path, symlink_path)
+    os.symlink(new_path, symlink_path)"
 
 # TODO: might be better to relocate temp files to `/tmp` or even use `mktemp -d` since `rm -rf` is potentially dangerous without the `-i` flag
 # Delete NonSteamLaunchersInstallation subfolder in Downloads folder
