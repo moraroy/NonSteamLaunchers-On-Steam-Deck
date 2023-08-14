@@ -2774,7 +2774,7 @@ print(sys.path)  # Add this line to print the value of sys.path
 import vdf  # Updated import
 import binascii
 import re
-
+import shutil
 
 # Print the path to the file where the vdf module was loaded from
 print(vdf.__file__)
@@ -2888,6 +2888,10 @@ def create_new_entry(shortcutdirectory, appname, launchoptions, startingdir):
                     max_key = max(int(key) for key in shortcuts['shortcuts'].keys())
                 # Add the new entry with a key value one higher than the current maximum
                 shortcuts['shortcuts'][str(max_key + 1)] = new_entry
+
+
+                # Print the values of appname, exe, and entry_exists
+                print(f'appname: {appname}, exe: {exe}, entry_exists: {entry_exists}')
 
 create_new_entry('$epicshortcutdirectory', 'Epic Games', '$epiclaunchoptions', '$epicstartingdir')
 create_new_entry('$gogshortcutdirectory', 'Gog Galaxy', '$goglaunchoptions', '$gogstartingdir')
@@ -3124,17 +3128,21 @@ if os.path.exists(os.path.join(compatdata_dir, 'NonSteamLaunchers')):
     # Define the current path of the NonSteamLaunchers folder
     current_path = os.path.join(compatdata_dir, 'NonSteamLaunchers')
 
-    # Define the new path of the NonSteamLaunchers folder
-    new_path = os.path.join(compatdata_dir, str(first_app_id))
+    # Check if NonSteamLaunchers is already a symbolic link
+    if os.path.islink(current_path):
+        print('NonSteamLaunchers is already a symbolic link')
+    else:
+        # Define the new path of the NonSteamLaunchers folder
+        new_path = os.path.join(compatdata_dir, str(first_app_id))
 
-    # Rename the NonSteamLaunchers folder
-    os.rename(current_path, new_path)
+        # Move the NonSteamLaunchers folder to the new path
+        shutil.move(current_path, new_path)
 
-    # Define the path of the symbolic link
-    symlink_path = os.path.join(compatdata_dir, 'NonSteamLaunchers')
+        # Define the path of the symbolic link
+        symlink_path = os.path.join(compatdata_dir, 'NonSteamLaunchers')
 
-    # Create a symbolic link to the renamed NonSteamLaunchers folder
-    os.symlink(new_path, symlink_path)"
+        # Create a symbolic link to the renamed NonSteamLaunchers folder
+        os.symlink(new_path, symlink_path)"
 
 # TODO: might be better to relocate temp files to `/tmp` or even use `mktemp -d` since `rm -rf` is potentially dangerous without the `-i` flag
 # Delete NonSteamLaunchersInstallation subfolder in Downloads folder
