@@ -2890,9 +2890,6 @@ def create_new_entry(shortcutdirectory, appname, launchoptions, startingdir):
                 shortcuts['shortcuts'][str(max_key + 1)] = new_entry
 
 
-                # Print the values of appname, exe, and entry_exists
-                print(f'appname: {appname}, exe: {exe}, entry_exists: {entry_exists}')
-
 create_new_entry('$epicshortcutdirectory', 'Epic Games', '$epiclaunchoptions', '$epicstartingdir')
 create_new_entry('$gogshortcutdirectory', 'Gog Galaxy', '$goglaunchoptions', '$gogstartingdir')
 create_new_entry('$uplayshortcutdirectory', 'Ubisoft Connect', '$uplaylaunchoptions', '$uplaystartingdir')
