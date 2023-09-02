@@ -1,14 +1,12 @@
 #!/usr/bin/env bash
 
-# shellcheck disable=SC2155
-
 set -x              # activate debugging (execution shown)
 set -o pipefail     # capture error from pipes
 # set -eu           # exit immediately, undefined vars are errors
 
 # ENVIRONMENT VARIABLES
 # $USER
-logged_in_user=$(logname)
+[[ -n $(logname >/dev/null 2>&1) ]] && logged_in_user=$(logname) || logged_in_user=$(whoami)
 
 # $UID
 # logged_in_uid=$(id -u "${logged_in_user}")
@@ -21,7 +19,7 @@ logged_in_home=$(eval echo "~${logged_in_user}")
 download_dir="${logged_in_home}/Downloads/NonSteamLaunchersInstallation"
 
 # Create a log file in the same directory as the desktop file/.sh file
-exec >> ${logged_in_home}/Downloads/NonSteamLaunchers-install.log 2>&1
+exec >> "${logged_in_home}/Downloads/NonSteamLaunchers-install.log" 2>&1
 
 # Version number (major.minor)
 version=v2.99
@@ -1335,66 +1333,65 @@ echo "0"
 echo "# Detecting, Updating and Installing GE-Proton"
 
 # check to make sure compatabilitytools.d exists and makes it if it doesnt
-    if [ ! -d "${logged_in_home}/.steam/root/compatibilitytools.d" ]; then
+if [ ! -d "${logged_in_home}/.steam/root/compatibilitytools.d" ]; then
     mkdir -p "${logged_in_home}/.steam/root/compatibilitytools.d"
 fi
 
 # Create NonSteamLaunchersInstallation subfolder in Downloads folder
-mkdir -p ${logged_in_home}/Downloads/NonSteamLaunchersInstallation
+mkdir -p "${logged_in_home}/Downloads/NonSteamLaunchersInstallation"
 
 # Set the path to the Proton directory
-proton_dir=$(find ~/.steam/root/compatibilitytools.d -maxdepth 1 -type d -name "GE-Proton*" | sort -V | tail -n1)
+proton_dir=$(find "${logged_in_home}/.steam/root/compatibilitytools.d" -maxdepth 1 -type d -name "GE-Proton*" | sort -V | tail -n1)
 
 # Set the URLs to download GE-Proton from
-ge_proton_url1=https://github.com/GloriousEggroll/proton-ge-custom/releases/latest/download/GE-Proton.tar.gz
-ge_proton_url2=https://github.com/GloriousEggroll/proton-ge-custom/releases/download/GE-Proton8-13/GE-Proton8-13.tar.gz
+ge_proton_url1="https://github.com/GloriousEggroll/proton-ge-custom/releases/latest/download/GE-Proton.tar.gz"
+ge_proton_url2="https://github.com/GloriousEggroll/proton-ge-custom/releases/download/GE-Proton8-13/GE-Proton8-13.tar.gz"
 
 # Check if GE-Proton is installed
 if [ -z "$proton_dir" ]; then
     # Download GE-Proton using the first URL
     echo "Downloading GE-Proton using the first URL"
-    wget $ge_proton_url1 -O ${logged_in_home}/Downloads/NonSteamLaunchersInstallation/GE-Proton.tar.gz
+    ret_code=$(wget "$ge_proton_url1" -O "${logged_in_home}/Downloads/NonSteamLaunchersInstallation/GE-Proton.tar.gz"; echo $?)
 
     # Check if the download succeeded
-    if [ $? -ne 0 ]; then
+     if [ "$ret_code" -ne 0 ]; then
         # Download GE-Proton using the second URL
         echo "Downloading GE-Proton using the second URL"
-        wget $ge_proton_url2 -O ${logged_in_home}/Downloads/NonSteamLaunchersInstallation/GE-Proton.tar.gz
+        ret_code=$(wget "$ge_proton_url2" -O "${logged_in_home}/Downloads/NonSteamLaunchersInstallation/GE-Proton.tar.gz"; echo $?)
     fi
 
     # Check if either download succeeded
-    if [ $? -eq 0 ]; then
+    if [ "$ret_code" -eq 0 ]; then
         # Install GE-Proton
         echo "Installing GE-Proton"
-        tar -xvf ${logged_in_home}/Downloads/NonSteamLaunchersInstallation/GE-Proton.tar.gz -C ~/.steam/root/compatibilitytools.d/
-        proton_dir=$(find ~/.steam/root/compatibilitytools.d -maxdepth 1 -type d -name "GE-Proton*" | sort -V | tail -n1)
+        tar -xvf "${logged_in_home}/Downloads/NonSteamLaunchersInstallation/GE-Proton.tar.gz" -C "${logged_in_home}/.steam/root/compatibilitytools.d"
+        proton_dir=$(find "${logged_in_home}/.steam/root/compatibilitytools.d" -maxdepth 1 -type d -name "GE-Proton*" | sort -V | tail -n1)
     else
         # Handle download failure
         echo "Failed to download GE-Proton"
     fi
 else
-
-# Check if installed version is the latest version
-installed_version=$(basename $proton_dir | sed 's/GE-Proton-//')
+    # Check if installed version is the latest version
+    installed_version=$(basename $proton_dir | sed 's/GE-Proton-//')
     latest_version=$(curl -s https://api.github.com/repos/GloriousEggroll/proton-ge-custom/releases/latest | grep tag_name | cut -d '"' -f 4)
     if [ "$installed_version" != "$latest_version" ]; then
         # Download GE-Proton using the first URL
         echo "Downloading GE-Proton using the first URL"
-        wget $ge_proton_url1 -O ${logged_in_home}/Downloads/NonSteamLaunchersInstallation/GE-Proton.tar.gz
+        ret_code=$(wget "$ge_proton_url1" -O "${logged_in_home}/Downloads/NonSteamLaunchersInstallation/GE-Proton.tar.gz"; echo $?)
 
         # Check if the download succeeded
-        if [ $? -ne 0 ]; then
+        if [ "$ret_code" -ne 0 ]; then
             # Download GE-Proton using the second URL
             echo "Downloading GE-Proton using the second URL"
-            wget $ge_proton_url2 -O ${logged_in_home}/Downloads/NonSteamLaunchersInstallation/GE-Proton.tar.gz
+            ret_code=$(wget "$ge_proton_url2" -O "${logged_in_home}/Downloads/NonSteamLaunchersInstallation/GE-Proton.tar.gz"; echo $?)
         fi
 
         # Check if either download succeeded
-        if [ $? -eq 0 ]; then
+        if [ "$ret_code" -eq 0 ]; then
             # Install GE-Proton
             echo "Installing GE-Proton"
-            tar -xvf ${logged_in_home}/Downloads/NonSteamLaunchersInstallation/GE-Proton.tar.gz -C ~/.steam/root/compatibilitytools.d/
-            proton_dir=$(find ~/.steam/root/compatibilitytools.d -maxdepth 1 -type d -name "GE-Proton*" | sort -V | tail -n1)
+            tar -xvf "${logged_in_home}/Downloads/NonSteamLaunchersInstallation/GE-Proton.tar.gz" -C "${logged_in_home}/.steam/root/compatibilitytools.d"
+            proton_dir=$(find "${logged_in_home}/.steam/root/compatibilitytools.d" -maxdepth 1 -type d -name "GE-Proton*" | sort -V | tail -n1)
         else
             # Handle download failure
             echo "Failed to download GE-Proton"
@@ -2661,8 +2658,9 @@ if [[ -f "${steam_dir}/config/config.vdf" ]]; then
     # Initialize the most_recent variable
     most_recent=0
 
+	# TODO: `find` would likely be safer than globbing
     # Loop through all the userdata folders
-    for USERDATA_FOLDER in ~/.steam/root/userdata/*; do
+    for USERDATA_FOLDER in "${logged_in_home}"/.steam/root/userdata/*; do
         # Check if the current userdata folder is not the "0" or "anonymous" folder
         if [[ "$USERDATA_FOLDER" != *"/0" ]] && [[ "$USERDATA_FOLDER" != *"/anonymous" ]]; then
             # Get the access time of the current userdata folder
