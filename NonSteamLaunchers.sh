@@ -1312,7 +1312,7 @@ if [[ $options == "Find Games" ]]; then
     # Download the latest BoilR from GitHub (Linux version)
     mkdir -p "$download_dir"
     cd "$download_dir"
-    wget https://github.com/PhilipK/BoilR/releases/download/v.1.9.1/linux_BoilR
+    wget https://github.com/PhilipK/BoilR/releases/download/v.1.9.2/linux_BoilR
 
     # Add execute permissions to the linux_BoilR file
     chmod +x linux_BoilR
