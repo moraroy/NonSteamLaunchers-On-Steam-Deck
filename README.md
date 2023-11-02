@@ -33,7 +33,7 @@ Supported Stores 🛍
 - Legacy Games ✔️
 - Origin (only working way) ✔️
 - Rockstar Games Launcher ✔️
-- Ubisoft ✔️
+- Ubisoft Connect ✔️
 - Glyph ✔️
 - Minecraft ✔️
 - Playstation Plus ✔️
