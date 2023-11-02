@@ -52,6 +52,7 @@ Supported Streaming Sites for games and as well as any website. 🌐
 - Disney+ ✔️
 - Hulu ✔️
 - Youtube ✔️
+- Twitch ✔️
 
 <h1 align="left">
 Find Games
