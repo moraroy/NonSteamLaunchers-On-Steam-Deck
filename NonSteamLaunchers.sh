@@ -1644,7 +1644,7 @@ fi
 
 wait
 echo "50"
-echo "# Downloading & Installing Uplay ...please wait..."
+echo "# Downloading & Installing Ubisoft Connect ...please wait..."
 
 # Check if user selected Uplay
 if [[ $options == *"Ubisoft Connect"* ]]; then
