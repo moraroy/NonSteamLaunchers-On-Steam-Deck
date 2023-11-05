@@ -152,15 +152,15 @@ fi
 if [[ -f "$uplay_path1" ]]; then
     # Uplay is installed in path 1
     uplay_value="FALSE"
-    uplay_text="Uplay ===> $uplay_path1"
+    uplay_text="Ubisoft Connect ===> $uplay_path1"
 elif [[ -f "$uplay_path2" ]]; then
     # Uplay is installed in path 2
     uplay_value="FALSE"
-    uplay_text="Uplay ===> $uplay_path2"
+    uplay_text="Ubisoft Connect ===> $uplay_path2"
 else
     # Uplay is not installed
     uplay_value="FALSE"
-    uplay_text="Uplay"
+    uplay_text="Ubisoft Connect"
 fi
 
 # Check if Battle.net is installed
@@ -1421,7 +1421,7 @@ exe_file=${logged_in_home}/Downloads/NonSteamLaunchersInstallation/GOG_Galaxy_2.
 ubi_url=https://ubi.li/4vxt9
 
 # Set the path to save the third file to
-ubi_file=${logged_in_home}/Downloads/NonSteamLaunchersInstallation/UplayInstaller.exe
+ubi_file=${logged_in_home}/Downloads/NonSteamLaunchersInstallation/UbisoftConnectInstaller.exe
 
 # Set the URL to download the fourth file from
 origin_url=https://origin-a.akamaihd.net/Origin-Client-Download/origin/live/OriginThinSetup.exe
@@ -1647,7 +1647,7 @@ echo "50"
 echo "# Downloading & Installing Uplay ...please wait..."
 
 # Check if user selected Uplay
-if [[ $options == *"Uplay"* ]]; then
+if [[ $options == *"Ubisoft Connect"* ]]; then
     # User selected Uplay
     echo "User selected Uplay"
 
@@ -1675,7 +1675,7 @@ if [[ $options == *"Uplay"* ]]; then
     # Download UBI file
     if [ ! -f "$ubi_file" ]; then
         echo "Downloading UBI file"
-        wget $ubi_url -O $ubi_file
+        wget --no-check-certificate $ubi_url -O $ubi_file
     fi
 
     # Run the UBI file using Proton with the /passive option
