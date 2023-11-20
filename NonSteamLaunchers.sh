@@ -22,7 +22,7 @@ download_dir="${logged_in_home}/Downloads/NonSteamLaunchersInstallation"
 exec >> "${logged_in_home}/Downloads/NonSteamLaunchers-install.log" 2>&1
 
 # Version number (major.minor)
-version=v2.99
+version=v3.00
 
 # TODO: tighten logic to check whether major/minor version is up-to-date via `-eq`, `-lt`, or `-gt` operators
 # Check repo releases via GitHub API then display current stable version
@@ -340,7 +340,7 @@ elif [[ -f "$dmm_path2" ]]; then
 else
     # DMM Player is not installed
     dmm_value="FALSE"
-    dmm_text="DMM Games"
+    dmm_text="DMM Games - Broken, Use at own risk"
 fi }
 
 # Verify launchers are installed
@@ -628,9 +628,14 @@ fi
 function StartFreshFunction {
     # Define the path to the compatdata directory
     compatdata_dir="${logged_in_home}/.local/share/Steam/steamapps/compatdata"
+    # Define the path to the other directory
+    other_dir="${logged_in_home}/.local/share/Steam/steamapps/shadercache/"
 
     # Define an array of original folder names
     folder_names=("EpicGamesLauncher" "GogGalaxyLauncher" "UplayLauncher" "OriginLauncher" "Battle.netLauncher" "TheEAappLauncher" "AmazonGamesLauncher" "itchioLauncher" "LegacyGamesLauncher" "HumbleGamesLauncher" "IndieGalaLauncher" "RockstarGamesLauncher" "GlyphLauncher" "MinecraftLauncher" "PlaystationPlusLauncher" "DMMGameLauncher")
+
+    # Define an array of app IDs
+    app_ids=("3772819390" "4294900670" "4063097571" "3786021133" "3448088735" "3923904787" "3440562512" "2948446662" "3303169468" "3595505624" "4272271078" "3259996605" "2588786779" "4090616647")
 
     # Iterate over each folder name in the folder_names array
     for folder in "${folder_names[@]}"; do
@@ -650,6 +655,28 @@ function StartFreshFunction {
                 # Delete the folder
                 # shellcheck disable=SC2115
                 rm -rf "${compatdata_dir}/${folder}"
+            fi
+        fi
+    done
+
+    # Iterate over each app ID in the app_ids array
+    for app_id in "${app_ids[@]}"; do
+        # Check if the folder exists
+        if [ -e "${other_dir}/${app_id}" ]; then
+            # Check if the folder is a symbolic link
+            if [ -L "${other_dir}/${app_id}" ]; then
+                # Get the path of the target of the symbolic link
+                target_path=$(readlink -f "${other_dir}/${app_id}")
+
+                # Delete the target of the symbolic link
+                rm -rf "$target_path"
+
+                # Delete the symbolic link
+                unlink "${other_dir}/${app_id}"
+            else
+                # Delete the folder
+                # shellcheck disable=SC2115
+                rm -rf "${other_dir}/${app_id}"
             fi
         fi
     done
@@ -714,9 +741,15 @@ if [[ $options == "Start Fresh" ]] || [[ $selected_launchers == "Start Fresh" ]]
     # The Start Fresh button was clicked or the Start Fresh option was passed as a command line argument
     if [ ${#args[@]} -eq 0 ]; then
         # No command line arguments were provided, so display the zenity window
-        if zenity --question --text="aaahhh it always feels good to start fresh :) but...This will delete the App ID folders you installed inside the steamapps/compatdata/ directory. This means anything youve installed (launchers or games) WITHIN THIS SCRIPT will be deleted if you have them there. Everything will be wiped. Are you sure?" --width=300 --height=260; then
+        if zenity --question --text="aaahhh it always feels good to start fresh :) but...This will delete the App ID folders you installed inside the steamapps/compatdata/ directory as well as the Shader Cache associated with them in the steamapps/shadercache directory. This means anything youve installed (launchers or games) WITHIN THIS SCRIPT will be deleted if you have them there. Everything will be wiped. Are you sure?" --width=300 --height=260; then
             # The user clicked the "Yes" button, so call the StartFreshFunction
             StartFreshFunction
+            # If the Start Fresh function was called, set an environment variable
+            if [ "$?" -eq 0 ]; then
+                export START_FRESH=true
+            else
+                export START_FRESH=false
+            fi
         else
             # The user clicked the "No" button, so exit with exit code 0 to indicate success.
             exit 0
@@ -1343,61 +1376,41 @@ mkdir -p "${logged_in_home}/Downloads/NonSteamLaunchersInstallation"
 # Set the path to the Proton directory
 proton_dir=$(find "${logged_in_home}/.steam/root/compatibilitytools.d" -maxdepth 1 -type d -name "GE-Proton*" | sort -V | tail -n1)
 
-# Set the URLs to download GE-Proton from
-ge_proton_url1="https://github.com/GloriousEggroll/proton-ge-custom/releases/latest/download/GE-Proton.tar.gz"
-ge_proton_url2="https://github.com/GloriousEggroll/proton-ge-custom/releases/download/GE-Proton8-23/GE-Proton8-23.tar.gz"
-
 # Check if GE-Proton is installed
 if [ -z "$proton_dir" ]; then
-    # Download GE-Proton using the first URL
-    echo "Downloading GE-Proton using the first URL"
-    ret_code=$(wget "$ge_proton_url1" -O "${logged_in_home}/Downloads/NonSteamLaunchersInstallation/GE-Proton.tar.gz"; echo $?)
-
-    # Check if the download succeeded
-     if [ "$ret_code" -ne 0 ]; then
-        # Download GE-Proton using the second URL
-        echo "Downloading GE-Proton using the second URL"
-        ret_code=$(wget "$ge_proton_url2" -O "${logged_in_home}/Downloads/NonSteamLaunchersInstallation/GE-Proton.tar.gz"; echo $?)
-    fi
-
-    # Check if either download succeeded
-    if [ "$ret_code" -eq 0 ]; then
-        # Install GE-Proton
-        echo "Installing GE-Proton"
-        tar -xvf "${logged_in_home}/Downloads/NonSteamLaunchersInstallation/GE-Proton.tar.gz" -C "${logged_in_home}/.steam/root/compatibilitytools.d"
-        proton_dir=$(find "${logged_in_home}/.steam/root/compatibilitytools.d" -maxdepth 1 -type d -name "GE-Proton*" | sort -V | tail -n1)
-    else
-        # Handle download failure
-        echo "Failed to download GE-Proton"
-    fi
+    # Download GE-Proton using the GitHub API
+    echo "Downloading GE-Proton using the GitHub API"
+    cd "${logged_in_home}/Downloads/NonSteamLaunchersInstallation"
+    curl -sLOJ "$(curl -s https://api.github.com/repos/GloriousEggroll/proton-ge-custom/releases/latest | grep browser_download_url | cut -d\" -f4 | grep .tar.gz)"
+    curl -sLOJ "$(curl -s https://api.github.com/repos/GloriousEggroll/proton-ge-custom/releases/latest | grep browser_download_url | cut -d\" -f4 | grep .sha512sum)"
+    sha512sum -c ./*.sha512sum
+    tar -xf GE-Proton*.tar.gz -C "${logged_in_home}/.steam/root/compatibilitytools.d/"
+    proton_dir=$(find "${logged_in_home}/.steam/root/compatibilitytools.d" -maxdepth 1 -type d -name "GE-Proton*" | sort -V | tail -n1)
+    echo "All done :)"
 else
     # Check if installed version is the latest version
     installed_version=$(basename $proton_dir | sed 's/GE-Proton-//')
     latest_version=$(curl -s https://api.github.com/repos/GloriousEggroll/proton-ge-custom/releases/latest | grep tag_name | cut -d '"' -f 4)
     if [ "$installed_version" != "$latest_version" ]; then
-        # Download GE-Proton using the first URL
-        echo "Downloading GE-Proton using the first URL"
-        ret_code=$(wget "$ge_proton_url1" -O "${logged_in_home}/Downloads/NonSteamLaunchersInstallation/GE-Proton.tar.gz"; echo $?)
-
-        # Check if the download succeeded
-        if [ "$ret_code" -ne 0 ]; then
-            # Download GE-Proton using the second URL
-            echo "Downloading GE-Proton using the second URL"
-            ret_code=$(wget "$ge_proton_url2" -O "${logged_in_home}/Downloads/NonSteamLaunchersInstallation/GE-Proton.tar.gz"; echo $?)
-        fi
-
-        # Check if either download succeeded
-        if [ "$ret_code" -eq 0 ]; then
-            # Install GE-Proton
-            echo "Installing GE-Proton"
-            tar -xvf "${logged_in_home}/Downloads/NonSteamLaunchersInstallation/GE-Proton.tar.gz" -C "${logged_in_home}/.steam/root/compatibilitytools.d"
-            proton_dir=$(find "${logged_in_home}/.steam/root/compatibilitytools.d" -maxdepth 1 -type d -name "GE-Proton*" | sort -V | tail -n1)
-        else
-            # Handle download failure
-            echo "Failed to download GE-Proton"
-        fi
+        # Download GE-Proton using the GitHub API
+        echo "Downloading GE-Proton using the GitHub API"
+        cd "${logged_in_home}/Downloads/NonSteamLaunchersInstallation"
+        curl -sLOJ "$(curl -s https://api.github.com/repos/GloriousEggroll/proton-ge-custom/releases/latest | grep browser_download_url | cut -d\" -f4 | grep .tar.gz)"
+        curl -sLOJ "$(curl -s https://api.github.com/repos/GloriousEggroll/proton-ge-custom/releases/latest | grep browser_download_url | cut -d\" -f4 | grep .sha512sum)"
+        sha512sum -c ./*.sha512sum
+        tar -xf GE-Proton*.tar.gz -C "${logged_in_home}/.steam/root/compatibilitytools.d/"
+        proton_dir=$(find "${logged_in_home}/.steam/root/compatibilitytools.d" -maxdepth 1 -type d -name "GE-Proton*" | sort -V | tail -n1)
+        echo "All done :)"
     fi
+    #Delete old GE-Proton Versions
+    for dir in "${logged_in_home}/.steam/root/compatibilitytools.d/GE-Proton"*; do
+        if [ "$dir" != "$proton_dir" ]; then
+            rm -rf "$dir"
+        fi
+    done
 fi
+
+
 
 echo "10"
 echo "# Setting files in their place"
@@ -2760,10 +2773,12 @@ if [ -f "$config_vdf_path" ]; then
     cp "$config_vdf_path" "$backup_path"
 
     # Set the name of the compatibility tool to use
-    compat_tool_name="GE-Proton8-23"
+    compat_tool_name=$(ls "${logged_in_home}/.steam/root/compatibilitytools.d" | grep "GE-Proton" | sort -V | tail -n1)
 else
     echo "Could not find config.vdf file"
 fi
+
+
 
 # Set the path to the configset_controller_neptune.vdf file
 controller_config_path="${logged_in_home}/.local/share/Steam/steamapps/common/Steam Controller Configs/$steamid3/config/configset_controller_neptune.vdf"
@@ -2831,6 +2846,7 @@ dmmshortcutdirectory = '$dmmshortcutdirectory'
 chromedirectory = '$chromedirectory'
 websites_str = '$custom_websites_str'
 custom_websites = websites_str.split(', ')
+START_FRESH = '$START_FRESH'
 
 app_ids = []
 
@@ -3158,6 +3174,7 @@ if os.path.exists(os.path.join(compatdata_dir, 'NonSteamLaunchers')):
 
         # Create a symbolic link to the renamed NonSteamLaunchers folder
         os.symlink(new_path, symlink_path)"
+
 
 # TODO: might be better to relocate temp files to `/tmp` or even use `mktemp -d` since `rm -rf` is potentially dangerous without the `-i` flag
 # Delete NonSteamLaunchersInstallation subfolder in Downloads folder
