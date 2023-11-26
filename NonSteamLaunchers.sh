@@ -2370,7 +2370,7 @@ wait
 # Checking Files For Shortcuts and Setting Directories For Shortcuts
 if [[ -f "$epic_games_launcher_path1" ]]; then
     # Epic Games Launcher is installed at path 1
-    epicshortcutdirectory="\"$epic_games_launcher_path1\""
+    epicshortcutdirectory="\"$epic_games_launcher_path1\" -opengl"
     epiclaunchoptions="STEAM_COMPAT_DATA_PATH=\"${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/\" %command%"
     epicstartingdir="\"$(dirname "$epic_games_launcher_path1")\""
 elif [[ -f "$epic_games_launcher_path2" ]]; then
