@@ -661,7 +661,7 @@ function StartFreshFunction {
     folder_names=("EpicGamesLauncher" "GogGalaxyLauncher" "UplayLauncher" "OriginLauncher" "Battle.netLauncher" "TheEAappLauncher" "AmazonGamesLauncher" "itchioLauncher" "LegacyGamesLauncher" "HumbleGamesLauncher" "IndieGalaLauncher" "RockstarGamesLauncher" "GlyphLauncher" "MinecraftLauncher" "PlaystationPlusLauncher" "DMMGameLauncher" "VKPlayLauncher")
 
     # Define an array of app IDs
-    app_ids=("3772819390" "4294900670" "4063097571" "3786021133" "3448088735" "3923904787" "3440562512" "2948446662" "3303169468" "3595505624" "4272271078" "3259996605" "2588786779" "4090616647")
+    app_ids=("3772819390" "4294900670" "4063097571" "3786021133" "3448088735" "3923904787" "3440562512" "2948446662" "3303169468" "3595505624" "4272271078" "3259996605" "2588786779" "4090616647" "3494943831")
 
     # Iterate over each folder name in the folder_names array
     for folder in "${folder_names[@]}"; do
@@ -2396,9 +2396,9 @@ if [[ "$options" == *"VK Play"* ]]; then
 
     # Set the appid for the VK Play Launcher
     if [ "$use_separate_appids" = true ]; then
-    appid=VKPlayLauncher
+    	appid=VKPlayLauncher
     else
-    appid=NonSteamLaunchers
+    	appid=NonSteamLaunchers
     fi
 
     # Create app id folder in compatdata folder if it doesn't exist
