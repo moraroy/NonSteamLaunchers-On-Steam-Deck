@@ -2419,12 +2419,12 @@ fi
 if [[ -f "$battlenet_path1" ]]; then
     # Battlenet Launcher is installed at path 1
     battlenetshortcutdirectory="\"$battlenet_path1\""
-    battlenetlaunchoptions="STEAM_COMPAT_DATA_PATH=\"${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/\" %command%"
+    battlenetlaunchoptions="WINE_SIMULATE_WRITECOPY=1 %command% STEAM_COMPAT_DATA_PATH=\"${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/\" %command%"
     battlenetstartingdir="\"$(dirname "$battlenet_path1")\""
 elif [[ -f "$battlenet_path2" ]]; then
     # Battlenet Launcher is installed at path 2
     battlenetshortcutdirectory="\"$battlenet_path2\""
-    battlenetlaunchoptions="STEAM_COMPAT_DATA_PATH=\"${logged_in_home}/.local/share/Steam/steamapps/compatdata/Battle.netLauncher/\" %command%"
+    battlenetlaunchoptions="WINE_SIMULATE_WRITECOPY=1 %command% STEAM_COMPAT_DATA_PATH=\"${logged_in_home}/.local/share/Steam/steamapps/compatdata/Battle.netLauncher/\" %command%"
     battlenetstartingdir="\"$(dirname "$battlenet_path2")\""
 fi
 
