@@ -38,6 +38,7 @@ Supported Stores 🛍
 - Minecraft ✔️
 - Playstation Plus ✔️
 - DMM Games Player ✔️
+- VK Play
 
 <h1 align="center">
 Supported Streaming Sites for games and as well as any website. 🌐
