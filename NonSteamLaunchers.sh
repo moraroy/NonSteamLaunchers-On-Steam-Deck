@@ -22,7 +22,7 @@ download_dir="${logged_in_home}/Downloads/NonSteamLaunchersInstallation"
 exec >> "${logged_in_home}/Downloads/NonSteamLaunchers-install.log" 2>&1
 
 # Version number (major.minor)
-version=v3.00
+version=v3.01
 
 # TODO: tighten logic to check whether major/minor version is up-to-date via `-eq`, `-lt`, or `-gt` operators
 # Check repo releases via GitHub API then display current stable version
@@ -2538,12 +2538,12 @@ fi
 if [[ -f "$battlenet_path1" ]]; then
     # Battlenet Launcher is installed at path 1
     battlenetshortcutdirectory="\"$battlenet_path1\""
-    battlenetlaunchoptions="WINE_SIMULATE_WRITECOPY=1 %command% STEAM_COMPAT_DATA_PATH=\"${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/\" %command%"
+    battlenetlaunchoptions="STEAM_COMPAT_DATA_PATH=\"${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/\" %command%"
     battlenetstartingdir="\"$(dirname "$battlenet_path1")\""
 elif [[ -f "$battlenet_path2" ]]; then
     # Battlenet Launcher is installed at path 2
     battlenetshortcutdirectory="\"$battlenet_path2\""
-    battlenetlaunchoptions="WINE_SIMULATE_WRITECOPY=1 %command% STEAM_COMPAT_DATA_PATH=\"${logged_in_home}/.local/share/Steam/steamapps/compatdata/Battle.netLauncher/\" %command%"
+    battlenetlaunchoptions="STEAM_COMPAT_DATA_PATH=\"${logged_in_home}/.local/share/Steam/steamapps/compatdata/Battle.netLauncher/\" %command%"
     battlenetstartingdir="\"$(dirname "$battlenet_path2")\""
 fi
 
