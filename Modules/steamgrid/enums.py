@@ -18,8 +18,58 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
 """
 
-from .steamgrid import *
-from .enums import *
-from .asset import *
-from .game import *
-from .author import *
+from enum import Enum
+
+
+__all__ = [
+    'PlatformType',
+    'StyleType',
+    'MimeType',
+    'ImageType',
+]
+
+class PlatformType(Enum):
+    Steam = 'steam'
+    Origin =  'origin'
+    Egs = 'egs'
+    Bnet = 'bnet'
+    Uplay = 'uplay'
+    Flashpoint = 'flashpoint'
+    Eshop = 'eshop'
+
+    def __str__(self) -> str:
+        return self.name
+
+class StyleType(Enum):
+    Alternate = 'alternate'
+    Blurred = 'blurred'
+    White_logo = 'white_logo'
+    Material = 'material'
+    No_logo = 'no_logo'
+
+    def __str__(self) -> str:
+        return self.name
+
+class MimeType(Enum):
+    PNG = 'image/png'
+    JPEG = 'image/jpeg'
+    WEBP = 'image/webp'
+
+    def __str__(self) -> str:
+        return self.name
+
+class ImageType(Enum):
+    Static = 'static '
+    Animated = 'animated'
+
+    def __str__(self) -> str:
+        return self.name
+
+class AssetType(Enum):
+    Grid = 'grids'
+    Hero = 'heroes'
+    Logo = 'logoes'
+    Icon = 'icons'
+
+    def __str__(self) -> str:
+        return self.name
