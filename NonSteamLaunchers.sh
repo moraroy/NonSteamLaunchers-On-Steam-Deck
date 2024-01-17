@@ -22,7 +22,7 @@ download_dir="${logged_in_home}/Downloads/NonSteamLaunchersInstallation"
 exec >> "${logged_in_home}/Downloads/NonSteamLaunchers-install.log" 2>&1
 
 # Version number (major.minor)
-version=v3.00
+version=v3.2
 
 # TODO: tighten logic to check whether major/minor version is up-to-date via `-eq`, `-lt`, or `-gt` operators
 # Check repo releases via GitHub API then display current stable version
@@ -525,6 +525,16 @@ function CheckInstallationDirectory {
         vkplay_move_value="FALSE"
     fi }
 
+
+
+
+#Get SD Card Path
+get_sd_path() {
+    # This assumes that the SD card is mounted under /run/media/deck/
+    local sd_path=$(df | grep '/run/media/deck/' | awk '{print $6}')
+    echo $sd_path
+}
+
 # Check which app IDs are installed
 CheckInstallations
 CheckInstallationDirectory
@@ -661,7 +671,7 @@ function StartFreshFunction {
     folder_names=("EpicGamesLauncher" "GogGalaxyLauncher" "UplayLauncher" "OriginLauncher" "Battle.netLauncher" "TheEAappLauncher" "AmazonGamesLauncher" "itchioLauncher" "LegacyGamesLauncher" "HumbleGamesLauncher" "IndieGalaLauncher" "RockstarGamesLauncher" "GlyphLauncher" "MinecraftLauncher" "PlaystationPlusLauncher" "DMMGameLauncher" "VKPlayLauncher")
 
     # Define an array of app IDs
-    app_ids=("3772819390" "4294900670" "4063097571" "3786021133" "3448088735" "3923904787" "3440562512" "2948446662" "3303169468" "3595505624" "4272271078" "3259996605" "2588786779" "4090616647" "3494943831")
+    app_ids=("3772819390" "4294900670" "4063097571" "3786021133" "3448088735" "3923904787" "3440562512" "2948446662" "3303169468" "3595505624" "4272271078" "3259996605" "2588786779" "4090616647" "3494943831" "2390200925" "4253976432" "2221882453" "2296676888" "2486751858" "3974004104" "3811372789" "3788101956" "3782277090" "3640061468" "3216372511" "2882622939" "2800812206" "2580882702")
 
     # Iterate over each folder name in the folder_names array
     for folder in "${folder_names[@]}"; do
@@ -758,6 +768,18 @@ function StartFreshFunction {
     rm -rf "/run/media/mmcblk0p1/DMMGameLauncher/"
     rm -rf "/run/media/mmcblk0p1/VKPlayLauncher/"
     rm -rf ${logged_in_home}/Downloads/NonSteamLaunchersInstallation
+    rm -rf ${logged_in_home}/.config/systemd/user/Modules
+    rm -rf ${logged_in_home}/.config/systemd/user/env_vars
+    rm -rf ${logged_in_home}/.config/systemd/user/NSLGameScanner.py
+
+    # Delete the service file
+    rm -rf ${logged_in_home}/.config/systemd/user/nslgamescanner.service
+
+    # Remove the symlink
+    unlink /home/deck/.config/systemd/user/default.target.wants/nslgamescanner.service
+
+    # Reload the systemd user instance
+    systemctl --user daemon-reload
 
     # Exit the script with exit code 0 to indicate success
     exit 0
@@ -768,7 +790,7 @@ if [[ $options == "Start Fresh" ]] || [[ $selected_launchers == "Start Fresh" ]]
     # The Start Fresh button was clicked or the Start Fresh option was passed as a command line argument
     if [ ${#args[@]} -eq 0 ]; then
         # No command line arguments were provided, so display the zenity window
-        if zenity --question --text="aaahhh it always feels good to start fresh :) but...This will delete the App ID folders you installed inside the steamapps/compatdata/ directory as well as the Shader Cache associated with them in the steamapps/shadercache directory. This means anything youve installed (launchers or games) WITHIN THIS SCRIPT will be deleted if you have them there. Everything will be wiped. Are you sure?" --width=300 --height=260; then
+        if zenity --question --text="aaahhh it always feels good to start fresh :) but...This will delete the App ID folders you installed inside the steamapps/compatdata/ directory as well as the Shader Cache associated with them in the steamapps/shadercache directory. The nslgamescanner.service will also be terminated at /.config/systemd/user/ This means anything youve installed (launchers or games) WITHIN THIS SCRIPT will be deleted if you have them there. Everything will be wiped. Are you sure?" --width=300 --height=260; then
             # The user clicked the "Yes" button, so call the StartFreshFunction
             StartFreshFunction
             # If the Start Fresh function was called, set an environment variable
@@ -1063,327 +1085,46 @@ if [[ $options == "Uninstall" ]]; then
   exit
 fi
 
-if [[ $options == "Move to SD Card" ]]; then
-    # The Move to SD Card button was clicked
-    # Check which app IDs are installed
 
-    # Add similar checks for other app IDs here
+
+move_to_sd() {
+    local launcher_id=$1
+    local original_dir="${logged_in_home}/.local/share/Steam/steamapps/compatdata/${launcher_id}"
+    local sd_path=$(get_sd_path)
+    local new_dir="${sd_path}/${launcher_id}"
+
+    # Resolve symbolic link to its target
+    if [[ -L "${original_dir}" ]]; then
+        original_dir=$(readlink "${original_dir}")
+    fi
+
+    if [[ -d "${original_dir}" ]] && [[ $move_options == *"${launcher_id}"* ]]; then
+        mv "${original_dir}" "${new_dir}"
+        ln -s "${new_dir}" "${original_dir}"
+    fi
+}
+
+if [[ $options == "Move to SD Card" ]]; then
     CheckInstallationDirectory
 
-    move_options=$(zenity --list --text="Which app IDs do you want to move to the SD card?" --checklist --column="Select" --column="App ID" $nonsteamlauncher_move_value "NonSteamLaunchers" $epicgameslauncher_move_value "EpicGamesLauncher" $goggalaxylauncher_move_value "GogGalaxyLauncher" $originlauncher_move_value "OriginLauncher" $uplaylauncher_move_value "UplayLauncher" $battlenetlauncher_move_value "Battle.netLauncher" $eaapplauncher_move_value "TheEAappLauncher" $amazongameslauncher_move_value "AmazonGamesLauncher" $itchiolauncher_move_value "itchioLauncher" $legacygameslauncher_move_value "LegacyGamesLauncher" $humblegameslauncher_move_value "HumbleGamesLauncher" $indiegalalauncher_move_value "IndieGalaLauncher" $rockstargameslauncher_move_value "RockstarGamesLauncher" $glyphlauncher_move_value "GlyphLauncher" $minecraftlauncher_move_value "MinecraftLauncher" $dmmlauncher_move_value "DMMGameLauncher" $vkplaylauncher_move_value "VKPlayLauncher" --width=335 --height=524)
+    move_options=$(zenity --list --text="Which launcher IDs do you want to move to the SD card?" --checklist --column="Select" --column="Launcher ID" $nonsteamlauncher_move_value "NonSteamLaunchers" $epicgameslauncher_move_value "EpicGamesLauncher" $goggalaxylauncher_move_value "GogGalaxyLauncher" $originlauncher_move_value "OriginLauncher" $uplaylauncher_move_value "UplayLauncher" $battlenetlauncher_move_value "Battle.netLauncher" $eaapplauncher_move_value "TheEAappLauncher" $amazongameslauncher_move_value "AmazonGamesLauncher" $itchiolauncher_move_value "itchioLauncher" $legacygameslauncher_move_value "LegacyGamesLauncher" $humblegameslauncher_move_value "HumbleGamesLauncher" $indiegalalauncher_move_value "IndieGalaLauncher" $rockstargameslauncher_move_value "RockstarGamesLauncher" $glyphlauncher_move_value "GlyphLauncher" $minecraftlauncher_move_value "MinecraftLauncher" $pspluslauncher_move_value "PlaystationPlusLauncher" $dmmlauncher_move_value "DMMGameLauncher" $vkplaylauncher_move_value "VKPlayLauncher" --width=335 --height=524)
 
-    # Check if the cancel button was clicked
     if [ $? -eq 0 ]; then
-        # The OK button was clicked
-        # Display a message to the user indicating that the operation was successful
         zenity --info --text="The selected directories have been moved to the SD card and symbolic links have been created." --width=200 --height=150
+
+        IFS="|" read -ra selected_launchers <<< "$move_options"
+        for launcher in "${selected_launchers[@]}"; do
+            move_to_sd "$launcher"
+        done
     fi
 
-    # Set the path to the new directory on the SD card
-    new_dir="/run/media/mmcblk0p1"
-
-    # Check if NonSteamLaunchers is installed
-    if [[ -d "${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers" ]]; then
-        # NonSteamLaunchers is installed
-        original_dir="${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers"
-    else
-        # NonSteamLaunchers is not installed
-        original_dir=""
-    fi
-
-    # Check if the user selected to move NonSteamLaunchers
-    if [[ $move_options == *"NonSteamLaunchers"* ]] && [[ -n $original_dir ]]; then
-        # Move the NonSteamLaunchers directory to the SD card
-        mv "$original_dir" "$new_dir/NonSteamLaunchers"
-
-        # Create a symbolic link to the new directory
-        ln -s "$new_dir/NonSteamLaunchers" "$original_dir"
-    fi
-
-    # Check if EpicGamesLauncher is installed
-    if [[ -d "${logged_in_home}/.local/share/Steam/steamapps/compatdata/EpicGamesLauncher" ]]; then
-        # EpicGamesLauncher is installed
-        original_dir="${logged_in_home}/.local/share/Steam/steamapps/compatdata/EpicGamesLauncher"
-    else
-        # EpicGamesLauncher is not installed
-        original_dir=""
-    fi
-
-    # Check if the user selected to move EpicGamesLauncher
-    if [[ $move_options == *"EpicGamesLauncher"* ]] && [[ -n $original_dir ]]; then
-        # Move the EpicGamesLauncher directory to the SD card
-        mv "$original_dir" "$new_dir/EpicGamesLauncher"
-
-        # Create a symbolic link to the new directory
-        ln -s "$new_dir/EpicGamesLauncher" "$original_dir"
-    fi
-
-    # Check if GogGalaxyLauncher is installed
-    if [[ -d "${logged_in_home}/.local/share/Steam/steamapps/compatdata/GogGalaxyLauncher" ]]; then
-        # GogGalaxyLauncher is installed
-        original_dir="${logged_in_home}/.local/share/Steam/steamapps/compatdata/GogGalaxyLauncher"
-    else
-        # GogGalaxyLauncher is not installed
-        original_dir=""
-    fi
-
-    # Check if the user selected to move GogGalaxyLauncher
-    if [[ $move_options == *"GogGalaxyLauncher"* ]] && [[ -n $original_dir ]]; then
-        # Move the GogGalaxyLauncher directory to the SD card
-        mv "$original_dir" "$new_dir/GogGalaxyLauncher"
-
-        # Create a symbolic link to the new directory
-        ln -s "$new_dir/GogGalaxyLauncher" "$original_dir"
-    fi
-
-    # Check if OriginLauncher is installed
-    if [[ -d "${logged_in_home}/.local/share/Steam/steamapps/compatdata/OriginLauncher" ]]; then
-        # OriginLauncher is installed
-        original_dir="${logged_in_home}/.local/share/Steam/steamapps/compatdata/OriginLauncher"
-    else
-        # OriginLauncher is not installed
-        original_dir=""
-    fi
-
-    # Check if the user selected to move OriginLauncher
-    if [[ $move_options == *"OriginLauncher"* ]] && [[ -n $original_dir ]]; then
-        # Move the OriginLauncher directory to the SD card
-        mv "$original_dir" "$new_dir/OriginLauncher"
-
-        # Create a symbolic link to the new directory
-        ln -s "$new_dir/OriginLauncher" "$original_dir"
-    fi
-
-    # Check if UplayLauncher is installed
-    if [[ -d "${logged_in_home}/.local/share/Steam/steamapps/compatdata/UplayLauncher" ]]; then
-        # UplayLauncher is installed
-        original_dir="${logged_in_home}/.local/share/Steam/steamapps/compatdata/UplayLauncher"
-    else
-        # UplayLauncher is not installed
-        original_dir=""
-    fi
-
-    # Check if the user selected to move UplayLauncher
-    if [[ $move_options == *"UplayLauncher"* ]] && [[ -n $original_dir ]]; then
-        # Move the UplayLauncher directory to the SD card
-        mv "$original_dir" "$new_dir/UplayLauncher"
-
-        # Create a symbolic link to the new directory
-        ln -s "$new_dir/UplayLauncher" "$original_dir"
-    fi
-
-    # Check if Battle.netLauncher is installed
-    if [[ -d "${logged_in_home}/.local/share/Steam/steamapps/compatdata/Battle.netLauncher" ]]; then
-        # Battle.netLauncher is installed
-        original_dir="${logged_in_home}/.local/share/Steam/steamapps/compatdata/Battle.netLauncher"
-    else
-        # Battle.netLauncher is not installed
-        original_dir=""
-    fi
-
-    # Check if the user selected to move Battle.netLauncher
-    if [[ $move_options == *"Battle.netLauncher"* ]] && [[ -n $original_dir ]]; then
-        # Move the Battle.netLauncher directory to the SD card
-        mv "$original_dir" "$new_dir/Battle.netLauncher"
-
-        # Create a symbolic link to the new directory
-        ln -s "$new_dir/Battle.netLauncher" "$original_dir"
-    fi
-
-    # Check if TheEAappLauncher is installed
-    if [[ -d "${logged_in_home}/.local/share/Steam/steamapps/compatdata/TheEAappLauncher" ]]; then
-        # TheEAappLauncher is installed
-        original_dir="${logged_in_home}/.local/share/Steam/steamapps/compatdata/TheEAappLauncher"
-    else
-        # TheEAappLauncher is not installed
-        original_dir=""
-    fi
-
-    # Check if the user selected to move TheEAappLauncher
-    if [[ $move_options == *"TheEAappLauncher"* ]] && [[ -n $original_dir ]]; then
-        # Move the TheEAappLauncher directory to the SD card
-        mv "$original_dir" "$new_dir/TheEAappLauncher"
-
-        # Create a symbolic link to the new directory
-        ln -s "$new_dir/TheEAappLauncher" "$original_dir"
-    fi
-
-    # Check if AmazonGamesLauncher is installed
-    if [[ -d "${logged_in_home}/.local/share/Steam/steamapps/compatdata/AmazonGamesLauncher" ]]; then
-        # AmazonGamesLauncher is installed
-        original_dir="${logged_in_home}/.local/share/Steam/steamapps/compatdata/AmazonGamesLauncher"
-    else
-        # AmazonGamesLauncher is not installed
-        original_dir=""
-    fi
-
-    # Check if the user selected to move AmazonGamesLauncher
-    if [[ $move_options == *"AmazonGamesLauncher"* ]] && [[ -n $original_dir ]]; then
-    # Move the AmazonGamesLauncher directory to the SD card
-    mv "$original_dir" "$new_dir/AmazonGamesLauncher"
-
-    # Create a symbolic link to the new directory
-    ln -s "$new_dir/AmazonGamesLauncher" "$original_dir"
-    fi
-
-    # Check if itchioLauncher is installed
-    if [[ -d "${logged_in_home}/.local/share/Steam/steamapps/compatdata/itchioLauncher" ]]; then
-        # itchioLauncher is installed
-        original_dir="${logged_in_home}/.local/share/Steam/steamapps/compatdata/itchioLauncher"
-    else
-        # itchioLauncher is not installed
-        original_dir=""
-    fi
-
-    # Check if the user selected to move itchioLauncher
-    if [[ $move_options == *"itchioLauncher"* ]] && [[ -n $original_dir ]]; then
-        # Move the itchioLauncher directory to the SD card
-        mv "$original_dir" "$new_dir/itchioLauncher"
-
-        # Create a symbolic link to the new directory
-        ln -s "$new_dir/itchioLauncher" "$original_dir"
-    fi
-
-    # Check if LegacyGamesLauncher is installed
-    if [[ -d "${logged_in_home}/.local/share/Steam/steamapps/compatdata/LegacyGamesLauncher" ]]; then
-        # LegacyGamesLauncher is installed
-        original_dir="${logged_in_home}/.local/share/Steam/steamapps/compatdata/LegacyGamesLauncher"
-    else
-        # LegacyGamesLauncher is not installed
-        original_dir=""
-    fi
-
-    # Check if the user selected to move LegacyGamesLauncher
-    if [[ $move_options == *"LegacyGamesLauncher"* ]] && [[ -n $original_dir ]]; then
-        # Move the LegacyGamesLauncher directory to the SD card
-        mv "$original_dir" "$new_dir/LegacyGamesLauncher"
-
-        # Create a symbolic link to the new directory
-        ln -s "$new_dir/LegacyGamesLauncher" "$original_dir"
-    fi
-
-    # Check if HumbleGamesLauncher is installed
-    if [[ -d "${logged_in_home}/.local/share/Steam/steamapps/compatdata/HumbleGamesLauncher" ]]; then
-        # HumbleGamesLauncher is installed
-        original_dir="${logged_in_home}/.local/share/Steam/steamapps/compatdata/HumbleGamesLauncher"
-    else
-        # HumbleGamesLauncher is not installed
-        original_dir=""
-    fi
-
-    # Check if the user selected to move HumbleGamesLauncher
-    if [[ $move_options == *"HumbleGamesLauncher"* ]] && [[ -n $original_dir ]]; then
-        # Move the HumbleGamesLauncher directory to the SD card
-        mv "$original_dir" "$new_dir/HumbleGamesLauncher"
-
-        # Create a symbolic link to the new directory
-        ln -s "$new_dir/HumbleGamesLauncher" "$original_dir"
-    fi
-
-    # Check if IndieGalaLauncher is installed
-    if [[ -d "${logged_in_home}/.local/share/Steam/steamapps/compatdata/IndieGalaLauncher" ]]; then
-        # IndieGalaLauncher is installed
-        original_dir="${logged_in_home}/.local/share/Steam/steamapps/compatdata/IndieGalaLauncher"
-    else
-        # Indie Gala Launcher is not installed
-        original_dir=""
-    fi
-
-    # Check if the user selected to move IndieGalaLauncher
-    if [[ $move_options == *"IndieGalaLauncher"* ]] && [[ -n $original_dir ]]; then
-        # Move the Indie GalaLauncher directory to the SD card
-        mv "$original_dir" "$new_dir/IndieGalaLauncher"
-
-        # Create a symbolic link to the new directory
-        ln -s "$new_dir/IndieGalaLauncher" "$original_dir"
-    fi
-
-    # Check if RockstarGamesLauncher is installed
-    if [[ -d "${logged_in_home}/.local/share/Steam/steamapps/compatdata/RockstarGamesLauncher" ]]; then
-        # RockstarGamesLauncher is installed
-        original_dir="${logged_in_home}/.local/share/Steam/steamapps/compatdata/RockstarGamesLauncher"
-    else
-        # Rockstar Games Launcher is not installed
-        original_dir=""
-    fi
-
-    # Check if the user selected to move RockstarGamesLauncher
-    if [[ $move_options == *"RockstarGamesLauncher"* ]] && [[ -n $original_dir ]]; then
-        # Move the Rockstar Games Launcher directory to the SD card
-        mv "$original_dir" "$new_dir/RockstarGamesLauncher"
-
-        # Create a symbolic link to the new directory
-        ln -s "$new_dir/RockstarGamesLauncher" "$original_dir"
-    fi
-
-    # Check if Glyph is installed
-    if [[ -d "${logged_in_home}/.local/share/Steam/steamapps/compatdata/GlyphLauncher" ]]; then
-        # Glyph is installed
-        original_dir="${logged_in_home}/.local/share/Steam/steamapps/compatdata/GlyphLauncher"
-    else
-        # Glyph is not installed
-        original_dir=""
-    fi
-
-    # Check if the user selected to move Glyph
-    if [[ $move_options == *"GlyphLauncher"* ]] && [[ -n $original_dir ]]; then
-        # Move the Glyph directory to the SD card
-        mv "$original_dir" "$new_dir/GlyphLauncher"
-
-        # Create a symbolic link to the new directory
-        ln -s "$new_dir/GlyphLauncher" "$original_dir"
-    fi
-
-    # Check if Minecraft is installed
-    if [[ -d "${logged_in_home}/.local/share/Steam/steamapps/compatdata/MinecraftLauncher" ]]; then
-        # Minecraft is installed
-        original_dir="${logged_in_home}/.local/share/Steam/steamapps/compatdata/MinecraftLauncher"
-    else
-        # Minecraft is not installed
-        original_dir=""
-    fi
-
-    # Check if the user selected to move Minecraft
-    if [[ $move_options == *"MinecraftLauncher"* ]] && [[ -n $original_dir ]]; then
-        # Move the Glyph directory to the SD card
-        mv "$original_dir" "$new_dir/MinecraftLauncher"
-
-        # Create a symbolic link to the new directory
-        ln -s "$new_dir/MinecraftLauncher" "$original_dir"
-    fi
-
-    # Check if the user selected to move Playstation
-    if [[ $move_options == *"Playstation Plus"* ]] && [[ -n $original_dir ]]; then
-        # Move the Playstation directory to the SD card
-        mv "$original_dir" "$new_dir/PlaystationPlusLauncher"
-
-        # Create a symbolic link to the new directory
-        ln -s "$new_dir/PlaystationPlusLauncher" "$original_dir"
-    fi
-
-    # Check if the user selected to move DMM Games
-    if [[ $move_options == *"DMM Games"* ]] && [[ -n $original_dir ]]; then
-        # Move the DMM Games directory to the SD card
-        mv "$original_dir" "$new_dir/DMMGameLauncher"
-
-        # Create a symbolic link to the new directory
-        ln -s "$new_dir/DMMGameLauncher" "$original_dir"
-    fi
-
-    # Check if the user selected to move VK Play
-    if [[ $move_options == *"VK Play"* ]] && [[ -n $original_dir ]]; then
-        # Move the VK Play directory to the SD card
-        mv "$original_dir" "$new_dir/VKPlayLauncher"
-
-        # Create a symbolic link to the new directory
-        ln -s "$new_dir/VKPlayLauncher" "$original_dir"
-    fi
-
-    # TODO: verfiy non-zero exit is necessary
+    # TODO: verify non-zero exit is necessary
     # ! Why the non-zero return?
     # Exit the script
     exit 1
 fi
+
+
 
 # Check if the user clicked the "Find Games" button
 if [[ $options == "Find Games" ]]; then
@@ -2486,17 +2227,25 @@ zenity --progress \
 
 wait
 
+# Initialize the env_vars file
+> ${logged_in_home}/.config/systemd/user/env_vars
+
+
 # Checking Files For Shortcuts and Setting Directories For Shortcuts
 if [[ -f "$epic_games_launcher_path1" ]]; then
     # Epic Games Launcher is installed at path 1
     epicshortcutdirectory="\"$epic_games_launcher_path1\" -opengl"
     epiclaunchoptions="STEAM_COMPAT_DATA_PATH=\"${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/\" %command%"
     epicstartingdir="\"$(dirname "$epic_games_launcher_path1")\""
+    echo "export epic_games_launcher=NonSteamLaunchers" >> ${logged_in_home}/.config/systemd/user/env_vars
+    echo "Epic Games Launcher found at path 1"
 elif [[ -f "$epic_games_launcher_path2" ]]; then
     # Epic Games Launcher is installed at path 2
     epicshortcutdirectory="\"$epic_games_launcher_path2\""
     epiclaunchoptions="STEAM_COMPAT_DATA_PATH=\"${logged_in_home}/.local/share/Steam/steamapps/compatdata/EpicGamesLauncher/\" %command%"
     epicstartingdir="\"$(dirname "$epic_games_launcher_path2")\""
+    echo "export epic_games_launcher=EpicGamesLauncher" >> ${logged_in_home}/.config/systemd/user/env_vars
+    echo "Epic Games Launcher found at path 2"
 fi
 
 if [[ -f "$gog_galaxy_path1" ]]; then
@@ -2528,22 +2277,26 @@ if [[ -f "$uplay_path1" ]]; then
     uplayshortcutdirectory="\"$uplay_path1\""
     uplaylaunchoptions="STEAM_COMPAT_DATA_PATH=\"${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/\" %command%"
     uplaystartingdir="\"$(dirname "$uplay_path1")\""
+    echo "export ubisoft_connect_launcher=NonSteamLaunchers" >> ${logged_in_home}/.config/systemd/user/env_vars
+    echo "Ubisoft Connect Launcher found at path 1"
 elif [[ -f "$uplay_path2" ]]; then
     # Uplay Launcher is installed at path 2
     uplayshortcutdirectory="\"$uplay_path2\""
     uplaylaunchoptions="STEAM_COMPAT_DATA_PATH=\"${logged_in_home}/.local/share/Steam/steamapps/compatdata/UplayLauncher/\" %command%"
     uplaystartingdir="\"$(dirname "$uplay_path2")\""
+    echo "export ubisoft_connect_launcher=UplayLauncher" >> ${logged_in_home}/.config/systemd/user/env_vars
+    echo "Ubisoft Connect Launcher found at path 1"
 fi
 
 if [[ -f "$battlenet_path1" ]]; then
     # Battlenet Launcher is installed at path 1
     battlenetshortcutdirectory="\"$battlenet_path1\""
-    battlenetlaunchoptions="WINE_SIMULATE_WRITECOPY=1 %command% STEAM_COMPAT_DATA_PATH=\"${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/\" %command%"
+    battlenetlaunchoptions="STEAM_COMPAT_DATA_PATH=\"${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/\" %command%"
     battlenetstartingdir="\"$(dirname "$battlenet_path1")\""
 elif [[ -f "$battlenet_path2" ]]; then
     # Battlenet Launcher is installed at path 2
     battlenetshortcutdirectory="\"$battlenet_path2\""
-    battlenetlaunchoptions="WINE_SIMULATE_WRITECOPY=1 %command% STEAM_COMPAT_DATA_PATH=\"${logged_in_home}/.local/share/Steam/steamapps/compatdata/Battle.netLauncher/\" %command%"
+    battlenetlaunchoptions="STEAM_COMPAT_DATA_PATH=\"${logged_in_home}/.local/share/Steam/steamapps/compatdata/Battle.netLauncher/\" %command%"
     battlenetstartingdir="\"$(dirname "$battlenet_path2")\""
 fi
 
@@ -2801,13 +2554,13 @@ export PYTHONPATH="${download_dir}/lib/python${python_version}/site-packages/:$P
 # Set the default Steam directory
 steam_dir="${logged_in_home}/.local/share/Steam"
 
-# Check if the config.vdf file exists
-if [[ -f "${steam_dir}/config/config.vdf" ]]; then
-    # Get the steamid of the currently logged in user
-    steamid=$(grep -oP 'SteamID"\s+"\K[0-9]+' "${steam_dir}/config/config.vdf" | head -n 1)
+# Check if the loginusers.vdf file exists
+if [[ -f "${logged_in_home}/.steam/root/config/loginusers.vdf" ]]; then
+    # Extract the block of text for the most recent user
+    most_recent_user=$(sed -n '/"users"/,/"MostRecent" "1"/p' "${logged_in_home}/.steam/root/config/loginusers.vdf")
 
-    # Print out the value of steamid for debugging purposes
-    echo "steamid: $steamid"
+    # Extract the SteamID from the block of text for the most recent user
+    steamid=$(echo "$most_recent_user" | grep -o '[0-9]\{17\}')
 
     # Convert steamid to steamid3
     steamid3=$((steamid - 76561197960265728))
@@ -2815,34 +2568,20 @@ if [[ -f "${steam_dir}/config/config.vdf" ]]; then
     # Initialize the userdata_folder variable
     userdata_folder=""
 
-    # Initialize the most_recent variable
-    most_recent=0
+    # Directly map steamid3 to userdata folder
+    userdata_folder="/home/deck/.steam/root/userdata/${steamid3}"
 
-	# TODO: `find` would likely be safer than globbing
-    # Loop through all the userdata folders
-    for USERDATA_FOLDER in "${logged_in_home}"/.steam/root/userdata/*; do
-        # Check if the current userdata folder is not the "0" or "anonymous" folder
-        if [[ "$USERDATA_FOLDER" != *"/0" ]] && [[ "$USERDATA_FOLDER" != *"/anonymous" ]]; then
-            # Get the access time of the current userdata folder
-            access_time=$(stat -c %X "$USERDATA_FOLDER")
-
-            # Extract steamid3 from userdata folder name
-            userdata_steamid3=$(basename "$USERDATA_FOLDER")
-
-            # Check if userdata_steamid3 matches steamid3 and if access time is more recent than most recent access time
-            if [[ $userdata_steamid3 -eq $steamid3 ]] && [[ $access_time -gt $most_recent ]]; then
-                # The access time of current userdata folder is more recent and steamid3 matches
-                # Set userdata_folder variable
-                userdata_folder="$USERDATA_FOLDER"
-
-                # Update most_recent variable
-                most_recent=$access_time
-            fi
-        fi
-    done
+    # Check if userdata_folder exists
+    if [[ -d "$userdata_folder" ]]; then
+        echo "Found userdata folder for current user: $userdata_folder"
+    else
+        echo "Could not find userdata folder for current user"
+    fi
 else
-    echo "Could not find config.vdf file"
+    echo "Could not find loginusers.vdf file"
 fi
+
+
 
 # Check if userdata folder was found
 if [[ -n "$userdata_folder" ]]; then
@@ -2858,7 +2597,7 @@ if [[ -n "$userdata_folder" ]]; then
         cp "$shortcuts_vdf_path" "$shortcuts_vdf_path.bak"
     else
         # Find config directory for current user
-        config_dir=$(find "$userdata_folder" -type d -name config)
+        config_dir=$(find "$userdata_folder" -maxdepth 1 -type d -name config)
 
         # Check if config_dir is not empty
         if [[ -n "$config_dir" ]]; then
@@ -2922,6 +2661,9 @@ else
     echo "Could not find $controller_config_path"
 fi
 
+
+
+
 # TODO: relocate to standalone python script
 # ! editorconfig will likely break this since bash uses tabs and python needs 4 spaces
 # Run the Python script to create a new entry for a Steam shortcut
@@ -2980,6 +2722,7 @@ websites_str = '$custom_websites_str'
 custom_websites = websites_str.split(', ')
 START_FRESH = '$START_FRESH'
 
+
 app_ids = []
 
 
@@ -2995,12 +2738,10 @@ app_id_to_name = {}
 def create_new_entry(shortcutdirectory, appname, launchoptions, startingdir):
     if shortcutdirectory != '' and launchoptions != '':
         exe = f'"{shortcutdirectory}"'
-        if shortcutdirectory != chromedirectory:
-            appid = get_steam_shortcut_id(exe, appname)
-            app_ids.append(appid)
-            app_id_to_name[appid] = appname
-        else:
-            appid = None
+        appid = get_steam_shortcut_id(exe, appname)
+        app_ids.append(appid)
+        app_id_to_name[appid] = appname
+
 
         # Create a new entry for the Steam shortcut
         new_entry = {
@@ -3008,7 +2749,7 @@ def create_new_entry(shortcutdirectory, appname, launchoptions, startingdir):
             'appname': appname,
             'exe': shortcutdirectory,
             'StartDir': startingdir,
-            'icon': '',
+            'icon': f'${logged_in_home}/.steam/root/userdata/$steamid3/config/grid/{str(appid)}-icon.ico',
             'ShortcutPath': '',
             'LaunchOptions': launchoptions,
             'IsHidden': 0,
@@ -3022,6 +2763,7 @@ def create_new_entry(shortcutdirectory, appname, launchoptions, startingdir):
                 '0': 'favorite'
             }
         }
+
 
         # Add the new entry to the shortcuts dictionary
         entry_exists = False
@@ -3069,7 +2811,7 @@ create_new_entry('$minecraftshortcutdirectory', 'Minecraft: Java Edition', '$min
 create_new_entry('$psplusshortcutdirectory', 'Playstation Plus', '$pspluslaunchoptions', '$psplusstartingdir')
 create_new_entry('$dmmshortcutdirectory', 'DMM Games', '$dmmlaunchoptions', '$dmmstartingdir')
 create_new_entry('$vkplayhortcutdirectory', 'VK Play', '$vkplaylaunchoptions', '$vkplaystartingdir')
-create_new_entry('$chromedirectory', 'Xbox Games Pass', '$xboxchromelaunchoptions', '$chrome_startdir')
+create_new_entry('$chromedirectory', 'Xbox Game Pass', '$xboxchromelaunchoptions', '$chrome_startdir')
 create_new_entry('$chromedirectory', 'GeForce Now', '$geforcechromelaunchoptions', '$chrome_startdir')
 create_new_entry('$chromedirectory', 'Netflix', '$netlfixchromelaunchoptions', '$chrome_startdir')
 create_new_entry('$chromedirectory', 'Hulu', '$huluchromelaunchoptions', '$chrome_startdir')
@@ -3078,6 +2820,7 @@ create_new_entry('$chromedirectory', 'Amazon Prime Video', '$amazonchromelauncho
 create_new_entry('$chromedirectory', 'Youtube', '$youtubechromelaunchoptions', '$chrome_startdir')
 create_new_entry('$chromedirectory', 'Amazon Luna', '$lunachromelaunchoptions', '$chrome_startdir')
 create_new_entry('$chromedirectory', 'Twitch', '$twitchchromelaunchoptions', '$chrome_startdir')
+
 
 # Iterate over each custom website
 for custom_website in custom_websites:
@@ -3124,6 +2867,19 @@ with open('$shortcuts_vdf_path', 'wb') as f:
 # Writes to the config.vdf File
 
 excluded_appids = []
+streaming_sites = ['Netflix', 'Hulu', 'Disney+', 'Amazon Prime Video', 'Youtube', 'Amazon Luna', 'Twitch', 'Xbox Game Pass', 'GeForce Now']
+
+for app_id, name in app_id_to_name.items():
+    if name in streaming_sites:
+        excluded_appids.append(app_id)
+
+# Remove the app IDs of the streaming sites from the app_ids list
+app_ids = [app_id for app_id in app_ids if app_id_to_name[app_id] not in streaming_sites]
+
+# Remove the app IDs of the streaming sites from the app_id_to_name dictionary
+app_id_to_name = {app_id: name for app_id, name in app_id_to_name.items() if name not in streaming_sites}
+
+
 
 # Update the config.vdf file
 with open('$config_vdf_path', 'r') as f:
@@ -3288,6 +3044,7 @@ for launcher_name, folder in folder_names.items():
     else:
         print(f'{launcher_name}: {folder} does not exist')
 
+
 # Check if the NonSteamLaunchers folder exists
 if os.path.exists(os.path.join(compatdata_dir, 'NonSteamLaunchers')):
     # Get the first app ID from the app_ids list
@@ -3316,3 +3073,44 @@ if os.path.exists(os.path.join(compatdata_dir, 'NonSteamLaunchers')):
 # TODO: might be better to relocate temp files to `/tmp` or even use `mktemp -d` since `rm -rf` is potentially dangerous without the `-i` flag
 # Delete NonSteamLaunchersInstallation subfolder in Downloads folder
 rm -rf "$download_dir"
+
+
+
+
+#Setup NSLGameScanner.service
+# Write variables to a file
+echo "export steamid3=$steamid3" >> ${logged_in_home}/.config/systemd/user/env_vars
+echo "export logged_in_home=$logged_in_home" >> ${logged_in_home}/.config/systemd/user/env_vars
+echo "export compat_tool_name=$compat_tool_name" >> ${logged_in_home}/.config/systemd/user/env_vars
+
+
+# Define your Python script path
+python_script_path="${logged_in_home}/.config/systemd/user/NSLGameScanner.py"
+
+# Check if the Python script exists
+if [ -f "$python_script_path" ]
+then
+    # Check if the service is already running
+    service_status=$(systemctl --user is-active nslgamescanner.service)
+
+    if [ "$service_status" = "active" ] || [ "$service_status" = "activating" ]
+    then
+        echo "Service is already running or activating."
+    else
+        echo "Service is not active. Starting the service..."
+        # Call your Python script
+        python3 $python_script_path
+    fi
+else
+    # Define your GitHub link
+    github_link="https://raw.githubusercontent.com/moraroy/NonSteamLaunchers-On-Steam-Deck/main/NSLGameScanner.py"
+
+    echo "Python script does not exist. Downloading from GitHub..."
+    # Download the Python script from GitHub
+    curl -o $python_script_path $github_link
+
+    echo "Starting the service..."
+    # Call your Python script
+    python3 $python_script_path
+fi
+
