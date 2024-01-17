@@ -96,7 +96,6 @@ Currently Working On 👷‍♂️
 </h1>
 
 * Decky Loader Plugin ❌ 
-* Auto-download images and set them for library entries ❌ 
 * Integrate better with [BoilR](https://github.com/PhilipK/BoilR) ❌ 
 
 <h1 align="center">
