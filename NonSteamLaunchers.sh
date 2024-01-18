@@ -2556,44 +2556,35 @@ steam_dir="${logged_in_home}/.local/share/Steam"
 
 # Check if the loginusers.vdf file exists
 if [[ -f "${logged_in_home}/.steam/root/config/loginusers.vdf" ]]; then
-    # Extract the blocks of text for all users
-    all_users=$(sed -n '/"users"/,/}/p' "${logged_in_home}/.steam/root/config/loginusers.vdf")
+    # Extract the block of text for the most recent user
+    most_recent_user=$(sed -n '/"users"/,/"MostRecent" "1"/p' "${logged_in_home}/.steam/root/config/loginusers.vdf")
 
-    # Initialize variables to store the most recent user's SteamID and timestamp
-    most_recent_steamid=""
-    most_recent_timestamp=0
+    # Extract the SteamIDs from the block of text for the most recent user
+    steamids=$(echo "$most_recent_user" | grep -o '[0-9]\{17\}')
 
-    # Loop over each user block
-    while read -r user_block; do
-        # Extract the SteamID and timestamp from the user block
-        steamid=$(echo "$user_block" | grep -o '[0-9]\{17\}')
-        timestamp=$(echo "$user_block" | grep -o '"Timestamp"[[:space:]]"[0-9]\+"' | grep -o '[0-9]\+')
+    # Loop over each SteamID
+    for steamid in $steamids; do
+        # Convert steamid to steamid3
+        steamid3=$((steamid - 76561197960265728))
 
-        # If this user's timestamp is more recent than the most recent timestamp so far, update the most recent SteamID and timestamp
-        if ((timestamp > most_recent_timestamp)); then
-            most_recent_steamid=$steamid
-            most_recent_timestamp=$timestamp
+        # Initialize the userdata_folder variable
+        userdata_folder=""
+
+        # Directly map steamid3 to userdata folder
+        userdata_folder="/home/deck/.steam/root/userdata/${steamid3}"
+
+        # Check if userdata_folder exists
+        if [[ -d "$userdata_folder" ]]; then
+            echo "Found userdata folder for user with SteamID $steamid: $userdata_folder"
+        else
+            echo "Could not find userdata folder for user with SteamID $steamid"
         fi
-    done < <(echo "$all_users" | awk '/{/,/}/')
-
-    # Convert most_recent_steamid to steamid3
-    steamid3=$((most_recent_steamid - 76561197960265728))
-
-    # Initialize the userdata_folder variable
-    userdata_folder=""
-
-    # Directly map steamid3 to userdata folder
-    userdata_folder="/home/deck/.steam/root/userdata/${steamid3}"
-
-    # Check if userdata_folder exists
-    if [[ -d "$userdata_folder" ]]; then
-        echo "Found userdata folder for current user: $userdata_folder"
-    else
-        echo "Could not find userdata folder for current user"
-    fi
+    done
 else
     echo "Could not find loginusers.vdf file"
 fi
+
+
 
 
 
