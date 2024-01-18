@@ -2559,27 +2559,24 @@ if [[ -f "${logged_in_home}/.steam/root/config/loginusers.vdf" ]]; then
     # Extract the block of text for the most recent user
     most_recent_user=$(sed -n '/"users"/,/"MostRecent" "1"/p' "${logged_in_home}/.steam/root/config/loginusers.vdf")
 
-    # Extract the SteamIDs from the block of text for the most recent user
-    steamids=$(echo "$most_recent_user" | grep -o '[0-9]\{17\}')
+    # Extract the SteamID from the block of text for the most recent user
+    steamid=$(echo "$most_recent_user" | grep -o '[0-9]\{17\}')
 
-    # Loop over each SteamID
-    for steamid in $steamids; do
-        # Convert steamid to steamid3
-        steamid3=$((steamid - 76561197960265728))
+    # Convert steamid to steamid3
+    steamid3=$((steamid - 76561197960265728))
 
-        # Initialize the userdata_folder variable
-        userdata_folder=""
+    # Initialize the userdata_folder variable
+    userdata_folder=""
 
-        # Directly map steamid3 to userdata folder
-        userdata_folder="/home/deck/.steam/root/userdata/${steamid3}"
+    # Directly map steamid3 to userdata folder
+    userdata_folder="/home/deck/.steam/root/userdata/${steamid3}"
 
-        # Check if userdata_folder exists
-        if [[ -d "$userdata_folder" ]]; then
-            echo "Found userdata folder for user with SteamID $steamid: $userdata_folder"
-        else
-            echo "Could not find userdata folder for user with SteamID $steamid"
-        fi
-    done
+    # Check if userdata_folder exists
+    if [[ -d "$userdata_folder" ]]; then
+        echo "Found userdata folder for current user: $userdata_folder"
+    else
+        echo "Could not find userdata folder for current user"
+    fi
 else
     echo "Could not find loginusers.vdf file"
 fi
