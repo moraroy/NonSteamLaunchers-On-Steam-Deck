@@ -2556,14 +2556,28 @@ steam_dir="${logged_in_home}/.local/share/Steam"
 
 # Check if the loginusers.vdf file exists
 if [[ -f "${logged_in_home}/.steam/root/config/loginusers.vdf" ]]; then
-    # Extract the block of text for the most recent user
-    most_recent_user=$(sed -n '/"users"/,/"MostRecent" "1"/p' "${logged_in_home}/.steam/root/config/loginusers.vdf")
+    # Extract the blocks of text for all users
+    all_users=$(sed -n '/"users"/,/}/p' "${logged_in_home}/.steam/root/config/loginusers.vdf")
 
-    # Extract the SteamID from the block of text for the most recent user
-    steamid=$(echo "$most_recent_user" | grep -o '[0-9]\{17\}')
+    # Initialize variables to store the most recent user's SteamID and timestamp
+    most_recent_steamid=""
+    most_recent_timestamp=0
 
-    # Convert steamid to steamid3
-    steamid3=$((steamid - 76561197960265728))
+    # Loop over each user block
+    while read -r user_block; do
+        # Extract the SteamID and timestamp from the user block
+        steamid=$(echo "$user_block" | grep -o '[0-9]\{17\}')
+        timestamp=$(echo "$user_block" | grep -o '"Timestamp"[[:space:]]"[0-9]\+"' | grep -o '[0-9]\+')
+
+        # If this user's timestamp is more recent than the most recent timestamp so far, update the most recent SteamID and timestamp
+        if ((timestamp > most_recent_timestamp)); then
+            most_recent_steamid=$steamid
+            most_recent_timestamp=$timestamp
+        fi
+    done < <(echo "$all_users" | awk '/{/,/}/')
+
+    # Convert most_recent_steamid to steamid3
+    steamid3=$((most_recent_steamid - 76561197960265728))
 
     # Initialize the userdata_folder variable
     userdata_folder=""
@@ -2580,6 +2594,7 @@ if [[ -f "${logged_in_home}/.steam/root/config/loginusers.vdf" ]]; then
 else
     echo "Could not find loginusers.vdf file"
 fi
+
 
 
 
