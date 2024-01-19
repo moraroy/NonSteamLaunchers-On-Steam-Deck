@@ -164,15 +164,14 @@ def download_artwork(game_id, api_key, art_type, shortcut_id, dimensions=None):
             response = requests.get(image_url, stream=True)
             response.raise_for_status()
             if response.status_code == 200:
+                os.makedirs(os.path.dirname(file_path), exist_ok=True)
                 with open(file_path, 'wb') as file:
                     file.write(response.content)
                 break
         except requests.exceptions.RequestException as e:
-            print(f"Error downloading image: {e}")  # Added print statement
+            print(f"Error downloading image: {e}")
             if art_type == 'icons':
                 download_artwork(game_id, api_key, 'icons_ico', shortcut_id)
-    if art_type in ['wide_grid', 'big_picture']:
-        download_artwork(game_id, api_key, 'hero', shortcut_id)
 
 
 def get_game_id(game_name):
