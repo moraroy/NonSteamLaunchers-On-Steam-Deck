@@ -2561,7 +2561,7 @@ if [[ -f "${logged_in_home}/.steam/root/config/loginusers.vdf" ]]; then
     most_recent_user=$(sed -n '/"users"/,/"MostRecent" "1"/p' "${logged_in_home}/.steam/root/config/loginusers.vdf")
 
     # Extract the SteamIDs from the block of text for the most recent user
-    steamids=$(echo "$most_recent_user" | grep -o '[0-9]\{17\}')
+    steamids=$(echo "$most_recent_user" | grep -o '[0-9]\{17\}' | tr '\n' ' ')
 
     # Loop over each SteamID
     for steamid in $steamids; do
