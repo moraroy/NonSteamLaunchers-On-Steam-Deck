@@ -463,8 +463,8 @@ def getInstalledGames(filePath):
     return os.listdir(filePath)
 
 # Define your paths
-data_folder_path = f"{logged_in_home}/Desktop/compatdata/{ubisoft_connect_launcher}/pfx/drive_c/Program Files (x86)/Ubisoft/Ubisoft Game Launcher/data/"
-games_folder_path = f"{logged_in_home}/Desktop/compatdata/{ubisoft_connect_launcher}/pfx/drive_c/Program Files (x86)/Ubisoft/Ubisoft Game Launcher/games/"
+data_folder_path = f"{logged_in_home}/.local/share/Steam/steamapps/compatdata/{ubisoft_connect_launcher}/pfx/drive_c/Program Files (x86)/Ubisoft/Ubisoft Game Launcher/data/"
+games_folder_path = f"{logged_in_home}/.local/share/Steam/steamapps/compatdata/{ubisoft_connect_launcher}/pfx/drive_c/Program Files (x86)/Ubisoft/Ubisoft Game Launcher/games/"
 
 # Check if the paths exist
 if not os.path.exists(data_folder_path) or not os.path.exists(games_folder_path):
