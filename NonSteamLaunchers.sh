@@ -22,7 +22,7 @@ download_dir="${logged_in_home}/Downloads/NonSteamLaunchersInstallation"
 exec >> "${logged_in_home}/Downloads/NonSteamLaunchers-install.log" 2>&1
 
 # Version number (major.minor)
-version=v3.2
+version=v3.3
 
 # TODO: tighten logic to check whether major/minor version is up-to-date via `-eq`, `-lt`, or `-gt` operators
 # Check repo releases via GitHub API then display current stable version
@@ -2560,27 +2560,54 @@ if [[ -f "${logged_in_home}/.steam/root/config/loginusers.vdf" ]]; then
     # Extract the block of text for the most recent user
     most_recent_user=$(sed -n '/"users"/,/"MostRecent" "1"/p' "${logged_in_home}/.steam/root/config/loginusers.vdf")
 
-    # Extract the SteamIDs from the block of text for the most recent user
-    steamids=$(echo "$most_recent_user" | grep -o '[0-9]\{17\}' | tr '\n' ' ')
+    # Initialize variables
+    max_timestamp=0
+    current_user=""
+    current_steamid=""
 
-    # Loop over each SteamID
-    for steamid in $steamids; do
-        # Convert steamid to steamid3
-        steamid3=$((steamid - 76561197960265728))
-
-        # Initialize the userdata_folder variable
-        userdata_folder=""
-
-        # Directly map steamid3 to userdata folder
-        userdata_folder="/home/deck/.steam/root/userdata/${steamid3}"
-
-        # Check if userdata_folder exists
-        if [[ -d "$userdata_folder" ]]; then
-            echo "Found userdata folder for user with SteamID $steamid: $userdata_folder"
-        else
-            echo "Could not find userdata folder for user with SteamID $steamid"
+    # Process each user block
+    while read steamid account timestamp; do
+        if (( timestamp > max_timestamp )); then
+            max_timestamp=$timestamp
+            current_user=$account
+            current_steamid=$steamid
         fi
-    done
+    done < <(echo "$most_recent_user" | awk -v RS='}\n' -F'\n' '
+    {
+        for(i=1;i<=NF;i++){
+            if($i ~ /[0-9]{17}/){
+                split($i,a, "\""); steamid=a[2];
+            }
+            if($i ~ /"AccountName"/){
+                split($i,b, "\""); account=b[4];
+            }
+            if($i ~ /"Timestamp"/){
+                split($i,c, "\""); timestamp=c[4];
+            }
+        }
+        print steamid, account, timestamp
+    }')
+
+    # Print the currently logged in user
+    if [[ -n $current_user ]]; then
+        echo "Currently logged in user: $current_user"
+        echo "SteamID: $current_steamid"
+    else
+        echo "No users found."
+    fi
+
+    # Convert steamid to steamid3
+    steamid3=$((current_steamid - 76561197960265728))
+
+    # Directly map steamid3 to userdata folder
+    userdata_folder="/home/deck/.steam/root/userdata/${steamid3}"
+
+    # Check if userdata_folder exists
+    if [[ -d "$userdata_folder" ]]; then
+        echo "Found userdata folder for user with SteamID $current_steamid: $userdata_folder"
+    else
+        echo "Could not find userdata folder for user with SteamID $current_steamid"
+    fi
 else
     echo "Could not find loginusers.vdf file"
 fi
@@ -3094,30 +3121,23 @@ echo "export compat_tool_name=$compat_tool_name" >> ${logged_in_home}/.config/sy
 # Define your Python script path
 python_script_path="${logged_in_home}/.config/systemd/user/NSLGameScanner.py"
 
-# Check if the Python script exists
-if [ -f "$python_script_path" ]
+# Define your GitHub link
+github_link="https://raw.githubusercontent.com/moraroy/NonSteamLaunchers-On-Steam-Deck/main/NSLGameScanner.py"
+
+# Check if the service is already running
+service_status=$(systemctl --user is-active nslgamescanner.service)
+
+if [ "$service_status" = "active" ] || [ "$service_status" = "activating" ]
 then
-    # Check if the service is already running
-    service_status=$(systemctl --user is-active nslgamescanner.service)
-
-    if [ "$service_status" = "active" ] || [ "$service_status" = "activating" ]
-    then
-        echo "Service is already running or activating."
-    else
-        echo "Service is not active. Starting the service..."
-        # Call your Python script
-        python3 $python_script_path
-    fi
-else
-    # Define your GitHub link
-    github_link="https://raw.githubusercontent.com/moraroy/NonSteamLaunchers-On-Steam-Deck/main/NSLGameScanner.py"
-
-    echo "Python script does not exist. Downloading from GitHub..."
-    # Download the Python script from GitHub
-    curl -o $python_script_path $github_link
-
-    echo "Starting the service..."
-    # Call your Python script
-    python3 $python_script_path
+    echo "Service is already running or activating. Stopping the service..."
+    systemctl --user stop nslgamescanner.service
 fi
+
+echo "Updating Python script from GitHub..."
+# Download the Python script from GitHub
+curl -o $python_script_path $github_link
+
+echo "Starting the service..."
+# Call your Python script
+python3 $python_script_path &
 
