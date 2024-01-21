@@ -417,61 +417,46 @@ else:
 
 
 #Ubisoft Connect Scanner
-def getUplayIDsFromGitHub():
-    url = 'https://raw.githubusercontent.com/Haoose/UPLAY_GAME_ID/master/README.md'
-    try:
-        response = urlopen(url)
-        data = response.read().decode()
-    except Exception as e:
-        print(f"Error occurred: {e}")
-        return {}
+def getUplayGameInfo(folderPath, filePath):
+    # Get the game IDs from the folder
+    listOfFiles = os.listdir(folderPath)
+    game_ids = [re.findall(r'\d+', str(entry))[0] for entry in listOfFiles if re.findall(r'\d+', str(entry))]
 
+    # Parse the registry file
     game_dict = {}
-    for line in data.split('\n'):
-        match = re.match(r'\s*(\d+)\s*-\s*(.*)', line)
-        if match:
-            id, game = match.groups()
-            game_dict[game.strip()] = id.strip()
+    with open(filePath, 'r') as file:
+        game_id = None
+        game_name = None
+        uplay_install_found = False
+        for line in file:
+            if "Uplay Install" in line:
+                game_id = re.findall(r'Uplay Install (\d+)', line)
+                if game_id:
+                    game_id = game_id[0]
+                game_name = None  # Reset game_name
+                uplay_install_found = True
+            if "DisplayName" in line and uplay_install_found:
+                game_name = re.findall(r'\"(.+?)\"', line.split("=")[1])
+                if game_name:
+                    game_name = game_name[0]
+                uplay_install_found = False
+            if game_id and game_name and game_id in game_ids:  # Add the game's info to the dictionary if its ID was found in the folder
+                game_dict[game_name] = game_id
+                game_id = None  # Reset game_id
+                game_name = None  # Reset game_name
 
     return game_dict
-
-def getUplayIDsFromDataFolder(filePath):
-    if not os.path.exists(filePath):
-        print(f"Path {filePath} does not exist.")
-        return {}
-
-    listOfFiles = os.listdir(filePath)
-    def findIDs(entry):
-        result = re.findall(r'\d+', str(entry))
-        try: return result[0]
-        except: pass
-
-    data_dict = {}
-    for entry in listOfFiles:
-        uPlayID = findIDs(entry)
-        if uPlayID != None:
-            gameName = entry.replace(uPlayID, '').strip()
-            data_dict[gameName] = uPlayID
-
-    return data_dict
-
-def getInstalledGames(filePath):
-    if not os.path.exists(filePath):
-        print(f"Path {filePath} does not exist.")
-        return []
-
-    return os.listdir(filePath)
 
 # Define your paths
 data_folder_path = f"{logged_in_home}/.local/share/Steam/steamapps/compatdata/{ubisoft_connect_launcher}/pfx/drive_c/Program Files (x86)/Ubisoft/Ubisoft Game Launcher/data/"
 games_folder_path = f"{logged_in_home}/.local/share/Steam/steamapps/compatdata/{ubisoft_connect_launcher}/pfx/drive_c/Program Files (x86)/Ubisoft/Ubisoft Game Launcher/games/"
+registry_file_path = f"{logged_in_home}/.local/share/Steam/steamapps/compatdata/{ubisoft_connect_launcher}/pfx/system.reg"
 
 # Check if the paths exist
-if not os.path.exists(data_folder_path) or not os.path.exists(games_folder_path):
+if not os.path.exists(data_folder_path) or not os.path.exists(games_folder_path) or not os.path.exists(registry_file_path):
     print("One or more paths do not exist.")
 else:
-    game_dict = getUplayIDsFromGitHub()
-    data_dict = getUplayIDsFromDataFolder(data_folder_path)
+    game_dict = getUplayGameInfo(data_folder_path, registry_file_path)
     installed_games = getInstalledGames(games_folder_path)
 
     # Load the shortcuts and config_data objects
@@ -486,7 +471,7 @@ else:
     new_shortcuts_added = False
 
     for game in installed_games:
-        game_id = game_dict.get(game) or data_dict.get(game)
+        game_id = game_dict.get(game)
         if game_id:
             launch_options = f"STEAM_COMPAT_DATA_PATH=\"{logged_in_home}/.local/share/Steam/steamapps/compatdata/{ubisoft_connect_launcher}/\" %command% \"uplay://launch/{game_id}/0\""
             exe_path = f"\"{logged_in_home}/.local/share/Steam/Steam/steamapps/compatdata/{ubisoft_connect_launcher}/pfx/drive_c/Program Files (x86)/Ubisoft/Ubisoft Game Launcher/upc.exe\""
