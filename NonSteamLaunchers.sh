@@ -42,6 +42,27 @@ check_for_updates() {
     fi
 }
 
+#Rough way to "update" the .py for users that already had the service file"
+rm -rf ${logged_in_home}/.config/systemd/user/NSLGameScanner.py
+
+# Delete the service file
+rm -rf ${logged_in_home}/.config/systemd/user/nslgamescanner.service
+
+# Remove the symlink
+unlink /home/deck/.config/systemd/user/default.target.wants/nslgamescanner.service
+
+# Reload the systemd user instance
+systemctl --user daemon-reload
+
+# Define your Python script path
+python_script_path="${logged_in_home}/.config/systemd/user/NSLGameScanner.py"
+
+# Define your GitHub link
+github_link="https://raw.githubusercontent.com/moraroy/NonSteamLaunchers-On-Steam-Deck/main/NSLGameScanner.py"
+curl -o $python_script_path $github_link
+#End of Updating the .py for users before script is run
+
+
 # Get the command line arguments
 args=("$@")
 
@@ -3139,5 +3160,5 @@ curl -o $python_script_path $github_link
 
 echo "Starting the service..."
 # Call your Python script
-python3 $python_script_path &
+python3 $python_script_path
 
