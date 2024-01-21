@@ -364,6 +364,10 @@ if os.path.exists(dat_file_path):
             start_dir = f"\"{logged_in_home}/.local/share/Steam/steamapps/compatdata/{epic_games_launcher}/pfx/drive_c/Program Files (x86)/Epic Games/Launcher/Portal/Binaries/Win32/\""
             launch_options = f"STEAM_COMPAT_DATA_PATH=\"{logged_in_home}/.local/share/Steam/steamapps/compatdata/{epic_games_launcher}\" %command% -'com.epicgames.launcher://apps/{app_name}?action=launch&silent=true'"
             shortcut_id = get_steam_shortcut_id(exe_path, display_name)
+            # Check if the game already exists in the shortcuts
+            if str(shortcut_id) in shortcuts['shortcuts']:
+                print(f"Existing shortcut found for game {display_name}. Skipping.")
+                continue
 
             # Check if the game already exists in the shortcuts
             if str(shortcut_id) in shortcuts['shortcuts']:
@@ -480,6 +484,10 @@ else:
             exe_path = f"\"{logged_in_home}/.local/share/Steam/Steam/steamapps/compatdata/{ubisoft_connect_launcher}/pfx/drive_c/Program Files (x86)/Ubisoft/Ubisoft Game Launcher/upc.exe\""
             start_dir = f"\"{logged_in_home}/.local/share/Steam/Steam/steamapps/compatdata/{ubisoft_connect_launcher}/pfx/drive_c/Program Files (x86)/Ubisoft/Ubisoft Game Launcher/\""
             shortcut_id = get_steam_shortcut_id(exe_path, game)
+            # Check if the game already exists in the shortcuts
+            if str(shortcut_id) in shortcuts['shortcuts']:
+                print(f"Existing shortcut found for game {game}. Skipping.")
+                continue
 
             # Check if the game already exists in the shortcuts
             if str(shortcut_id) in shortcuts['shortcuts']:
