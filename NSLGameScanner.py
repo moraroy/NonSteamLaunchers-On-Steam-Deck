@@ -481,7 +481,7 @@ else:
             exe_path = f"\"{logged_in_home}/.local/share/Steam/Steam/steamapps/compatdata/{ubisoft_connect_launcher}/pfx/drive_c/Program Files (x86)/Ubisoft/Ubisoft Game Launcher/upc.exe\""
             start_dir = f"\"{logged_in_home}/.local/share/Steam/Steam/steamapps/compatdata/{ubisoft_connect_launcher}/pfx/drive_c/Program Files (x86)/Ubisoft/Ubisoft Game Launcher/\""
             shortcut_id = get_steam_shortcut_id(exe_path, game)
-            # Check if the game already exists in the shortcuts usong the id
+            # Check if the game already exists in the shortcuts using the id
             if any(s.get('appid') == str(shortcut_id) for s in shortcuts['shortcuts'].values()):
                 print(f"Existing shortcut found based on shortcut ID for game {game}. Skipping.")
                 continue
