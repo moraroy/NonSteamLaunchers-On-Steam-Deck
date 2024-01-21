@@ -42,14 +42,15 @@ check_for_updates() {
     fi
 }
 
-#Rough way to "update" the .py for users that already had the service file"
+
+# Rough way to "update" the .py for users that already had the service file
 rm -rf ${logged_in_home}/.config/systemd/user/NSLGameScanner.py
 
 # Delete the service file
 rm -rf ${logged_in_home}/.config/systemd/user/nslgamescanner.service
 
 # Remove the symlink
-unlink /home/deck/.config/systemd/user/default.target.wants/nslgamescanner.service
+unlink ${logged_in_home}/.config/systemd/user/default.target.wants/nslgamescanner.service
 
 # Reload the systemd user instance
 systemctl --user daemon-reload
@@ -60,7 +61,23 @@ python_script_path="${logged_in_home}/.config/systemd/user/NSLGameScanner.py"
 # Define your GitHub link
 github_link="https://raw.githubusercontent.com/moraroy/NonSteamLaunchers-On-Steam-Deck/main/NSLGameScanner.py"
 curl -o $python_script_path $github_link
-#End of Updating the .py for users before script is run
+
+# Define the path to the env_vars file
+env_vars="${logged_in_home}/.config/systemd/user/env_vars"
+
+# Check if the env_vars file exists
+if [ -f "$env_vars" ]; then
+    # If the file exists, run the .py file
+    echo "env_vars file found. Running the .py file..."
+    python3 $python_script_path
+    live="and is live."
+else
+    # If the file does not exist, do not run the .py file
+    echo "env_vars file not found. Not running the .py file."
+    live="and is not live."
+fi
+#End of Rough way of updating the .py for users
+
 
 
 # Get the command line arguments
@@ -572,7 +589,7 @@ separate_app_ids=false
 # Check if any command line arguments were provided
 if [ ${#args[@]} -eq 0 ]; then
     # No command line arguments were provided, so display the main zenity window
-    selected_launchers=$(zenity --list --text="Which launchers do you want to download and install?" --checklist --column="$version" --column="Default = one App ID Installation, One Prefix, NonSteamLaunchers" FALSE "SEPARATE APP IDS - CHECK THIS TO SEPARATE YOUR PREFIX'S" $epic_games_value "$epic_games_text" $gog_galaxy_value "$gog_galaxy_text" $uplay_value "$uplay_text" $origin_value "$origin_text" $battlenet_value "$battlenet_text" $amazongames_value "$amazongames_text" $eaapp_value "$eaapp_text" $legacygames_value "$legacygames_text" $itchio_value "$itchio_text" $humblegames_value "$humblegames_text" $indiegala_value "$indiegala_text" $rockstar_value "$rockstar_text" $glyph_value "$glyph_text" $minecraft_value "$minecraft_text" $psplus_value "$psplus_text" $dmm_value "$dmm_text" $vkplay_value "$vkplay_text" FALSE "Xbox Game Pass" FALSE "GeForce Now" FALSE "Amazon Luna" FALSE "Netflix" FALSE "Hulu" FALSE "Disney+" FALSE "Amazon Prime Video" FALSE "Youtube" FALSE "Twitch" --width=535 --height=740 --extra-button="Uninstall" --extra-button="Find Games" --extra-button="Start Fresh" --extra-button="Move to SD Card")
+    selected_launchers=$(zenity --list --text="Which launchers do you want to download and install?" --checklist --column="$version" --column="Default = one App ID Installation, One Prefix, NonSteamLaunchers - opening this window has updated NSLGameScanner.py $live" FALSE "SEPARATE APP IDS - CHECK THIS TO SEPARATE YOUR PREFIX'S" $epic_games_value "$epic_games_text" $gog_galaxy_value "$gog_galaxy_text" $uplay_value "$uplay_text" $origin_value "$origin_text" $battlenet_value "$battlenet_text" $amazongames_value "$amazongames_text" $eaapp_value "$eaapp_text" $legacygames_value "$legacygames_text" $itchio_value "$itchio_text" $humblegames_value "$humblegames_text" $indiegala_value "$indiegala_text" $rockstar_value "$rockstar_text" $glyph_value "$glyph_text" $minecraft_value "$minecraft_text" $psplus_value "$psplus_text" $dmm_value "$dmm_text" $vkplay_value "$vkplay_text" FALSE "Xbox Game Pass" FALSE "GeForce Now" FALSE "Amazon Luna" FALSE "Netflix" FALSE "Hulu" FALSE "Disney+" FALSE "Amazon Prime Video" FALSE "Youtube" FALSE "Twitch" --width=580 --height=740 --extra-button="Uninstall" --extra-button="Find Games" --extra-button="Start Fresh" --extra-button="Move to SD Card" --extra-button="Stop NSLGameScanner")
 
     # Check if the user clicked the 'Cancel' button or selected one of the extra buttons
     if [ $? -eq 1 ] || [[ $selected_launchers == "Start Fresh" ]] || [[ $selected_launchers == "Move to SD Card" ]] || [[ $selected_launchers == "Uninstall" ]] || [[ $selected_launchers == "Find Games" ]]; then
@@ -1143,6 +1160,28 @@ if [[ $options == "Move to SD Card" ]]; then
     # ! Why the non-zero return?
     # Exit the script
     exit 1
+fi
+
+# Check if the user clicked the "Stop NSLGameScanner" button
+if [[ $options == "Stop NSLGameScanner" ]]; then
+    # Delete the service file
+    rm -rf ${logged_in_home}/.config/systemd/user/nslgamescanner.service
+
+    # Remove the symlink
+    unlink ${logged_in_home}/.config/systemd/user/default.target.wants/nslgamescanner.service
+
+    # Reload the systemd user instance
+    systemctl --user daemon-reload
+
+    # Display the zenity window in the background
+    zenity --question --text="NSLGameScanner has been stopped. Do you want to run it again?" --width=200 --height=150
+    if [ $? = 0 ]; then
+        # User wants to run NSLGameScanner again
+        python3 $python_script_path
+    else
+        # User does not want to run NSLGameScanner again
+        exit 1
+    fi
 fi
 
 
