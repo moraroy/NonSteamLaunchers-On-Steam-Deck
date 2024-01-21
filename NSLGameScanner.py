@@ -449,15 +449,13 @@ def getUplayGameInfo(folderPath, filePath):
 
 # Define your paths
 data_folder_path = f"{logged_in_home}/.local/share/Steam/steamapps/compatdata/{ubisoft_connect_launcher}/pfx/drive_c/Program Files (x86)/Ubisoft/Ubisoft Game Launcher/data/"
-games_folder_path = f"{logged_in_home}/.local/share/Steam/steamapps/compatdata/{ubisoft_connect_launcher}/pfx/drive_c/Program Files (x86)/Ubisoft/Ubisoft Game Launcher/games/"
 registry_file_path = f"{logged_in_home}/.local/share/Steam/steamapps/compatdata/{ubisoft_connect_launcher}/pfx/system.reg"
 
 # Check if the paths exist
-if not os.path.exists(data_folder_path) or not os.path.exists(games_folder_path) or not os.path.exists(registry_file_path):
+if not os.path.exists(data_folder_path) or not os.path.exists(registry_file_path):
     print("One or more paths do not exist.")
 else:
     game_dict = getUplayGameInfo(data_folder_path, registry_file_path)
-    installed_games = getInstalledGames(games_folder_path)
 
     # Load the shortcuts and config_data objects
     with open(f"{logged_in_home}/.steam/root/userdata/{steamid3}/config/shortcuts.vdf", 'rb') as file:
@@ -470,8 +468,7 @@ else:
     # Keep track of whether any new shortcuts were added
     new_shortcuts_added = False
 
-    for game in installed_games:
-        game_id = game_dict.get(game)
+    for game, game_id in game_dict.items():
         if game_id:
             launch_options = f"STEAM_COMPAT_DATA_PATH=\"{logged_in_home}/.local/share/Steam/steamapps/compatdata/{ubisoft_connect_launcher}/\" %command% \"uplay://launch/{game_id}/0\""
             exe_path = f"\"{logged_in_home}/.local/share/Steam/Steam/steamapps/compatdata/{ubisoft_connect_launcher}/pfx/drive_c/Program Files (x86)/Ubisoft/Ubisoft Game Launcher/upc.exe\""
