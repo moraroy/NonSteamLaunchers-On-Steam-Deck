@@ -180,12 +180,9 @@ def get_game_id(game_name):
         if game.name == game_name:  # Case-sensitive comparison
             print(f"Found game ID: {game.id}")
             return game.id
-        elif game.name.lower() in game_name.lower() or game_name.lower() in game.name.lower():  # Substring comparison
-            print(f"Found game ID: {game.id} for game: {game.name}")
-            return game.id
     # Fallback: return the ID of the first game in the search results
     if games:
-        print(f"No exact match found. Using game ID of the first result: {games[0].id}")
+        print(f"No exact match found. Using game ID of the first result: {games[0].name}: {games[0].id}")
         return games[0].id
     print("No game ID found")
     return "default_game_id"  # Return a default value when no games are found
@@ -340,7 +337,7 @@ if os.path.exists(dat_file_path):
     # Print the existing shortcuts
     print("Existing Shortcuts:")
     for shortcut in shortcuts['shortcuts'].values():
-        print(shortcut.get('AppName'))
+        print(shortcut.get('appname'))
 
     # Open the config.vdf file
     with open(f"{logged_in_home}/.steam/root/config/config.vdf", 'r') as file:
@@ -364,16 +361,16 @@ if os.path.exists(dat_file_path):
             start_dir = f"\"{logged_in_home}/.local/share/Steam/steamapps/compatdata/{epic_games_launcher}/pfx/drive_c/Program Files (x86)/Epic Games/Launcher/Portal/Binaries/Win32/\""
             launch_options = f"STEAM_COMPAT_DATA_PATH=\"{logged_in_home}/.local/share/Steam/steamapps/compatdata/{epic_games_launcher}\" %command% -'com.epicgames.launcher://apps/{app_name}?action=launch&silent=true'"
             shortcut_id = get_steam_shortcut_id(exe_path, display_name)
-            # Check if the game already exists in the shortcuts
-            if str(shortcut_id) in shortcuts['shortcuts']:
-                print(f"Existing shortcut found for game {display_name}. Skipping.")
+            # Check if the game already exists in the shortcuts using the id
+            if any(s.get('appid') == str(shortcut_id) for s in shortcuts['shortcuts'].values()):
+                print(f"Existing shortcut found based on shortcut ID for game {display_name}. Skipping.")
                 continue
 
-            # Check if the game already exists in the shortcuts
-            if str(shortcut_id) in shortcuts['shortcuts']:
-                if any(is_match(s.get('AppName'), display_name) and s.get('Exe') == exe_path and s.get('StartDir') == start_dir and s.get('LaunchOptions') == launch_options for s in shortcuts['shortcuts'].values()):
-                    print(f"Existing shortcut found for game {display_name}. Skipping.")
-                    continue
+            # Check if the game already exists in the shortcuts using the fields (probably unnecessary)
+            if any(s.get('appname') == display_name and s.get('exe') == exe_path and s.get('StartDir') == start_dir and s.get('LaunchOptions') == launch_options for s in shortcuts['shortcuts'].values()):
+                print(f"Existing shortcut found based on matching fields for game {display_name}. Skipping.")
+                continue
+
 
             # Check if the game is still installed
             for game in dat_data['InstallationList']:
@@ -387,8 +384,8 @@ if os.path.exists(dat_file_path):
                         created_shortcuts.append(display_name)
                         shortcuts['shortcuts'][str(shortcut_id)] = {
                             'appid': str(shortcut_id),
-                            'AppName': display_name,
-                            'Exe': exe_path,
+                            'appname': display_name,
+                            'exe': exe_path,
                             'StartDir': start_dir,
                             'icon': f"{logged_in_home}/.steam/root/userdata/{steamid3}/config/grid/{get_file_name('icons', shortcut_id)}",
                             'LaunchOptions': launch_options,
@@ -484,16 +481,15 @@ else:
             exe_path = f"\"{logged_in_home}/.local/share/Steam/Steam/steamapps/compatdata/{ubisoft_connect_launcher}/pfx/drive_c/Program Files (x86)/Ubisoft/Ubisoft Game Launcher/upc.exe\""
             start_dir = f"\"{logged_in_home}/.local/share/Steam/Steam/steamapps/compatdata/{ubisoft_connect_launcher}/pfx/drive_c/Program Files (x86)/Ubisoft/Ubisoft Game Launcher/\""
             shortcut_id = get_steam_shortcut_id(exe_path, game)
-            # Check if the game already exists in the shortcuts
-            if str(shortcut_id) in shortcuts['shortcuts']:
-                print(f"Existing shortcut found for game {game}. Skipping.")
+            # Check if the game already exists in the shortcuts using the id
+            if any(s.get('appid') == str(shortcut_id) for s in shortcuts['shortcuts'].values()):
+                print(f"Existing shortcut found based on shortcut ID for game {game}. Skipping.")
                 continue
 
-            # Check if the game already exists in the shortcuts
-            if str(shortcut_id) in shortcuts['shortcuts']:
-                if any(s.get('AppName') == game and s.get('Exe') == exe_path and s.get('StartDir') == start_dir and s.get('LaunchOptions') == launch_options for s in shortcuts['shortcuts'].values()):
-                    print(f"Existing shortcut found for game {game}. Skipping.")
-                    continue
+            # Check if the game already exists in the shortcuts using the fields (probably unnecessary)
+            if any(s.get('appname') == game and s.get('exe') == exe_path and s.get('StartDir') == start_dir and s.get('LaunchOptions') == launch_options for s in shortcuts['shortcuts'].values()):
+                print(f"Existing shortcut found based on matching fields for game {game}. Skipping.")
+                continue
 
             game_id = get_game_id(game)
             if game_id is not None:
@@ -502,12 +498,13 @@ else:
                 download_artwork(game_id, api_key, "grids", shortcut_id, "600x900")
                 download_artwork(game_id, api_key, "grids", shortcut_id, "920x430")
             # Check if the game already exists in the shortcuts
-            if not any(s.get('AppName') == game and s.get('Exe') == exe_path and s.get('StartDir') == start_dir and s.get('LaunchOptions') == launch_options for s in shortcuts['shortcuts'].values()):
+            if not any(s.get('appname') == game and s.get('exe') == exe_path and s.get('StartDir') == start_dir and s.get('LaunchOptions') == launch_options for s in shortcuts['shortcuts'].values()):
                 new_shortcuts_added = True
+                created_shortcuts.append(game)
                 shortcuts['shortcuts'][str(len(shortcuts['shortcuts']))] = {
                     'appid': str(shortcut_id),
-                    'AppName': game,
-                    'Exe': exe_path,
+                    'appname': game,
+                    'exe': exe_path,
                     'StartDir': start_dir,
                     'LaunchOptions': launch_options,
                     'icon': f"{logged_in_home}/.steam/root/userdata/{steamid3}/config/grid/{get_file_name('icons', shortcut_id)}"
