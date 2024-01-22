@@ -106,7 +106,7 @@ Contributing 🤝
 
 If you have any suggestions or improvements for this script, feel free to open an issue or submit a pull request.
 
-You can donate to me on [ko-fi](https://ko-fi.com/moraroy), [liberapay](https://liberapay.com/moraroy), or [sponsor me on github](https://github.com/sponsors/moraroy)
+You can donate to me on [ko-fi](https://ko-fi.com/moraroy), [liberapay](https://liberapay.com/moraroy), or [sponsor me on github](https://github.com/sponsors/moraroy), [patreon](https://patreon.com/moraroy)
 
 ## Development Environment
 
