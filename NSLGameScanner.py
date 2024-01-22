@@ -246,6 +246,7 @@ game_launchers = {
     'itch.io',
     'Legacy Games',
     'Humble Bundle',
+    'Glyph',
     'IndieGala Client',
     'Rockstar Games Launcher',
     'Minecraft: Java Edition',
