@@ -1163,9 +1163,14 @@ if [[ $options == "Move to SD Card" ]]; then
     exit 1
 fi
 
-
+# Get the command line arguments
+args=("$@")
 # Check if the Stop NSLGameScanner option was passed as a command line argument or clicked in the GUI
 if [[ " ${args[@]} " =~ " Stop NSLGameScanner " ]] || [[ $options == "Stop NSLGameScanner" ]]; then
+
+    #Delete the NSLGameScanner.py
+    rm -rf ${logged_in_home}/.config/systemd/user/NSLGameScanner.py
+
     # Delete the service file
     rm -rf ${logged_in_home}/.config/systemd/user/nslgamescanner.service
 
