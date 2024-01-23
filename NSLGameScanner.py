@@ -318,8 +318,8 @@ for shortcut in shortcuts['shortcuts'].values():
             if game_id is not None:
                 print(f"Got game ID from SteamGridDB: {game_id}")
                 # Download and apply artwork
-                getSGBDArt(game_id, app_id)
-                addCompatToolMapping(app_id)
+                get_sgdb_art(game_id, app_id)
+                add_compat_tool(app_id)
                 new_shortcuts_added = True
 	
 # Print the existing shortcuts
