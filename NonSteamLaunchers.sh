@@ -65,16 +65,17 @@ curl -o $python_script_path $github_link
 # Define the path to the env_vars file
 env_vars="${logged_in_home}/.config/systemd/user/env_vars"
 
+
 # Check if the env_vars file exists
 if [ -f "$env_vars" ]; then
     # If the file exists, run the .py file
     echo "env_vars file found. Running the .py file..."
     python3 $python_script_path
-    live="and is live."
+    live="and is LIVE."
 else
     # If the file does not exist, do not run the .py file
     echo "env_vars file not found. Not running the .py file."
-    live="and is not live."
+    live="and is NOT LIVE."
 fi
 #End of Rough way of updating the .py for users
 
@@ -814,7 +815,7 @@ function StartFreshFunction {
     rm -rf ${logged_in_home}/.config/systemd/user/nslgamescanner.service
 
     # Remove the symlink
-    unlink /home/deck/.config/systemd/user/default.target.wants/nslgamescanner.service
+    unlink ${logged_in_home}/.config/systemd/user/default.target.wants/nslgamescanner.service
 
     # Reload the systemd user instance
     systemctl --user daemon-reload
@@ -1162,8 +1163,9 @@ if [[ $options == "Move to SD Card" ]]; then
     exit 1
 fi
 
-# Check if the user clicked the "Stop NSLGameScanner" button
-if [[ $options == "Stop NSLGameScanner" ]]; then
+
+# Check if the Stop NSLGameScanner option was passed as a command line argument or clicked in the GUI
+if [[ " ${args[@]} " =~ " Stop NSLGameScanner " ]] || [[ $options == "Stop NSLGameScanner" ]]; then
     # Delete the service file
     rm -rf ${logged_in_home}/.config/systemd/user/nslgamescanner.service
 
@@ -1173,7 +1175,12 @@ if [[ $options == "Stop NSLGameScanner" ]]; then
     # Reload the systemd user instance
     systemctl --user daemon-reload
 
-    # Display the zenity window in the background
+    # If command line arguments were provided, exit the script
+    if [ ${#args[@]} -ne 0 ]; then
+        exit 0
+    fi
+
+    # If no command line arguments were provided, display the zenity window
     zenity --question --text="NSLGameScanner has been stopped. Do you want to run it again?" --width=200 --height=150
     if [ $? = 0 ]; then
         # User wants to run NSLGameScanner again
@@ -1183,6 +1190,7 @@ if [[ $options == "Stop NSLGameScanner" ]]; then
         exit 1
     fi
 fi
+
 
 
 
@@ -2660,7 +2668,7 @@ if [[ -f "${logged_in_home}/.steam/root/config/loginusers.vdf" ]]; then
     steamid3=$((current_steamid - 76561197960265728))
 
     # Directly map steamid3 to userdata folder
-    userdata_folder="/home/deck/.steam/root/userdata/${steamid3}"
+    userdata_folder="${logged_in_home}/.steam/root/userdata/${steamid3}"
 
     # Check if userdata_folder exists
     if [[ -d "$userdata_folder" ]]; then
