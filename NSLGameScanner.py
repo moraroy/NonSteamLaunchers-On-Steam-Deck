@@ -401,14 +401,14 @@ if os.path.exists(dat_file_path):
                         download_artwork(game_id, api_key, "grids", shortcut_id, "600x900")
                         download_artwork(game_id, api_key, "grids", shortcut_id, "920x430")
 
-            if str(shortcut_id) in config_data['InstallConfigStore']['Software']['Valve']['Steam']['CompatToolMapping']:
-                config_data['InstallConfigStore']['Software']['Valve']['Steam']['CompatToolMapping'][str(shortcut_id)]['name'] = f'{compat_tool_name}'
-                print(f"Setting compat tool for {shortcut_id} to {compat_tool_name}")
-                config_data['InstallConfigStore']['Software']['Valve']['Steam']['CompatToolMapping'][str(shortcut_id)]['config'] = ''
-                config_data['InstallConfigStore']['Software']['Valve']['Steam']['CompatToolMapping'][str(shortcut_id)]['priority'] = '250'
-            else:
-                config_data['InstallConfigStore']['Software']['Valve']['Steam']['CompatToolMapping'][str(shortcut_id)] = {'name': '', 'config': '', 'priority': '250'}
-                print(f"Creating new entry for {shortcut_id} in CompatToolMapping")
+    if str(shortcut_id) in config_data['InstallConfigStore']['Software']['Valve']['Steam']['CompatToolMapping']:
+        config_data['InstallConfigStore']['Software']['Valve']['Steam']['CompatToolMapping'][str(shortcut_id)]['name'] = f'{compat_tool_name}'
+        print(f"Setting compat tool for {shortcut_id} to {compat_tool_name}")
+        config_data['InstallConfigStore']['Software']['Valve']['Steam']['CompatToolMapping'][str(shortcut_id)]['config'] = ''
+        config_data['InstallConfigStore']['Software']['Valve']['Steam']['CompatToolMapping'][str(shortcut_id)]['priority'] = '250'
+    else:
+        config_data['InstallConfigStore']['Software']['Valve']['Steam']['CompatToolMapping'][str(shortcut_id)] = {'name': '', 'config': '', 'priority': '250'}
+        print(f"Creating new entry for {shortcut_id} in CompatToolMapping")
 
     # Write the shortcuts and config_data objects back to their files
     if new_shortcuts_added:
@@ -510,14 +510,14 @@ else:
                     'LaunchOptions': launch_options,
                     'icon': f"{logged_in_home}/.steam/root/userdata/{steamid3}/config/grid/{get_file_name('icons', shortcut_id)}"
                 }
-            if 'CompatToolMapping' not in config_data['InstallConfigStore']['Software']['Valve']['Steam']:
-                config_data['InstallConfigStore']['Software']['Valve']['Steam']['CompatToolMapping'] = {}
-            if str(shortcut_id) in config_data['InstallConfigStore']['Software']['Valve']['Steam']['CompatToolMapping']:
-                config_data['InstallConfigStore']['Software']['Valve']['Steam']['CompatToolMapping'][str(shortcut_id)]['name'] = f'{compat_tool_name}'
-                config_data['InstallConfigStore']['Software']['Valve']['Steam']['CompatToolMapping'][str(shortcut_id)]['config'] = ''
-                config_data['InstallConfigStore']['Software']['Valve']['Steam']['CompatToolMapping'][str(shortcut_id)]['priority'] = '250'
-            else:
-                config_data['InstallConfigStore']['Software']['Valve']['Steam']['CompatToolMapping'][str(shortcut_id)] = {'name': '', 'config': '', 'priority': '250'}
+    if 'CompatToolMapping' not in config_data['InstallConfigStore']['Software']['Valve']['Steam']:
+        config_data['InstallConfigStore']['Software']['Valve']['Steam']['CompatToolMapping'] = {}
+    if str(shortcut_id) in config_data['InstallConfigStore']['Software']['Valve']['Steam']['CompatToolMapping']:
+        config_data['InstallConfigStore']['Software']['Valve']['Steam']['CompatToolMapping'][str(shortcut_id)]['name'] = f'{compat_tool_name}'
+        config_data['InstallConfigStore']['Software']['Valve']['Steam']['CompatToolMapping'][str(shortcut_id)]['config'] = ''
+        config_data['InstallConfigStore']['Software']['Valve']['Steam']['CompatToolMapping'][str(shortcut_id)]['priority'] = '250'
+    else:
+        config_data['InstallConfigStore']['Software']['Valve']['Steam']['CompatToolMapping'][str(shortcut_id)] = {'name': '', 'config': '', 'priority': '250'}
 
     # Only write back to the shortcuts.vdf file if new shortcuts were added
     if new_shortcuts_added:
