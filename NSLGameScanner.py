@@ -240,7 +240,7 @@ def is_match(name1, name2):
         return name1.lower() in name2.lower() or name2.lower() in name1.lower()
     else:
         return False
-        
+
 def add_compat_tool(shortcut_id):
     if str(shortcut_id) in config_data['InstallConfigStore']['Software']['Valve']['Steam']['CompatToolMapping']:
         config_data['InstallConfigStore']['Software']['Valve']['Steam']['CompatToolMapping'][str(shortcut_id)]['name'] = f'{compat_tool_name}'
@@ -251,6 +251,7 @@ def add_compat_tool(shortcut_id):
         config_data['InstallConfigStore']['Software']['Valve']['Steam']['CompatToolMapping'][str(shortcut_id)] = {'name': f'{compat_tool_name}', 'config': '', 'priority': '250'}
         print(f"Creating new entry for {shortcut_id} in CompatToolMapping")
 
+#End of Code
 
 
 #Finding the Launchers and applying artwork to already made shortcuts from NonSteamLaunchers.sh
@@ -321,7 +322,11 @@ for shortcut in shortcuts['shortcuts'].values():
                 get_sgdb_art(game_id, app_id)
                 add_compat_tool(app_id)
                 new_shortcuts_added = True
-	
+
+
+# End of finding the Launchers and applying artwork to already made shortcuts from NonSteamLaunchers.sh
+
+
 # Print the existing shortcuts
 print("Existing Shortcuts:")
 for shortcut in shortcuts['shortcuts'].values():
@@ -426,6 +431,7 @@ registry_file_path = f"{logged_in_home}/.local/share/Steam/steamapps/compatdata/
 # Check if the paths exist
 if not os.path.exists(data_folder_path) or not os.path.exists(registry_file_path):
     print("One or more paths do not exist.")
+    print("Ubisoft Connect game data not found. Skipping Ubisoft Games Scanner.")
 else:
     game_dict = getUplayGameInfo(data_folder_path, registry_file_path)
 
@@ -464,7 +470,6 @@ else:
 
 # EA App Game Scanner
 def getEAAppGameInfo(filePath):
-
     # Parse the registry file
     game_dict = {}
     with open(filePath, 'r') as file:
@@ -481,7 +486,7 @@ def getEAAppGameInfo(filePath):
             if "DisplayName" in line and eaApp_install_found:
                 game_name = re.findall(r'\"(.+?)\"', line.split("=")[1])
                 if game_name:
-                    game_name = game_name[0]
+                    game_name = game_name[0].encode('utf-8').decode('unicode_escape')  # Convert Unicode escape sequences
                 eaApp_install_found = False
             if game_id and game_name:  # Add the game's info to the dictionary if its ID was found in the folder
                 game_dict[game_name] = game_id
@@ -491,15 +496,17 @@ def getEAAppGameInfo(filePath):
 
 # Define your paths
 registry_file_path = f"{logged_in_home}/.local/share/Steam/steamapps/compatdata/{ea_app_launcher}/pfx/system.reg"
+game_directory_path = f"{logged_in_home}/.local/share/Steam/steamapps/compatdata/{ea_app_launcher}/pfx/drive_c/Program Files/EA Games/"
 
 # Check if the paths exist
-if not os.path.exists(registry_file_path):
-    print("Registry entry path does not exist.")
+if not os.path.exists(registry_file_path) or not os.path.isdir(game_directory_path):
+    print("EA App game data not found. Skipping EA App Scanner.")
 else:
     game_dict = getEAAppGameInfo(registry_file_path)
-    
+    installed_games = os.listdir(game_directory_path)  # Get a list of all installed games
+
     for game, game_id in game_dict.items():
-        if game_id:
+        if game in installed_games:  # Check if the game is installed
             launch_options = f"STEAM_COMPAT_DATA_PATH=\"{logged_in_home}/.local/share/Steam/steamapps/compatdata/{ea_app_launcher}/\" %command% \"origin2://game/launch?offerIds={game_id}\""
             exe_path = f"\"{logged_in_home}/.local/share/Steam/Steam/steamapps/compatdata/{ea_app_launcher}/pfx/drive_c/Program Files/Electronic Arts/EA Desktop/EA Desktop/EALaunchHelper.exe\""
             start_dir = f"\"{logged_in_home}/.local/share/Steam/Steam/steamapps/compatdata/{ea_app_launcher}/pfx/drive_c/Program Files/Electronic Arts/EA Desktop/EA Desktop/\""
@@ -531,6 +538,8 @@ else:
             add_compat_tool(shortcut_id)
 #End if EA App Scanner
 
+
+#Push down when more scanners are added
 # Only write back to the shortcuts.vdf and config.vdf files if new shortcuts were added
 if new_shortcuts_added:
     with open(f"{logged_in_home}/.steam/root/userdata/{steamid3}/config/shortcuts.vdf", 'wb') as file:
@@ -543,5 +552,3 @@ if new_shortcuts_added:
         print(name)
 
 print("All finished!")
-
-
