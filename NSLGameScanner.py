@@ -9,6 +9,7 @@ import sys
 import subprocess
 from urllib.request import urlopen
 from urllib.request import urlretrieve
+import xml.etree.ElementTree as ET
 
 # Read variables from a file
 with open(f"{os.environ['HOME']}/.config/systemd/user/env_vars", 'r') as f:
@@ -251,11 +252,11 @@ def check_if_shortcut_exists(shortcut_id, display_name, exe_path, start_dir, lau
     # Check if the game already exists in the shortcuts using the id
     if any(s.get('appid') == str(shortcut_id) for s in shortcuts['shortcuts'].values()):
         print(f"Existing shortcut found based on shortcut ID for game {display_name}. Skipping.")
-        continue
+        return True
     # Check if the game already exists in the shortcuts using the fields (probably unnecessary)
     if any(s.get('appname') == display_name and s.get('exe') == exe_path and s.get('StartDir') == start_dir and s.get('LaunchOptions') == launch_options for s in shortcuts['shortcuts'].values()):
         print(f"Existing shortcut found based on matching fields for game {display_name}. Skipping.")
-        continue
+        return True
 #End of Code
 
 
@@ -359,7 +360,8 @@ if os.path.exists(dat_file_path):
             launch_options = f"STEAM_COMPAT_DATA_PATH=\"{logged_in_home}/.local/share/Steam/steamapps/compatdata/{epic_games_launcher}\" %command% -'com.epicgames.launcher://apps/{app_name}?action=launch&silent=true'"
             shortcut_id = get_steam_shortcut_id(exe_path, display_name)
             # Check if the game already exists in the shortcuts
-            check_if_shortcut_exists(shortcut_id, display_name, exe_path, start_dir, launch_options)
+            if check_if_shortcut_exists(shortcut_id, display_name, exe_path, start_dir, launch_options):
+                continue
 
 
             # Check if the game is still installed
@@ -440,7 +442,8 @@ else:
             start_dir = f"\"{logged_in_home}/.local/share/Steam/Steam/steamapps/compatdata/{ubisoft_connect_launcher}/pfx/drive_c/Program Files (x86)/Ubisoft/Ubisoft Game Launcher/\""
             shortcut_id = get_steam_shortcut_id(exe_path, game)
             # Check if the game already exists in the shortcuts
-            check_if_shortcut_exists(shortcut_id, game, exe_path, start_dir, launch_options)
+            if check_if_shortcut_exists(shortcut_id, game, exe_path, start_dir, launch_options):
+                continue
 
             game_id = get_game_id(game)
             if game_id is not None:
@@ -460,66 +463,67 @@ else:
 # End of Ubisoft Game Scanner
 
 # EA App Game Scanner
-def getEAAppGameInfo(filePath):
+
+def get_ea_app_game_info(installed_games, game_directory_path):
     game_dict = {}
-    with open(filePath, 'r') as file:
-        game_id = None
+    for game in installed_games:
+        xml_file = ET.parse(f"{game_directory_path}{game}/__Installer/installerdata.xml")
+        xml_root = xml_file.getroot()
+        ea_ids = None
         game_name = None
-        eaApp_install_found = False
-        for line in file:
-            game_name = None  # Reset game_name
-            if "Origin Games" in line:
-                game_id = re.findall(r'Origin Games\\\\(\d+)', line)
-                if game_id:
-                    game_id = game_id[0]
-                eaApp_install_found = True
-            if "DisplayName" in line and eaApp_install_found:
-                game_name = re.findall(r'\"(.+?)\"', line.split("=")[1])
-                if game_name:
-                    game_name = game_name[0].replace('\\x2122', '')  # Remove the trademark symbol
-                eaApp_install_found = False
-            if game_id and game_name:  # Add the game's info to the dictionary if its ID was found in the folder
-                game_dict[game_name] = game_id
-                game_id = None
+        for content_id in xml_root.iter('contentID'):
+            if ea_ids is None:
+                ea_ids = content_id.text
+            else:
+                ea_ids = ea_ids + ',' + content_id.text
+        for game_title in xml_root.iter('gameTitle'):
+            if game_name is None:
+                game_name = game_title.text
+                continue
+        for game_title in xml_root.iter('title'):
+            if game_name is None:
+                game_name = game_title.text
+                continue
+        if game_name is None:
+            game_name = game
+        if ea_ids:  # Add the game's info to the dictionary if its ID was found in the folder
+            game_dict[game_name] = ea_ids
     return game_dict
 
-registry_file_path = f"{logged_in_home}/.local/share/Steam/steamapps/compatdata/{ea_app_launcher}/pfx/system.reg"
 game_directory_path = f"{logged_in_home}/.local/share/Steam/steamapps/compatdata/{ea_app_launcher}/pfx/drive_c/Program Files/EA Games/"
 
-if not os.path.exists(registry_file_path) or not os.path.isdir(game_directory_path):
+if not os.path.isdir(game_directory_path):
     print("EA App game data not found. Skipping EA App Scanner.")
-    pass
 else:
-    game_dict = getEAAppGameInfo(registry_file_path)
-    installed_games = os.listdir(game_directory_path)  # Get a list of all installed games
+    installed_games = os.listdir(game_directory_path)  # Get a list of game folders
+    game_dict = get_ea_app_game_info(installed_games, game_directory_path)
 
-    for game, game_id in game_dict.items():
-        if game in installed_games:  # Check if the game is installed
-            launch_options = f"STEAM_COMPAT_DATA_PATH=\"{logged_in_home}/.local/share/Steam/steamapps/compatdata/{ea_app_launcher}/\" %command% \"origin2://game/launch?offerIds={game_id}\""
-            exe_path = f"\"{logged_in_home}/.local/share/Steam/Steam/steamapps/compatdata/{ea_app_launcher}/pfx/drive_c/Program Files/Electronic Arts/EA Desktop/EA Desktop/EALaunchHelper.exe\""
-            start_dir = f"\"{logged_in_home}/.local/share/Steam/Steam/steamapps/compatdata/{ea_app_launcher}/pfx/drive_c/Program Files/Electronic Arts/EA Desktop/EA Desktop/\""
-            shortcut_id = get_steam_shortcut_id(exe_path, game)
-            # Check if the game already exists in the shortcuts
-            check_if_shortcut_exists(shortcut_id, game, exe_path, start_dir, launch_options)
+    for game, ea_ids in game_dict.items():
+        launch_options = f"STEAM_COMPAT_DATA_PATH=\"{logged_in_home}/.local/share/Steam/steamapps/compatdata/{ea_app_launcher}/\" %command% \"origin2://game/launch?offerIds={ea_ids}\""
+        exe_path = f"\"{logged_in_home}/.local/share/Steam/Steam/steamapps/compatdata/{ea_app_launcher}/pfx/drive_c/Program Files/Electronic Arts/EA Desktop/EA Desktop/EALaunchHelper.exe\""
+        start_dir = f"\"{logged_in_home}/.local/share/Steam/Steam/steamapps/compatdata/{ea_app_launcher}/pfx/drive_c/Program Files/Electronic Arts/EA Desktop/EA Desktop/\""
+        shortcut_id = get_steam_shortcut_id(exe_path, game)
+        # Check if the game already exists in the shortcuts
+        if check_if_shortcut_exists(shortcut_id, game, exe_path, start_dir, launch_options):
+            continue
 
-            game_id = get_game_id(game)
-            if game_id is not None:
-                get_sgdb_art(game_id, shortcut_id)
-            # Check if the game already exists in the shortcuts
-            new_shortcuts_added = True
-            created_shortcuts.append(game)
-            shortcuts['shortcuts'][str(len(shortcuts['shortcuts']))] = {
-                'appid': str(shortcut_id),
-                'appname': game,
-                'exe': exe_path,
-                'StartDir': start_dir,
-                'LaunchOptions': launch_options,
-                'icon': f"{logged_in_home}/.steam/root/userdata/{steamid3}/config/grid/{get_file_name('icons', shortcut_id)}"
-            }
-            add_compat_tool(shortcut_id)
-    else:
-        pass
-#End if EA App Scanner
+        game_id = get_game_id(game)
+        if game_id is not None:
+            get_sgdb_art(game_id, shortcut_id)
+        # Check if the game already exists in the shortcuts
+        new_shortcuts_added = True
+        created_shortcuts.append(game)
+        shortcuts['shortcuts'][str(len(shortcuts['shortcuts']))] = {
+            'appid': str(shortcut_id),
+            'appname': game,
+            'exe': exe_path,
+            'StartDir': start_dir,
+            'LaunchOptions': launch_options,
+            'icon': f"{logged_in_home}/.steam/root/userdata/{steamid3}/config/grid/{get_file_name('icons', shortcut_id)}"
+        }
+        add_compat_tool(shortcut_id)
+
+#End of EA App Scanner
 
 
 #Push down when more scanners are added
