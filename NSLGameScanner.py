@@ -496,6 +496,7 @@ registry_file_path = f"{logged_in_home}/.local/share/Steam/steamapps/compatdata/
 game_directory_path = f"{logged_in_home}/.local/share/Steam/steamapps/compatdata/{ea_app_launcher}/pfx/drive_c/Program Files/EA Games/"
 
 if not os.path.exists(registry_file_path) or not os.path.isdir(game_directory_path):
+    print("EA App game data not found. Skipping EA App Scanner.")
     pass
 else:
     game_dict = getEAAppGameInfo(registry_file_path)
@@ -509,10 +510,12 @@ else:
             shortcut_id = get_steam_shortcut_id(exe_path, game)
             # Check if the game already exists in the shortcuts using the id
             if any(s.get('appid') == str(shortcut_id) for s in shortcuts['shortcuts'].values()):
+                print(f"Existing shortcut found based on shortcut ID for game {game}. Skipping.")
                 continue
 
             # Check if the game already exists in the shortcuts using the fields (probably unnecessary)
             if any(s.get('appname') == game and s.get('exe') == exe_path and s.get('StartDir') == start_dir and s.get('LaunchOptions') == launch_options for s in shortcuts['shortcuts'].values()):
+                print(f"Existing shortcut found based on matching fields for game {game}. Skipping.")
                 continue
 
             game_id = get_game_id(game)
