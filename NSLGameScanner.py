@@ -198,7 +198,6 @@ def download_artwork(game_id, api_key, art_type, shortcut_id, dimensions=None):
             if art_type == 'icons':
                 download_artwork(game_id, api_key, 'icons_ico', shortcut_id)
 
-
 def get_game_id(game_name):
     print(f"Searching for game ID for: {game_name}")
     games = sgdb.search_game(game_name)
@@ -212,9 +211,6 @@ def get_game_id(game_name):
         return games[0].id
     print("No game ID found")
     return "default_game_id"  # Return a default value when no games are found
-
-
-
 
 def get_file_name(art_type, shortcut_id, dimensions=None):
     singular_art_type = art_type.rstrip('s')
@@ -251,6 +247,15 @@ def add_compat_tool(shortcut_id):
         config_data['InstallConfigStore']['Software']['Valve']['Steam']['CompatToolMapping'][str(shortcut_id)] = {'name': f'{compat_tool_name}', 'config': '', 'priority': '250'}
         print(f"Creating new entry for {shortcut_id} in CompatToolMapping")
 
+def check_if_shortcut_exists(shortcut_id, display_name, exe_path, start_dir, launch_options):
+    # Check if the game already exists in the shortcuts using the id
+    if any(s.get('appid') == str(shortcut_id) for s in shortcuts['shortcuts'].values()):
+        print(f"Existing shortcut found based on shortcut ID for game {display_name}. Skipping.")
+        continue
+    # Check if the game already exists in the shortcuts using the fields (probably unnecessary)
+    if any(s.get('appname') == display_name and s.get('exe') == exe_path and s.get('StartDir') == start_dir and s.get('LaunchOptions') == launch_options for s in shortcuts['shortcuts'].values()):
+        print(f"Existing shortcut found based on matching fields for game {display_name}. Skipping.")
+        continue
 #End of Code
 
 
@@ -353,15 +358,8 @@ if os.path.exists(dat_file_path):
             start_dir = f"\"{logged_in_home}/.local/share/Steam/steamapps/compatdata/{epic_games_launcher}/pfx/drive_c/Program Files (x86)/Epic Games/Launcher/Portal/Binaries/Win32/\""
             launch_options = f"STEAM_COMPAT_DATA_PATH=\"{logged_in_home}/.local/share/Steam/steamapps/compatdata/{epic_games_launcher}\" %command% -'com.epicgames.launcher://apps/{app_name}?action=launch&silent=true'"
             shortcut_id = get_steam_shortcut_id(exe_path, display_name)
-            # Check if the game already exists in the shortcuts using the id
-            if any(s.get('appid') == str(shortcut_id) for s in shortcuts['shortcuts'].values()):
-                print(f"Existing shortcut found based on shortcut ID for game {display_name}. Skipping.")
-                continue
-
-            # Check if the game already exists in the shortcuts using the fields (probably unnecessary)
-            if any(s.get('appname') == display_name and s.get('exe') == exe_path and s.get('StartDir') == start_dir and s.get('LaunchOptions') == launch_options for s in shortcuts['shortcuts'].values()):
-                print(f"Existing shortcut found based on matching fields for game {display_name}. Skipping.")
-                continue
+            # Check if the game already exists in the shortcuts
+            check_if_shortcut_exists(shortcut_id, display_name, exe_path, start_dir, launch_options)
 
 
             # Check if the game is still installed
@@ -441,15 +439,8 @@ else:
             exe_path = f"\"{logged_in_home}/.local/share/Steam/Steam/steamapps/compatdata/{ubisoft_connect_launcher}/pfx/drive_c/Program Files (x86)/Ubisoft/Ubisoft Game Launcher/upc.exe\""
             start_dir = f"\"{logged_in_home}/.local/share/Steam/Steam/steamapps/compatdata/{ubisoft_connect_launcher}/pfx/drive_c/Program Files (x86)/Ubisoft/Ubisoft Game Launcher/\""
             shortcut_id = get_steam_shortcut_id(exe_path, game)
-            # Check if the game already exists in the shortcuts using the id
-            if any(s.get('appid') == str(shortcut_id) for s in shortcuts['shortcuts'].values()):
-                print(f"Existing shortcut found based on shortcut ID for game {game}. Skipping.")
-                continue
-
-            # Check if the game already exists in the shortcuts using the fields (probably unnecessary)
-            if any(s.get('appname') == game and s.get('exe') == exe_path and s.get('StartDir') == start_dir and s.get('LaunchOptions') == launch_options for s in shortcuts['shortcuts'].values()):
-                print(f"Existing shortcut found based on matching fields for game {game}. Skipping.")
-                continue
+            # Check if the game already exists in the shortcuts
+            check_if_shortcut_exists(shortcut_id, game, exe_path, start_dir, launch_options)
 
             game_id = get_game_id(game)
             if game_id is not None:
@@ -508,15 +499,8 @@ else:
             exe_path = f"\"{logged_in_home}/.local/share/Steam/Steam/steamapps/compatdata/{ea_app_launcher}/pfx/drive_c/Program Files/Electronic Arts/EA Desktop/EA Desktop/EALaunchHelper.exe\""
             start_dir = f"\"{logged_in_home}/.local/share/Steam/Steam/steamapps/compatdata/{ea_app_launcher}/pfx/drive_c/Program Files/Electronic Arts/EA Desktop/EA Desktop/\""
             shortcut_id = get_steam_shortcut_id(exe_path, game)
-            # Check if the game already exists in the shortcuts using the id
-            if any(s.get('appid') == str(shortcut_id) for s in shortcuts['shortcuts'].values()):
-                print(f"Existing shortcut found based on shortcut ID for game {game}. Skipping.")
-                continue
-
-            # Check if the game already exists in the shortcuts using the fields (probably unnecessary)
-            if any(s.get('appname') == game and s.get('exe') == exe_path and s.get('StartDir') == start_dir and s.get('LaunchOptions') == launch_options for s in shortcuts['shortcuts'].values()):
-                print(f"Existing shortcut found based on matching fields for game {game}. Skipping.")
-                continue
+            # Check if the game already exists in the shortcuts
+            check_if_shortcut_exists(shortcut_id, game, exe_path, start_dir, launch_options)
 
             game_id = get_game_id(game)
             if game_id is not None:
