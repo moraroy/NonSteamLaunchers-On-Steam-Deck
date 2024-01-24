@@ -470,7 +470,6 @@ else:
 
 # EA App Game Scanner
 def getEAAppGameInfo(filePath):
-    # Parse the registry file
     game_dict = {}
     with open(filePath, 'r') as file:
         game_id = None
@@ -486,21 +485,18 @@ def getEAAppGameInfo(filePath):
             if "DisplayName" in line and eaApp_install_found:
                 game_name = re.findall(r'\"(.+?)\"', line.split("=")[1])
                 if game_name:
-                    game_name = game_name[0].encode('utf-8').decode('unicode_escape')  # Convert Unicode escape sequences
+                    game_name = game_name[0].replace('\\x2122', '')  # Remove the trademark symbol
                 eaApp_install_found = False
             if game_id and game_name:  # Add the game's info to the dictionary if its ID was found in the folder
                 game_dict[game_name] = game_id
                 game_id = None
-
     return game_dict
 
-# Define your paths
 registry_file_path = f"{logged_in_home}/.local/share/Steam/steamapps/compatdata/{ea_app_launcher}/pfx/system.reg"
 game_directory_path = f"{logged_in_home}/.local/share/Steam/steamapps/compatdata/{ea_app_launcher}/pfx/drive_c/Program Files/EA Games/"
 
-# Check if the paths exist
 if not os.path.exists(registry_file_path) or not os.path.isdir(game_directory_path):
-    print("EA App game data not found. Skipping EA App Scanner.")
+    pass
 else:
     game_dict = getEAAppGameInfo(registry_file_path)
     installed_games = os.listdir(game_directory_path)  # Get a list of all installed games
@@ -513,12 +509,10 @@ else:
             shortcut_id = get_steam_shortcut_id(exe_path, game)
             # Check if the game already exists in the shortcuts using the id
             if any(s.get('appid') == str(shortcut_id) for s in shortcuts['shortcuts'].values()):
-                print(f"Existing shortcut found based on shortcut ID for game {game}. Skipping.")
                 continue
 
             # Check if the game already exists in the shortcuts using the fields (probably unnecessary)
             if any(s.get('appname') == game and s.get('exe') == exe_path and s.get('StartDir') == start_dir and s.get('LaunchOptions') == launch_options for s in shortcuts['shortcuts'].values()):
-                print(f"Existing shortcut found based on matching fields for game {game}. Skipping.")
                 continue
 
             game_id = get_game_id(game)
@@ -536,6 +530,8 @@ else:
                 'icon': f"{logged_in_home}/.steam/root/userdata/{steamid3}/config/grid/{get_file_name('icons', shortcut_id)}"
             }
             add_compat_tool(shortcut_id)
+    else:
+        pass
 #End if EA App Scanner
 
 
