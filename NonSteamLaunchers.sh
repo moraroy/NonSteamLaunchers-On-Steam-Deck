@@ -2382,11 +2382,15 @@ if [[ -f "$eaapp_path1" ]]; then
     eaappshortcutdirectory="\"$eaapp_path1\""
     eaapplaunchoptions="STEAM_COMPAT_DATA_PATH=\"${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/\" %command%"
     eaappstartingdir="\"$(dirname "$eaapp_path1")\""
+	echo "export ea_app_launcher=NonSteamLaunchers" >> ${logged_in_home}/.config/systemd/user/env_vars
+    echo "EA App Launcher found at path 1"
 elif [[ -f "$eaapp_path2" ]]; then
     # EA App Launcher is installed at path 2
     eaappshortcutdirectory="\"$eaapp_path2\""
     eaapplaunchoptions="STEAM_COMPAT_DATA_PATH=\"${logged_in_home}/.local/share/Steam/steamapps/compatdata/TheEAappLauncher/\" %command%"
     eaappstartingdir="\"$(dirname "$eaapp_path2")\""
+	echo "export ea_app_launcher=TheEAappLauncher" >> ${logged_in_home}/.config/systemd/user/env_vars
+    echo "EA App Launcher found at path 2"
 fi
 
 if [[ -f "$amazongames_path1" ]]; then
