@@ -31,7 +31,6 @@ Supported Stores 🛍
 - IndieGala ✔️
 - Itch.io ✔️
 - Legacy Games ✔️
-- Origin (only working way) ✔️
 - Rockstar Games Launcher ✔️
 - Ubisoft Connect ✔️
 - Glyph ✔️
