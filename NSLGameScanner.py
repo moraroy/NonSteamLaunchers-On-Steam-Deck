@@ -330,10 +330,13 @@ for shortcut in shortcuts['shortcuts'].values():
         print(f"Found game launcher: {app_name}")
         # Use the actual app ID instead of generating one
         app_id = shortcut.get('appid')
-        unsigned_app_id = get_unsigned_shortcut_id(app_id)
+        display_name = shortcut.get('appname')
+        exe_path = shortcut.get('exe')
+        signed_shortcut_id = get_steam_shortcut_id(exe_path, display_name)
+        unsigned_shortcut_id = get_unsigned_shortcut_id(signed_shortcut_id)
         print(f"App ID for {app_name}: {app_id}")
         # Check if the shortcut doesn't have artwork
-        artwork_path = f"{logged_in_home}/.steam/root/userdata/{steamid3}/config/grid/{unsigned_app_id}.png"
+        artwork_path = f"{logged_in_home}/.steam/root/userdata/{steamid3}/config/grid/{unsigned_shortcut_id}.png"
         if not os.path.exists(artwork_path):
             print(f"No artwork found for {app_name}, downloading...")
             # Get the game ID from SteamGridDB
@@ -342,9 +345,9 @@ for shortcut in shortcuts['shortcuts'].values():
             if game_id is not None:
                 print(f"Got game ID from SteamGridDB: {game_id}")
                 # Download and apply artwork
-                get_sgdb_art(game_id, unsigned_app_id)
+                get_sgdb_art(game_id, unsigned_shortcut_id)
                 new_shortcuts_added = True
-        if add_compat_tool(unsigned_app_id):
+        if add_compat_tool(unsigned_shortcut_id):
                     shortcuts_updated = True
 
 
