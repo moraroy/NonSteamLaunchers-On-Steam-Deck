@@ -107,8 +107,6 @@ epic_games_launcher_path1="${logged_in_home}/.local/share/Steam/steamapps/compat
 epic_games_launcher_path2="${logged_in_home}/.local/share/Steam/steamapps/compatdata/EpicGamesLauncher/pfx/drive_c/Program Files (x86)/Epic Games/Launcher/Portal/Binaries/Win32/EpicGamesLauncher.exe"
 gog_galaxy_path1="${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/Program Files (x86)/GOG Galaxy/GalaxyClient.exe"
 gog_galaxy_path2="${logged_in_home}/.local/share/Steam/steamapps/compatdata/GogGalaxyLauncher/pfx/drive_c/Program Files (x86)/GOG Galaxy/GalaxyClient.exe"
-origin_path1="${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/Program Files (x86)/Origin/Origin.exe"
-origin_path2="${logged_in_home}/.local/share/Steam/steamapps/compatdata/OriginLauncher/pfx/drive_c/Program Files (x86)/Origin/Origin.exe"
 uplay_path1="${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/Program Files (x86)/Ubisoft/Ubisoft Game Launcher/upc.exe"
 uplay_path2="${logged_in_home}/.local/share/Steam/steamapps/compatdata/UplayLauncher/pfx/drive_c/Program Files (x86)/Ubisoft/Ubisoft Game Launcher/upc.exe"
 battlenet_path1="${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/Program Files (x86)/Battle.net/Battle.net Launcher.exe"
@@ -174,20 +172,6 @@ else
     gog_galaxy_text="GOG Galaxy"
 fi
 
-# Check if Origin is installed
-if [[ -f "$origin_path1" ]]; then
-    # Origin is installed in path 1
-    origin_value="FALSE"
-    origin_text="Origin ===> $origin_path1"
-elif [[ -f "$origin_path2" ]]; then
-    # Origin is installed in path 2
-    origin_value="FALSE"
-    origin_text="Origin ===> $origin_path2"
-else
-    # Origin is not installed
-    origin_value="FALSE"
-    origin_text="Origin - Broken, Use at own risk"
-fi
 
 # Check if Uplay is installed
 if [[ -f "$uplay_path1" ]]; then
@@ -428,14 +412,6 @@ function CheckInstallationDirectory {
         goggalaxylauncher_move_value="FALSE"
     fi
 
-    # Check if OriginLauncher is installed
-    if [[ -d "${logged_in_home}/.local/share/Steam/steamapps/compatdata/OriginLauncher" ]]; then
-        # OriginLauncher is installed
-        originlauncher_move_value="TRUE"
-    else
-        # OriginLauncher is not installed
-        originlauncher_move_value="FALSE"
-    fi
 
     # Check if UplayLauncher is installed
     if [[ -d "${logged_in_home}/.local/share/Steam/steamapps/compatdata/UplayLauncher" ]]; then
@@ -590,7 +566,7 @@ separate_app_ids=false
 # Check if any command line arguments were provided
 if [ ${#args[@]} -eq 0 ]; then
     # No command line arguments were provided, so display the main zenity window
-    selected_launchers=$(zenity --list --text="Which launchers do you want to download and install?" --checklist --column="$version" --column="Default = one App ID Installation, One Prefix, NonSteamLaunchers - opening this window has updated NSLGameScanner.py $live" FALSE "SEPARATE APP IDS - CHECK THIS TO SEPARATE YOUR PREFIX" $epic_games_value "$epic_games_text" $gog_galaxy_value "$gog_galaxy_text" $uplay_value "$uplay_text" $origin_value "$origin_text" $battlenet_value "$battlenet_text" $amazongames_value "$amazongames_text" $eaapp_value "$eaapp_text" $legacygames_value "$legacygames_text" $itchio_value "$itchio_text" $humblegames_value "$humblegames_text" $indiegala_value "$indiegala_text" $rockstar_value "$rockstar_text" $glyph_value "$glyph_text" $minecraft_value "$minecraft_text" $psplus_value "$psplus_text" $dmm_value "$dmm_text" $vkplay_value "$vkplay_text" FALSE "Xbox Game Pass" FALSE "GeForce Now" FALSE "Amazon Luna" FALSE "Netflix" FALSE "Hulu" FALSE "Disney+" FALSE "Amazon Prime Video" FALSE "Youtube" FALSE "Twitch" --width=580 --height=740 --extra-button="Uninstall" --extra-button="Find Games" --extra-button="Start Fresh" --extra-button="Move to SD Card" --extra-button="Stop NSLGameScanner")
+    selected_launchers=$(zenity --list --text="Which launchers do you want to download and install?" --checklist --column="$version" --column="Default = one App ID Installation, One Prefix, NonSteamLaunchers - opening this window has updated NSLGameScanner.py $live" FALSE "SEPARATE APP IDS - CHECK THIS TO SEPARATE YOUR PREFIX" $epic_games_value "$epic_games_text" $gog_galaxy_value "$gog_galaxy_text" $uplay_value "$uplay_text" $battlenet_value "$battlenet_text" $amazongames_value "$amazongames_text" $eaapp_value "$eaapp_text" $legacygames_value "$legacygames_text" $itchio_value "$itchio_text" $humblegames_value "$humblegames_text" $indiegala_value "$indiegala_text" $rockstar_value "$rockstar_text" $glyph_value "$glyph_text" $minecraft_value "$minecraft_text" $psplus_value "$psplus_text" $dmm_value "$dmm_text" $vkplay_value "$vkplay_text" FALSE "Xbox Game Pass" FALSE "GeForce Now" FALSE "Amazon Luna" FALSE "Netflix" FALSE "Hulu" FALSE "Disney+" FALSE "Amazon Prime Video" FALSE "Youtube" FALSE "Twitch" --width=580 --height=740 --extra-button="Uninstall" --extra-button="Find Games" --extra-button="Start Fresh" --extra-button="Move to SD Card" --extra-button="Stop NSLGameScanner")
 
     # Check if the user clicked the 'Cancel' button or selected one of the extra buttons
     if [ $? -eq 1 ] || [[ $selected_launchers == "Start Fresh" ]] || [[ $selected_launchers == "Move to SD Card" ]] || [[ $selected_launchers == "Uninstall" ]] || [[ $selected_launchers == "Find Games" ]]; then
@@ -672,32 +648,6 @@ else
     use_separate_appids=false
 fi
 
-# Check if the user selected both Origin and EA App
-if [[ $options == *"Origin"* ]] && [[ $options == *"EA App"* ]] && [ "$use_separate_appids" = false ]; then
-    # User selected both Origin and EA App without selecting separate app IDs
-    zenity --error --text="You cannot select both Origin and EA App at the same time unless you select separate app IDs." --width=200 --height=150
-    exit 1
-fi
-
-# Check if Origin is already installed
-if [[ -f "$origin_path1" ]] || [[ -f "$origin_path2" ]]; then
-    # Origin is installed
-    if [[ $options == *"EA App"* ]] && [ "$use_separate_appids" = false ]; then
-        # User selected EA App without selecting separate app IDs
-        zenity --error --text="You cannot install EA App because Origin is already installed. Please select separate app IDs if you want to install both." --width=200 --height=150
-        exit 1
-    fi
-fi
-
-# Check if EA App is already installed
-if [[ -f "$eaapp_path1" ]] || [[ -f "$eaapp_path2" ]]; then
-    # EA App is installed
-    if [[ $options == *"Origin"* ]] && [ "$use_separate_appids" = false ]; then
-        # User selected Origin without selecting separate app IDs
-        zenity --error --text="You cannot install Origin because EA App is already installed. Please select separate app IDs if you want to install both." --width=200 --height=150
-        exit 1
-    fi
-fi
 
 # Define the StartFreshFunction
 function StartFreshFunction {
@@ -707,7 +657,7 @@ function StartFreshFunction {
     other_dir="${logged_in_home}/.local/share/Steam/steamapps/shadercache/"
 
     # Define an array of original folder names
-    folder_names=("EpicGamesLauncher" "GogGalaxyLauncher" "UplayLauncher" "OriginLauncher" "Battle.netLauncher" "TheEAappLauncher" "AmazonGamesLauncher" "itchioLauncher" "LegacyGamesLauncher" "HumbleGamesLauncher" "IndieGalaLauncher" "RockstarGamesLauncher" "GlyphLauncher" "MinecraftLauncher" "PlaystationPlusLauncher" "DMMGameLauncher" "VKPlayLauncher")
+    folder_names=("EpicGamesLauncher" "GogGalaxyLauncher" "UplayLauncher" "Battle.netLauncher" "TheEAappLauncher" "AmazonGamesLauncher" "itchioLauncher" "LegacyGamesLauncher" "HumbleGamesLauncher" "IndieGalaLauncher" "RockstarGamesLauncher" "GlyphLauncher" "MinecraftLauncher" "PlaystationPlusLauncher" "DMMGameLauncher" "VKPlayLauncher")
 
     # Define an array of app IDs
     app_ids=("3772819390" "4294900670" "4063097571" "3786021133" "3448088735" "3923904787" "3440562512" "2948446662" "3303169468" "3595505624" "4272271078" "3259996605" "2588786779" "4090616647" "3494943831" "2390200925" "4253976432" "2221882453" "2296676888" "2486751858" "3974004104" "3811372789" "3788101956" "3782277090" "3640061468" "3216372511" "2882622939" "2800812206" "2580882702")
@@ -791,7 +741,6 @@ function StartFreshFunction {
     rm -rf "/run/media/mmcblk0p1/NonSteamLaunchers/"
     rm -rf "/run/media/mmcblk0p1/EpicGamesLauncher/"
     rm -rf "/run/media/mmcblk0p1/GogGalaxyLauncher/"
-    rm -rf "/run/media/mmcblk0p1/OriginLauncher/"
     rm -rf "/run/media/mmcblk0p1/UplayLauncher/"
     rm -rf "/run/media/mmcblk0p1/Battle.netLauncher/"
     rm -rf "/run/media/mmcblk0p1/TheEAappLauncher/"
@@ -860,7 +809,6 @@ if [[ $options == "Uninstall" ]]; then
         FALSE "Epic Games" \
         FALSE "Gog Galaxy" \
         FALSE "Uplay" \
-        FALSE "Origin" \
         FALSE "Battle.net" \
         FALSE "EA App" \
         FALSE "Amazon Games" \
@@ -917,20 +865,6 @@ if [[ $options == "Uninstall" ]]; then
             # Uplay was installed using a separate app ID
             # Add code here to delete the UplayLauncher app ID folder
             rm -rf "${logged_in_home}/.local/share/Steam/steamapps/compatdata/UplayLauncher"
-        fi
-    fi
-
-    if [[ $options == *"Origin"* ]]; then
-        # User selected to uninstall Origin
-        # Check if Origin was installed using the NonSteamLaunchers prefix
-        if [[ -f "$origin_path1" ]]; then
-            # Origin was installed using the NonSteamLaunchers prefix
-            # Add code here to run the Origin uninstaller
-            rm -rf "${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/Program Files (x86)/Origin"
-        elif [[ -f "$origin_path2" ]]; then
-            # Origin was installed using a separate app ID
-            # Add code here to delete the OriginLauncher app ID folder
-            rm -rf "${logged_in_home}/.local/share/Steam/steamapps/compatdata/OriginLauncher"
         fi
     fi
 
@@ -1146,7 +1080,7 @@ move_to_sd() {
 if [[ $options == "Move to SD Card" ]]; then
     CheckInstallationDirectory
 
-    move_options=$(zenity --list --text="Which launcher IDs do you want to move to the SD card?" --checklist --column="Select" --column="Launcher ID" $nonsteamlauncher_move_value "NonSteamLaunchers" $epicgameslauncher_move_value "EpicGamesLauncher" $goggalaxylauncher_move_value "GogGalaxyLauncher" $originlauncher_move_value "OriginLauncher" $uplaylauncher_move_value "UplayLauncher" $battlenetlauncher_move_value "Battle.netLauncher" $eaapplauncher_move_value "TheEAappLauncher" $amazongameslauncher_move_value "AmazonGamesLauncher" $itchiolauncher_move_value "itchioLauncher" $legacygameslauncher_move_value "LegacyGamesLauncher" $humblegameslauncher_move_value "HumbleGamesLauncher" $indiegalalauncher_move_value "IndieGalaLauncher" $rockstargameslauncher_move_value "RockstarGamesLauncher" $glyphlauncher_move_value "GlyphLauncher" $minecraftlauncher_move_value "MinecraftLauncher" $pspluslauncher_move_value "PlaystationPlusLauncher" $dmmlauncher_move_value "DMMGameLauncher" $vkplaylauncher_move_value "VKPlayLauncher" --width=335 --height=524)
+    move_options=$(zenity --list --text="Which launcher IDs do you want to move to the SD card?" --checklist --column="Select" --column="Launcher ID" $nonsteamlauncher_move_value "NonSteamLaunchers" $epicgameslauncher_move_value "EpicGamesLauncher" $goggalaxylauncher_move_value "GogGalaxyLauncher" $uplaylauncher_move_value "UplayLauncher" $battlenetlauncher_move_value "Battle.netLauncher" $eaapplauncher_move_value "TheEAappLauncher" $amazongameslauncher_move_value "AmazonGamesLauncher" $itchiolauncher_move_value "itchioLauncher" $legacygameslauncher_move_value "LegacyGamesLauncher" $humblegameslauncher_move_value "HumbleGamesLauncher" $indiegalalauncher_move_value "IndieGalaLauncher" $rockstargameslauncher_move_value "RockstarGamesLauncher" $glyphlauncher_move_value "GlyphLauncher" $minecraftlauncher_move_value "MinecraftLauncher" $pspluslauncher_move_value "PlaystationPlusLauncher" $dmmlauncher_move_value "DMMGameLauncher" $vkplaylauncher_move_value "VKPlayLauncher" --width=335 --height=524)
 
     if [ $? -eq 0 ]; then
         zenity --info --text="The selected directories have been moved to the SD card and symbolic links have been created." --width=200 --height=150
@@ -1305,12 +1239,6 @@ ubi_url=https://ubi.li/4vxt9
 
 # Set the path to save the third file to
 ubi_file=${logged_in_home}/Downloads/NonSteamLaunchersInstallation/UbisoftConnectInstaller.exe
-
-# Set the URL to download the fourth file from
-origin_url=https://origin-a.akamaihd.net/Origin-Client-Download/origin/live/OriginThinSetup.exe
-
-# Set the path to save the fourth file to
-origin_file=${logged_in_home}/Downloads/NonSteamLaunchersInstallation/OriginThinSetup.exe
 
 # Set the URL to download the fifth file from
 battle_url="https://www.battle.net/download/getInstallerForGame?os=win&gameProgram=BATTLENET_APP&version=Live"
@@ -1572,66 +1500,7 @@ if [[ $options == *"Ubisoft Connect"* ]]; then
     "$STEAM_RUNTIME" "$proton_dir/proton" run "$ubi_file" /S
 fi
 
-# Wait for the UBI file to finish running
-wait
-echo "60"
-echo "# Downloading & Installing Origin...please wait..."
 
-# Check if user selected Origin
-if [[ $options == *"Origin"* ]]; then
-    # User selected Origin
-    echo "User selected Origin"
-
-    # Set the appid for the Origin Launcher
-    if [ "$use_separate_appids" = true ]; then
-        appid=OriginLauncher
-    else
-        appid=NonSteamLaunchers
-    fi
-
-    # Create app id folder in compatdata folder if it doesn't exist
-    if [ ! -d "${logged_in_home}/.local/share/Steam/steamapps/compatdata/$appid" ]; then
-        mkdir -p "${logged_in_home}/.local/share/Steam/steamapps/compatdata/$appid"
-    fi
-
-    # Change working directory to Proton's
-    cd $proton_dir
-
-    # Set the STEAM_COMPAT_CLIENT_INSTALL_PATH environment variable
-    export STEAM_COMPAT_CLIENT_INSTALL_PATH="${logged_in_home}/.local/share/Steam"
-
-    # Set the STEAM_COMPAT_DATA_PATH environment variable for Epic Games Launcher
-    export STEAM_COMPAT_DATA_PATH="${logged_in_home}/.local/share/Steam/steamapps/compatdata/${appid}"
-
-    # Download ORIGIN file
-    if [ ! -f "$origin_file" ]; then
-        echo "Downloading ORIGIN file"
-        wget $origin_url -O $origin_file
-    fi
-
-    # Run the ORIGIN file using Proton with the /passive option
-    echo "Running ORIGIN file using Proton with the /passive option"
-    "$STEAM_RUNTIME" "$proton_dir/proton" run "$origin_file" /SILENT
-
-    # Edit local.xml
-    sed -i 's|</Settings>|    <Setting value="true" key="MigrationDisabled" type="1"/>\n    <Setting key="UpdateURL" value="" type="10"/>\n    <Setting key="AutoPatchGlobal" value="false" type="1"/>\n    <Setting key="AutoUpdate" value="false" type="1"/>\n</Settings>|' "${logged_in_home}/.local/share/Steam/steamapps/compatdata/$appid/pfx/drive_c/ProgramData/Origin/local.xml"
-
-    # Terminate any processes with the name Origin.exe
-    pkill Origin.exe
-
-    # Download version.dll file
-    if [ ! -f "${logged_in_home}/Downloads/NonSteamLaunchersInstallation/version.dll" ]; then
-        echo "Downloading version.dll file"
-        wget https://github.com/p0358/Fuck_off_EA_App/releases/download/v2/version.dll -O ${logged_in_home}/Downloads/NonSteamLaunchersInstallation/version.dll
-    fi
-
-    # Move version.dll file to desired location
-    echo "Moving version.dll file to desired location"
-    mv ${logged_in_home}/Downloads/NonSteamLaunchersInstallation/version.dll "${logged_in_home}/.local/share/Steam/steamapps/compatdata/$appid/pfx/drive_c/Program Files (x86)/Origin/"
-
-    # Wait for the ORIGIN file to finish running
-    wait
-fi
 
 wait
 echo "70"
@@ -1887,23 +1756,6 @@ if [[ $options == *"Humble Games Collection"* ]]; then
     # User selected Humble Games Launcher
     echo "User selected Humble Games Collection"
 
-    if [[ ! -f "${logged_in_home}/.local/share/applications/Humble-scheme-handler.desktop" ]]; then
-        wget https://raw.githubusercontent.com/moraroy/NonSteamLaunchers-On-Steam-Deck/main/humble-app/Humble-scheme-handler.desktop -O /tmp/Humble-scheme-handler.desktop
-        sed -i "s/APPID/$appid/" /tmp/Humble-scheme-handler.desktop
-        desktop-file-install --rebuild-mime-info-cache --dir=${logged_in_home}/.local/share/applications /tmp/Humble-scheme-handler.desktop
-        rm -rf /tmp/Humble-scheme-handler.desktop
-    fi
-
-    if [[ ! -f "${logged_in_home}/.local/share/Steam/steamapps/compatdata/$appid/pfx/handle-humble-scheme" ]]; then
-        wget https://raw.githubusercontent.com/moraroy/NonSteamLaunchers-On-Steam-Deck/main/humble-app/handle-humble-scheme -O "${logged_in_home}/.local/share/Steam/steamapps/compatdata/$appid/pfx/handle-humble-scheme"
-        sed -i "s/APPID/$appid/" "${logged_in_home}/.local/share/Steam/steamapps/compatdata/$appid/pfx/handle-humble-scheme"
-        chmod +x "${logged_in_home}/.local/share/Steam/steamapps/compatdata/$appid/pfx/handle-humble-scheme"
-    fi
-
-    if [[ ! -f "${logged_in_home}/.local/share/Steam/steamapps/compatdata/$appid/pfx/start-humble.cmd" ]]; then
-        wget https://raw.githubusercontent.com/moraroy/NonSteamLaunchers-On-Steam-Deck/main/humble-app/start-humble.cmd -O "${logged_in_home}/.local/share/Steam/steamapps/compatdata/$appid/pfx/start-humble.cmd"
-    fi
-
     # Set the appid for the Humble Games Launcher
     if [ "$use_separate_appids" = true ]; then
         appid=HumbleGamesLauncher
@@ -1934,9 +1786,50 @@ if [[ $options == *"Humble Games Collection"* ]]; then
     # Run the exe file using Proton with the /passive option
     echo "Running Exe file using Proton with the /passive option"
     "$STEAM_RUNTIME" "$proton_dir/proton" run "$humblegames_file" /S /D="C:\Program Files\Humble App"
+    wait
+
+    # Create the handle-humble-scheme script
+    if [[ ! -f "${logged_in_home}/.local/share/Steam/steamapps/compatdata/$appid/pfx/handle-humble-scheme" ]]; then
+        echo '#!/usr/bin/env sh' > "${logged_in_home}/.local/share/Steam/steamapps/compatdata/$appid/pfx/handle-humble-scheme"
+        echo 'set -e' >> "${logged_in_home}/.local/share/Steam/steamapps/compatdata/$appid/pfx/handle-humble-scheme"
+        echo 'export STEAM_COMPAT_CLIENT_INSTALL_PATH=~/.local/share/Steam' >> "${logged_in_home}/.local/share/Steam/steamapps/compatdata/$appid/pfx/handle-humble-scheme"
+        echo 'export STEAM_COMPAT_DATA_PATH=~/.steam/steam/steamapps/compatdata/'$appid >> "${logged_in_home}/.local/share/Steam/steamapps/compatdata/$appid/pfx/handle-humble-scheme"
+        echo 'FIXED_SCHEME="$(echo "$1" | sed "s/?/\//")"' >> "${logged_in_home}/.local/share/Steam/steamapps/compatdata/$appid/pfx/handle-humble-scheme"
+        echo 'echo $FIXED_SCHEME > /home/deck/.local/share/Steam/steamapps/compatdata/'$appid'/pfx/drive_c/.auth' >> "${logged_in_home}/.local/share/Steam/steamapps/compatdata/$appid/pfx/handle-humble-scheme"
+        echo "\"$STEAM_RUNTIME\" \"$proton_dir/proton\" run ~/.local/share/Steam/steamapps/compatdata/$appid/pfx/start-humble.cmd" >> "${logged_in_home}/.local/share/Steam/steamapps/compatdata/$appid/pfx/handle-humble-scheme"
+        chmod +x "${logged_in_home}/.local/share/Steam/steamapps/compatdata/$appid/pfx/handle-humble-scheme"
+    fi
+    wait
+
+    # Create the Humble-scheme-handler.desktop file
+    if [[ ! -f "${logged_in_home}/.local/share/applications/Humble-scheme-handler.desktop" ]]; then
+        echo "[Desktop Entry]" > "${logged_in_home}/.local/share/applications/Humble-scheme-handler.desktop"
+        echo "Name=Humble App (Login)" >> "${logged_in_home}/.local/share/applications/Humble-scheme-handler.desktop"
+        echo "Comment=Target for handling Humble App logins. You should not run this manually." >> "${logged_in_home}/.local/share/applications/Humble-scheme-handler.desktop"
+        echo "Exec=${logged_in_home}/.local/share/Steam/steamapps/compatdata/$appid/pfx/handle-humble-scheme %u" >> "${logged_in_home}/.local/share/applications/Humble-scheme-handler.desktop"
+        echo "Type=Application" >> "${logged_in_home}/.local/share/applications/Humble-scheme-handler.desktop"
+        echo "MimeType=x-scheme-handler/humble;" >> "${logged_in_home}/.local/share/applications/Humble-scheme-handler.desktop"
+        desktop-file-install --rebuild-mime-info-cache --dir=${logged_in_home}/.local/share/applications "${logged_in_home}/.local/share/applications/Humble-scheme-handler.desktop"
+    fi
+
+    wait
+
+    # Create the start-humble.cmd script
+    if [[ ! -f "${logged_in_home}/.local/share/Steam/steamapps/compatdata/$appid/pfx/start-humble.cmd" ]]; then
+        echo '@echo off' > "${logged_in_home}/.local/share/Steam/steamapps/compatdata/$appid/pfx/start-humble.cmd"
+        echo 'cd /d "C:\Program Files\Humble App\"' >> "${logged_in_home}/.local/share/Steam/steamapps/compatdata/$appid/pfx/start-humble.cmd"
+        echo 'set /p Url=<"C:\.auth"' >> "${logged_in_home}/.local/share/Steam/steamapps/compatdata/$appid/pfx/start-humble.cmd"
+        echo 'if defined Url (' >> "${logged_in_home}/.local/share/Steam/steamapps/compatdata/$appid/pfx/start-humble.cmd"
+        echo '    start "" "Humble App.exe" "%Url%"' >> "${logged_in_home}/.local/share/Steam/steamapps/compatdata/$appid/pfx/start-humble.cmd"
+        echo ') else (' >> "${logged_in_home}/.local/share/Steam/steamapps/compatdata/$appid/pfx/start-humble.cmd"
+        echo '    start "" "Humble App.exe" "%*"' >> "${logged_in_home}/.local/share/Steam/steamapps/compatdata/$appid/pfx/start-humble.cmd"
+        echo ')' >> "${logged_in_home}/.local/share/Steam/steamapps/compatdata/$appid/pfx/start-humble.cmd"
+        echo 'exit' >> "${logged_in_home}/.local/share/Steam/steamapps/compatdata/$appid/pfx/start-humble.cmd"
+    fi
 fi
 
 wait
+
 echo "92"
 echo "# Downloading & Installing Indie Gala...please wait..."
 
@@ -2337,17 +2230,6 @@ elif [[ -f "$gog_galaxy_path2" ]]; then
     gogstartingdir="\"$(dirname "$gog_galaxy_path2")\""
 fi
 
-if [[ -f "$origin_path1" ]]; then
-    # Origin Launcher is installed at path 1
-    originshortcutdirectory="\"$origin_path1\""
-    originlaunchoptions="STEAM_COMPAT_DATA_PATH=\"${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/\" %command%"
-    originstartingdir="\"$(dirname "$origin_path1")\""
-elif [[ -f "$origin_path2" ]]; then
-    # Origin Launcher is installed at path 2
-    originshortcutdirectory="\"$origin_path2\""
-    originlaunchoptions="STEAM_COMPAT_DATA_PATH=\"${logged_in_home}/.local/share/Steam/steamapps/compatdata/OriginLauncher/\" %command%"
-    originstartingdir="\"$(dirname "$origin_path2")\""
-fi
 
 if [[ -f "$uplay_path1" ]]; then
     # Uplay Launcher is installed at path 1
@@ -2816,7 +2698,6 @@ if isinstance(shortcuts['shortcuts'], dict):
 # Define the path of the Launchers
 epicshortcutdirectory = '$epicshortcutdirectory'
 gogshortcutdirectory = '$gogshortcutdirectory'
-originshortcutdirectory = '$originshortcutdirectory'
 uplayshortcutdirectory = '$uplayshortcutdirectory'
 battlenetshortcutdirectory = '$battlenetshortcutdirectory'
 eaappshortcutdirectory = '$eaappshortcutdirectory'
@@ -2918,7 +2799,6 @@ def create_new_entry(shortcutdirectory, appname, launchoptions, startingdir):
 create_new_entry('$epicshortcutdirectory', 'Epic Games', '$epiclaunchoptions', '$epicstartingdir')
 create_new_entry('$gogshortcutdirectory', 'Gog Galaxy', '$goglaunchoptions', '$gogstartingdir')
 create_new_entry('$uplayshortcutdirectory', 'Ubisoft Connect', '$uplaylaunchoptions', '$uplaystartingdir')
-create_new_entry('$originshortcutdirectory', 'Origin', '$originlaunchoptions', '$originstartingdir')
 create_new_entry('$battlenetshortcutdirectory', 'Battle.net', '$battlenetlaunchoptions', '$battlenetstartingdir')
 create_new_entry('$eaappshortcutdirectory', 'EA App', '$eaapplaunchoptions', '$eaappstartingdir')
 create_new_entry('$amazonshortcutdirectory', 'Amazon Games', '$amazonlaunchoptions', '$amazonstartingdir')
@@ -3052,9 +2932,6 @@ config['controller_config']['amazon games'] = {
 config['controller_config']['battlenet'] = {
     'workshop': '2887894308'
 }
-config['controller_config']['Origin'] = {
-    'workshop': '2856043168'
-}
 config['controller_config']['rockstar games launcher'] = {
     'workshop': '1892570391'
 }
@@ -3125,7 +3002,6 @@ folder_names = {
     'Epic Games': 'EpicGamesLauncher',
     'Gog Galaxy': 'GogGalaxyLauncher',
     'Ubisoft Connect': 'UplayLauncher',
-    'Origin': 'OriginLauncher',
     'Battle.net': 'Battle.netLauncher',
     'EA App': 'TheEAappLauncher',
     'Amazon Games': 'AmazonGamesLauncher',
