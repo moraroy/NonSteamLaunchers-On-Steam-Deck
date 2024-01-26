@@ -31,12 +31,14 @@ ubisoft_connect_launcher = os.environ.get('ubisoft_connect_launcher', '')
 ea_app_launcher = os.environ.get('ea_app_launcher', '')
 
 # Define the parent folder
-parent_folder = ".config/systemd/user/Modules"
+parent_folder = f"{logged_in_home}/.config/systemd/user/Modules"
 
 # Now that the requests module has been downloaded, you can import it
-sys.path.insert(0, os.path.join(os.path.dirname(os.path.realpath(__file__)), parent_folder))
+sys.path.insert(0, parent_folder)
 import requests
 from steamgrid import SteamGridDB
+print(sys.path)
+
 
 #Set Up nslgamescanner.service
 # Define the paths
