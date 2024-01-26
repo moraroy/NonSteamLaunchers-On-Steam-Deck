@@ -64,6 +64,7 @@ Use the "Find Games" button to load [Boilr](https://github.com/PhilipK/BoilR) th
 - Epic Games 🎮
 - Ubisoft Connect 🎮
 - EA App 🎮
+- Gog Galaxy 🎮
 
 <h1 align="center">
 How to Install 🔧
