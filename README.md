@@ -7,7 +7,7 @@
 NonSteamLaunchers 🚀
 </h1>
 
-This script installs the latest GE-Proton, installs NonSteamLaunchers under one unique Proton prefix folder in your compatdata folder path called "NonSteamLaunchers" and adds them to your Steam Library. 
+This script installs the latest GE-Proton, installs NonSteamLaunchers under one unique Proton prefix folder in your compatdata folder path called "NonSteamLaunchers" and adds them to your Steam Library. It will also add the games automatically on every steam restart.
 So you can use them on Desktop or in Game Mode.
 
 <h1 align="center">
@@ -15,7 +15,7 @@ Features  ✅
 </h1>
 
 - Automatic installation of the most popular launchers in your Steam Deck 🎮
-- Handle automatically the download and installation of your chosen launchers ⌚
+- Handle automatically the download and installation of your chosen launchers and the games ⌚️ 
 - MicroSD Support 💾 This script supports moving the entire prefix to a microSD. The script will install launchers and games to your SD card, and the launchers in Steam will point to the SD card installation. This allows you to save internal storage space on your Steam Deck!
 
 <h1 align="center">
