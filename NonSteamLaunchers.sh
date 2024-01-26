@@ -2266,11 +2266,15 @@ if [[ -f "$gog_galaxy_path1" ]]; then
     gogshortcutdirectory="\"$gog_galaxy_path1\""
     goglaunchoptions="STEAM_COMPAT_DATA_PATH=\"${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/\" %command%"
     gogstartingdir="\"$(dirname "$gog_galaxy_path1")\""
+    echo "export gog_galaxy_launcher=NonSteamLaunchers" >> ${logged_in_home}/.config/systemd/user/env_vars
+    echo "Gog Galaxy Launcher found at path 1"
 elif [[ -f "$gog_galaxy_path2" ]]; then
     # Gog Galaxy Launcher is installed at path 2
     gogshortcutdirectory="\"$gog_galaxy_path2\""
     goglaunchoptions="STEAM_COMPAT_DATA_PATH=\"${logged_in_home}/.local/share/Steam/steamapps/compatdata/GogGalaxyLauncher/\" %command%"
     gogstartingdir="\"$(dirname "$gog_galaxy_path2")\""
+    echo "export gog_galaxy_launcher=GogGalaxyLauncher" >> ${logged_in_home}/.config/systemd/user/env_vars
+    echo "Gog Galaxy Launcher found at path 2"
 fi
 
 
