@@ -29,6 +29,7 @@ compat_tool_name = os.environ['compat_tool_name']
 epic_games_launcher = os.environ.get('epic_games_launcher', '')
 ubisoft_connect_launcher = os.environ.get('ubisoft_connect_launcher', '')
 ea_app_launcher = os.environ.get('ea_app_launcher', '')
+gog_galaxy_launcher = os.environ.get('gog_galaxy_launcher', '')
 
 # Define the parent folder
 parent_folder = f"{logged_in_home}/.config/systemd/user/Modules"
@@ -527,6 +528,86 @@ else:
         add_compat_tool(unsigned_shortcut_id)
 
 #End of EA App Scanner
+
+
+
+# Gog Galaxy Scanner
+def getGogGameInfo(filePath):
+    # Check if the file contains any GOG entries
+    with open(filePath, 'r') as file:
+        if "GOG.com" not in file.read():
+            print("No GOG entries found in the registry file. Skipping GOG Galaxy Games Scanner.")
+            return {}
+
+    # If GOG entries exist, parse the registry file
+    game_dict = {}
+    with open(filePath, 'r') as file:
+        game_id = None
+        game_name = None
+        exe_path = None
+        for line in file:
+            split_line = line.split("=")
+            if len(split_line) > 1:
+                if "gameID" in line:
+                    game_id = re.findall(r'\"(.+?)\"', split_line[1])
+                    if game_id:
+                        game_id = game_id[0]
+                if "gameName" in line:
+                    game_name = re.findall(r'\"(.+?)\"', split_line[1])
+                    if game_name:
+                        game_name = game_name[0]
+                if "exe" in line and "GOG Galaxy" in line:
+                    exe_path = re.findall(r'\"(.+?)\"', split_line[1])
+                    if exe_path:
+                        exe_path = exe_path[0].replace('\\\\', '\\')
+            if game_id and game_name and exe_path:
+                game_dict[game_name] = {'id': game_id, 'exe': exe_path}
+                game_id = None
+                game_name = None
+                exe_path = None
+
+    return game_dict
+
+# Define your paths
+gog_games_directory = f"{logged_in_home}/.local/share/Steam/steamapps/compatdata/{gog_galaxy_launcher}/pfx/drive_c/Program Files (x86)/GOG Galaxy/Games"
+registry_file_path = f"{logged_in_home}/.local/share/Steam/steamapps/compatdata/{gog_galaxy_launcher}/pfx/system.reg"
+
+# Check if the paths exist
+if not os.path.exists(gog_games_directory) or not os.path.exists(registry_file_path):
+    print("One or more paths do not exist.")
+    print("GOG Galaxy game data not found. Skipping GOG Galaxy Games Scanner.")
+else:
+    game_dict = getGogGameInfo(registry_file_path)
+
+    for game, game_info in game_dict.items():
+        if game_info['id']:
+            launch_options = f"STEAM_COMPAT_DATA_PATH=\"{logged_in_home}/.local/share/Steam/steamapps/compatdata/{gog_galaxy_launcher}/\" %command% /command=runGame /gameId={game_info['id']} /path=\"{game_info['exe']}\""
+            exe_path = f"\"{logged_in_home}/.local/share/Steam/steamapps/compatdata/{gog_galaxy_launcher}/pfx/drive_c/Program Files (x86)/GOG Galaxy/GalaxyClient.exe\""
+            start_dir = f"\"{logged_in_home}/.local/share/Steam/steamapps/compatdata/{gog_galaxy_launcher}/pfx/drive_c/Program Files (x86)/GOG Galaxy/\""
+            signed_shortcut_id = get_steam_shortcut_id(exe_path, game)
+            unsigned_shortcut_id = get_unsigned_shortcut_id(signed_shortcut_id)
+            # Check if the game already exists in the shortcuts
+            if check_if_shortcut_exists(signed_shortcut_id, game, exe_path, start_dir, launch_options):
+                if add_compat_tool(unsigned_shortcut_id):
+                    shortcuts_updated = True
+                continue
+
+            game_id = get_game_id(game)
+            if game_id is not None:
+                get_sgdb_art(game_id, unsigned_shortcut_id)
+            new_shortcuts_added = True
+            created_shortcuts.append(game)
+            shortcuts['shortcuts'][str(len(shortcuts['shortcuts']))] = {
+                'appid': str(signed_shortcut_id),
+                'appname': game,
+                'exe': exe_path,
+                'StartDir': start_dir,
+                'LaunchOptions': launch_options,
+                'icon': f"{logged_in_home}/.steam/root/userdata/{steamid3}/config/grid/{get_file_name('icons', unsigned_shortcut_id)}"
+            }
+            add_compat_tool(unsigned_shortcut_id)
+
+# End of Gog Galaxy Scanner
 
 
 #Push down when more scanners are added
