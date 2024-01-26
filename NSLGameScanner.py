@@ -501,8 +501,8 @@ else:
 
     for game, ea_ids in game_dict.items():
         launch_options = f"STEAM_COMPAT_DATA_PATH=\"{logged_in_home}/.local/share/Steam/steamapps/compatdata/{ea_app_launcher}/\" %command% \"origin2://game/launch?offerIds={ea_ids}\""
-        exe_path = f"\"{logged_in_home}/.local/share/Steam/Steam/steamapps/compatdata/{ea_app_launcher}/pfx/drive_c/Program Files/Electronic Arts/EA Desktop/EA Desktop/EALaunchHelper.exe\""
-        start_dir = f"\"{logged_in_home}/.local/share/Steam/Steam/steamapps/compatdata/{ea_app_launcher}/pfx/drive_c/Program Files/Electronic Arts/EA Desktop/EA Desktop/\""
+        exe_path = f"\"{logged_in_home}/.local/share/Steam/steamapps/compatdata/{ea_app_launcher}/pfx/drive_c/Program Files/Electronic Arts/EA Desktop/EA Desktop/EALaunchHelper.exe\""
+        start_dir = f"\"{logged_in_home}/.local/share/Steam/steamapps/compatdata/{ea_app_launcher}/pfx/drive_c/Program Files/Electronic Arts/EA Desktop/EA Desktop/\""
         signed_shortcut_id = get_steam_shortcut_id(exe_path, game)
         unsigned_shortcut_id = get_unsigned_shortcut_id(signed_shortcut_id)
         # Check if the game already exists in the shortcuts
