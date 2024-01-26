@@ -30,40 +30,8 @@ epic_games_launcher = os.environ.get('epic_games_launcher', '')
 ubisoft_connect_launcher = os.environ.get('ubisoft_connect_launcher', '')
 ea_app_launcher = os.environ.get('ea_app_launcher', '')
 
-# Create Folders
-# Define the repository and the folders to clone
-repo_url = 'https://github.com/moraroy/NonSteamLaunchers-On-Steam-Deck/archive/refs/heads/main.zip'
-folders_to_clone = ['requests', 'urllib3', 'steamgrid']
-
-# Get the directory of the Python script
-current_dir = os.path.dirname(os.path.realpath(__file__))
-
 # Define the parent folder
-parent_folder = os.path.join(current_dir, 'Modules')
-os.makedirs(parent_folder, exist_ok=True)
-
-# Check if the folders already exist
-folders_exist = all(os.path.exists(os.path.join(current_dir, parent_folder, folder)) for folder in folders_to_clone)
-
-if not folders_exist:
-    # Download the repository as a zip file
-    zip_file_path = os.path.join(current_dir, 'repo.zip')
-    urlretrieve(repo_url, zip_file_path)
-
-    # Extract the zip file
-    with zipfile.ZipFile(zip_file_path, 'r') as zip_ref:
-        zip_ref.extractall(current_dir)
-
-    # Move the folders to the current directory and delete the unnecessary files
-    for folder in folders_to_clone:
-        destination_path = os.path.join(current_dir, parent_folder, folder)
-        source_path = os.path.join(current_dir, 'NonSteamLaunchers-On-Steam-Deck-main', 'Modules', folder)
-        if not os.path.exists(destination_path):
-            shutil.move(source_path, destination_path)
-
-    # Delete the downloaded zip file and the extracted repository folder
-    os.remove(zip_file_path)
-    shutil.rmtree(os.path.join(current_dir, 'NonSteamLaunchers-On-Steam-Deck-main'))
+parent_folder = ".config/systemd/user/Modules"
 
 # Now that the requests module has been downloaded, you can import it
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.realpath(__file__)), parent_folder))
@@ -283,7 +251,6 @@ game_launchers = {
     'Epic Games',
     'Gog Galaxy',
     'Ubisoft Connect',
-    'Origin',
     'Battle.net',
     'EA App',
     'Amazon Games',
@@ -313,7 +280,6 @@ name_mapping = {
     'Epic Games': 'Epic Games Store (Program)',
     'Gog Galaxy': 'GOG Galaxy (Program)',
     'Ubisoft Connect': 'Ubisoft Connect (Program)',
-    'Origin': 'Origin (Program)',
     'Battle.net': 'Battle.net (Program)',
     'Legacy Games': 'Legacy Games (Program)',
     'Humble Bundle': 'Humble Bundle (Website)',
