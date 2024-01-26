@@ -2657,16 +2657,6 @@ else
     echo "Current user's userdata folder not found"
 fi
 
-# Detach script from Steam process
-nohup sh -c 'sleep 10; /usr/bin/steam' &
-
-# Close all instances of Steam
-steam_pid() { pgrep -x steam ; }
-steam_running=$(steam_pid)
-[[ -n "$steam_running" ]] && killall steam
-
-# Wait for the steam process to exit
-while steam_pid > /dev/null; do sleep 5; done
 
 # Pre check for updating the config file
 
@@ -2687,6 +2677,28 @@ if [ -f "$config_vdf_path" ]; then
 else
     echo "Could not find config.vdf file"
 fi
+
+
+
+# Write variables to a file before script is detached
+echo "export steamid3=$steamid3" >> ${logged_in_home}/.config/systemd/user/env_vars
+echo "export logged_in_home=$logged_in_home" >> ${logged_in_home}/.config/systemd/user/env_vars
+echo "export compat_tool_name=$compat_tool_name" >> ${logged_in_home}/.config/systemd/user/env_vars
+
+
+# Detach script from Steam process
+nohup sh -c 'sleep 10; /usr/bin/steam' &
+
+# Close all instances of Steam
+steam_pid() { pgrep -x steam ; }
+steam_running=$(steam_pid)
+[[ -n "$steam_running" ]] && killall steam
+
+# Wait for the steam process to exit
+while steam_pid > /dev/null; do sleep 5; done
+
+
+
 
 
 
@@ -3118,12 +3130,6 @@ rm -rf "$download_dir"
 
 
 #Setup NSLGameScanner.service
-# Write variables to a file
-echo "export steamid3=$steamid3" >> ${logged_in_home}/.config/systemd/user/env_vars
-echo "export logged_in_home=$logged_in_home" >> ${logged_in_home}/.config/systemd/user/env_vars
-echo "export compat_tool_name=$compat_tool_name" >> ${logged_in_home}/.config/systemd/user/env_vars
-
-
 # Define your Python script path
 python_script_path="${logged_in_home}/.config/systemd/user/NSLGameScanner.py"
 
