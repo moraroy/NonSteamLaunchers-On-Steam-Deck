@@ -327,11 +327,16 @@ print("Existing Shortcuts:")
 for shortcut in shortcuts['shortcuts'].values():
 	print(f"AppID for {shortcut.get('appname')}: {shortcut.get('appid')}")
 
+
+
+
+
+
 # Epic Games Scanner
 item_dir = f"{logged_in_home}/.local/share/Steam/steamapps/compatdata/{epic_games_launcher}/pfx/drive_c/ProgramData/Epic/EpicGamesLauncher/Data/Manifests/"
 dat_file_path = f"{logged_in_home}/.local/share/Steam/steamapps/compatdata/{epic_games_launcher}/pfx/drive_c/ProgramData/Epic/UnrealEngineLauncher/LauncherInstalled.dat"
 
-if os.path.exists(dat_file_path):
+if os.path.exists(dat_file_path) and os.path.exists(item_dir):
     with open(dat_file_path, 'r') as file:
         dat_data = json.load(file)
 
