@@ -1183,6 +1183,7 @@ if [[ " ${args[@]} " =~ " Stop NSLGameScanner " ]] || [[ $options == "Stop NSLGa
 
     # If command line arguments were provided, exit the script
     if [ ${#args[@]} -ne 0 ]; then
+    rm -rf $env_vars
         exit 0
     fi
 
