@@ -47,6 +47,10 @@ check_for_updates() {
 args=("$@")
 
 
+
+
+
+
 # Check if "Decky Plugin" is one of the arguments
 decky_plugin=false
 for arg in "${args[@]}"; do
@@ -56,7 +60,6 @@ for arg in "${args[@]}"; do
   fi
 done
 
-# Rough way to "update" the .py for users that already had the service file
 # Define the repository and the folders to clone
 repo_url='https://github.com/moraroy/NonSteamLaunchers-On-Steam-Deck/archive/refs/heads/main.zip'
 folders_to_clone=('requests' 'urllib3' 'steamgrid')
@@ -119,39 +122,26 @@ curl -o $python_script_path $github_link
 # Define the path to the env_vars file
 env_vars="${logged_in_home}/.config/systemd/user/env_vars"
 
-
-# Check if the env_vars file exists and the decky_plugin argument is set
-if [ -f "$env_vars" ] && [ "$decky_plugin" = true ]; then
-    # If the file exists and the decky_plugin argument is set, run the .py file
-    echo "env_vars file found and Decky Plugin argument set. Running the .py file..."
-    python3 $python_script_path
-    live="and is LIVE."
-    # Exit the script after running the .py file
-    return
-else
-    # If the file does not exist or the decky_plugin argument is not set, do not run the .py file
-    echo "env_vars file not found or Decky Plugin argument not set. Not running the .py file."
-    live="and is NOT LIVE."
-fi
-
-
-
-
-
-
-
 # Check if the env_vars file exists
 if [ -f "$env_vars" ]; then
-    # If the file exists, run the .py file
-    echo "env_vars file found. Running the .py file..."
-    python3 $python_script_path
-    live="and is LIVE."
+    # If the file exists and the decky_plugin argument is set, run the .py file and then exit
+    if [ "$decky_plugin" = true ]; then
+        echo "env_vars file found and Decky Plugin argument set. Running the .py file..."
+        python3 $python_script_path
+        echo "Python script ran. Exiting the script."
+        exit 0
+    else
+        # If the file exists but the decky_plugin argument is not set, run the .py file
+        echo "env_vars file found but Decky Plugin argument not set. Running the .py file..."
+        python3 $python_script_path
+        live="and is LIVE."
+    fi
 else
     # If the file does not exist, do not run the .py file
     echo "env_vars file not found. Not running the .py file."
     live="and is NOT LIVE."
 fi
-#End of Rough way of updating the .py for users
+
 
 
 
