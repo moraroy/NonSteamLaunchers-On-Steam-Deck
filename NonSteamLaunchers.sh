@@ -2438,7 +2438,7 @@ if [[ $options == *"Twitch"* ]]; then
 fi
 
 if [[ $options == *"movie-web"* ]]; then
-    # User selected Tmovie-web
+    # User selected movie-web
     chromedirectory="\"$chrome_path\""
     moviewebchromelaunchoptions="run --branch=stable --arch=x86_64 --command=/app/bin/chrome --file-forwarding com.google.Chrome @@u @@ --window-size=1280,800 --force-device-scale-factor=1.00 --device-scale-factor=1.00 --kiosk https://movie-web.app/ --chrome-kiosk-type=fullscreen --no-first-run --enable-features=OverlayScrollbar"
 fi
