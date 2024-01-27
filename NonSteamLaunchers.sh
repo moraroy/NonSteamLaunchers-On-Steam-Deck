@@ -127,7 +127,7 @@ if [ -f "$env_vars" ] && [ "$decky_plugin" = true ]; then
     python3 $python_script_path
     live="and is LIVE."
     # Exit the script after running the .py file
-    exit 0
+    return
 else
     # If the file does not exist or the decky_plugin argument is not set, do not run the .py file
     echo "env_vars file not found or Decky Plugin argument not set. Not running the .py file."
