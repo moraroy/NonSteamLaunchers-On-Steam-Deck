@@ -43,7 +43,18 @@ check_for_updates() {
 }
 
 
+# Get the command line arguments
+args=("$@")
 
+
+# Check if "Decky Plugin" is one of the arguments
+decky_plugin=false
+for arg in "${args[@]}"; do
+  if [ "$arg" = "Decky Plugin" ]; then
+    decky_plugin=true
+    break
+  fi
+done
 
 # Rough way to "update" the .py for users that already had the service file
 # Define the repository and the folders to clone
@@ -109,6 +120,26 @@ curl -o $python_script_path $github_link
 env_vars="${logged_in_home}/.config/systemd/user/env_vars"
 
 
+# Check if the env_vars file exists and the decky_plugin argument is set
+if [ -f "$env_vars" ] && [ "$decky_plugin" = true ]; then
+    # If the file exists and the decky_plugin argument is set, run the .py file
+    echo "env_vars file found and Decky Plugin argument set. Running the .py file..."
+    python3 $python_script_path
+    live="and is LIVE."
+    # Exit the script after running the .py file
+    exit 0
+else
+    # If the file does not exist or the decky_plugin argument is not set, do not run the .py file
+    echo "env_vars file not found or Decky Plugin argument not set. Not running the .py file."
+    live="and is NOT LIVE."
+fi
+
+
+
+
+
+
+
 # Check if the env_vars file exists
 if [ -f "$env_vars" ]; then
     # If the file exists, run the .py file
@@ -124,8 +155,7 @@ fi
 
 
 
-# Get the command line arguments
-args=("$@")
+
 
 # Check if any command line arguments were provided
 if [ ${#args[@]} -eq 0 ]; then
