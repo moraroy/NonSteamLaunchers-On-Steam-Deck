@@ -194,8 +194,6 @@ minecraft_path1="${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSt
 minecraft_path2="${logged_in_home}/.local/share/Steam/steamapps/compatdata/MinecraftLauncher/pfx/drive_c/Program Files (x86)/Minecraft Launcher/MinecraftLauncher.exe"
 psplus_path1="${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/Program Files (x86)/PlayStationPlus/pspluslauncher.exe"
 psplus_path2="${logged_in_home}/.local/share/Steam/steamapps/compatdata/PlaystationPlusLauncher/pfx/drive_c/Program Files (x86)/PlayStationPlus/pspluslauncher.exe"
-dmm_path1="${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/Program Files/DMMGamePlayer/DMMGamePlayer.exe"
-dmm_path2="${logged_in_home}/.local/share/Steam/steamapps/compatdata/DMMGameLauncher/pfx/drive_c/Program Files/DMMGamePlayer/DMMGamePlayer.exe"
 vkplay_path1="${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/users/steamuser/AppData/Local/GameCenter/GameCenter.exe"
 vkplay_path2="${logged_in_home}/.local/share/Steam/steamapps/compatdata/VKPlayLauncher/pfx/drive_c/users/steamuser/AppData/Local/GameCenter/GameCenter.exe"
 
@@ -416,20 +414,6 @@ else
     psplus_text="Playstation Plus"
 fi
 
-# Check if DMM Player is installed
-if [[ -f "$dmm_path1" ]]; then
-    # DMM Player is installed in path 1 on local drive
-    dmm_value="FALSE"
-    dmm_text="DMM Games ===> $dmm_path1"
-elif [[ -f "$dmm_path2" ]]; then
-    # DMM Player is installed in path 2 on local drive
-    dmm_value="FALSE"
-    dmm_text="DMM Games ===> $dmm_path2"
-else
-    # DMM Player is not installed
-    dmm_value="FALSE"
-    dmm_text="DMM Games - Broken, Use at own risk"
-fi
 
 # Check if VK Play is installed
 if [[ -f "$vkplay_path1" ]]; then
@@ -585,14 +569,6 @@ function CheckInstallationDirectory {
         pspluslauncher_move_value="FALSE"
     fi
 
-    # Check if DMM Player is installed
-    if [[ -d "${logged_in_home}/.local/share/Steam/steamapps/compatdata/DMMGameLauncher" ]]; then
-        # DMM Player is installed
-        dmmlauncher_move_value="TRUE"
-    else
-        # DMM Player is not installed
-        dmmlauncher_move_value="FALSE"
-    fi
 
     # Check if VK Play is installed
     if [[ -d "${logged_in_home}/.local/share/Steam/steamapps/compatdata/VKPlayLauncher" ]]; then
@@ -629,7 +605,7 @@ separate_app_ids=false
 # Check if any command line arguments were provided
 if [ ${#args[@]} -eq 0 ]; then
     # No command line arguments were provided, so display the main zenity window
-    selected_launchers=$(zenity --list --text="Which launchers do you want to download and install?" --checklist --column="$version" --column="Default = one App ID Installation, One Prefix, NonSteamLaunchers - opening this window has updated NSLGameScanner.py $live" FALSE "SEPARATE APP IDS - CHECK THIS TO SEPARATE YOUR PREFIX" $epic_games_value "$epic_games_text" $gog_galaxy_value "$gog_galaxy_text" $uplay_value "$uplay_text" $battlenet_value "$battlenet_text" $amazongames_value "$amazongames_text" $eaapp_value "$eaapp_text" $legacygames_value "$legacygames_text" $itchio_value "$itchio_text" $humblegames_value "$humblegames_text" $indiegala_value "$indiegala_text" $rockstar_value "$rockstar_text" $glyph_value "$glyph_text" $minecraft_value "$minecraft_text" $psplus_value "$psplus_text" $dmm_value "$dmm_text" $vkplay_value "$vkplay_text" FALSE "Xbox Game Pass" FALSE "GeForce Now" FALSE "Amazon Luna" FALSE "Netflix" FALSE "Hulu" FALSE "Disney+" FALSE "Amazon Prime Video" FALSE "Youtube" FALSE "Twitch" --width=580 --height=740 --extra-button="Uninstall" --extra-button="Find Games" --extra-button="Start Fresh" --extra-button="Move to SD Card" --extra-button="Stop NSLGameScanner")
+    selected_launchers=$(zenity --list --text="Which launchers do you want to download and install?" --checklist --column="$version" --column="Default = one App ID Installation, One Prefix, NonSteamLaunchers - opening this window has updated NSLGameScanner.py $live" FALSE "SEPARATE APP IDS - CHECK THIS TO SEPARATE YOUR PREFIX" $epic_games_value "$epic_games_text" $gog_galaxy_value "$gog_galaxy_text" $uplay_value "$uplay_text" $battlenet_value "$battlenet_text" $amazongames_value "$amazongames_text" $eaapp_value "$eaapp_text" $legacygames_value "$legacygames_text" $itchio_value "$itchio_text" $humblegames_value "$humblegames_text" $indiegala_value "$indiegala_text" $rockstar_value "$rockstar_text" $glyph_value "$glyph_text" $minecraft_value "$minecraft_text" $psplus_value "$psplus_text" $vkplay_value "$vkplay_text" FALSE "Xbox Game Pass" FALSE "GeForce Now" FALSE "Amazon Luna" FALSE "Netflix" FALSE "Hulu" FALSE "Disney+" FALSE "Amazon Prime Video" FALSE "movie-web" FALSE "Youtube" FALSE "Twitch" --width=580 --height=740 --extra-button="Uninstall" --extra-button="Find Games" --extra-button="Start Fresh" --extra-button="Move to SD Card" --extra-button="Stop NSLGameScanner")
 
     # Check if the user clicked the 'Cancel' button or selected one of the extra buttons
     if [ $? -eq 1 ] || [[ $selected_launchers == "Start Fresh" ]] || [[ $selected_launchers == "Move to SD Card" ]] || [[ $selected_launchers == "Uninstall" ]] || [[ $selected_launchers == "Find Games" ]]; then
@@ -720,7 +696,7 @@ function StartFreshFunction {
     other_dir="${logged_in_home}/.local/share/Steam/steamapps/shadercache/"
 
     # Define an array of original folder names
-    folder_names=("EpicGamesLauncher" "GogGalaxyLauncher" "UplayLauncher" "Battle.netLauncher" "TheEAappLauncher" "AmazonGamesLauncher" "itchioLauncher" "LegacyGamesLauncher" "HumbleGamesLauncher" "IndieGalaLauncher" "RockstarGamesLauncher" "GlyphLauncher" "MinecraftLauncher" "PlaystationPlusLauncher" "DMMGameLauncher" "VKPlayLauncher")
+    folder_names=("EpicGamesLauncher" "GogGalaxyLauncher" "UplayLauncher" "Battle.netLauncher" "TheEAappLauncher" "AmazonGamesLauncher" "itchioLauncher" "LegacyGamesLauncher" "HumbleGamesLauncher" "IndieGalaLauncher" "RockstarGamesLauncher" "GlyphLauncher" "MinecraftLauncher" "PlaystationPlusLauncher" "VKPlayLauncher")
 
     # Define an array of app IDs
     app_ids=("3772819390" "4294900670" "4063097571" "3786021133" "3448088735" "3923904787" "3440562512" "2948446662" "3303169468" "3595505624" "4272271078" "3259996605" "2588786779" "4090616647" "3494943831" "2390200925" "4253976432" "2221882453" "2296676888" "2486751858" "3974004104" "3811372789" "3788101956" "3782277090" "3640061468" "3216372511" "2882622939" "2800812206" "2580882702")
@@ -816,7 +792,6 @@ function StartFreshFunction {
     rm -rf "/run/media/mmcblk0p1/GlyphLauncher/"
     rm -rf "/run/media/mmcblk0p1/MinecraftLauncher/"
     rm -rf "/run/media/mmcblk0p1/PlaystationPlusLauncher/"
-    rm -rf "/run/media/mmcblk0p1/DMMGameLauncher/"
     rm -rf "/run/media/mmcblk0p1/VKPlayLauncher/"
     rm -rf ${logged_in_home}/Downloads/NonSteamLaunchersInstallation
     rm -rf ${logged_in_home}/.config/systemd/user/Modules
@@ -883,7 +858,6 @@ if [[ $options == "Uninstall" ]]; then
         FALSE "Glyph Launcher" \
         FALSE "Minecraft"\
         FALSE "Playstation Plus"\
-        FALSE "DMM Games" \
         FALSE "VK Play")
 
     if [[ $options != "" ]]; then
@@ -1085,19 +1059,6 @@ if [[ $options == "Uninstall" ]]; then
         fi
     fi
 
-    if [[ $options == *"DMM Games"* ]]; then
-        # User selected to uninstall DMMGameLauncher
-        # Check if DMMGameLauncher was installed using the NonSteamLaunchers prefix
-        if [[ -f "$dmm_path1" ]]; then
-            # DMMGameLauncher was installed using NonSteamLaunchers prefix
-            # Add code here to run the DMMGameLauncher uninstaller
-            rm -rf "${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/Program Files (x86)/DMMGamePlayer"
-        elif [[ -f "$dmm_path2" ]]; then
-            # DMMGameLauncher was installed using a separate app ID
-            # Add code here to delete the DMMGameLauncher app ID folder
-            rm -rf "${logged_in_home}/.local/share/Steam/steamapps/compatdata/DMMGameLauncher"
-        fi
-    fi
 
     if [[ $options == *"VK Play"* ]]; then
         # User selected to uninstall VKPlayLauncher
@@ -1143,7 +1104,7 @@ move_to_sd() {
 if [[ $options == "Move to SD Card" ]]; then
     CheckInstallationDirectory
 
-    move_options=$(zenity --list --text="Which launcher IDs do you want to move to the SD card?" --checklist --column="Select" --column="Launcher ID" $nonsteamlauncher_move_value "NonSteamLaunchers" $epicgameslauncher_move_value "EpicGamesLauncher" $goggalaxylauncher_move_value "GogGalaxyLauncher" $uplaylauncher_move_value "UplayLauncher" $battlenetlauncher_move_value "Battle.netLauncher" $eaapplauncher_move_value "TheEAappLauncher" $amazongameslauncher_move_value "AmazonGamesLauncher" $itchiolauncher_move_value "itchioLauncher" $legacygameslauncher_move_value "LegacyGamesLauncher" $humblegameslauncher_move_value "HumbleGamesLauncher" $indiegalalauncher_move_value "IndieGalaLauncher" $rockstargameslauncher_move_value "RockstarGamesLauncher" $glyphlauncher_move_value "GlyphLauncher" $minecraftlauncher_move_value "MinecraftLauncher" $pspluslauncher_move_value "PlaystationPlusLauncher" $dmmlauncher_move_value "DMMGameLauncher" $vkplaylauncher_move_value "VKPlayLauncher" --width=335 --height=524)
+    move_options=$(zenity --list --text="Which launcher IDs do you want to move to the SD card?" --checklist --column="Select" --column="Launcher ID" $nonsteamlauncher_move_value "NonSteamLaunchers" $epicgameslauncher_move_value "EpicGamesLauncher" $goggalaxylauncher_move_value "GogGalaxyLauncher" $uplaylauncher_move_value "UplayLauncher" $battlenetlauncher_move_value "Battle.netLauncher" $eaapplauncher_move_value "TheEAappLauncher" $amazongameslauncher_move_value "AmazonGamesLauncher" $itchiolauncher_move_value "itchioLauncher" $legacygameslauncher_move_value "LegacyGamesLauncher" $humblegameslauncher_move_value "HumbleGamesLauncher" $indiegalalauncher_move_value "IndieGalaLauncher" $rockstargameslauncher_move_value "RockstarGamesLauncher" $glyphlauncher_move_value "GlyphLauncher" $minecraftlauncher_move_value "MinecraftLauncher" $pspluslauncher_move_value "PlaystationPlusLauncher" $vkplaylauncher_move_value "VKPlayLauncher" --width=335 --height=524)
 
     if [ $? -eq 0 ]; then
         zenity --info --text="The selected directories have been moved to the SD card and symbolic links have been created." --width=200 --height=150
@@ -1370,11 +1331,6 @@ psplus_url=https://download-psplus.playstation.com/downloads/psplus/pc/latest
 # Set the path to save the Playstation Launcher to
 psplus_file=${logged_in_home}/Downloads/NonSteamLaunchersInstallation/PlayStationPlus-12.2.0.exe
 
-# Set the URL to download the Playstation Launcher file from
-dmm_url=https://apidgp-gameplayer.games.dmm.com/archive/latest?app=dgp5win
-
-# Set the path to save the Playstation Launcher to
-dmm_file=${logged_in_home}/Downloads/NonSteamLaunchersInstallation/DMMGamePlayer-Setup-5.2.16.exe
 
 # Set the URL to download the VK Play Launcher file from
 vkplay_url=https://static.gc.vkplay.ru/VKPlayLoader.exe
@@ -2120,47 +2076,7 @@ fi
 
 wait
 
-echo "97"
-echo "# Downloading & Installing DMM Games...please wait..."
 
-# Check if the user selected DMM Games Launcher
-if [[ $options == *"DMM Games"* ]]; then
-    # User selected DMM Games Launcher
-    echo "User selected DMM Games"
-
-    # Set the appid for the DMM Games Launcher
-    if [ "$use_separate_appids" = true ]; then
-    appid=DMMGameLauncher
-    else
-    appid=NonSteamLaunchers
-    fi
-
-    # Create app id folder in compatdata folder if it doesn't exist
-    if [ ! -d "${logged_in_home}/.local/share/Steam/steamapps/compatdata/$appid" ]; then
-        mkdir -p "${logged_in_home}/.local/share/Steam/steamapps/compatdata/$appid"
-    fi
-
-    # Change working directory to Proton's
-    cd $proton_dir
-
-    # Set the STEAM_COMPAT_CLIENT_INSTALL_PATH environment variable
-    export STEAM_COMPAT_CLIENT_INSTALL_PATH="${logged_in_home}/.local/share/Steam"
-
-    # Set the STEAM_COMPAT_DATA_PATH environment variable for Epic Games Launcher
-    export STEAM_COMPAT_DATA_PATH="${logged_in_home}/.local/share/Steam/steamapps/compatdata/${appid}"
-
-    # Download DMM file
-    if [ ! -f "$dmm_file" ]; then
-        echo "Downloading DMM file"
-        wget $dmm_url -O $dmm_file
-    fi
-
-    # Run the DMM file using Proton with the /passive option
-    echo "Running DMM file using Proton with the /passive option"
-    "$STEAM_RUNTIME" "$proton_dir/proton" run "$dmm_file" /q
-fi
-
-wait
 echo "98"
 echo "# Downloading & Installing VK Play...please wait..."
 
@@ -2225,7 +2141,7 @@ echo "99"
 echo "# Checking if Chrome is installed...please wait..."
 
 # Check if user selected any of the options
-if [[ $options == *"Netflix"* ]] || [[ $options == *"Xbox Game Pass"* ]] || [[ $options == *"Geforce Now"* ]] || [[ $options == *"Amazon Luna"* ]] || [[ $options == *"Hulu"* ]] || [[ $options == *"Disney+"* ]] || [[ $options == *"Amazon Prime Video"* ]] || [[ $options == *"Youtube"* ]]; then
+if [[ $options == *"Netflix"* ]] || [[ $options == *"Xbox Game Pass"* ]] || [[ $options == *"Geforce Now"* ]] || [[ $options == *"Amazon Luna"* ]] || [[ $options == *"Hulu"* ]] || [[ $options == *"Disney+"* ]] || [[ $options == *"Amazon Prime Video"* ]] || [[ $options == *"Youtube"* ]] || [[ $options == *"Twitch"* ]] || [[ $options == *"movie-web"* ]]; then
     # User selected one of the options
     echo "User selected one of the options"
 
@@ -2451,18 +2367,6 @@ elif [[ -f "$psplus_path2" ]]; then
     psplusstartingdir="\"$(dirname "$psplus_path2")\""
 fi
 
-if [[ -f "$dmm_path1" ]]; then
-    # DMM Games is installed at path 1
-    dmmshortcutdirectory="\"$dmm_path1\""
-    dmmlaunchoptions="STEAM_COMPAT_DATA_PATH=\"${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/\" %command%"
-    dmmstartingdir="\"$(dirname "$dmm_path1")\""
-elif [[ -f "$dmm_path2" ]]; then
-    # DMM Player is installed at path 2
-    dmmshortcutdirectory="\"$dmm_path2\""
-    dmmlaunchoptions="STEAM_COMPAT_DATA_PATH=\"${logged_in_home}/.local/share/Steam/steamapps/compatdata/DMMGameLauncher/\" %command%"
-    dmmstartingdir="\"$(dirname "$dmm_path2")\""
-fi
-
 if [[ -f "$vkplay_path1" ]]; then
     # VK Play is installed at path 1
     vkplayhortcutdirectory="\"$vkplay_path1\""
@@ -2474,6 +2378,8 @@ elif [[ -f "$vkplay_path2" ]]; then
     vkplaylaunchoptions="STEAM_COMPAT_DATA_PATH=\"${logged_in_home}/.local/share/Steam/steamapps/compatdata/VKPlayLauncher/\" %command%"
     vkplaystartingdir="\"$(dirname "$vkplay_path2")\""
 fi
+
+
 
 # Set Chrome options based on user's selection
 
@@ -2530,6 +2436,17 @@ if [[ $options == *"Twitch"* ]]; then
     chromedirectory="\"$chrome_path\""
     twitchchromelaunchoptions="run --branch=stable --arch=x86_64 --command=/app/bin/chrome --file-forwarding com.google.Chrome @@u @@ --window-size=1280,800 --force-device-scale-factor=1.00 --device-scale-factor=1.00 --kiosk https://www.twitch.tv/ --chrome-kiosk-type=fullscreen --no-first-run --enable-features=OverlayScrollbar"
 fi
+
+if [[ $options == *"movie-web"* ]]; then
+    # User selected Twitch
+    chromedirectory="\"$chrome_path\""
+    twitchchromelaunchoptions="run --branch=stable --arch=x86_64 --command=/app/bin/chrome --file-forwarding com.google.Chrome @@u @@ --window-size=1280,800 --force-device-scale-factor=1.00 --device-scale-factor=1.00 --kiosk https://movie-web.app/ --chrome-kiosk-type=fullscreen --no-first-run --enable-features=OverlayScrollbar"
+fi
+
+
+
+
+
 
 
 # Check if any custom websites were provided
@@ -2790,7 +2707,6 @@ rockstarshortcutdirectory = '$rockstarshortcutdirectory'
 glyphshortcutdirectory = '$glyphshortcutdirectory'
 minecraftshortcutdirectory = '$minecraftshortcutdirectory'
 psplusshortcutdirectory = '$psplusshortcutdirectory'
-dmmshortcutdirectory = '$dmmshortcutdirectory'
 vkplayhortcutdirectory = '$vkplayhortcutdirectory'
 #Streaming
 chromedirectory = '$chromedirectory'
@@ -2890,7 +2806,6 @@ create_new_entry('$rockstarshortcutdirectory', 'Rockstar Games Launcher', '$rock
 create_new_entry('$glyphshortcutdirectory', 'Glyph', '$glyphlaunchoptions', '$glyphstartingdir')
 create_new_entry('$minecraftshortcutdirectory', 'Minecraft: Java Edition', '$minecraftlaunchoptions', '$minecraftstartingdir')
 create_new_entry('$psplusshortcutdirectory', 'Playstation Plus', '$pspluslaunchoptions', '$psplusstartingdir')
-create_new_entry('$dmmshortcutdirectory', 'DMM Games', '$dmmlaunchoptions', '$dmmstartingdir')
 create_new_entry('$vkplayhortcutdirectory', 'VK Play', '$vkplaylaunchoptions', '$vkplaystartingdir')
 create_new_entry('$chromedirectory', 'Xbox Game Pass', '$xboxchromelaunchoptions', '$chrome_startdir')
 create_new_entry('$chromedirectory', 'GeForce Now', '$geforcechromelaunchoptions', '$chrome_startdir')
@@ -2901,6 +2816,7 @@ create_new_entry('$chromedirectory', 'Amazon Prime Video', '$amazonchromelauncho
 create_new_entry('$chromedirectory', 'Youtube', '$youtubechromelaunchoptions', '$chrome_startdir')
 create_new_entry('$chromedirectory', 'Amazon Luna', '$lunachromelaunchoptions', '$chrome_startdir')
 create_new_entry('$chromedirectory', 'Twitch', '$twitchchromelaunchoptions', '$chrome_startdir')
+create_new_entry('$chromedirectory', 'movie-web', '$twitchchromelaunchoptions', '$chrome_startdir')
 
 
 # Iterate over each custom website
@@ -2948,7 +2864,7 @@ with open('$shortcuts_vdf_path', 'wb') as f:
 # Writes to the config.vdf File
 
 excluded_appids = []
-streaming_sites = ['Netflix', 'Hulu', 'Disney+', 'Amazon Prime Video', 'Youtube', 'Amazon Luna', 'Twitch', 'Xbox Game Pass', 'GeForce Now']
+streaming_sites = ['Netflix', 'Hulu', 'Disney+', 'Amazon Prime Video', 'Youtube', 'movie-web', 'Amazon Luna', 'Twitch', 'Xbox Game Pass', 'GeForce Now']
 
 for app_id, name in app_id_to_name.items():
     if name in streaming_sites:
@@ -3039,9 +2955,6 @@ config['controller_config']['playstation plus'] = {
 config['controller_config']['glyph'] = {
     'template': 'controller_neptune_webbrowser.vdf'
 }
-config['controller_config']['dmm games'] = {
-    'template': 'controller_neptune_webbrowser.vdf'
-}
 config['controller_config']['vk play'] = {
     'workshop': '3202642880'
 }
@@ -3069,6 +2982,9 @@ config['controller_config']['amazon luna'] = {
 config['controller_config']['twitch'] = {
     'workshop': '2875543745'
 }
+config['controller_config']['movie-web'] = {
+    'workshop': 'controller_neptune_webbrowser.vdf'
+}
 
 # Save the updated config dictionary to the configset_controller_neptune.vdf file
 with open('$controller_config_path', 'w') as f:
@@ -3092,7 +3008,6 @@ folder_names = {
     'Rockstar Games Launcher': 'RockstarGamesLauncher',
     'Minecraft: Java Edition': 'MinecraftLauncher',
     'Playstation Plus': 'PlaystationPlusLauncher',
-    'DMM Games': 'DMMGameLauncher',
     'VK Play': 'VKPlayLauncher',
 }
 
