@@ -36,7 +36,6 @@ Supported Stores 🛍
 - Glyph ✔️
 - Minecraft ✔️
 - Playstation Plus ✔️
-- DMM Games Player ✔️
 - VK Play ✔️
 
 <h1 align="center">
@@ -53,6 +52,7 @@ Supported Streaming Sites for games and as well as any website. 🌐
 - Hulu ✔️
 - Youtube ✔️
 - Twitch ✔️
+- movies-web ✔️
 
 <h1 align="left">
 Find Games
