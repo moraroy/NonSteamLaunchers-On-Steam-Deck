@@ -12,8 +12,16 @@ from urllib.request import urlopen
 from urllib.request import urlretrieve
 import xml.etree.ElementTree as ET
 
-# Read variables from a file
-with open(f"{os.environ['HOME']}/.config/systemd/user/env_vars", 'r') as f:
+# Path to the env_vars file
+env_vars_path = f"{os.environ['HOME']}/.config/systemd/user/env_vars"
+
+# Check if the env_vars file exists
+if not os.path.exists(env_vars_path):
+    print(f"Error: {env_vars_path} does not exist.")
+    sys.exit(1)
+
+# Read variables from the file
+with open(env_vars_path, 'r') as f:
     lines = f.readlines()
 
 for line in lines:
