@@ -266,7 +266,11 @@ game_launchers = {
     'Minecraft: Java Edition',
     'Playstation Plus',
     'DMM Games',
-    'VK Play',
+    'VK Play'
+}
+
+#Chrome Based "Launchers"
+chrome_launchers = {
     'Hulu',
     'Twitch',
     'Amazon Luna',
@@ -275,8 +279,9 @@ game_launchers = {
     'Disney+',
     'Netflix',
     'GeForce Now',
-    'Xbox Game Pass'
-}  # replace with your actual game launchers
+    'Xbox Game Pass',
+    'movie-web'
+}
 
 # Mapping between shortcut names and SteamGridDB names
 name_mapping = {
@@ -316,8 +321,11 @@ for shortcut in shortcuts['shortcuts'].values():
                 # Download and apply artwork
                 get_sgdb_art(game_id, unsigned_shortcut_id)
                 new_shortcuts_added = True
-        if add_compat_tool(unsigned_shortcut_id):
-                    shortcuts_updated = True
+        # Only add compat tool if not a chrome launcher
+        if app_name not in chrome_launchers:
+            if add_compat_tool(unsigned_shortcut_id):
+                shortcuts_updated = True
+
 
 
 # End of finding the Launchers and applying artwork to already made shortcuts from NonSteamLaunchers.sh
