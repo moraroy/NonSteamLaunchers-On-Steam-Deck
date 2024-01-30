@@ -48,7 +48,18 @@ args=("$@")
 
 
 
-#Download Modules
+
+
+
+# Check if "Decky Plugin" is one of the arguments
+decky_plugin=false
+for arg in "${args[@]}"; do
+  if [ "$arg" = "Decky Plugin" ]; then
+    decky_plugin=true
+    break
+  fi
+done
+
 # Define the repository and the folders to clone
 repo_url='https://github.com/moraroy/NonSteamLaunchers-On-Steam-Deck/archive/refs/heads/main.zip'
 folders_to_clone=('requests' 'urllib3' 'steamgrid')
@@ -88,8 +99,6 @@ if [ "${folders_exist}" = false ]; then
   rm "${zip_file_path}"
   rm -r "${parent_folder}/NonSteamLaunchers-On-Steam-Deck-main"
 fi
-#End of Download Modules
-
 
 #Service File rough update
 rm -rf ${logged_in_home}/.config/systemd/user/NSLGameScanner.py
@@ -112,42 +121,26 @@ curl -o $python_script_path $github_link
 
 # Define the path to the env_vars file
 env_vars="${logged_in_home}/.config/systemd/user/env_vars"
-#End of Rough Update of the .py
 
-
-
-
-
-
-
-
-# Check if "Decky Plugin" is one of the arguments
-decky_plugin=false
-for arg in "${args[@]}"; do
-  if [ "$arg" = "Decky Plugin" ]; then
-    decky_plugin=true
-    break
-  fi
-done
-
-# If the Decky Plugin argument is set, check if the env_vars file exists
-if [ "$decky_plugin" = true ]; then
-    if [ -f "$env_vars" ]; then
-        # If the env_vars file exists, run the .py file and continue with the script
-        echo "Decky Plugin argument set and env_vars file found. Running the .py file..."
+# Check if the env_vars file exists
+if [ -f "$env_vars" ]; then
+    # If the file exists and the decky_plugin argument is set, run the .py file and then exit
+    if [ "$decky_plugin" = true ]; then
+        echo "env_vars file found and Decky Plugin argument set. Running the .py file..."
         python3 $python_script_path
-        echo "Python script ran. Continuing with the script..."
-    else
-        # If the env_vars file does not exist, exit the script
-        echo "Decky Plugin argument set but env_vars file not found. Exiting the script."
+        echo "Python script ran. Exiting the script."
         exit 0
+    else
+        # If the file exists but the decky_plugin argument is not set, run the .py file
+        echo "env_vars file found but Decky Plugin argument not set. Running the .py file..."
+        python3 $python_script_path
+        live="and is LIVE."
     fi
 else
-    # If the Decky Plugin argument is not set, continue with the script
-    echo "Decky Plugin argument not set. Continuing with the script..."
-    python3 $python_script_path
+    # If the file does not exist, do not run the .py file
+    echo "env_vars file not found. Not running the .py file."
+    live="and is NOT LIVE."
 fi
-
 
 
 
