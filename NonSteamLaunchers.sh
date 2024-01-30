@@ -1217,9 +1217,7 @@ if [ -z "$proton_dir" ]; then
     # Download specific version of GE-Proton
     echo "Downloading GE-Proton8-28"
     cd "${logged_in_home}/Downloads/NonSteamLaunchersInstallation"
-    curl -sLOJ "$(curl -s https://api.github.com/repos/GloriousEggroll/proton-ge-custom/releases/tags/8-28 | grep browser_download_url | cut -d\" -f4 | grep .tar.gz)"
-    curl -sLOJ "$(curl -s https://api.github.com/repos/GloriousEggroll/proton-ge-custom/releases/tags/8-28 | grep browser_download_url | cut -d\" -f4 | grep .sha512sum)"
-    sha512sum -c ./*.sha512sum
+    curl -sLOJ "https://github.com/GloriousEggroll/proton-ge-custom/releases/download/GE-Proton8-28/GE-Proton8-28.tar.gz"
     tar -xf GE-Proton*.tar.gz -C "${logged_in_home}/.steam/root/compatibilitytools.d/"
     proton_dir=$(find "${logged_in_home}/.steam/root/compatibilitytools.d" -maxdepth 1 -type d -name "GE-Proton*" | sort -V | tail -n1)
     echo "All done :)"
@@ -1230,9 +1228,7 @@ else
         # Download specific version of GE-Proton
         echo "Downloading GE-Proton8-28"
         cd "${logged_in_home}/Downloads/NonSteamLaunchersInstallation"
-        curl -sLOJ "$(curl -s https://api.github.com/repos/GloriousEggroll/proton-ge-custom/releases/tags/8-28 | grep browser_download_url | cut -d\" -f4 | grep .tar.gz)"
-        curl -sLOJ "$(curl -s https://api.github.com/repos/GloriousEggroll/proton-ge-custom/releases/tags/8-28 | grep browser_download_url | cut -d\" -f4 | grep .sha512sum)"
-        sha512sum -c ./*.sha512sum
+        curl -sLOJ "https://github.com/GloriousEggroll/proton-ge-custom/releases/download/GE-Proton8-28/GE-Proton8-28.tar.gz"
         tar -xf GE-Proton*.tar.gz -C "${logged_in_home}/.steam/root/compatibilitytools.d/"
         proton_dir=$(find "${logged_in_home}/.steam/root/compatibilitytools.d" -maxdepth 1 -type d -name "GE-Proton*" | sort -V | tail -n1)
         echo "All done :)"
