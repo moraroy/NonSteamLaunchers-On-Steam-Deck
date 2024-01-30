@@ -48,18 +48,7 @@ args=("$@")
 
 
 
-
-
-
-# Check if "Decky Plugin" is one of the arguments
-decky_plugin=false
-for arg in "${args[@]}"; do
-  if [ "$arg" = "Decky Plugin" ]; then
-    decky_plugin=true
-    break
-  fi
-done
-
+#Download Modules
 # Define the repository and the folders to clone
 repo_url='https://github.com/moraroy/NonSteamLaunchers-On-Steam-Deck/archive/refs/heads/main.zip'
 folders_to_clone=('requests' 'urllib3' 'steamgrid')
@@ -99,6 +88,8 @@ if [ "${folders_exist}" = false ]; then
   rm "${zip_file_path}"
   rm -r "${parent_folder}/NonSteamLaunchers-On-Steam-Deck-main"
 fi
+#End of Download Modules
+
 
 #Service File rough update
 rm -rf ${logged_in_home}/.config/systemd/user/NSLGameScanner.py
@@ -121,26 +112,42 @@ curl -o $python_script_path $github_link
 
 # Define the path to the env_vars file
 env_vars="${logged_in_home}/.config/systemd/user/env_vars"
+#End of Rough Update of the .py
 
-# Check if the env_vars file exists
-if [ -f "$env_vars" ]; then
-    # If the file exists and the decky_plugin argument is set, run the .py file and then exit
-    if [ "$decky_plugin" = true ]; then
-        echo "env_vars file found and Decky Plugin argument set. Running the .py file..."
+
+
+
+
+
+
+
+# Check if "Decky Plugin" is one of the arguments
+decky_plugin=false
+for arg in "${args[@]}"; do
+  if [ "$arg" = "Decky Plugin" ]; then
+    decky_plugin=true
+    break
+  fi
+done
+
+# If the Decky Plugin argument is set, check if the env_vars file exists
+if [ "$decky_plugin" = true ]; then
+    if [ -f "$env_vars" ]; then
+        # If the env_vars file exists, run the .py file and continue with the script
+        echo "Decky Plugin argument set and env_vars file found. Running the .py file..."
         python3 $python_script_path
-        echo "Python script ran. Exiting the script."
-        exit 0
+        echo "Python script ran. Continuing with the script..."
     else
-        # If the file exists but the decky_plugin argument is not set, run the .py file
-        echo "env_vars file found but Decky Plugin argument not set. Running the .py file..."
-        python3 $python_script_path
-        live="and is LIVE."
+        # If the env_vars file does not exist, exit the script
+        echo "Decky Plugin argument set but env_vars file not found. Exiting the script."
+        exit 0
     fi
 else
-    # If the file does not exist, do not run the .py file
-    echo "env_vars file not found. Not running the .py file."
-    live="and is NOT LIVE."
+    # If the Decky Plugin argument is not set, continue with the script
+    echo "Decky Plugin argument not set. Continuing with the script..."
+    python3 $python_script_path
 fi
+
 
 
 
@@ -1207,25 +1214,24 @@ proton_dir=$(find "${logged_in_home}/.steam/root/compatibilitytools.d" -maxdepth
 
 # Check if GE-Proton is installed
 if [ -z "$proton_dir" ]; then
-    # Download GE-Proton using the GitHub API
-    echo "Downloading GE-Proton using the GitHub API"
+    # Download specific version of GE-Proton
+    echo "Downloading GE-Proton8-28"
     cd "${logged_in_home}/Downloads/NonSteamLaunchersInstallation"
-    curl -sLOJ "$(curl -s https://api.github.com/repos/GloriousEggroll/proton-ge-custom/releases/latest | grep browser_download_url | cut -d\" -f4 | grep .tar.gz)"
-    curl -sLOJ "$(curl -s https://api.github.com/repos/GloriousEggroll/proton-ge-custom/releases/latest | grep browser_download_url | cut -d\" -f4 | grep .sha512sum)"
+    curl -sLOJ "$(curl -s https://api.github.com/repos/GloriousEggroll/proton-ge-custom/releases/tags/8-28 | grep browser_download_url | cut -d\" -f4 | grep .tar.gz)"
+    curl -sLOJ "$(curl -s https://api.github.com/repos/GloriousEggroll/proton-ge-custom/releases/tags/8-28 | grep browser_download_url | cut -d\" -f4 | grep .sha512sum)"
     sha512sum -c ./*.sha512sum
     tar -xf GE-Proton*.tar.gz -C "${logged_in_home}/.steam/root/compatibilitytools.d/"
     proton_dir=$(find "${logged_in_home}/.steam/root/compatibilitytools.d" -maxdepth 1 -type d -name "GE-Proton*" | sort -V | tail -n1)
     echo "All done :)"
 else
-    # Check if installed version is the latest version
+    # Check if installed version is the specific version
     installed_version=$(basename $proton_dir | sed 's/GE-Proton-//')
-    latest_version=$(curl -s https://api.github.com/repos/GloriousEggroll/proton-ge-custom/releases/latest | grep tag_name | cut -d '"' -f 4)
-    if [ "$installed_version" != "$latest_version" ]; then
-        # Download GE-Proton using the GitHub API
-        echo "Downloading GE-Proton using the GitHub API"
+    if [ "$installed_version" != "8-28" ]; then
+        # Download specific version of GE-Proton
+        echo "Downloading GE-Proton8-28"
         cd "${logged_in_home}/Downloads/NonSteamLaunchersInstallation"
-        curl -sLOJ "$(curl -s https://api.github.com/repos/GloriousEggroll/proton-ge-custom/releases/latest | grep browser_download_url | cut -d\" -f4 | grep .tar.gz)"
-        curl -sLOJ "$(curl -s https://api.github.com/repos/GloriousEggroll/proton-ge-custom/releases/latest | grep browser_download_url | cut -d\" -f4 | grep .sha512sum)"
+        curl -sLOJ "$(curl -s https://api.github.com/repos/GloriousEggroll/proton-ge-custom/releases/tags/8-28 | grep browser_download_url | cut -d\" -f4 | grep .tar.gz)"
+        curl -sLOJ "$(curl -s https://api.github.com/repos/GloriousEggroll/proton-ge-custom/releases/tags/8-28 | grep browser_download_url | cut -d\" -f4 | grep .sha512sum)"
         sha512sum -c ./*.sha512sum
         tar -xf GE-Proton*.tar.gz -C "${logged_in_home}/.steam/root/compatibilitytools.d/"
         proton_dir=$(find "${logged_in_home}/.steam/root/compatibilitytools.d" -maxdepth 1 -type d -name "GE-Proton*" | sort -V | tail -n1)
@@ -1238,6 +1244,7 @@ else
         fi
     done
 fi
+
 
 
 
