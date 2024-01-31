@@ -52,7 +52,7 @@ Supported Streaming Sites for games and as well as any website. 🌐
 - Hulu ✔️
 - Youtube ✔️
 - Twitch ✔️
-- movies-web ✔️
+- movie-web ✔️
 
 <h1 align="left">
 Find Games
