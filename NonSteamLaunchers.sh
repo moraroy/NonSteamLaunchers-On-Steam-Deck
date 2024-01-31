@@ -1410,7 +1410,7 @@ if [[ $options == *"Epic Games"* ]]; then
 
     # Run the MSI file using Proton with the /passive option
     echo "Running MSI file using Proton with the /passive option"
-    "$STEAM_RUNTIME" "$proton_dir/proton" run MsiExec.exe /i "$msi_file" /qn
+    "$STEAM_RUNTIME" "$proton_dir/proton" run MsiExec.exe /i "$msi_file" -opengl /qn
 fi
 
 # TODO: capture PID of each `wait` process to make sure it's not an infinite loop
