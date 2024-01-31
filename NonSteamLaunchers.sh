@@ -1214,21 +1214,26 @@ proton_dir=$(find "${logged_in_home}/.steam/root/compatibilitytools.d" -maxdepth
 
 # Check if GE-Proton is installed
 if [ -z "$proton_dir" ]; then
-    # Download specific version of GE-Proton
-    echo "Downloading GE-Proton8-28"
+    # Download GE-Proton using the GitHub API
+    echo "Downloading GE-Proton using the GitHub API"
     cd "${logged_in_home}/Downloads/NonSteamLaunchersInstallation"
-    curl -sLOJ "https://github.com/GloriousEggroll/proton-ge-custom/releases/download/GE-Proton8-28/GE-Proton8-28.tar.gz"
+    curl -sLOJ "$(curl -s https://api.github.com/repos/GloriousEggroll/proton-ge-custom/releases/latest | grep browser_download_url | cut -d\" -f4 | grep .tar.gz)"
+    curl -sLOJ "$(curl -s https://api.github.com/repos/GloriousEggroll/proton-ge-custom/releases/latest | grep browser_download_url | cut -d\" -f4 | grep .sha512sum)"
+    sha512sum -c ./*.sha512sum
     tar -xf GE-Proton*.tar.gz -C "${logged_in_home}/.steam/root/compatibilitytools.d/"
     proton_dir=$(find "${logged_in_home}/.steam/root/compatibilitytools.d" -maxdepth 1 -type d -name "GE-Proton*" | sort -V | tail -n1)
     echo "All done :)"
 else
-    # Check if installed version is the specific version
+    # Check if installed version is the latest version
     installed_version=$(basename $proton_dir | sed 's/GE-Proton-//')
-    if [ "$installed_version" != "8-28" ]; then
-        # Download specific version of GE-Proton
-        echo "Downloading GE-Proton8-28"
+    latest_version=$(curl -s https://api.github.com/repos/GloriousEggroll/proton-ge-custom/releases/latest | grep tag_name | cut -d '"' -f 4)
+    if [ "$installed_version" != "$latest_version" ]; then
+        # Download GE-Proton using the GitHub API
+        echo "Downloading GE-Proton using the GitHub API"
         cd "${logged_in_home}/Downloads/NonSteamLaunchersInstallation"
-        curl -sLOJ "https://github.com/GloriousEggroll/proton-ge-custom/releases/download/GE-Proton8-28/GE-Proton8-28.tar.gz"
+        curl -sLOJ "$(curl -s https://api.github.com/repos/GloriousEggroll/proton-ge-custom/releases/latest | grep browser_download_url | cut -d\" -f4 | grep .tar.gz)"
+        curl -sLOJ "$(curl -s https://api.github.com/repos/GloriousEggroll/proton-ge-custom/releases/latest | grep browser_download_url | cut -d\" -f4 | grep .sha512sum)"
+        sha512sum -c ./*.sha512sum
         tar -xf GE-Proton*.tar.gz -C "${logged_in_home}/.steam/root/compatibilitytools.d/"
         proton_dir=$(find "${logged_in_home}/.steam/root/compatibilitytools.d" -maxdepth 1 -type d -name "GE-Proton*" | sort -V | tail -n1)
         echo "All done :)"
@@ -1240,6 +1245,7 @@ else
         fi
     done
 fi
+
 
 
 
