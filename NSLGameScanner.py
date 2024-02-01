@@ -150,6 +150,11 @@ def download_artwork(game_id, api_key, art_type, shortcut_id, dimensions=None):
     else:
         filename = get_file_name(art_type, shortcut_id)
     file_path = f"{logged_in_home}/.steam/root/userdata/{steamid3}/config/grid/{filename}"
+    
+    directory = os.path.dirname(file_path)
+    if not os.path.exists(directory):
+        os.makedirs(directory)
+        
     if os.path.exists(file_path):
         print(f"Artwork for {game_id} already exists. Skipping download.")
         return
