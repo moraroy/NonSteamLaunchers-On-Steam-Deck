@@ -2765,9 +2765,10 @@ def create_new_entry(shortcutdirectory, appname, launchoptions, startingdir):
             }
         }
 
-        # Check if an entry with the same appid already exists
+        # Check if an entry with the same appid and appname already exists
         for key in shortcuts['shortcuts'].keys():
-            if shortcuts['shortcuts'][key]['appid'] == new_entry['appid']:
+            if (shortcuts['shortcuts'][key]['appid'] == new_entry['appid'] and
+                shortcuts['shortcuts'][key]['appname'] == new_entry['appname']):
                 # A duplicate entry exists, so don't add the new entry
                 return
 
