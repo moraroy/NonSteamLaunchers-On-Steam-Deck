@@ -65,6 +65,7 @@ Use the "Find Games" button to load [Boilr](https://github.com/PhilipK/BoilR) th
 - Ubisoft Connect 🎮
 - EA App 🎮
 - Gog Galaxy 🎮
+- Battle.net 🎮
 
 <h1 align="center">
 How to Install 🔧
