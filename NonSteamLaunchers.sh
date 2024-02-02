@@ -117,7 +117,13 @@ env_vars="${logged_in_home}/.config/systemd/user/env_vars"
 
 
 
-
+if [ -f "$env_vars" ]; then
+    echo "env_vars file found. Running the .py file."
+    live="and is LIVE."
+else
+    echo "env_vars file not found. Not Running the .py file."
+    live="and is not LIVE."
+fi
 
 
 
@@ -146,6 +152,8 @@ else
     # If the Decky Plugin argument is not set, continue with the script
     echo "Decky Plugin argument not set. Continuing with the script..."
     python3 $python_script_path
+    echo "env_vars file found. Running the .py file."
+    live="and is LIVE."
 fi
 
 
