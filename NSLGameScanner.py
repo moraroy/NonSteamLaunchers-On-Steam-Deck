@@ -8,6 +8,7 @@ import zipfile
 import time
 import sys
 import subprocess
+import sqlite3
 from urllib.request import urlopen
 from urllib.request import urlretrieve
 import xml.etree.ElementTree as ET
@@ -39,6 +40,7 @@ ubisoft_connect_launcher = os.environ.get('ubisoft_connect_launcher', '')
 ea_app_launcher = os.environ.get('ea_app_launcher', '')
 gog_galaxy_launcher = os.environ.get('gog_galaxy_launcher', '')
 bnet_launcher = os.environ.get('bnet_launcher', '')
+amazon_launcher = os.environ.get('amazon_launcher', '')
 
 # Define the parent folder
 parent_folder = f"{logged_in_home}/.config/systemd/user/Modules"
@@ -798,6 +800,77 @@ else:
 
 
 
+
+# Amazon Games Scanner
+def get_sqlite_path():
+    # Specify the full path to the SQLite file
+    path = f"{logged_in_home}/.local/share/Steam/steamapps/compatdata/{amazon_launcher}/pfx/drive_c/users/steamuser/AppData/Local/Amazon Games/Data/Games/Sql/GameInstallInfo.sqlite"
+    if os.path.exists(path):
+        return path
+    else:
+        print(f"Amazon GameInstallInfo.sqlite not found at {path}")
+        return None
+
+def get_launcher_path():
+    # Specify the full path to the Amazon Games launcher executable
+    path = f"{logged_in_home}/.local/share/Steam/steamapps/compatdata/{amazon_launcher}/pfx/drive_c/users/steamuser/AppData/Local/Amazon Games/App/Amazon Games.exe"
+    if os.path.exists(path):
+        return path
+    else:
+        print(f"Could not find Amazon Games.exe at {path}")
+        return None
+
+def get_amazon_games():
+    sqllite_path = get_sqlite_path()
+    launcher_path = get_launcher_path()
+    if sqllite_path is None or launcher_path is None:
+        print("Skipping Amazon Games Scanner due to missing paths.")
+        return []
+    result = []
+    connection = sqlite3.connect(sqllite_path)
+    cursor = connection.cursor()
+    cursor.execute("SELECT Id, ProductTitle FROM DbSet WHERE Installed = 1")
+    for row in cursor.fetchall():
+        id, title = row
+        result.append({"id": id, "title": title, "launcher_path": launcher_path})
+    return result
+
+amazon_games = get_amazon_games()
+if amazon_games:
+    for game in amazon_games:
+
+        # Initialize variables
+        display_name = game['title']
+        exe_path = f"\"{logged_in_home}/.local/share/Steam/steamapps/compatdata/{amazon_launcher}/pfx/drive_c/users/steamuser/AppData/Local/Amazon Games/App/Amazon Games.exe\""
+        start_dir = f"\"{logged_in_home}/.local/share/Steam/steamapps/compatdata/{amazon_launcher}/pfx/drive_c/users/steamuser/AppData/Local/Amazon Games/App/\""
+        launch_options = f"STEAM_COMPAT_DATA_PATH=\"{logged_in_home}/.local/share/Steam/steamapps/compatdata/{amazon_launcher}\" %command% -'amazon-games://play/{game['id']}'"
+        signed_shortcut_id = get_steam_shortcut_id(exe_path, display_name)
+        unsigned_shortcut_id = get_unsigned_shortcut_id(signed_shortcut_id)
+
+        # Check if the game already exists in the shortcuts
+        if check_if_shortcut_exists(signed_shortcut_id, display_name, exe_path, start_dir, launch_options):
+            if add_compat_tool(unsigned_shortcut_id):
+                shortcuts_updated = True
+            continue
+
+        print(f"No existing shortcut found for game {display_name}. Creating new shortcut.")
+        created_shortcuts.append(display_name)
+        shortcuts['shortcuts'][str(signed_shortcut_id)] = {
+            'appid': str(signed_shortcut_id),
+            'appname': display_name,
+            'exe': exe_path,
+            'StartDir': start_dir,
+            'icon': f"{logged_in_home}/.steam/root/userdata/{steamid3}/config/grid/{get_file_name('icons', unsigned_shortcut_id)}",
+            'LaunchOptions': launch_options,
+            'GameID': get_game_id(display_name) if get_game_id(display_name) is not None else "default_game_id"
+        }
+        new_shortcuts_added = True
+        if get_game_id(display_name) is not None:
+            get_sgdb_art(get_game_id(display_name), unsigned_shortcut_id)
+            add_compat_tool(unsigned_shortcut_id)
+
+
+#End of Amazon Games Scanner
 
 
 
