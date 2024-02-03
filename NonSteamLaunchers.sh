@@ -22,7 +22,7 @@ download_dir="${logged_in_home}/Downloads/NonSteamLaunchersInstallation"
 exec >> "${logged_in_home}/Downloads/NonSteamLaunchers-install.log" 2>&1
 
 # Version number (major.minor)
-version=v3.7
+version=v3.8
 
 # TODO: tighten logic to check whether major/minor version is up-to-date via `-eq`, `-lt`, or `-gt` operators
 # Check repo releases via GitHub API then display current stable version
@@ -2285,11 +2285,15 @@ if [[ -f "$amazongames_path1" ]]; then
     amazonshortcutdirectory="\"$amazongames_path1\""
     amazonlaunchoptions="STEAM_COMPAT_DATA_PATH=\"${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/\" %command%"
     amazonstartingdir="\"$(dirname "$amazongames_path1")\""
+    echo "export amazon_launcher=NonSteamLaunchers" >> ${logged_in_home}/.config/systemd/user/env_vars
+    echo "Amazon Games Launcher found at path 1"
 elif [[ -f "$amazongames_path2" ]]; then
     # Amazon Games Launcher is installed at path 2
     amazonshortcutdirectory="\"$amazongames_path2\""
     amazonlaunchoptions="STEAM_COMPAT_DATA_PATH=\"${logged_in_home}/.local/share/Steam/steamapps/compatdata/AmazonGamesLauncher/\" %command%"
     amazonstartingdir="\"$(dirname "$amazongames_path2")\""
+    echo "export amazon_launcher=AmazonGamesLauncher" >> ${logged_in_home}/.config/systemd/user/env_vars
+    echo "Amazon Games Launcher found at path 2"
 fi
 
 if [[ -f "$itchio_path1" ]]; then
