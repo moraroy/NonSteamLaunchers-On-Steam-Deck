@@ -101,7 +101,7 @@ How to Uninstall 🗑
 Currently Working On 👷‍♂️
 </h1>
 
-* Decky Loader Plugin ❌ 
+* Decky Loader Plugin is available [here](https://github.com/moraroy/NonSteamLaunchersDecky)
 * Integrate better with [BoilR](https://github.com/PhilipK/BoilR) ❌ 
 
 <h1 align="center">
