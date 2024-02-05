@@ -118,8 +118,8 @@ def get_unsigned_shortcut_id(signed_shortcut_id):
 api_cache = {}
 
 #API KEYS FOR NONSTEAMLAUNCHER USE ONLY
-sgdb = SteamGridDB('239745e39536fdc12bfa84ce0056b036')
-api_key = '239745e39536fdc12bfa84ce0056b036'
+sgdb = SteamGridDB('412210605b01f8777debeaec5e58e119')
+api_key = '412210605b01f8777debeaec5e58e119'
 
 #GLOBAL VARS
 created_shortcuts = []
