@@ -620,10 +620,10 @@ separate_app_ids=false
 # Check if any command line arguments were provided
 if [ ${#args[@]} -eq 0 ]; then
     # No command line arguments were provided, so display the main zenity window
-    selected_launchers=$(zenity --list --text="Which launchers do you want to download and install?" --checklist --column="$version" --column="Default = one App ID Installation, One Prefix, NonSteamLaunchers - opening this window has updated NSLGameScanner.py $live" FALSE "SEPARATE APP IDS - CHECK THIS TO SEPARATE YOUR PREFIX" $epic_games_value "$epic_games_text" $gog_galaxy_value "$gog_galaxy_text" $uplay_value "$uplay_text" $battlenet_value "$battlenet_text" $amazongames_value "$amazongames_text" $eaapp_value "$eaapp_text" $legacygames_value "$legacygames_text" $itchio_value "$itchio_text" $humblegames_value "$humblegames_text" $indiegala_value "$indiegala_text" $rockstar_value "$rockstar_text" $glyph_value "$glyph_text" $minecraft_value "$minecraft_text" $psplus_value "$psplus_text" $vkplay_value "$vkplay_text" FALSE "Xbox Game Pass" FALSE "GeForce Now" FALSE "Amazon Luna" FALSE "Netflix" FALSE "Hulu" FALSE "Disney+" FALSE "Amazon Prime Video" FALSE "movie-web" FALSE "Youtube" FALSE "Twitch" --width=580 --height=740 --extra-button="Uninstall" --extra-button="Find Games" --extra-button="Start Fresh" --extra-button="Move to SD Card" --extra-button="Stop NSLGameScanner")
+    selected_launchers=$(zenity --list --text="Which launchers do you want to download and install?" --checklist --column="$version" --column="Default = one App ID Installation, One Prefix, NonSteamLaunchers - updated the NSLGameScanner.py $live" FALSE "SEPARATE APP IDS - CHECK THIS TO SEPARATE YOUR PREFIX" $epic_games_value "$epic_games_text" $gog_galaxy_value "$gog_galaxy_text" $uplay_value "$uplay_text" $battlenet_value "$battlenet_text" $amazongames_value "$amazongames_text" $eaapp_value "$eaapp_text" $legacygames_value "$legacygames_text" $itchio_value "$itchio_text" $humblegames_value "$humblegames_text" $indiegala_value "$indiegala_text" $rockstar_value "$rockstar_text" $glyph_value "$glyph_text" $minecraft_value "$minecraft_text" $psplus_value "$psplus_text" $vkplay_value "$vkplay_text" FALSE "Xbox Game Pass" FALSE "GeForce Now" FALSE "Amazon Luna" FALSE "Netflix" FALSE "Hulu" FALSE "Disney+" FALSE "Amazon Prime Video" FALSE "movie-web" FALSE "Youtube" FALSE "Twitch" --width=800 --height=740 --extra-button="Uninstall" --extra-button="Stop NSLGameScanner" --extra-button="Start Fresh" --extra-button="Move to SD Card")
 
     # Check if the user clicked the 'Cancel' button or selected one of the extra buttons
-    if [ $? -eq 1 ] || [[ $selected_launchers == "Start Fresh" ]] || [[ $selected_launchers == "Move to SD Card" ]] || [[ $selected_launchers == "Uninstall" ]] || [[ $selected_launchers == "Find Games" ]]; then
+    if [ $? -eq 1 ] || [[ $selected_launchers == "Start Fresh" ]] || [[ $selected_launchers == "Move to SD Card" ]] || [[ $selected_launchers == "Uninstall" ]]; then
         # The user clicked the 'Cancel' button or selected one of the extra buttons, so skip prompting for custom websites
         custom_websites=()
     else
@@ -680,7 +680,7 @@ else
 fi
 
 # Check if the cancel button was clicked
-if [ $? -eq 1 ] && [[ $options != "Start Fresh" ]] && [[ $options != "Move to SD Card" ]] && [[ $options != "Uninstall" ]] && [[ $options != "Find Games" ]]; then
+if [ $? -eq 1 ] && [[ $options != "Start Fresh" ]] && [[ $options != "Move to SD Card" ]] && [[ $options != "Uninstall" ]]; then
     # The cancel button was clicked
     echo "The cancel button was clicked"
     exit 1
@@ -1177,30 +1177,7 @@ fi
 
 
 
-# Check if the user clicked the "Find Games" button
-if [[ $options == "Find Games" ]]; then
-    # The Find Games button was clicked
-    # Check if the NonSteamLaunchersInstallation directory exists
-    if [[ ! -d "$download_dir" ]]; then
-        # The directory does not exist, so create it
-        mkdir -p "$download_dir"
-    fi
 
-    # Download the latest BoilR from GitHub (Linux version)
-    mkdir -p "$download_dir"
-    cd "$download_dir"
-    wget https://github.com/PhilipK/BoilR/releases/download/v.1.9.4/linux_BoilR
-
-    # Add execute permissions to the linux_BoilR file
-    chmod +x linux_BoilR
-
-    # TODO: brittle subshell proces; should ~~create working directory variable~~ [edit: `download_dir`] and launch explicitly with `bash -c "linux_BoilR"`
-    # Run BoilR from the current directory
-    ./linux_BoilR
-
-    # Exit the script
-    exit
-fi
 
 # TODO: probably better to break this subshell into a function that can then be redirected to zenity
 # Massive subshell pipes into `zenity --progress` around L2320 for GUI rendering
