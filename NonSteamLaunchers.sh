@@ -42,11 +42,6 @@ check_for_updates() {
     fi
 }
 
-PIPE_PATH="/tmp/NSLGameScanner_pipe"
-
-if [[ ! -p $PIPE_PATH ]]; then
-    mkfifo $PIPE_PATH
-fi
 
 # Get the command line arguments
 args=("$@")
@@ -146,7 +141,13 @@ if [ "$decky_plugin" = true ]; then
     if [ -f "$env_vars" ]; then
         # If the env_vars file exists, run the .py file and continue with the script
         echo "Decky Plugin argument set and env_vars file found. Running the .py file..."
-        python3 $python_script_path
+		PIPE_PATH="/tmp/NSLGameScanner_pipe"
+
+		if [[ ! -p $PIPE_PATH ]]; then
+		    mkfifo $PIPE_PATH
+		fi
+  
+        python3 $python_script_path > $PIPE_PATH
         echo "Python script ran. Continuing with the script..."
     else
         # If the env_vars file does not exist, exit the script
