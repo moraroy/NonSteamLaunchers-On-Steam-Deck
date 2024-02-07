@@ -42,6 +42,11 @@ check_for_updates() {
     fi
 }
 
+PIPE_PATH="/tmp/NSLGameScanner_pipe"
+
+if [[ ! -p $PIPE_PATH ]]; then
+    mkfifo $PIPE_PATH
+fi
 
 # Get the command line arguments
 args=("$@")
