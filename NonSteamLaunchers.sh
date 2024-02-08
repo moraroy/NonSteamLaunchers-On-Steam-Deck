@@ -223,8 +223,6 @@ vkplay_path2="${logged_in_home}/.local/share/Steam/steamapps/compatdata/VKPlayLa
 chrome_path="/usr/bin/flatpak"
 chrome_startdir="\"/usr/bin\""
 chromedirectory="\"$chrome_path\""
-echo "export chromedirectory=$chromedirectory" >> ${logged_in_home}/.config/systemd/user/env_vars
-echo "export chrome_startdir=$chrome_startdir" >> ${logged_in_home}/.config/systemd/user/env_vars
 
 # Check if Epic Games Launcher is installed
 function CheckInstallations {
@@ -2157,6 +2155,8 @@ if [[ $options == *"Netflix"* ]] || [[ $options == *"Xbox Game Pass"* ]] || [[ $
 
         # Run the flatpak --user override command
         flatpak --user override --filesystem=/run/udev:ro com.google.Chrome
+    echo "export chromedirectory=$chromedirectory" >> ${logged_in_home}/.config/systemd/user/env_vars
+    echo "export chrome_startdir=$chrome_startdir" >> ${logged_in_home}/.config/systemd/user/env_vars
     fi
 fi
 
