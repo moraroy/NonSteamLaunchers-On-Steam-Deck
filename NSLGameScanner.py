@@ -502,7 +502,10 @@ if os.path.exists(os.path.join(compatdata_dir, 'NonSteamLaunchers')):
 # Print the existing shortcuts
 print("Existing Shortcuts:")
 for shortcut in shortcuts['shortcuts'].values():
-	print(f"AppID for {shortcut.get('appname')}: {shortcut.get('appid')}")
+    if appname is None:
+        print(f"AppID for {shortcut.get('AppName')}: {shortcut.get('appid')}")
+    else:
+        print(f"AppID for {shortcut.get('appname')}: {shortcut.get('appid')}")
 
 
 
