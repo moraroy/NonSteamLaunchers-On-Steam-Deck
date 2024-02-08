@@ -2155,8 +2155,6 @@ if [[ $options == *"Netflix"* ]] || [[ $options == *"Xbox Game Pass"* ]] || [[ $
 
         # Run the flatpak --user override command
         flatpak --user override --filesystem=/run/udev:ro com.google.Chrome
-    echo "export chromedirectory=$chromedirectory" >> ${logged_in_home}/.config/systemd/user/env_vars
-    echo "export chrome_startdir=$chrome_startdir" >> ${logged_in_home}/.config/systemd/user/env_vars
     fi
 fi
 
@@ -2719,7 +2717,8 @@ echo "export steamid3=$steamid3" >> ${logged_in_home}/.config/systemd/user/env_v
 echo "export logged_in_home=$logged_in_home" >> ${logged_in_home}/.config/systemd/user/env_vars
 echo "export compat_tool_name=$compat_tool_name" >> ${logged_in_home}/.config/systemd/user/env_vars
 echo "export python_version=$python_version" >> ${logged_in_home}/.config/systemd/user/env_vars
-
+echo "export chromedirectory=$chromedirectory" >> ${logged_in_home}/.config/systemd/user/env_vars
+echo "export chrome_startdir=$chrome_startdir" >> ${logged_in_home}/.config/systemd/user/env_vars
 
 # Detach script from Steam process
 nohup sh -c 'sleep 10; /usr/bin/steam' &
