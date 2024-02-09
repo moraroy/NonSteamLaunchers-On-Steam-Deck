@@ -86,7 +86,7 @@ How to Install 🔧
 ▶️ YouTube Tutorial 🡺🡺🡺 https://www.youtube.com/watch?v=svOj4MTEAVc 🡸🡸🡸 ▶️
 </p>
 <p align="center">
-📖 Step-by-step Article 🡺🡺🡺 [https://www.steamdeckgaming.net/post/easy-launchers-install-on-steam-deck](https://steamdeckhq.com/news/nonsteamlaunchers-adds-scan-support-launchers/] 🡸🡸🡸 📖
+📖 Step-by-step Article 🡺🡺🡺 https://www.steamdeckgaming.net/post/easy-launchers-install-on-steam-deck](https://steamdeckhq.com/news/nonsteamlaunchers-adds-scan-support-launchers/ 🡸🡸🡸 📖
 </p>
 
 <h1 align="center">
