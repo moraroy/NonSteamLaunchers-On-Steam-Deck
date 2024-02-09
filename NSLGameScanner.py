@@ -31,6 +31,12 @@ for line in lines:
     name, value = line.strip().split('=', 1)
     os.environ[name] = value
 
+# Delete env_vars entries for Chrome shortcuts so that they're only added once
+with open(env_vars_path, 'w') as f:
+    for line in lines:
+        if line.find('chromelaunchoptions') == -1 and line.find('websites_str') == -1:
+            f.write(line)
+
 # Variables from NonSteamLaunchers.sh
 steamid3 = os.environ['steamid3']
 logged_in_home = os.environ['logged_in_home']
