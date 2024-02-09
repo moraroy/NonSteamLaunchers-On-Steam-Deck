@@ -421,7 +421,8 @@ for custom_website in custom_websites:
 for launcher_name, appid in app_ids.items():
     print(f"The app ID for {launcher_name} is {appid}")
 
-
+# Get the app ID for the first launcher that the user chose to install
+appid = app_ids.get(launcher_name)
 
 
 #Create User Friendly Symlinks for the launchers
