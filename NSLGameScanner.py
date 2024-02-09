@@ -306,7 +306,7 @@ def create_new_entry(shortcutdirectory, appname, launchoptions, startingdir):
     global shortcuts_updated
     global created_shortcuts
     # Check if the launcher is installed
-    if not shortcutdirectory:
+    if not shortcutdirectory or not appname or not launchoptions or not startingdir:
         print(f"{appname} is not installed. Skipping.")
         return
     exe_path = f"{shortcutdirectory}"
