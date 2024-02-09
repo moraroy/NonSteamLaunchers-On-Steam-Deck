@@ -263,11 +263,13 @@ def is_match(name1, name2):
         return False
 
 # Add or update the proton compatibility settings
-def add_compat_tool(app_id):
+def add_compat_tool(app_id, launchoptions):
     if 'CompatToolMapping' not in config_data['InstallConfigStore']['Software']['Valve']['Steam']:
         config_data['InstallConfigStore']['Software']['Valve']['Steam']['CompatToolMapping'] = {}
         print(f"CompatToolMapping key not found in config.vdf, creating.")
     if str(app_id) in config_data['InstallConfigStore']['Software']['Valve']['Steam']['CompatToolMapping'] and config_data['InstallConfigStore']['Software']['Valve']['Steam']['CompatToolMapping'][str(app_id)]['name'] == f'{compat_tool_name}':
+        return False
+    if 'chrome' in launchoptions
         return False
     elif str(app_id) in config_data['InstallConfigStore']['Software']['Valve']['Steam']['CompatToolMapping']:
         config_data['InstallConfigStore']['Software']['Valve']['Steam']['CompatToolMapping'][str(app_id)]['name'] = f'{compat_tool_name}'
@@ -318,7 +320,7 @@ def create_new_entry(shortcutdirectory, appname, launchoptions, startingdir):
     # Check if the game already exists in the shortcuts
     if check_if_shortcut_exists(signed_shortcut_id, appname, exe_path, startingdir, launchoptions):
         # Check if proton needs applying or updating
-        if add_compat_tool(unsigned_shortcut_id):
+        if add_compat_tool(unsigned_shortcut_id, launchoptions):
             shortcuts_updated = True
         return
     #Get artwork
@@ -340,7 +342,7 @@ def create_new_entry(shortcutdirectory, appname, launchoptions, startingdir):
     print(f"Added new entry for {appname} to shortcuts.")
     new_shortcuts_added = True
     created_shortcuts.append(appname)
-    add_compat_tool(unsigned_shortcut_id)
+    add_compat_tool(unsigned_shortcut_id, launchoptions)
 
 
 create_new_entry(os.environ.get('epicshortcutdirectory'), 'Epic Games', os.environ.get('epiclaunchoptions'), os.environ.get('epicstartingdir'))
