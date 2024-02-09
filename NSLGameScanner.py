@@ -313,10 +313,10 @@ def create_new_entry(shortcutdirectory, appname, launchoptions, startingdir):
         return
     exe_path = f"{shortcutdirectory}"
     signed_shortcut_id = get_steam_shortcut_id(exe_path, appname)
+    unsigned_shortcut_id = get_unsigned_shortcut_id(signed_shortcut_id)
     # Only store the app ID for specific launchers
     if appname in ['Epic Games', 'Gog Galaxy', 'Ubisoft Connect', 'Battle.net', 'EA App', 'Amazon Games', 'itch.io', 'Legacy Games', 'Humble Bundle', 'IndieGala Client', 'Rockstar Games Launcher', 'Glyph', 'Minecraft: Java Edition', 'Playstation Plus', 'VK Play']:
-        app_ids[appname] = signed_shortcut_id
-    unsigned_shortcut_id = get_unsigned_shortcut_id(signed_shortcut_id)
+        app_ids[appname] = unsigned_shortcut_id
     # Check if the game already exists in the shortcuts
     if check_if_shortcut_exists(signed_shortcut_id, appname, exe_path, startingdir, launchoptions):
         # Check if proton needs applying or updating
