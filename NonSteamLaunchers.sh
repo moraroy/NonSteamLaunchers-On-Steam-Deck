@@ -141,7 +141,13 @@ if [ "$decky_plugin" = true ]; then
     if [ -f "$env_vars" ]; then
         # If the env_vars file exists, run the .py file and continue with the script
         echo "Decky Plugin argument set and env_vars file found. Running the .py file..."
-        python3 $python_script_path
+        PIPE_PATH="/tmp/NSLGameScanner_pipe"
+
+		if [[ ! -p $PIPE_PATH ]]; then
+		    mkfifo $PIPE_PATH
+		fi
+
+        python3 $python_script_path > $PIPE_PATH
         echo "Python script ran. Continuing with the script..."
     else
         # If the env_vars file does not exist, exit the script
@@ -216,6 +222,7 @@ vkplay_path2="${logged_in_home}/.local/share/Steam/steamapps/compatdata/VKPlayLa
 # chrome_installpath="/app/bin/chrome"
 chrome_path="/usr/bin/flatpak"
 chrome_startdir="\"/usr/bin\""
+chromedirectory="\"$chrome_path\""
 
 # Check if Epic Games Launcher is installed
 function CheckInstallations {
@@ -620,10 +627,10 @@ separate_app_ids=false
 # Check if any command line arguments were provided
 if [ ${#args[@]} -eq 0 ]; then
     # No command line arguments were provided, so display the main zenity window
-    selected_launchers=$(zenity --list --text="Which launchers do you want to download and install?" --checklist --column="$version" --column="Default = one App ID Installation, One Prefix, NonSteamLaunchers - opening this window has updated NSLGameScanner.py $live" FALSE "SEPARATE APP IDS - CHECK THIS TO SEPARATE YOUR PREFIX" $epic_games_value "$epic_games_text" $gog_galaxy_value "$gog_galaxy_text" $uplay_value "$uplay_text" $battlenet_value "$battlenet_text" $amazongames_value "$amazongames_text" $eaapp_value "$eaapp_text" $legacygames_value "$legacygames_text" $itchio_value "$itchio_text" $humblegames_value "$humblegames_text" $indiegala_value "$indiegala_text" $rockstar_value "$rockstar_text" $glyph_value "$glyph_text" $minecraft_value "$minecraft_text" $psplus_value "$psplus_text" $vkplay_value "$vkplay_text" FALSE "Xbox Game Pass" FALSE "GeForce Now" FALSE "Amazon Luna" FALSE "Netflix" FALSE "Hulu" FALSE "Disney+" FALSE "Amazon Prime Video" FALSE "movie-web" FALSE "Youtube" FALSE "Twitch" --width=580 --height=740 --extra-button="Uninstall" --extra-button="Find Games" --extra-button="Start Fresh" --extra-button="Move to SD Card" --extra-button="Stop NSLGameScanner")
+    selected_launchers=$(zenity --list --text="Which launchers do you want to download and install?" --checklist --column="$version" --column="Default = one App ID Installation, One Prefix, NonSteamLaunchers - updated the NSLGameScanner.py $live" FALSE "SEPARATE APP IDS - CHECK THIS TO SEPARATE YOUR PREFIX" $epic_games_value "$epic_games_text" $gog_galaxy_value "$gog_galaxy_text" $uplay_value "$uplay_text" $battlenet_value "$battlenet_text" $amazongames_value "$amazongames_text" $eaapp_value "$eaapp_text" $legacygames_value "$legacygames_text" $itchio_value "$itchio_text" $humblegames_value "$humblegames_text" $indiegala_value "$indiegala_text" $rockstar_value "$rockstar_text" $glyph_value "$glyph_text" $minecraft_value "$minecraft_text" $psplus_value "$psplus_text" $vkplay_value "$vkplay_text" FALSE "Xbox Game Pass" FALSE "GeForce Now" FALSE "Amazon Luna" FALSE "Netflix" FALSE "Hulu" FALSE "Disney+" FALSE "Amazon Prime Video" FALSE "movie-web" FALSE "Youtube" FALSE "Twitch" --width=800 --height=740 --extra-button="Uninstall" --extra-button="Stop NSLGameScanner" --extra-button="Start Fresh" --extra-button="Move to SD Card")
 
     # Check if the user clicked the 'Cancel' button or selected one of the extra buttons
-    if [ $? -eq 1 ] || [[ $selected_launchers == "Start Fresh" ]] || [[ $selected_launchers == "Move to SD Card" ]] || [[ $selected_launchers == "Uninstall" ]] || [[ $selected_launchers == "Find Games" ]]; then
+    if [ $? -eq 1 ] || [[ $selected_launchers == "Start Fresh" ]] || [[ $selected_launchers == "Move to SD Card" ]] || [[ $selected_launchers == "Uninstall" ]]; then
         # The user clicked the 'Cancel' button or selected one of the extra buttons, so skip prompting for custom websites
         custom_websites=()
     else
@@ -680,7 +687,7 @@ else
 fi
 
 # Check if the cancel button was clicked
-if [ $? -eq 1 ] && [[ $options != "Start Fresh" ]] && [[ $options != "Move to SD Card" ]] && [[ $options != "Uninstall" ]] && [[ $options != "Find Games" ]]; then
+if [ $? -eq 1 ] && [[ $options != "Start Fresh" ]] && [[ $options != "Move to SD Card" ]] && [[ $options != "Uninstall" ]]; then
     # The cancel button was clicked
     echo "The cancel button was clicked"
     exit 1
@@ -1174,33 +1181,6 @@ if [[ " ${args[@]} " =~ " Stop NSLGameScanner " ]] || [[ $options == "Stop NSLGa
     fi
 fi
 
-
-
-
-# Check if the user clicked the "Find Games" button
-if [[ $options == "Find Games" ]]; then
-    # The Find Games button was clicked
-    # Check if the NonSteamLaunchersInstallation directory exists
-    if [[ ! -d "$download_dir" ]]; then
-        # The directory does not exist, so create it
-        mkdir -p "$download_dir"
-    fi
-
-    # Download the latest BoilR from GitHub (Linux version)
-    mkdir -p "$download_dir"
-    cd "$download_dir"
-    wget https://github.com/PhilipK/BoilR/releases/download/v.1.9.4/linux_BoilR
-
-    # Add execute permissions to the linux_BoilR file
-    chmod +x linux_BoilR
-
-    # TODO: brittle subshell proces; should ~~create working directory variable~~ [edit: `download_dir`] and launch explicitly with `bash -c "linux_BoilR"`
-    # Run BoilR from the current directory
-    ./linux_BoilR
-
-    # Exit the script
-    exit
-fi
 
 # TODO: probably better to break this subshell into a function that can then be redirected to zenity
 # Massive subshell pipes into `zenity --progress` around L2320 for GUI rendering
@@ -2227,6 +2207,9 @@ if [[ -f "$gog_galaxy_path1" ]]; then
     gogshortcutdirectory="\"$gog_galaxy_path1\""
     goglaunchoptions="STEAM_COMPAT_DATA_PATH=\"${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/\" %command%"
     gogstartingdir="\"$(dirname "$gog_galaxy_path1")\""
+    echo "export gogshortcutdirectory=$gogshortcutdirectory" >> ${logged_in_home}/.config/systemd/user/env_vars
+    echo "export goglaunchoptions=$goglaunchoptions" >> ${logged_in_home}/.config/systemd/user/env_vars
+    echo "export gogstartingdir=$gogstartingdir" >> ${logged_in_home}/.config/systemd/user/env_vars
     echo "export gog_galaxy_launcher=NonSteamLaunchers" >> ${logged_in_home}/.config/systemd/user/env_vars
     echo "Gog Galaxy Launcher found at path 1"
 elif [[ -f "$gog_galaxy_path2" ]]; then
@@ -2234,6 +2217,9 @@ elif [[ -f "$gog_galaxy_path2" ]]; then
     gogshortcutdirectory="\"$gog_galaxy_path2\""
     goglaunchoptions="STEAM_COMPAT_DATA_PATH=\"${logged_in_home}/.local/share/Steam/steamapps/compatdata/GogGalaxyLauncher/\" %command%"
     gogstartingdir="\"$(dirname "$gog_galaxy_path2")\""
+    echo "export gogshortcutdirectory=$gogshortcutdirectory" >> ${logged_in_home}/.config/systemd/user/env_vars
+    echo "export goglaunchoptions=$goglaunchoptions" >> ${logged_in_home}/.config/systemd/user/env_vars
+    echo "export gogstartingdir=$gogstartingdir" >> ${logged_in_home}/.config/systemd/user/env_vars
     echo "export gog_galaxy_launcher=GogGalaxyLauncher" >> ${logged_in_home}/.config/systemd/user/env_vars
     echo "Gog Galaxy Launcher found at path 2"
 fi
@@ -2244,6 +2230,9 @@ if [[ -f "$uplay_path1" ]]; then
     uplayshortcutdirectory="\"$uplay_path1\""
     uplaylaunchoptions="STEAM_COMPAT_DATA_PATH=\"${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/\" %command%"
     uplaystartingdir="\"$(dirname "$uplay_path1")\""
+    echo "export uplayshortcutdirectory=$uplayshortcutdirectory" >> ${logged_in_home}/.config/systemd/user/env_vars
+    echo "export uplaylaunchoptions=$uplaylaunchoptions" >> ${logged_in_home}/.config/systemd/user/env_vars
+    echo "export uplaystartingdir=$uplaystartingdir" >> ${logged_in_home}/.config/systemd/user/env_vars
     echo "export ubisoft_connect_launcher=NonSteamLaunchers" >> ${logged_in_home}/.config/systemd/user/env_vars
     echo "Ubisoft Connect Launcher found at path 1"
 elif [[ -f "$uplay_path2" ]]; then
@@ -2251,6 +2240,9 @@ elif [[ -f "$uplay_path2" ]]; then
     uplayshortcutdirectory="\"$uplay_path2\""
     uplaylaunchoptions="STEAM_COMPAT_DATA_PATH=\"${logged_in_home}/.local/share/Steam/steamapps/compatdata/UplayLauncher/\" %command%"
     uplaystartingdir="\"$(dirname "$uplay_path2")\""
+    echo "export uplayshortcutdirectory=$uplayshortcutdirectory" >> ${logged_in_home}/.config/systemd/user/env_vars
+    echo "export uplaylaunchoptions=$uplaylaunchoptions" >> ${logged_in_home}/.config/systemd/user/env_vars
+    echo "export uplaystartingdir=$uplaystartingdir" >> ${logged_in_home}/.config/systemd/user/env_vars
     echo "export ubisoft_connect_launcher=UplayLauncher" >> ${logged_in_home}/.config/systemd/user/env_vars
     echo "Ubisoft Connect Launcher found at path 1"
 fi
@@ -2260,6 +2252,9 @@ if [[ -f "$battlenet_path1" ]]; then
     battlenetshortcutdirectory="\"$battlenet_path1\""
     battlenetlaunchoptions="STEAM_COMPAT_DATA_PATH=\"${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/\" %command%"
     battlenetstartingdir="\"$(dirname "$battlenet_path1")\""
+    echo "export battlenetshortcutdirectory=$battlenetshortcutdirectory" >> ${logged_in_home}/.config/systemd/user/env_vars
+    echo "export battlenetlaunchoptions=$battlenetlaunchoptions" >> ${logged_in_home}/.config/systemd/user/env_vars
+    echo "export battlenetstartingdir=$battlenetstartingdir" >> ${logged_in_home}/.config/systemd/user/env_vars
     echo "export bnet_launcher=NonSteamLaunchers" >> ${logged_in_home}/.config/systemd/user/env_vars
     echo "Battlenet Launcher found at path 1"
 elif [[ -f "$battlenet_path2" ]]; then
@@ -2267,6 +2262,9 @@ elif [[ -f "$battlenet_path2" ]]; then
     battlenetshortcutdirectory="\"$battlenet_path2\""
     battlenetlaunchoptions="STEAM_COMPAT_DATA_PATH=\"${logged_in_home}/.local/share/Steam/steamapps/compatdata/Battle.netLauncher/\" %command%"
     battlenetstartingdir="\"$(dirname "$battlenet_path2")\""
+    echo "export battlenetshortcutdirectory=$battlenetshortcutdirectory" >> ${logged_in_home}/.config/systemd/user/env_vars
+    echo "export battlenetlaunchoptions=$battlenetlaunchoptions" >> ${logged_in_home}/.config/systemd/user/env_vars
+    echo "export battlenetstartingdir=$battlenetstartingdir" >> ${logged_in_home}/.config/systemd/user/env_vars
     echo "export bnet_launcher=Battle.netLauncher" >> ${logged_in_home}/.config/systemd/user/env_vars
     echo "Battlenet Launcher found at path 2"
 fi
@@ -2276,6 +2274,9 @@ if [[ -f "$eaapp_path1" ]]; then
     eaappshortcutdirectory="\"$eaapp_path1\""
     eaapplaunchoptions="STEAM_COMPAT_DATA_PATH=\"${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/\" %command%"
     eaappstartingdir="\"$(dirname "$eaapp_path1")\""
+    echo "export eaappshortcutdirectory=$eaappshortcutdirectory" >> ${logged_in_home}/.config/systemd/user/env_vars
+    echo "export eaapplaunchoptions=$eaapplaunchoptions" >> ${logged_in_home}/.config/systemd/user/env_vars
+    echo "export eaappstartingdir=$eaappstartingdir" >> ${logged_in_home}/.config/systemd/user/env_vars
 	echo "export ea_app_launcher=NonSteamLaunchers" >> ${logged_in_home}/.config/systemd/user/env_vars
     echo "EA App Launcher found at path 1"
 elif [[ -f "$eaapp_path2" ]]; then
@@ -2283,6 +2284,9 @@ elif [[ -f "$eaapp_path2" ]]; then
     eaappshortcutdirectory="\"$eaapp_path2\""
     eaapplaunchoptions="STEAM_COMPAT_DATA_PATH=\"${logged_in_home}/.local/share/Steam/steamapps/compatdata/TheEAappLauncher/\" %command%"
     eaappstartingdir="\"$(dirname "$eaapp_path2")\""
+    echo "export eaappshortcutdirectory=$eaappshortcutdirectory" >> ${logged_in_home}/.config/systemd/user/env_vars
+    echo "export eaapplaunchoptions=$eaapplaunchoptions" >> ${logged_in_home}/.config/systemd/user/env_vars
+    echo "export eaappstartingdir=$eaappstartingdir" >> ${logged_in_home}/.config/systemd/user/env_vars
 	echo "export ea_app_launcher=TheEAappLauncher" >> ${logged_in_home}/.config/systemd/user/env_vars
     echo "EA App Launcher found at path 2"
 fi
@@ -2292,6 +2296,9 @@ if [[ -f "$amazongames_path1" ]]; then
     amazonshortcutdirectory="\"$amazongames_path1\""
     amazonlaunchoptions="STEAM_COMPAT_DATA_PATH=\"${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/\" %command%"
     amazonstartingdir="\"$(dirname "$amazongames_path1")\""
+    echo "export amazonshortcutdirectory=$amazonshortcutdirectory" >> ${logged_in_home}/.config/systemd/user/env_vars
+    echo "export amazonlaunchoptions=$amazonlaunchoptions" >> ${logged_in_home}/.config/systemd/user/env_vars
+    echo "export amazonstartingdir=$amazonstartingdir" >> ${logged_in_home}/.config/systemd/user/env_vars
     echo "export amazon_launcher=NonSteamLaunchers" >> ${logged_in_home}/.config/systemd/user/env_vars
     echo "Amazon Games Launcher found at path 1"
 elif [[ -f "$amazongames_path2" ]]; then
@@ -2299,6 +2306,9 @@ elif [[ -f "$amazongames_path2" ]]; then
     amazonshortcutdirectory="\"$amazongames_path2\""
     amazonlaunchoptions="STEAM_COMPAT_DATA_PATH=\"${logged_in_home}/.local/share/Steam/steamapps/compatdata/AmazonGamesLauncher/\" %command%"
     amazonstartingdir="\"$(dirname "$amazongames_path2")\""
+    echo "export amazonshortcutdirectory=$amazonshortcutdirectory" >> ${logged_in_home}/.config/systemd/user/env_vars
+    echo "export amazonlaunchoptions=$amazonlaunchoptions" >> ${logged_in_home}/.config/systemd/user/env_vars
+    echo "export amazonstartingdir=$amazonstartingdir" >> ${logged_in_home}/.config/systemd/user/env_vars
     echo "export amazon_launcher=AmazonGamesLauncher" >> ${logged_in_home}/.config/systemd/user/env_vars
     echo "Amazon Games Launcher found at path 2"
 fi
@@ -2308,11 +2318,17 @@ if [[ -f "$itchio_path1" ]]; then
     itchioshortcutdirectory="\"$itchio_path1\""
     itchiolaunchoptions="STEAM_COMPAT_DATA_PATH=\"${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/\" %command%"
     itchiostartingdir="\"$(dirname "$itchio_path1")\""
+    echo "export itchioshortcutdirectory=$itchioshortcutdirectory" >> ${logged_in_home}/.config/systemd/user/env_vars
+    echo "export itchiolaunchoptions=$itchiolaunchoptions" >> ${logged_in_home}/.config/systemd/user/env_vars
+    echo "export itchiostartingdir=$itchiostartingdir" >> ${logged_in_home}/.config/systemd/user/env_vars
 elif [[ -f "$itchio_path2" ]]; then
     # itchio Launcher is installed at path 2
     itchioshortcutdirectory="\"$itchio_path2\""
     itchiolaunchoptions="STEAM_COMPAT_DATA_PATH=\"${logged_in_home}/.local/share/Steam/steamapps/compatdata/itchioLauncher/\" %command%"
     itchiostartingdir="\"$(dirname "$itchio_path2")\""
+    echo "export itchioshortcutdirectory=$itchioshortcutdirectory" >> ${logged_in_home}/.config/systemd/user/env_vars
+    echo "export itchiolaunchoptions=$itchiolaunchoptions" >> ${logged_in_home}/.config/systemd/user/env_vars
+    echo "export itchiostartingdir=$itchiostartingdir" >> ${logged_in_home}/.config/systemd/user/env_vars
 fi
 
 if [[ -f "$legacygames_path1" ]]; then
@@ -2320,11 +2336,17 @@ if [[ -f "$legacygames_path1" ]]; then
     legacyshortcutdirectory="\"$legacygames_path1\""
     legacylaunchoptions="STEAM_COMPAT_DATA_PATH=\"${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/\" %command%"
     legacystartingdir="\"$(dirname "$legacygames_path1")\""
+    echo "export legacyshortcutdirectory=$legacyshortcutdirectory" >> ${logged_in_home}/.config/systemd/user/env_vars
+    echo "export legacylaunchoptions=$legacylaunchoptions" >> ${logged_in_home}/.config/systemd/user/env_vars
+    echo "export legacystartingdir=$legacystartingdir" >> ${logged_in_home}/.config/systemd/user/env_vars
 elif [[ -f "$legacygames_path2" ]]; then
     # Legacy Games Launcher is installed at path 2
     legacyshortcutdirectory="\"$legacygames_path2\""
     legacylaunchoptions="STEAM_COMPAT_DATA_PATH=\"${logged_in_home}/.local/share/Steam/steamapps/compatdata/LegacyGamesLauncher/\" %command%"
     legacystartingdir="\"$(dirname "$legacygames_path2")\""
+    echo "export legacyshortcutdirectory=$legacyshortcutdirectory" >> ${logged_in_home}/.config/systemd/user/env_vars
+    echo "export legacylaunchoptions=$legacylaunchoptions" >> ${logged_in_home}/.config/systemd/user/env_vars
+    echo "export legacystartingdir=$legacystartingdir" >> ${logged_in_home}/.config/systemd/user/env_vars
 fi
 
 if [[ -f "$humblegames_path1" ]]; then
@@ -2332,11 +2354,17 @@ if [[ -f "$humblegames_path1" ]]; then
     humbleshortcutdirectory="\"$humblegames_path1\""
     humblelaunchoptions="STEAM_COMPAT_DATA_PATH=\"${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/\" %command%"
     humblestartingdir="\"$(dirname "$humblegames_path1")\""
+    echo "export humbleshortcutdirectory=$humbleshortcutdirectory" >> ${logged_in_home}/.config/systemd/user/env_vars
+    echo "export humblelaunchoptions=$humblelaunchoptions" >> ${logged_in_home}/.config/systemd/user/env_vars
+    echo "export humblestartingdir=$humblestartingdir" >> ${logged_in_home}/.config/systemd/user/env_vars
 elif [[ -f "$humblegames_path2" ]]; then
     # Humble Games Launcher is installed at path 2
     humbleshortcutdirectory="\"$humblegames_path2\""
     humblelaunchoptions="STEAM_COMPAT_DATA_PATH=\"${logged_in_home}/.local/share/Steam/steamapps/compatdata/HumbleGamesLauncher/\" %command%"
     humblestartingdir="\"$(dirname "$humblegames_path2")\""
+    echo "export humbleshortcutdirectory=$humbleshortcutdirectory" >> ${logged_in_home}/.config/systemd/user/env_vars
+    echo "export humblelaunchoptions=$humblelaunchoptions" >> ${logged_in_home}/.config/systemd/user/env_vars
+    echo "export humblestartingdir=$humblestartingdir" >> ${logged_in_home}/.config/systemd/user/env_vars
 fi
 
 if [[ -f "$indiegala_path1" ]]; then
@@ -2344,11 +2372,17 @@ if [[ -f "$indiegala_path1" ]]; then
     indieshortcutdirectory="\"$indiegala_path1\""
     indielaunchoptions="STEAM_COMPAT_DATA_PATH=\"${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/\" %command%"
     indiestartingdir="\"$(dirname "$indiegala_path1")\""
+    echo "export indieshortcutdirectory=$indieshortcutdirectory" >> ${logged_in_home}/.config/systemd/user/env_vars
+    echo "export indielaunchoptions=$indielaunchoptions" >> ${logged_in_home}/.config/systemd/user/env_vars
+    echo "export indiestartingdir=$indiestartingdir" >> ${logged_in_home}/.config/systemd/user/env_vars
 elif [[ -f "$indiegala_path2" ]]; then
     # indiegala Launcher is installed at path 2
     indieshortcutdirectory="\"$indiegala_path2\""
     indielaunchoptions="STEAM_COMPAT_DATA_PATH=\"${logged_in_home}/.local/share/Steam/steamapps/compatdata/IndieGalaLauncher/\" %command%"
     indiestartingdir="\"$(dirname "$indiegala_path2")\""
+    echo "export indieshortcutdirectory=$indieshortcutdirectory" >> ${logged_in_home}/.config/systemd/user/env_vars
+    echo "export indielaunchoptions=$indielaunchoptions" >> ${logged_in_home}/.config/systemd/user/env_vars
+    echo "export indiestartingdir=$indiestartingdir" >> ${logged_in_home}/.config/systemd/user/env_vars
 fi
 
 if [[ -f "$rockstar_path1" ]]; then
@@ -2356,11 +2390,17 @@ if [[ -f "$rockstar_path1" ]]; then
     rockstarshortcutdirectory="\"$rockstar_path1\""
     rockstarlaunchoptions="STEAM_COMPAT_DATA_PATH=\"${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/\" %command%"
     rockstarstartingdir="\"$(dirname "$rockstar_path1")\""
+    echo "export rockstarshortcutdirectory=$rockstarshortcutdirectory" >> ${logged_in_home}/.config/systemd/user/env_vars
+    echo "export rockstarlaunchoptions=$rockstarlaunchoptions" >> ${logged_in_home}/.config/systemd/user/env_vars
+    echo "export rockstarstartingdir=$rockstarstartingdir" >> ${logged_in_home}/.config/systemd/user/env_vars
 elif [[ -f "$rockstar_path2" ]]; then
     # rockstar Launcher is installed at path 2
     rockstarshortcutdirectory="\"$rockstar_path2\""
     rockstarlaunchoptions="STEAM_COMPAT_DATA_PATH=\"${logged_in_home}/.local/share/Steam/steamapps/compatdata/RockstarGamesLauncher/\" %command%"
     rockstarstartingdir="\"$(dirname "$rockstar_path2")\""
+    echo "export rockstarshortcutdirectory=$rockstarshortcutdirectory" >> ${logged_in_home}/.config/systemd/user/env_vars
+    echo "export rockstarlaunchoptions=$rockstarlaunchoptions" >> ${logged_in_home}/.config/systemd/user/env_vars
+    echo "export rockstarstartingdir=$rockstarstartingdir" >> ${logged_in_home}/.config/systemd/user/env_vars
 fi
 
 if [[ -f "$glyph_path1" ]]; then
@@ -2368,11 +2408,17 @@ if [[ -f "$glyph_path1" ]]; then
     glyphshortcutdirectory="\"$glyph_path1\""
     glyphlaunchoptions="STEAM_COMPAT_DATA_PATH=\"${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/\" %command%"
     glyphstartingdir="\"$(dirname "$glyph_path1")\""
+    echo "export glyphshortcutdirectory=$glyphshortcutdirectory" >> ${logged_in_home}/.config/systemd/user/env_vars
+    echo "export glyphlaunchoptions=$glyphlaunchoptions" >> ${logged_in_home}/.config/systemd/user/env_vars
+    echo "export glyphstartingdir=$glyphstartingdir" >> ${logged_in_home}/.config/systemd/user/env_vars
 elif [[ -f "$glyph_path2" ]]; then
     # Glyph is installed at path 2
     glyphshortcutdirectory="\"$glyph_path2\""
     glyphlaunchoptions="STEAM_COMPAT_DATA_PATH=\"${logged_in_home}/.local/share/Steam/steamapps/compatdata/GlyphLauncher/\" %command%"
     glyphstartingdir="\"$(dirname "$glyph_path2")\""
+    echo "export glyphshortcutdirectory=$glyphshortcutdirectory" >> ${logged_in_home}/.config/systemd/user/env_vars
+    echo "export glyphlaunchoptions=$glyphlaunchoptions" >> ${logged_in_home}/.config/systemd/user/env_vars
+    echo "export glyphstartingdir=$glyphstartingdir" >> ${logged_in_home}/.config/systemd/user/env_vars
 fi
 
 if [[ -f "$minecraft_path1" ]]; then
@@ -2380,11 +2426,17 @@ if [[ -f "$minecraft_path1" ]]; then
     minecraftshortcutdirectory="\"$minecraft_path1\""
     minecraftlaunchoptions="STEAM_COMPAT_DATA_PATH=\"${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/\" %command%"
     minecraftstartingdir="\"$(dirname "$minecraft_path1")\""
+    echo "export minecraftshortcutdirectory=$minecraftshortcutdirectory" >> ${logged_in_home}/.config/systemd/user/env_vars
+    echo "export minecraftlaunchoptions=$minecraftlaunchoptions" >> ${logged_in_home}/.config/systemd/user/env_vars
+    echo "export minecraftstartingdir=$minecraftstartingdir" >> ${logged_in_home}/.config/systemd/user/env_vars
 elif [[ -f "$minecraft_path2" ]]; then
     # Minecraft is installed at path 2
     minecraftshortcutdirectory="\"$minecraft_path2\""
     minecraftlaunchoptions="STEAM_COMPAT_DATA_PATH=\"${logged_in_home}/.local/share/Steam/steamapps/compatdata/MinecraftLauncher/\" %command%"
     minecraftstartingdir="\"$(dirname "$minecraft_path1")\""
+    echo "export minecraftshortcutdirectory=$minecraftshortcutdirectory" >> ${logged_in_home}/.config/systemd/user/env_vars
+    echo "export minecraftlaunchoptions=$minecraftlaunchoptions" >> ${logged_in_home}/.config/systemd/user/env_vars
+    echo "export minecraftstartingdir=$minecraftstartingdir" >> ${logged_in_home}/.config/systemd/user/env_vars
 fi
 
 if [[ -f "$psplus_path1" ]]; then
@@ -2392,11 +2444,17 @@ if [[ -f "$psplus_path1" ]]; then
     psplusshortcutdirectory="\"$psplus_path1\""
     pspluslaunchoptions="STEAM_COMPAT_DATA_PATH=\"${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/\" %command%"
     psplusstartingdir="\"$(dirname "$psplus_path1")\""
+    echo "export psplusshortcutdirectory=$psplusshortcutdirectory" >> ${logged_in_home}/.config/systemd/user/env_vars
+    echo "export pspluslaunchoptions=$pspluslaunchoptions" >> ${logged_in_home}/.config/systemd/user/env_vars
+    echo "export psplusstartingdir=$psplusstartingdir" >> ${logged_in_home}/.config/systemd/user/env_vars
 elif [[ -f "$psplus_path2" ]]; then
     # Playstation is installed at path 2
     psplusshortcutdirectory="\"$psplus_path2\""
     pspluslaunchoptions="STEAM_COMPAT_DATA_PATH=\"${logged_in_home}/.local/share/Steam/steamapps/compatdata/PlaystationPlusLauncher/\" %command%"
     psplusstartingdir="\"$(dirname "$psplus_path2")\""
+    echo "export psplusshortcutdirectory=$psplusshortcutdirectory" >> ${logged_in_home}/.config/systemd/user/env_vars
+    echo "export pspluslaunchoptions=$pspluslaunchoptions" >> ${logged_in_home}/.config/systemd/user/env_vars
+    echo "export psplusstartingdir=$psplusstartingdir" >> ${logged_in_home}/.config/systemd/user/env_vars
 fi
 
 if [[ -f "$vkplay_path1" ]]; then
@@ -2404,11 +2462,17 @@ if [[ -f "$vkplay_path1" ]]; then
     vkplayhortcutdirectory="\"$vkplay_path1\""
     vkplaylaunchoptions="STEAM_COMPAT_DATA_PATH=\"${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/\" %command%"
     vkplaystartingdir="\"$(dirname "$vkplay_path1")\""
+    echo "export vkplayshortcutdirectory=$vkplayshortcutdirectory" >> ${logged_in_home}/.config/systemd/user/env_vars
+    echo "export vkplaylaunchoptions=$vkplaylaunchoptions" >> ${logged_in_home}/.config/systemd/user/env_vars
+    echo "export vkplaystartingdir=$vkplaystartingdir" >> ${logged_in_home}/.config/systemd/user/env_vars
 elif [[ -f "$vkplay_path2" ]]; then
     # VK Play is installed at path 2
     vkplayhortcutdirectory="\"$vkplay_path2\""
     vkplaylaunchoptions="STEAM_COMPAT_DATA_PATH=\"${logged_in_home}/.local/share/Steam/steamapps/compatdata/VKPlayLauncher/\" %command%"
     vkplaystartingdir="\"$(dirname "$vkplay_path2")\""
+    echo "export vkplayshortcutdirectory=$vkplayshortcutdirectory" >> ${logged_in_home}/.config/systemd/user/env_vars
+    echo "export vkplaylaunchoptions=$vkplaylaunchoptions" >> ${logged_in_home}/.config/systemd/user/env_vars
+    echo "export vkplaystartingdir=$vkplaystartingdir" >> ${logged_in_home}/.config/systemd/user/env_vars
 fi
 
 
@@ -2417,62 +2481,62 @@ fi
 
 if [[ $options == *"Xbox Game Pass"* ]]; then
     # User selected Xbox Game Pass
-    chromedirectory="\"$chrome_path\""
     xboxchromelaunchoptions="run --branch=stable --arch=x86_64 --command=/app/bin/chrome --file-forwarding com.google.Chrome @@u @@ --window-size=1280,800 --force-device-scale-factor=1.00 --device-scale-factor=1.00 --kiosk https://www.xbox.com/play --chrome-kiosk-type=fullscreen --no-first-run --enable-features=OverlayScrollbar"
+    echo "export xboxchromelaunchoptions=$xboxchromelaunchoptions" >> ${logged_in_home}/.config/systemd/user/env_vars
 fi
 
 if [[ $options == *"Netflix"* ]]; then
     # User selected Netflix
-    chromedirectory="\"$chrome_path\""
     netlfixchromelaunchoptions="run --branch=stable --arch=x86_64 --command=/app/bin/chrome --file-forwarding com.google.Chrome @@u @@ --window-size=1280,800 --force-device-scale-factor=1.00 --device-scale-factor=1.00 --kiosk https://www.netflix.com --chrome-kiosk-type=fullscreen --no-first-run --enable-features=OverlayScrollbar"
+    echo "export netflixchromelaunchoptions=$netflixchromelaunchoptions" >> ${logged_in_home}/.config/systemd/user/env_vars
 fi
 
 if [[ $options == *"GeForce Now"* ]]; then
     # User selected GeForce Now
-    chromedirectory="\"$chrome_path\""
     geforcechromelaunchoptions="run --branch=stable --arch=x86_64 --command=/app/bin/chrome --file-forwarding com.google.Chrome @@u @@ --window-size=1280,800 --force-device-scale-factor=1.00 --device-scale-factor=1.00 --kiosk https://play.geforcenow.com --chrome-kiosk-type=fullscreen --no-first-run --enable-features=OverlayScrollbar"
+    echo "export geforcechromelaunchoptions=$geforcechromelaunchoptions" >> ${logged_in_home}/.config/systemd/user/env_vars
 fi
 
 if [[ $options == *"Hulu"* ]]; then
     # User selected Hulu
-    chromedirectory="\"$chrome_path\""
     huluchromelaunchoptions="run --branch=stable --arch=x86_64 --command=/app/bin/chrome --file-forwarding com.google.Chrome @@u @@ --window-size=1280,800 --force-device-scale-factor=1.00 --device-scale-factor=1.00 --kiosk https://www.hulu.com/welcome --chrome-kiosk-type=fullscreen --no-first-run --enable-features=OverlayScrollbar"
+    echo "export huluchromelaunchoptions=$huluchromelaunchoptions" >> ${logged_in_home}/.config/systemd/user/env_vars
 fi
 
 if [[ $options == *"Disney+"* ]]; then
     # User selected Disney+
-    chromedirectory="\"$chrome_path\""
     disneychromelaunchoptions="run --branch=stable --arch=x86_64 --command=/app/bin/chrome --file-forwarding com.google.Chrome @@u @@ --window-size=1280,800 --force-device-scale-factor=1.00 --device-scale-factor=1.00 --kiosk https://www.disneyplus.com --chrome-kiosk-type=fullscreen --no-first-run --enable-features=OverlayScrollbar"
+    echo "export disneychromelaunchoptions=$disneychromelaunchoptions" >> ${logged_in_home}/.config/systemd/user/env_vars
 fi
 
 if [[ $options == *"Amazon Prime Video"* ]]; then
     # User selected Amazon Prime Video
-    chromedirectory="\"$chrome_path\""
     amazonchromelaunchoptions="run --branch=stable --arch=x86_64 --command=/app/bin/chrome --file-forwarding com.google.Chrome @@u @@ --window-size=1280,800 --force-device-scale-factor=1.00 --device-scale-factor=1.00 --kiosk https://www.amazon.com/primevideo --chrome-kiosk-type=fullscreen --no-first-run --enable-features=OverlayScrollbar"
+    echo "export amazonchromelaunchoptions=$amazonchromelaunchoptions" >> ${logged_in_home}/.config/systemd/user/env_vars
 fi
 
 if [[ $options == *"Youtube"* ]]; then
     # User selected Youtube
-    chromedirectory="\"$chrome_path\""
     youtubechromelaunchoptions="run --branch=stable --arch=x86_64 --command=/app/bin/chrome --file-forwarding com.google.Chrome @@u @@ --window-size=1280,800 --force-device-scale-factor=1.00 --device-scale-factor=1.00 --kiosk https://www.youtube.com --chrome-kiosk-type=fullscreen --no-first-run --enable-features=OverlayScrollbar"
+    echo "export youtubechromelaunchoptions=$youtubechromelaunchoptions" >> ${logged_in_home}/.config/systemd/user/env_vars
 fi
 
 if [[ $options == *"Amazon Luna"* ]]; then
     # User selected Amazon Luna
-    chromedirectory="\"$chrome_path\""
     lunachromelaunchoptions="run --branch=stable --arch=x86_64 --command=/app/bin/chrome --file-forwarding com.google.Chrome @@u @@ --window-size=1280,800 --force-device-scale-factor=1.00 --device-scale-factor=1.00 --kiosk https://luna.amazon.com/ --chrome-kiosk-type=fullscreen --no-first-run --enable-features=OverlayScrollbar"
+    echo "export lunachromelaunchoptions=$lunachromelaunchoptions" >> ${logged_in_home}/.config/systemd/user/env_vars
 fi
 
 if [[ $options == *"Twitch"* ]]; then
     # User selected Twitch
-    chromedirectory="\"$chrome_path\""
     twitchchromelaunchoptions="run --branch=stable --arch=x86_64 --command=/app/bin/chrome --file-forwarding com.google.Chrome @@u @@ --window-size=1280,800 --force-device-scale-factor=1.00 --device-scale-factor=1.00 --kiosk https://www.twitch.tv/ --chrome-kiosk-type=fullscreen --no-first-run --enable-features=OverlayScrollbar"
+    echo "export twitchhromelaunchoptions=$twitchchromelaunchoptions" >> ${logged_in_home}/.config/systemd/user/env_vars
 fi
 
 if [[ $options == *"movie-web"* ]]; then
     # User selected movie-web
-    chromedirectory="\"$chrome_path\""
     moviewebchromelaunchoptions="run --branch=stable --arch=x86_64 --command=/app/bin/chrome --file-forwarding com.google.Chrome @@u @@ --window-size=1280,800 --force-device-scale-factor=1.00 --device-scale-factor=1.00 --kiosk https://movie-web.app/ --chrome-kiosk-type=fullscreen --no-first-run --enable-features=OverlayScrollbar"
+    echo "export moviewebchromelaunchoptions=$moviewebchromelaunchoptions" >> ${logged_in_home}/.config/systemd/user/env_vars
 fi
 
 
@@ -2484,8 +2548,6 @@ fi
 # Check if any custom websites were provided
 if [ ${#custom_websites[@]} -gt 0 ]; then
     # User entered one or more custom websites
-    # Set the chromedirectory variable
-    chromedirectory="\"$chrome_path\""
 
     # Convert the custom_websites array to a string
     custom_websites_str=$(IFS=", "; echo "${custom_websites[*]}")
@@ -2508,10 +2570,6 @@ if [ ${#custom_websites[@]} -gt 0 ]; then
 
         # Capitalize the first letter of the website name
         website_name="$(tr '[:lower:]' '[:upper:]' <<< "${website_name:0:1}")${website_name:1}"
-
-        # TODO: `chromelaunchoptions` is unused (SC2034)
-        # Set the chromelaunchoptions variable for this website
-        chromelaunchoptions="run --branch=stable --arch=x86_64 --command=/app/bin/chrome --file-forwarding com.google.Chrome @@u @@ --window-size=1280,800 --force-device-scale-factor=1.00 --device-scale-factor=1.00 --kiosk https://$clean_website/ --chrome-kiosk-type=fullscreen --no-first-run --enable-features=OverlayScrollbar"
     done
 fi
 
@@ -2659,7 +2717,8 @@ echo "export steamid3=$steamid3" >> ${logged_in_home}/.config/systemd/user/env_v
 echo "export logged_in_home=$logged_in_home" >> ${logged_in_home}/.config/systemd/user/env_vars
 echo "export compat_tool_name=$compat_tool_name" >> ${logged_in_home}/.config/systemd/user/env_vars
 echo "export python_version=$python_version" >> ${logged_in_home}/.config/systemd/user/env_vars
-
+echo "export chromedirectory=$chromedirectory" >> ${logged_in_home}/.config/systemd/user/env_vars
+echo "export chrome_startdir=$chrome_startdir" >> ${logged_in_home}/.config/systemd/user/env_vars
 
 # Detach script from Steam process
 nohup sh -c 'sleep 10; /usr/bin/steam' &
