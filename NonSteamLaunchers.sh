@@ -2551,26 +2551,7 @@ if [ ${#custom_websites[@]} -gt 0 ]; then
 
     # Convert the custom_websites array to a string
     custom_websites_str=$(IFS=", "; echo "${custom_websites[*]}")
-
-    # Iterate over each custom website
-    for custom_website in "${custom_websites[@]}"; do
-        # Remove any leading or trailing spaces from the custom website URL
-        custom_website="$(echo -e "${custom_website}" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')"
-
-        # Remove the 'http://' or 'https://' prefix and the 'www.' prefix, if present
-        clean_website="${custom_website#http://}"
-        clean_website="${clean_website#https://}"
-        clean_website="${clean_website#www.}"
-
-        # Extract the name of the website by removing everything after the first '/'
-        website_name="${clean_website%%/*}"
-
-        # Remove the top-level domain (e.g. '.com') from the website name
-        website_name="${website_name%.*}"
-
-        # Capitalize the first letter of the website name
-        website_name="$(tr '[:lower:]' '[:upper:]' <<< "${website_name:0:1}")${website_name:1}"
-    done
+    echo "export custom_websites_str=$custom_websites_str" >> ${logged_in_home}/.config/systemd/user/env_vars
 fi
 
 # Create the download directory if it doesn't exist
