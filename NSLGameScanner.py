@@ -262,6 +262,7 @@ def is_match(name1, name2):
     else:
         return False
 
+# Add or update the proton compatibility settings
 def add_compat_tool(app_id):
     if 'CompatToolMapping' not in config_data['InstallConfigStore']['Software']['Valve']['Steam']:
         config_data['InstallConfigStore']['Software']['Valve']['Steam']['CompatToolMapping'] = {}
@@ -282,16 +283,13 @@ def add_compat_tool(app_id):
 def check_if_shortcut_exists(shortcut_id, display_name, exe_path, start_dir, launch_options):
     # Check if the game already exists in the shortcuts using the id
     if any(s.get('appid') == shortcut_id for s in shortcuts['shortcuts'].values()):
-        print(f"Existing shortcut found based on shortcut ID for game {display_name}. Skipping.")
+        print(f"Existing shortcut found based on shortcut ID for game {display_name}. Skipping creation.")
         return True
     # Check if the game already exists in the shortcuts using the fields (probably unnecessary)
     if any(s.get('appname') == display_name and s.get('exe') == exe_path and s.get('StartDir') == start_dir and s.get('LaunchOptions') == launch_options for s in shortcuts['shortcuts'].values()):
-        print(f"Existing shortcut found based on matching fields for game {display_name}. Skipping.")
+        print(f"Existing shortcut found based on matching fields for game {display_name}. Skipping creation.")
         return True
 #End of Code
-
-
-
 
 
 #Start of Refactoring code from the .sh file
@@ -301,36 +299,34 @@ print(sys.path)
 
 # Create an empty dictionary to store the app IDs
 app_ids = {}
+
 #Create Launcher Shortcuts
 def create_new_entry(shortcutdirectory, appname, launchoptions, startingdir):
-    print(f"Creating new entry for {appname}...")
-    print(f"Shortcut directory: {shortcutdirectory}")
-    print(f"Launch options: {launchoptions}")
-    print(f"Starting directory: {startingdir}")
+    global new_shortcuts_added
+    global shortcuts_updated
+    global created_shortcuts
     # Check if the launcher is installed
     if not shortcutdirectory:
         print(f"{appname} is not installed. Skipping.")
         return
-    # Check if the game already exists in the shortcuts
-    exe_path = f"\"{shortcutdirectory}\""
+    exe_path = f"{shortcutdirectory}"
     signed_shortcut_id = get_steam_shortcut_id(exe_path, appname)
-    print(f"Signed shortcut ID for {appname}: {signed_shortcut_id}")
     # Only store the app ID for specific launchers
     if appname in ['Epic Games', 'Gog Galaxy', 'Ubisoft Connect', 'Battle.net', 'EA App', 'Amazon Games', 'itch.io', 'Legacy Games', 'Humble Bundle', 'IndieGala Client', 'Rockstar Games Launcher', 'Glyph', 'Minecraft: Java Edition', 'Playstation Plus', 'VK Play']:
         app_ids[appname] = signed_shortcut_id
-        print(f"Stored app ID for {appname}: {signed_shortcut_id}")
     unsigned_shortcut_id = get_unsigned_shortcut_id(signed_shortcut_id)
-    print(f"Unsigned shortcut ID for {appname}: {unsigned_shortcut_id}")
+    # Check if the game already exists in the shortcuts
     if check_if_shortcut_exists(signed_shortcut_id, appname, exe_path, startingdir, launchoptions):
-        print(f"Shortcut already exists for {appname}.")
+        # Check if proton needs applying or updating
         if add_compat_tool(unsigned_shortcut_id):
-            print(f"Added compatibility tool for {appname}.")
             shortcuts_updated = True
         return
+    #Get artwork
+    game_id = get_game_id(appname)
+    if game_id is not None:
+        get_sgdb_art(game_id, unsigned_shortcut_id)
 
     # Create a new entry for the Steam shortcut
-    game_id = get_game_id(appname)
-    print(f"Game ID for {appname}: {game_id}")
     new_entry = {
         'appid': str(signed_shortcut_id),
         'appname': appname,
@@ -338,20 +334,13 @@ def create_new_entry(shortcutdirectory, appname, launchoptions, startingdir):
         'StartDir': startingdir,
         'icon': f"{logged_in_home}/.steam/root/userdata/{steamid3}/config/grid/{get_file_name('icons', unsigned_shortcut_id)}",
         'LaunchOptions': launchoptions,
-        'GameID': game_id if game_id is not None else "default_game_id"
     }
-
-    # Add the new entry to the shortcuts dictionary
+    # Add the new entry to the shortcuts dictionary and add proton
     shortcuts['shortcuts'][str(signed_shortcut_id)] = new_entry
     print(f"Added new entry for {appname} to shortcuts.")
     new_shortcuts_added = True
-    if game_id is not None:
-        get_sgdb_art(game_id, unsigned_shortcut_id)
+    created_shortcuts.append(appname)
     add_compat_tool(unsigned_shortcut_id)
-
-
-
-
 
 
 create_new_entry(os.environ.get('epicshortcutdirectory'), 'Epic Games', os.environ.get('epiclaunchoptions'), os.environ.get('epicstartingdir'))
@@ -431,8 +420,7 @@ for launcher_name, appid in app_ids.items():
     print(f"The app ID for {launcher_name} is {appid}")
 
 
-
-# Get the app ID for the first launcher that the user chose to instally
+# Get the app ID for the first launcher that the user chose to install
 appid = app_ids.get(launcher_name)
 
 #Create User Friendly Symlinks for the launchers
@@ -514,7 +502,10 @@ if os.path.exists(os.path.join(compatdata_dir, 'NonSteamLaunchers')):
 # Print the existing shortcuts
 print("Existing Shortcuts:")
 for shortcut in shortcuts['shortcuts'].values():
-	print(f"AppID for {shortcut.get('appname')}: {shortcut.get('appid')}")
+    if shortcut.get('appname') is None:
+        print(f"AppID for {shortcut.get('AppName')}: {shortcut.get('appid')}")
+    else:
+        print(f"AppID for {shortcut.get('appname')}: {shortcut.get('appid')}")
 
 
 
@@ -541,36 +532,11 @@ if os.path.exists(dat_file_path) and os.path.exists(item_dir):
             exe_path = f"\"{logged_in_home}/.local/share/Steam/steamapps/compatdata/{epic_games_launcher}/pfx/drive_c/Program Files (x86)/Epic Games/Launcher/Portal/Binaries/Win32/EpicGamesLauncher.exe\""
             start_dir = f"\"{logged_in_home}/.local/share/Steam/steamapps/compatdata/{epic_games_launcher}/pfx/drive_c/Program Files (x86)/Epic Games/Launcher/Portal/Binaries/Win32/\""
             launch_options = f"STEAM_COMPAT_DATA_PATH=\"{logged_in_home}/.local/share/Steam/steamapps/compatdata/{epic_games_launcher}\" %command% -'com.epicgames.launcher://apps/{app_name}?action=launch&silent=true'"
-            signed_shortcut_id = get_steam_shortcut_id(exe_path, display_name)
-            unsigned_shortcut_id = get_unsigned_shortcut_id(signed_shortcut_id)
-            # Check if the game already exists in the shortcuts
-            if check_if_shortcut_exists(signed_shortcut_id, display_name, exe_path, start_dir, launch_options):
-                if add_compat_tool(unsigned_shortcut_id):
-                    shortcuts_updated = True
-                continue
-
 
             # Check if the game is still installed
             for game in dat_data['InstallationList']:
-                print(f"Checking game: {game['AppName']}")
                 if game['AppName'] == item_data['AppName']:
-                    print(f"Match found: {game['AppName']}")
-                    game_id = get_game_id(display_name)
-                    print(f"No existing shortcut found for game {display_name}. Creating new shortcut.")
-                    created_shortcuts.append(display_name)
-                    shortcuts['shortcuts'][str(signed_shortcut_id)] = {
-                        'appid': str(signed_shortcut_id),
-                        'appname': display_name,
-                        'exe': exe_path,
-                        'StartDir': start_dir,
-                        'icon': f"{logged_in_home}/.steam/root/userdata/{steamid3}/config/grid/{get_file_name('icons', unsigned_shortcut_id)}",
-                        'LaunchOptions': launch_options,
-                        'GameID': game_id if game_id is not None else "default_game_id"
-                    }
-                    new_shortcuts_added = True
-                    if game_id is not None:
-                        get_sgdb_art(game_id, unsigned_shortcut_id)
-                    add_compat_tool(unsigned_shortcut_id)
+                    create_new_entry(exe_path, display_name, launch_options, start_dir)
 
 else:
     print("Epic Games Launcher data not found. Skipping Epic Games Scanner.")
@@ -626,28 +592,7 @@ else:
             launch_options = f"STEAM_COMPAT_DATA_PATH=\"{logged_in_home}/.local/share/Steam/steamapps/compatdata/{ubisoft_connect_launcher}/\" %command% \"uplay://launch/{uplay_id}/0\""
             exe_path = f"\"{logged_in_home}/.local/share/Steam/steamapps/compatdata/{ubisoft_connect_launcher}/pfx/drive_c/Program Files (x86)/Ubisoft/Ubisoft Game Launcher/upc.exe\""
             start_dir = f"\"{logged_in_home}/.local/share/Steam/steamapps/compatdata/{ubisoft_connect_launcher}/pfx/drive_c/Program Files (x86)/Ubisoft/Ubisoft Game Launcher/\""
-            signed_shortcut_id = get_steam_shortcut_id(exe_path, game)
-            unsigned_shortcut_id = get_unsigned_shortcut_id(signed_shortcut_id)
-            # Check if the game already exists in the shortcuts
-            if check_if_shortcut_exists(signed_shortcut_id, game, exe_path, start_dir, launch_options):
-                if add_compat_tool(unsigned_shortcut_id):
-                    shortcuts_updated = True
-                continue
-
-            game_id = get_game_id(game)
-            if game_id is not None:
-                get_sgdb_art(game_id, unsigned_shortcut_id)
-            new_shortcuts_added = True
-            created_shortcuts.append(game)
-            shortcuts['shortcuts'][str(len(shortcuts['shortcuts']))] = {
-                'appid': str(signed_shortcut_id),
-                'appname': game,
-                'exe': exe_path,
-                'StartDir': start_dir,
-                'LaunchOptions': launch_options,
-                'icon': f"{logged_in_home}/.steam/root/userdata/{steamid3}/config/grid/{get_file_name('icons', unsigned_shortcut_id)}"
-            }
-            add_compat_tool(unsigned_shortcut_id)
+            create_new_entry(exe_path, game, launch_options, start_dir)
 
 # End of Ubisoft Game Scanner
 
@@ -691,29 +636,7 @@ else:
         launch_options = f"STEAM_COMPAT_DATA_PATH=\"{logged_in_home}/.local/share/Steam/steamapps/compatdata/{ea_app_launcher}/\" %command% \"origin2://game/launch?offerIds={ea_ids}\""
         exe_path = f"\"{logged_in_home}/.local/share/Steam/steamapps/compatdata/{ea_app_launcher}/pfx/drive_c/Program Files/Electronic Arts/EA Desktop/EA Desktop/EALaunchHelper.exe\""
         start_dir = f"\"{logged_in_home}/.local/share/Steam/steamapps/compatdata/{ea_app_launcher}/pfx/drive_c/Program Files/Electronic Arts/EA Desktop/EA Desktop/\""
-        signed_shortcut_id = get_steam_shortcut_id(exe_path, game)
-        unsigned_shortcut_id = get_unsigned_shortcut_id(signed_shortcut_id)
-        # Check if the game already exists in the shortcuts
-        if check_if_shortcut_exists(signed_shortcut_id, game, exe_path, start_dir, launch_options):
-            if add_compat_tool(unsigned_shortcut_id):
-                shortcuts_updated = True
-            continue
-
-        game_id = get_game_id(game)
-        if game_id is not None:
-            get_sgdb_art(game_id, unsigned_shortcut_id)
-        # Check if the game already exists in the shortcuts
-        new_shortcuts_added = True
-        created_shortcuts.append(game)
-        shortcuts['shortcuts'][str(len(shortcuts['shortcuts']))] = {
-            'appid': str(signed_shortcut_id),
-            'appname': game,
-            'exe': exe_path,
-            'StartDir': start_dir,
-            'LaunchOptions': launch_options,
-            'icon': f"{logged_in_home}/.steam/root/userdata/{steamid3}/config/grid/{get_file_name('icons', unsigned_shortcut_id)}"
-        }
-        add_compat_tool(unsigned_shortcut_id)
+        create_new_entry(exe_path, game, launch_options, start_dir)
 
 #End of EA App Scanner
 
@@ -744,7 +667,7 @@ def getGogGameInfo(filePath):
                     game_name = re.findall(r'\"(.+?)\"', split_line[1])
                     if game_name:
                         game_name = game_name[0]
-                if "exe" in line and "GOG Galaxy" in line:
+                if "exe" in line and "GOG Galaxy" in line and not "unins000.exe" in line:
                     exe_path = re.findall(r'\"(.+?)\"', split_line[1])
                     if exe_path:
                         exe_path = exe_path[0].replace('\\\\', '\\')
@@ -772,34 +695,9 @@ else:
             launch_options = f"STEAM_COMPAT_DATA_PATH=\"{logged_in_home}/.local/share/Steam/steamapps/compatdata/{gog_galaxy_launcher}/\" %command% /command=runGame /gameId={game_info['id']} /path=\"{game_info['exe']}\""
             exe_path = f"\"{logged_in_home}/.local/share/Steam/steamapps/compatdata/{gog_galaxy_launcher}/pfx/drive_c/Program Files (x86)/GOG Galaxy/GalaxyClient.exe\""
             start_dir = f"\"{logged_in_home}/.local/share/Steam/steamapps/compatdata/{gog_galaxy_launcher}/pfx/drive_c/Program Files (x86)/GOG Galaxy/\""
-            signed_shortcut_id = get_steam_shortcut_id(exe_path, game)
-            unsigned_shortcut_id = get_unsigned_shortcut_id(signed_shortcut_id)
-            # Check if the game already exists in the shortcuts
-            if check_if_shortcut_exists(signed_shortcut_id, game, exe_path, start_dir, launch_options):
-                if add_compat_tool(unsigned_shortcut_id):
-                    shortcuts_updated = True
-                continue
-
-            game_id = get_game_id(game)
-            if game_id is not None:
-                get_sgdb_art(game_id, unsigned_shortcut_id)
-            new_shortcuts_added = True
-            created_shortcuts.append(game)
-            shortcuts['shortcuts'][str(len(shortcuts['shortcuts']))] = {
-                'appid': str(signed_shortcut_id),
-                'appname': game,
-                'exe': exe_path,
-                'StartDir': start_dir,
-                'LaunchOptions': launch_options,
-                'icon': f"{logged_in_home}/.steam/root/userdata/{steamid3}/config/grid/{get_file_name('icons', unsigned_shortcut_id)}"
-            }
-            add_compat_tool(unsigned_shortcut_id)
+            create_new_entry(exe_path, game, launch_options, start_dir)
 
 # End of Gog Galaxy Scanner
-
-
-
-
 
 
 #Battle.net Scanner
@@ -937,28 +835,7 @@ else:
                 launch_options = f"STEAM_COMPAT_DATA_PATH=\"{logged_in_home}/.local/share/Steam/steamapps/compatdata/{bnet_launcher}/\" %command% \"battlenet://{game_info['flavor']}\""
                 exe_path = f"\"{logged_in_home}/.local/share/Steam/steamapps/compatdata/{bnet_launcher}/pfx/drive_c/Program Files (x86)/Battle.net/Battle.net.exe\" --exec=\"launch {game_info['flavor']}\""
                 start_dir = f"\"{logged_in_home}/.local/share/Steam/steamapps/compatdata/{bnet_launcher}/pfx/drive_c/Program Files (x86)/Battle.net/\""
-                signed_shortcut_id = get_steam_shortcut_id(exe_path, game)
-                unsigned_shortcut_id = get_unsigned_shortcut_id(signed_shortcut_id)
-                # Check if the game already exists in the shortcuts
-                if check_if_shortcut_exists(signed_shortcut_id, game, exe_path, start_dir, launch_options):
-                    if add_compat_tool(unsigned_shortcut_id):
-                        shortcuts_updated = True
-                    continue
-
-                game_id = get_game_id(game)
-                if game_id is not None:
-                    get_sgdb_art(game_id, unsigned_shortcut_id)
-                new_shortcuts_added = True
-                created_shortcuts.append(game)
-                shortcuts['shortcuts'][str(len(shortcuts['shortcuts']))] = {
-                    'appid': str(signed_shortcut_id),
-                    'appname': game,
-                    'exe': exe_path,
-                    'StartDir': start_dir,
-                    'LaunchOptions': launch_options,
-                    'icon': f"{logged_in_home}/.steam/root/userdata/{steamid3}/config/grid/{get_file_name('icons', unsigned_shortcut_id)}"
-                }
-                add_compat_tool(unsigned_shortcut_id)
+                create_new_entry(exe_path, game, launch_options, start_dir)
 
 # End of Battle.net Scanner
 
@@ -1008,30 +885,7 @@ if amazon_games:
         exe_path = f"\"{logged_in_home}/.local/share/Steam/steamapps/compatdata/{amazon_launcher}/pfx/drive_c/users/steamuser/AppData/Local/Amazon Games/App/Amazon Games.exe\""
         start_dir = f"\"{logged_in_home}/.local/share/Steam/steamapps/compatdata/{amazon_launcher}/pfx/drive_c/users/steamuser/AppData/Local/Amazon Games/App/\""
         launch_options = f"STEAM_COMPAT_DATA_PATH=\"{logged_in_home}/.local/share/Steam/steamapps/compatdata/{amazon_launcher}\" %command% -'amazon-games://play/{game['id']}'"
-        signed_shortcut_id = get_steam_shortcut_id(exe_path, display_name)
-        unsigned_shortcut_id = get_unsigned_shortcut_id(signed_shortcut_id)
-
-        # Check if the game already exists in the shortcuts
-        if check_if_shortcut_exists(signed_shortcut_id, display_name, exe_path, start_dir, launch_options):
-            if add_compat_tool(unsigned_shortcut_id):
-                shortcuts_updated = True
-            continue
-
-        print(f"No existing shortcut found for game {display_name}. Creating new shortcut.")
-        created_shortcuts.append(display_name)
-        shortcuts['shortcuts'][str(signed_shortcut_id)] = {
-            'appid': str(signed_shortcut_id),
-            'appname': display_name,
-            'exe': exe_path,
-            'StartDir': start_dir,
-            'icon': f"{logged_in_home}/.steam/root/userdata/{steamid3}/config/grid/{get_file_name('icons', unsigned_shortcut_id)}",
-            'LaunchOptions': launch_options,
-            'GameID': get_game_id(display_name) if get_game_id(display_name) is not None else "default_game_id"
-        }
-        new_shortcuts_added = True
-        if get_game_id(display_name) is not None:
-            get_sgdb_art(get_game_id(display_name), unsigned_shortcut_id)
-            add_compat_tool(unsigned_shortcut_id)
+        create_new_entry(exe_path, display_name, launch_options, start_dir)
 
 
 #End of Amazon Games Scanner
@@ -1039,7 +893,7 @@ if amazon_games:
 
 
 
-#Push down when more scanners are added
+# Push down when more scanners are added
 # Only write back to the shortcuts.vdf and config.vdf files if new shortcuts were added or compattools changed
 if new_shortcuts_added or shortcuts_updated:
     print(f"Saving new config and shortcuts files")
@@ -1048,11 +902,34 @@ if new_shortcuts_added or shortcuts_updated:
    	    file.write(conf)
     with open(f"{logged_in_home}/.steam/root/userdata/{steamid3}/config/shortcuts.vdf", 'wb') as file:
         file.write(vdf.binary_dumps(shortcuts))
+        
     # Print the created shortcuts
     if created_shortcuts:
         print("Created Shortcuts:")
         for name in created_shortcuts:
             print(name)
+
+# Assuming 'games' is a list of game dictionaries
+        games = [shortcut for shortcut in shortcuts['shortcuts'].values()]
+
+        for game in games:
+            # Skip if 'appname' or 'exe' is None
+            if game.get('appname') is None or game.get('exe') is None:
+                continue
+
+            # Create a dictionary to hold the shortcut information
+            shortcut_info = {
+                'appid': str(game.get('appid')),
+                'appname': game.get('appname'),
+                'exe': game.get('exe'),
+                'StartDir': game.get('StartDir'),
+                'icon': f"{logged_in_home}/.steam/root/userdata/{steamid3}/config/grid/{get_file_name('icons', game.get('appid'))}",
+                'LaunchOptions': game.get('LaunchOptions'),
+                'GameID': game.get('GameID', "default_game_id")  # Use a default value if game_id is not defined
+            }
+
+            # Print the shortcut information in JSON format
+            print(json.dumps(shortcut_info), flush=True)
 
 print("All finished!")
 
