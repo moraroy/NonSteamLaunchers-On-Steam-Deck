@@ -2530,7 +2530,7 @@ fi
 if [[ $options == *"Twitch"* ]]; then
     # User selected Twitch
     twitchchromelaunchoptions="run --branch=stable --arch=x86_64 --command=/app/bin/chrome --file-forwarding com.google.Chrome @@u @@ --window-size=1280,800 --force-device-scale-factor=1.00 --device-scale-factor=1.00 --kiosk https://www.twitch.tv/ --chrome-kiosk-type=fullscreen --no-first-run --enable-features=OverlayScrollbar"
-    echo "export twitchhromelaunchoptions=$twitchchromelaunchoptions" >> ${logged_in_home}/.config/systemd/user/env_vars
+    echo "export twitchchromelaunchoptions=$twitchchromelaunchoptions" >> ${logged_in_home}/.config/systemd/user/env_vars
 fi
 
 if [[ $options == *"movie-web"* ]]; then
