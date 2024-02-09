@@ -55,10 +55,8 @@ Supported Streaming Sites for games and as well as any website. 🌐
 - movie-web ✔️
 
 <h1 align="left">
-Find Games
-</h1>
-
-Use the "Find Games" button to load [Boilr](https://github.com/PhilipK/BoilR) this will open Boilr for you to set your settings so you can find your games easier. 
+Finds Games Automatically
+</h1> 
 
 "NSLGameScanner.service" is also live when you use this script and continues after the script is closed and even works after your Steam Deck has restarted. This works in the background as a service file to automatically add your games to your library on every Steam restart. Currently adds:
 - Epic Games 🎮
