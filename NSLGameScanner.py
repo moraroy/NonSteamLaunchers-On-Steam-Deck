@@ -82,6 +82,7 @@ parent_folder = f"{logged_in_home}/.config/systemd/user/Modules"
 # Now that the requests module has been downloaded, you can import it
 sys.path.insert(0, parent_folder)
 import requests
+import vdf
 from steamgrid import SteamGridDB
 print(sys.path)
 
