@@ -899,132 +899,147 @@ if amazon_games:
 
 #End of Amazon Games Scanner
 
-
-
-
 # Push down when more scanners are added
-# Only write back to the shortcuts.vdf and config.vdf files if new shortcuts were added or compattools changed
-if new_shortcuts_added or shortcuts_updated:
-    print(f"Saving new config and shortcuts files")
-    conf = vdf.dumps(config_data, pretty=True)
-    with open(f"{logged_in_home}/.steam/root/config/config.vdf", 'w') as file:
-   	    file.write(conf)
-    with open(f"{logged_in_home}/.steam/root/userdata/{steamid3}/config/shortcuts.vdf", 'wb') as file:
-        file.write(vdf.binary_dumps(shortcuts))
-        
-    # Print the created shortcuts
-    if created_shortcuts:
-        print("Created Shortcuts:")
-        for name in created_shortcuts:
-            print(name)
+#PipingInfoToDeckyPlugin
+PIPE_PATH = "/tmp/NSLGameScanner_pipe"
 
-# Assuming 'games' is a list of game dictionaries
+# Check if the pipe does not exist
+if not os.path.exists(PIPE_PATH):
+    # Create the named pipe
+    os.mkfifo(PIPE_PATH)
+
+# Define the directory path
+dir_path = f"{logged_in_home}/homebrew/plugins/NonSteamLaunchers/"
+
+# Check if the directory exists
+if not os.path.exists(dir_path):
+    # Only write back to the shortcuts.vdf and config.vdf files if new shortcuts were added or compattools changed
+    if new_shortcuts_added or shortcuts_updated:
+        print(f"Saving new config and shortcuts files")
+        conf = vdf.dumps(config_data, pretty=True)
+        with open(f"{logged_in_home}/.steam/root/config/config.vdf", 'w') as file:
+            file.write(conf)
+        with open(f"{logged_in_home}/.steam/root/userdata/{steamid3}/config/shortcuts.vdf", 'wb') as file:
+            file.write(vdf.binary_dumps(shortcuts))
+
+        # Load the configset_controller_neptune.vdf file
+        with open(controller_config_path, 'r') as f:
+            config = vdf.load(f)
+
+        # Add new entries for the games
+    for app_id in app_ids:
+        config['controller_config'][str(app_id)] = {
+            'workshop': 'workshop_id'
+        }
+
+    # Add new entries for the installed launchers and games
+        config['controller_config']['epic games'] = {
+            'workshop': '2800178806'
+        }
+        config['controller_config']['gog galaxy'] = {
+            'workshop': '2877189386'
+        }
+        config['controller_config']['ubisoft connect'] = {
+            'workshop': '2804140248'
+        }
+        config['controller_config']['amazon games'] = {
+            'workshop': '2871935783'
+        }
+        config['controller_config']['battlenet'] = {
+            'workshop': '2887894308'
+        }
+        config['controller_config']['rockstar games launcher'] = {
+            'workshop': '1892570391'
+        }
+        config['controller_config']['indiegala'] = {
+            'template': 'controller_neptune_webbrowser.vdf'
+        }
+        config['controller_config']['legacy games'] = {
+            'template': 'controller_neptune_webbrowser.vdf'
+        }
+        config['controller_config']['ea app'] = {
+            'workshop': '2899822740'
+        }
+        config['controller_config']['itchio'] = {
+            'workshop': '2845891813'
+        }
+        config['controller_config']['humble games collection'] = {
+            'workshop': '2883791560'
+        }
+        config['controller_config']['minecraft java edition'] = {
+            'workshop': '2980553929'
+        }
+        config['controller_config']['playstation plus'] = {
+            'workshop': 'controller_neptune_webbrowser.vdf'
+        }
+        config['controller_config']['glyph'] = {
+            'template': 'controller_neptune_webbrowser.vdf'
+        }
+        config['controller_config']['vk play'] = {
+            'workshop': '3202642880'
+        }
+        config['controller_config']['amazon prime video'] = {
+            'workshop': '2970669392'
+        }
+        config['controller_config']['hulu'] = {
+            'workshop': '2970669392'
+        }
+        config['controller_config']['netflix'] = {
+            'workshop': '2970669392'
+        }
+        config['controller_config']['disney+'] = {
+            'workshop': '2970669392'
+        }
+        config['controller_config']['youtube'] = {
+            'workshop': '2970669392'
+        }
+        config['controller_config']['geforce now'] = {
+            'template': 'controller_neptune_gamepad+mouse.vdf'
+        }
+        config['controller_config']['amazon luna'] = {
+            'template': 'controller_neptune_gamepad+mouse.vdf'
+        }
+        config['controller_config']['twitch'] = {
+            'workshop': '2875543745'
+        }
+        config['controller_config']['movie-web'] = {
+            'workshop': 'controller_neptune_webbrowser.vdf'
+        }
+
+    # Save the updated config
+    with open(controller_config_path, 'w') as f:
+        vdf.dump(config, f)
+
+        # Print the created shortcuts
+        if created_shortcuts:
+            print("Created Shortcuts:")
+            for name in created_shortcuts:
+                print(name)
+
+        # Assuming 'games' is a list of game dictionaries
         games = [shortcut for shortcut in shortcuts['shortcuts'].values()]
 
-        for game in games:
-            # Skip if 'appname' or 'exe' is None
-            if game.get('appname') is None or game.get('exe') is None:
-                continue
+        # Open the pipe for writing
+        with open(PIPE_PATH, 'w') as pipe:
+            for game in games:
+                # Skip if 'appname' or 'exe' is None
+                if game.get('appname') is None or game.get('exe') is None:
+                    continue
 
-            # Create a dictionary to hold the shortcut information
-            shortcut_info = {
-                'appid': str(game.get('appid')),
-                'appname': game.get('appname'),
-                'exe': game.get('exe'),
-                'StartDir': game.get('StartDir'),
-                'icon': f"{logged_in_home}/.steam/root/userdata/{steamid3}/config/grid/{get_file_name('icons', game.get('appid'))}",
-                'LaunchOptions': game.get('LaunchOptions'),
-                'GameID': game.get('GameID', "default_game_id")  # Use a default value if game_id is not defined
-            }
+                # Create a dictionary to hold the shortcut information
+                shortcut_info = {
+                    'appid': str(game.get('appid')),
+                    'appname': game.get('appname'),
+                    'exe': game.get('exe'),
+                    'StartDir': game.get('StartDir'),
+                    'icon': f"{logged_in_home}/.steam/root/userdata/{steamid3}/config/grid/{get_file_name('icons', game.get('appid'))}",
+                    'LaunchOptions': game.get('LaunchOptions'),
+                    'GameID': game.get('GameID', "default_game_id")  # Use a default value if game_id is not defined
+                }
 
-            # Print the shortcut information in JSON format
-            print(json.dumps(shortcut_info), flush=True)
+                # Print the shortcut information in JSON format
+                message = json.dumps(shortcut_info)
+                print(message, flush=True)  # Print to stdout
+                pipe.write(message + '\n')  # Write to the pipe
 
 print("All finished!")
-
-# Load the configset_controller_neptune.vdf file
-with open(controller_config_path, 'r') as f:
-    config = vdf.load(f)
-#Setting Controller Layouts
-# Add new entries for the games
-for app_id in app_ids:
-    config['controller_config'][str(app_id)] = {
-        'workshop': 'workshop_id'
-    }
-
-# Add new entries for the installed launchers and games
-config['controller_config']['epic games'] = {
-    'workshop': '2800178806'
-}
-config['controller_config']['gog galaxy'] = {
-    'workshop': '2877189386'
-}
-config['controller_config']['ubisoft connect'] = {
-    'workshop': '2804140248'
-}
-config['controller_config']['amazon games'] = {
-    'workshop': '2871935783'
-}
-config['controller_config']['battlenet'] = {
-    'workshop': '2887894308'
-}
-config['controller_config']['rockstar games launcher'] = {
-    'workshop': '1892570391'
-}
-config['controller_config']['indiegala'] = {
-    'template': 'controller_neptune_webbrowser.vdf'
-}
-config['controller_config']['legacy games'] = {
-    'template': 'controller_neptune_webbrowser.vdf'
-}
-config['controller_config']['ea app'] = {
-    'workshop': '2899822740'
-}
-config['controller_config']['itchio'] = {
-    'workshop': '2845891813'
-}
-config['controller_config']['humble games collection'] = {
-    'workshop': '2883791560'
-}
-config['controller_config']['minecraft java edition'] = {
-    'workshop': '2980553929'
-}
-config['controller_config']['playstation plus'] = {
-    'workshop': 'controller_neptune_webbrowser.vdf'
-}
-config['controller_config']['glyph'] = {
-    'template': 'controller_neptune_webbrowser.vdf'
-}
-config['controller_config']['vk play'] = {
-    'workshop': '3202642880'
-}
-config['controller_config']['amazon prime video'] = {
-    'workshop': '2970669392'
-}
-config['controller_config']['hulu'] = {
-    'workshop': '2970669392'
-}
-config['controller_config']['netflix'] = {
-    'workshop': '2970669392'
-}
-config['controller_config']['disney+'] = {
-    'workshop': '2970669392'
-}
-config['controller_config']['youtube'] = {
-    'workshop': '2970669392'
-}
-config['controller_config']['geforce now'] = {
-    'template': 'controller_neptune_gamepad+mouse.vdf'
-}
-config['controller_config']['amazon luna'] = {
-    'template': 'controller_neptune_gamepad+mouse.vdf'
-}
-config['controller_config']['twitch'] = {
-    'workshop': '2875543745'
-}
-config['controller_config']['movie-web'] = {
-    'workshop': 'controller_neptune_webbrowser.vdf'
-}
-#End of Setting Controller Layouts
-with open(controller_config_path, 'w') as f:
-        vdf.dump(config, f)
