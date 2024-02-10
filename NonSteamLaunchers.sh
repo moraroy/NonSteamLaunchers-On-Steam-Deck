@@ -2695,17 +2695,25 @@ echo "export python_version=$python_version" >> ${logged_in_home}/.config/system
 echo "export chromedirectory=$chromedirectory" >> ${logged_in_home}/.config/systemd/user/env_vars
 echo "export chrome_startdir=$chrome_startdir" >> ${logged_in_home}/.config/systemd/user/env_vars
 
-# Detach script from Steam process
-nohup sh -c 'sleep 10; /usr/bin/steam' &
 
-# Close all instances of Steam
-steam_pid() { pgrep -x steam ; }
-steam_running=$(steam_pid)
-[[ -n "$steam_running" ]] && killall steam
+#SteamRestartProcess
 
-# Wait for the steam process to exit
-while steam_pid > /dev/null; do sleep 5; done
+# Define the directory path
+dir_path="${logged_in_home}/homebrew/plugins/NonSteamLaunchers/"
 
+# Check if the directory exists
+if [ ! -d "$dir_path" ]; then
+  # Detach script from Steam process
+  nohup sh -c 'sleep 10; /usr/bin/steam' &
+
+  # Close all instances of Steam
+  steam_pid() { pgrep -x steam ; }
+  steam_running=$(steam_pid)
+  [[ -n "$steam_running" ]] && killall steam
+
+  # Wait for the steam process to exit
+  while steam_pid > /dev/null; do sleep 5; done
+fi
 
 
 
@@ -2739,32 +2747,31 @@ fi
 
 # TODO: might be better to relocate temp files to `/tmp` or even use `mktemp -d` since `rm -rf` is potentially dangerous without the `-i` flag
 # Delete NonSteamLaunchersInstallation subfolder in Downloads folder
-#rm -rf "$download_dir"
+rm -rf "$download_dir"
 
 
 
 
 #Setup NSLGameScanner.service
-# Define your Python script path
-#python_script_path="${logged_in_home}/.config/systemd/user/NSLGameScanner.py"
+python_script_path="${logged_in_home}/.config/systemd/user/NSLGameScanner.py"
 
 # Define your GitHub link
-#github_link="https://raw.githubusercontent.com/moraroy/NonSteamLaunchers-On-Steam-Deck/main/NSLGameScanner.py"
+github_link="https://raw.githubusercontent.com/moraroy/NonSteamLaunchers-On-Steam-Deck/main/NSLGameScanner.py"
 
 # Check if the service is already running
-#service_status=$(systemctl --user is-active nslgamescanner.service)
+service_status=$(systemctl --user is-active nslgamescanner.service)
 
-#if [ "$service_status" = "active" ] || [ "$service_status" = "activating" ]
-#then
-    #echo "Service is already running or activating. Stopping the service..."
-    #systemctl --user stop nslgamescanner.service
-#fi
+if [ "$service_status" = "active" ] || [ "$service_status" = "activating" ]
+then
+    echo "Service is already running or activating. Stopping the service..."
+    systemctl --user stop nslgamescanner.service
+fi
 
-#echo "Updating Python script from GitHub..."
-# Download the Python script from GitHub
-#curl -o $python_script_path $github_link
+echo "Updating Python script from GitHub..."
 
-#echo "Starting the service..."
-# Call your Python script
+curl -o $python_script_path $github_link
+
+echo "Starting the service..."
+
 python3 $python_script_path
 
