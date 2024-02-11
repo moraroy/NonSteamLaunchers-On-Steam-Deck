@@ -78,13 +78,15 @@ custom_websites = websites_str.split(', ') if websites_str else []
 
 # Define the parent folder
 parent_folder = f"{logged_in_home}/.config/systemd/user/Modules"
-
+sys.path.insert(0, os.path.expanduser(f"{logged_in_home}/Downloads/NonSteamLaunchersInstallation/lib/python{python_version}/site-packages"))
+print(sys.path)
 # Now that the requests module has been downloaded, you can import it
 sys.path.insert(0, parent_folder)
 import requests
 import vdf
 from steamgrid import SteamGridDB
 print(sys.path)
+
 
 
 #Set Up nslgamescanner.service
@@ -153,8 +155,8 @@ def get_unsigned_shortcut_id(signed_shortcut_id):
 api_cache = {}
 
 #API KEYS FOR NONSTEAMLAUNCHER USE ONLY
-sgdb = SteamGridDB('412210605b01f8777debeaec5e58e119')
-api_key = '412210605b01f8777debeaec5e58e119'
+sgdb = SteamGridDB('8d4131fd8213502c20276b738f7acb1a')
+api_key = '8d4131fd8213502c20276b738f7acb1a'
 
 #GLOBAL VARS
 created_shortcuts = []
