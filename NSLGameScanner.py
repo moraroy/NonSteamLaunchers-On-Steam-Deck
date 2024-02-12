@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-import os, re,
+import os, re
 import json
 import shutil
 import binascii
