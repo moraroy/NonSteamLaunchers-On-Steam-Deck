@@ -914,31 +914,25 @@ if not os.path.exists(PIPE_PATH):
     # Create the named pipe
     os.mkfifo(PIPE_PATH)
 
-# Define the directory path
-dir_path = f"{logged_in_home}/homebrew/plugins/NonSteamLaunchers/"
+# Only write back to the shortcuts.vdf and config.vdf files if new shortcuts were added or compattools changed
+if new_shortcuts_added or shortcuts_updated:
+    print(f"Saving new config and shortcuts files")
+    conf = vdf.dumps(config_data, pretty=True)
+    with open(f"{logged_in_home}/.steam/root/config/config.vdf", 'w') as file:
+        file.write(conf)
+    with open(f"{logged_in_home}/.steam/root/userdata/{steamid3}/config/shortcuts.vdf", 'wb') as file:
+        file.write(vdf.binary_dumps(shortcuts))
 
-# Check if the directory exists
-if not os.path.exists(dir_path):
-    # Only write back to the shortcuts.vdf and config.vdf files if new shortcuts were added or compattools changed
-    if new_shortcuts_added or shortcuts_updated:
-        print(f"Saving new config and shortcuts files")
-        conf = vdf.dumps(config_data, pretty=True)
-        with open(f"{logged_in_home}/.steam/root/config/config.vdf", 'w') as file:
-            file.write(conf)
-        with open(f"{logged_in_home}/.steam/root/userdata/{steamid3}/config/shortcuts.vdf", 'wb') as file:
-            file.write(vdf.binary_dumps(shortcuts))
+    # Load the configset_controller_neptune.vdf file
+    with open(controller_config_path, 'r') as f:
+        config = vdf.load(f)
 
-        # Load the configset_controller_neptune.vdf file
-        with open(controller_config_path, 'r') as f:
-            config = vdf.load(f)
-
-        # Add new entries for the games
+    # Add new entries for the games
     for app_id in app_ids:
         config['controller_config'][str(app_id)] = {
             'workshop': 'workshop_id'
         }
-
-    # Add new entries for the installed launchers and games
+        # Add new entries for the installed launchers and games
         config['controller_config']['epic games'] = {
             'workshop': '2800178806'
         }
@@ -1016,36 +1010,38 @@ if not os.path.exists(dir_path):
     with open(controller_config_path, 'w') as f:
         vdf.dump(config, f)
 
-        # Print the created shortcuts
-        if created_shortcuts:
-            print("Created Shortcuts:")
-            for name in created_shortcuts:
-                print(name)
+    # Print the created shortcuts
+    if created_shortcuts:
+        print("Created Shortcuts:")
+        for name in created_shortcuts:
+            print(name)
 
-        # Assuming 'games' is a list of game dictionaries
-        games = [shortcut for shortcut in shortcuts['shortcuts'].values()]
+    # Assuming 'games' is a list of game dictionaries
+    games = [shortcut for shortcut in shortcuts['shortcuts'].values()]
 
-        # Open the pipe for writing
-        with open(PIPE_PATH, 'w') as pipe:
-            for game in games:
-                # Skip if 'appname' or 'exe' is None
-                if game.get('appname') is None or game.get('exe') is None:
-                    continue
+    # Open the pipe for writing
+    with open(PIPE_PATH, 'w') as pipe:
+        for game in games:
+            # Skip if 'appname' or 'exe' is None
+            if game.get('appname') is None or game.get('exe') is None:
+                continue
 
-                # Create a dictionary to hold the shortcut information
-                shortcut_info = {
-                    'appid': str(game.get('appid')),
-                    'appname': game.get('appname'),
-                    'exe': game.get('exe'),
-                    'StartDir': game.get('StartDir'),
-                    'icon': f"{logged_in_home}/.steam/root/userdata/{steamid3}/config/grid/{get_file_name('icons', game.get('appid'))}",
-                    'LaunchOptions': game.get('LaunchOptions'),
-                    'GameID': game.get('GameID', "default_game_id")  # Use a default value if game_id is not defined
-                }
+            # Create a dictionary to hold the shortcut information
+            shortcut_info = {
+                'appid': str(game.get('appid')),
+                'appname': game.get('appname'),
+                'exe': game.get('exe'),
+                'StartDir': game.get('StartDir'),
+                'icon': f"{logged_in_home}/.steam/root/userdata/{steamid3}/config/grid/{get_file_name('icons', game.get('appid'))}",
+                'LaunchOptions': game.get('LaunchOptions'),
+                'GameID': game.get('GameID', "default_game_id")  # Use a default value if game_id is not defined
+            }
 
-                # Print the shortcut information in JSON format
-                message = json.dumps(shortcut_info)
-                print(message, flush=True)  # Print to stdout
-                pipe.write(message + '\n')  # Write to the pipe
+            # Print the shortcut information in JSON format
+            message = json.dumps(shortcut_info)
+            print(message, flush=True)  # Print to stdout
+            pipe.write(message + '\n')  # Write to the pipe
 
 print("All finished!")
+
+
