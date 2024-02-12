@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-import os, re, vdf
+import os, re,
 import json
 import shutil
 import binascii
@@ -78,7 +78,7 @@ custom_websites = websites_str.split(', ') if websites_str else []
 
 # Define the parent folder
 parent_folder = f"{logged_in_home}/.config/systemd/user/Modules"
-sys.path.insert(0, os.path.expanduser(f"{logged_in_home}/Downloads/NonSteamLaunchersInstallation/lib/python{python_version}/site-packages"))
+sys.path.insert(0, os.path.expanduser(f"{logged_in_home}/.config/systemd/user/Modules"))
 print(sys.path)
 # Now that the requests module has been downloaded, you can import it
 sys.path.insert(0, parent_folder)
