@@ -2579,12 +2579,14 @@ if [[ -f "${logged_in_home}/.steam/root/config/loginusers.vdf" ]]; then
     current_steamid=""
 
     # Process each user block
-    while read steamid account timestamp; do
+	# Set IFS to only look for Commas to avoid issues with Whitespace in older account names.
+    while IFS="," read steamid account timestamp; do
         if (( timestamp > max_timestamp )); then
             max_timestamp=$timestamp
             current_user=$account
             current_steamid=$steamid
         fi
+	# Output our discovered values as comma seperated string to be read into the IDs.
     done < <(echo "$most_recent_user" | awk -v RS='}\n' -F'\n' '
     {
         for(i=1;i<=NF;i++){
@@ -2598,7 +2600,7 @@ if [[ -f "${logged_in_home}/.steam/root/config/loginusers.vdf" ]]; then
                 split($i,c, "\""); timestamp=c[4];
             }
         }
-        print steamid, account, timestamp
+        print steamid "," account "," timestamp
     }')
 
     # Print the currently logged in user
