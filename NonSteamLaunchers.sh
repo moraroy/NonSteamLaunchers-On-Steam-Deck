@@ -145,8 +145,10 @@ if [ "$decky_plugin" = true ]; then
         echo "Python script ran. Continuing with the script..."
     else
         # If the env_vars file does not exist, exit the script
-        echo "Decky Plugin argument set but env_vars file not found. Exiting the script."
-        exit 0
+        # echo "Decky Plugin argument set but env_vars file not found. Exiting the script."
+        python3 $python_script_path
+        echo "Python script ran. Continuing with the script..."
+		# exit 0
     fi
 else
     # If the Decky Plugin argument is not set, continue with the script
