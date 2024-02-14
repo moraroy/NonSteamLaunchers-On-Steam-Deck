@@ -2697,16 +2697,6 @@ echo "export python_version=$python_version" >> ${logged_in_home}/.config/system
 echo "export chromedirectory=$chromedirectory" >> ${logged_in_home}/.config/systemd/user/env_vars
 echo "export chrome_startdir=$chrome_startdir" >> ${logged_in_home}/.config/systemd/user/env_vars
 
-# Detach script from Steam process
-nohup sh -c 'sleep 10; /usr/bin/steam' &
-
-# Close all instances of Steam
-steam_pid() { pgrep -x steam ; }
-steam_running=$(steam_pid)
-[[ -n "$steam_running" ]] && killall steam
-
-# Wait for the steam process to exit
-while steam_pid > /dev/null; do sleep 5; done
 
 
 
@@ -2769,6 +2759,16 @@ python3 $python_script_path
 
 
 
+# Detach script from Steam process
+nohup sh -c 'sleep 10; /usr/bin/steam' &
+
+# Close all instances of Steam
+steam_pid() { pgrep -x steam ; }
+steam_running=$(steam_pid)
+[[ -n "$steam_running" ]] && killall steam
+
+# Wait for the steam process to exit
+while steam_pid > /dev/null; do sleep 5; done
 
 
 # TODO: might be better to relocate temp files to `/tmp` or even use `mktemp -d` since `rm -rf` is potentially dangerous without the `-i` flag
