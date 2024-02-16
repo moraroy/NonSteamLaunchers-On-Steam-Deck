@@ -1039,6 +1039,7 @@ if new_shortcuts_added or shortcuts_updated:
 
             # Print the shortcut information in JSON format
             message = json.dumps(shortcut_info)
+            print(message, flush=True)  # Print to stdout
             pipe.write(message + '\n')  # Write to the pipe
 
 print("All finished!")
