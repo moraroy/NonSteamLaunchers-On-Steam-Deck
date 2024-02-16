@@ -667,6 +667,7 @@ def getGogGameInfo(filePath):
     with open(filePath, 'r') as file:
         game_id = None
         game_name = None
+        exe_path = None
         for line in file:
             split_line = line.split("=")
             if len(split_line) > 1:
@@ -678,10 +679,15 @@ def getGogGameInfo(filePath):
                     game_name = re.findall(r'\"(.+?)\"', split_line[1])
                     if game_name:
                         game_name = game_name[0]
-            if game_id and game_name:
-                game_dict[game_name] = {'id': game_id}
+                if "exe" in line and "GOG Galaxy" in line and not "unins000.exe" in line:
+                    exe_path = re.findall(r'\"(.+?)\"', split_line[1])
+                    if exe_path:
+                        exe_path = exe_path[0].replace('\\\\', '\\')
+            if game_id and game_name and exe_path:
+                game_dict[game_name] = {'id': game_id, 'exe': exe_path}
                 game_id = None
                 game_name = None
+                exe_path = None
 
     return game_dict
 
@@ -698,7 +704,7 @@ else:
 
     for game, game_info in game_dict.items():
         if game_info['id']:
-            launch_options = f"STEAM_COMPAT_DATA_PATH=\"{logged_in_home}/.local/share/Steam/steamapps/compatdata/{gog_galaxy_launcher}/\" %command% /command=runGame /gameId={game_info['id']}\""
+            launch_options = f"STEAM_COMPAT_DATA_PATH=\"{logged_in_home}/.local/share/Steam/steamapps/compatdata/{gog_galaxy_launcher}/\" %command% /command=runGame /gameId={game_info['id']} /path=\"{game_info['exe']}\""
             exe_path = f"\"{logged_in_home}/.local/share/Steam/steamapps/compatdata/{gog_galaxy_launcher}/pfx/drive_c/Program Files (x86)/GOG Galaxy/GalaxyClient.exe\""
             start_dir = f"\"{logged_in_home}/.local/share/Steam/steamapps/compatdata/{gog_galaxy_launcher}/pfx/drive_c/Program Files (x86)/GOG Galaxy/\""
             create_new_entry(exe_path, game, launch_options, start_dir)
