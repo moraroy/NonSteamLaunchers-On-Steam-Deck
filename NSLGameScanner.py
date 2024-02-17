@@ -155,8 +155,8 @@ def get_unsigned_shortcut_id(signed_shortcut_id):
 api_cache = {}
 
 #API KEYS FOR NONSTEAMLAUNCHER USE ONLY
-sgdb = SteamGridDB('8d4131fd8213502c20276b738f7acb1a')
-api_key = '8d4131fd8213502c20276b738f7acb1a'
+sgdb = SteamGridDB('36e4bedbfdda27f42f9ef4a44f80955c')
+api_key = '36e4bedbfdda27f42f9ef4a44f80955c'
 
 #GLOBAL VARS
 created_shortcuts = []
@@ -180,6 +180,8 @@ def get_sgdb_art(game_id, app_id):
 	print("Downloading grids artwork of size 920x430...")
 	download_artwork(game_id, api_key, "grids", app_id, "920x430")
 
+
+
 def download_artwork(game_id, api_key, art_type, shortcut_id, dimensions=None):
     # Create a cache key based on the function's arguments
     cache_key = (game_id, art_type, dimensions)
@@ -190,11 +192,11 @@ def download_artwork(game_id, api_key, art_type, shortcut_id, dimensions=None):
     else:
         filename = get_file_name(art_type, shortcut_id)
     file_path = f"{logged_in_home}/.steam/root/userdata/{steamid3}/config/grid/{filename}"
-    
+
     directory = os.path.dirname(file_path)
     if not os.path.exists(directory):
         os.makedirs(directory)
-        
+
     if os.path.exists(file_path):
         print(f"Artwork for {game_id} already exists. Skipping download.")
         return
@@ -215,6 +217,11 @@ def download_artwork(game_id, api_key, art_type, shortcut_id, dimensions=None):
             data = response.json()
             # Store the result in the cache
             api_cache[cache_key] = data
+        else:
+            print(f"Error making API call: {response.status_code}")
+            # Store the failed status in the cache
+            api_cache[cache_key] = None
+            return
 
     # Continue with the rest of your function using `data`
     for artwork in data['data']:
@@ -231,6 +238,7 @@ def download_artwork(game_id, api_key, art_type, shortcut_id, dimensions=None):
             print(f"Error downloading image: {e}")
             if art_type == 'icons':
                 download_artwork(game_id, api_key, 'icons_ico', shortcut_id)
+
 
 def get_game_id(game_name):
     print(f"Searching for game ID for: {game_name}")
