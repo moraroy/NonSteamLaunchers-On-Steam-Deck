@@ -183,34 +183,49 @@ fi
 # Set the paths to the launcher executables
 epic_games_launcher_path1="${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/Program Files (x86)/Epic Games/Launcher/Portal/Binaries/Win32/EpicGamesLauncher.exe"
 epic_games_launcher_path2="${logged_in_home}/.local/share/Steam/steamapps/compatdata/EpicGamesLauncher/pfx/drive_c/Program Files (x86)/Epic Games/Launcher/Portal/Binaries/Win32/EpicGamesLauncher.exe"
+epic_games_launcher_path3="${logged_in_home}/.local/share/Steam/steamapps/compatdata/2580882702/pfx/drive_c/Program Files (x86)/Epic Games/Launcher/Portal/Binaries/Win32/EpicGamesLauncher.exe"
 gog_galaxy_path1="${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/Program Files (x86)/GOG Galaxy/GalaxyClient.exe"
 gog_galaxy_path2="${logged_in_home}/.local/share/Steam/steamapps/compatdata/GogGalaxyLauncher/pfx/drive_c/Program Files (x86)/GOG Galaxy/GalaxyClient.exe"
+gog_galaxy_path3="${logged_in_home}/.local/share/Steam/steamapps/compatdata/3087017152/pfx/drive_c/Program Files (x86)/GOG Galaxy/GalaxyClient.exe"
 uplay_path1="${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/Program Files (x86)/Ubisoft/Ubisoft Game Launcher/upc.exe"
 uplay_path2="${logged_in_home}/.local/share/Steam/steamapps/compatdata/UplayLauncher/pfx/drive_c/Program Files (x86)/Ubisoft/Ubisoft Game Launcher/upc.exe"
+uplay_path3="${logged_in_home}/.local/share/Steam/steamapps/compatdata/2231225300/pfx/drive_c/Program Files (x86)/Ubisoft/Ubisoft Game Launcher/upc.exe"
 battlenet_path1="${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/Program Files (x86)/Battle.net/Battle.net Launcher.exe"
 battlenet_path2="${logged_in_home}/.local/share/Steam/steamapps/compatdata/Battle.netLauncher/pfx/drive_c/Program Files (x86)/Battle.net/Battle.net Launcher.exe"
+battlenet_path3="${logged_in_home}/.local/share/Steam/steamapps/compatdata/2419219301/pfx/drive_c/Program Files (x86)/Battle.net/Battle.net Launcher.exe"
 eaapp_path1="${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/Program Files/Electronic Arts/EA Desktop/EA Desktop/EADesktop.exe"
 eaapp_path2="${logged_in_home}/.local/share/Steam/steamapps/compatdata/TheEAappLauncher/pfx/drive_c/Program Files/Electronic Arts/EA Desktop/EA Desktop/EADesktop.exe"
+eaapp_path3="${logged_in_home}/.local/share/Steam/steamapps/compatdata/4253976432/pfx/drive_c/Program Files/Electronic Arts/EA Desktop/EA Desktop/EADesktop.exe"
 amazongames_path1="${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/users/steamuser/AppData/Local/Amazon Games/App/Amazon Games.exe"
 amazongames_path2="${logged_in_home}/.local/share/Steam/steamapps/compatdata/AmazonGamesLauncher/pfx/drive_c/users/steamuser/AppData/Local/Amazon Games/App/Amazon Games.exe"
+amazongames_path3="${logged_in_home}/.local/share/Steam/steamapps/compatdata/3865774986/pfx/drive_c/users/steamuser/AppData/Local/Amazon Games/App/Amazon Games.exe"
 itchio_path1="${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/users/steamuser/AppData/Local/itch/app-25.6.2/itch.exe"
 itchio_path2="${logged_in_home}/.local/share/Steam/steamapps/compatdata/itchioLauncher/pfx/drive_c/users/steamuser/AppData/Local/itch/app-25.6.2/itch.exe"
+itchio_path3="${logged_in_home}/.local/share/Steam/steamapps/compatdata/3062070092/pfx/drive_c/users/steamuser/AppData/Local/itch/app-25.6.2/itch.exe"
 legacygames_path1="${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/Program Files/Legacy Games/Legacy Games Launcher/Legacy Games Launcher.exe"
 legacygames_path2="${logged_in_home}/.local/share/Steam/steamapps/compatdata/LegacyGamesLauncher/pfx/drive_c/Program Files/Legacy Games/Legacy Games Launcher/Legacy Games Launcher.exe"
+legacygames_path3="${logged_in_home}/.local/share/Steam/steamapps/compatdata/2488987845/pfx/drive_c/Program Files/Legacy Games/Legacy Games Launcher/Legacy Games Launcher.exe"
 humblegames_path1="${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/Program Files/Humble App/Humble App.exe"
 humblegames_path2="${logged_in_home}/.local/share/Steam/steamapps/compatdata/HumbleGamesLauncher/pfx/drive_c/Program Files/Humble App/Humble App.exe"
+humblegames_path3="${logged_in_home}/.local/share/Steam/steamapps/compatdata/2933191291/pfx/drive_c/Program Files/Humble App/Humble App.exe"
 indiegala_path1="${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/Program Files/IGClient/IGClient.exe"
 indiegala_path2="${logged_in_home}/.local/share/Steam/steamapps/compatdata/IndieGalaLauncher/pfx/drive_c/Program Files/IGClient/IGClient.exe"
+indiegala_path3="${logged_in_home}/.local/share/Steam/steamapps/compatdata/3675413392/pfx/drive_c/Program Files/IGClient/IGClient.exe"
 rockstar_path1="${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/Program Files/Rockstar Games/Launcher/Launcher.exe"
 rockstar_path2="${logged_in_home}/.local/share/Steam/steamapps/compatdata/RockstarGamesLauncher/pfx/drive_c/Program Files/Rockstar Games/Launcher/Launcher.exe"
+rockstar_path3="${logged_in_home}/.local/share/Steam/steamapps/compatdata/2869505794/pfx/drive_c/Program Files/Rockstar Games/Launcher/Launcher.exe"
 glyph_path1="${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/Program Files (x86)/Glyph/GlyphClient.exe"
 glyph_path2="${logged_in_home}/.local/share/Steam/steamapps/compatdata/GlyphLauncher/pfx/drive_c/Program Files (x86)/Glyph/GlyphClient.exe"
+glyph_path3="${logged_in_home}/.local/share/Steam/steamapps/compatdata/3598178524/pfx/drive_c/Program Files (x86)/Glyph/GlyphClient.exe"
 minecraft_path1="${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/Program Files (x86)/Minecraft Launcher/MinecraftLauncher.exe"
 minecraft_path2="${logged_in_home}/.local/share/Steam/steamapps/compatdata/MinecraftLauncher/pfx/drive_c/Program Files (x86)/Minecraft Launcher/MinecraftLauncher.exe"
+minecraft_path3="${logged_in_home}/.local/share/Steam/steamapps/compatdata/2662243313/pfx/drive_c/Program Files (x86)/Minecraft Launcher/MinecraftLauncher.exe"
 psplus_path1="${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/Program Files (x86)/PlayStationPlus/pspluslauncher.exe"
 psplus_path2="${logged_in_home}/.local/share/Steam/steamapps/compatdata/PlaystationPlusLauncher/pfx/drive_c/Program Files (x86)/PlayStationPlus/pspluslauncher.exe"
+psplus_path3="${logged_in_home}/.local/share/Steam/steamapps/compatdata/3488544902/pfx/drive_c/Program Files (x86)/PlayStationPlus/pspluslauncher.exe"
 vkplay_path1="${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/users/steamuser/AppData/Local/GameCenter/GameCenter.exe"
 vkplay_path2="${logged_in_home}/.local/share/Steam/steamapps/compatdata/VKPlayLauncher/pfx/drive_c/users/steamuser/AppData/Local/GameCenter/GameCenter.exe"
+vkplay_path3="${logged_in_home}/.local/share/Steam/steamapps/compatdata/4166750127/pfx/drive_c/users/steamuser/AppData/Local/GameCenter/GameCenter.exe"
 
 # Chrome File Path
 # chrome_installpath="/app/bin/chrome"
@@ -228,6 +243,10 @@ elif [[ -f "$epic_games_launcher_path2" ]]; then
     # Epic Games Launcher is installed in path 2
     epic_games_value="FALSE"
     epic_games_text="Epic Games ===> $epic_games_launcher_path2"
+elif [[ -f "$epic_games_launcher_path3" ]]; then
+    # Epic Games Launcher is installed in path 3
+    epic_games_value="FALSE"
+    epic_games_text="Epic Games ===> $epic_games_launcher_path3"
 else
     # Epic Games Launcher is not installed
     epic_games_value="FALSE"
@@ -243,6 +262,10 @@ elif [[ -f "$gog_galaxy_path2" ]]; then
     # GOG Galaxy is installed in path 2
     gog_galaxy_value="FALSE"
     gog_galaxy_text="GOG Galaxy ===> $gog_galaxy_path2"
+elif [[ -f "$gog_galaxy_path3" ]]; then
+    # GOG Galaxy is installed in path 3
+    gog_galaxy_value="FALSE"
+    gog_galaxy_text="GOG Galaxy ===> $gog_galaxy_path3"
 else
     # GOG Galaxy is not installed
     gog_galaxy_value="FALSE"
@@ -259,6 +282,10 @@ elif [[ -f "$uplay_path2" ]]; then
     # Uplay is installed in path 2
     uplay_value="FALSE"
     uplay_text="Ubisoft Connect ===> $uplay_path2"
+elif [[ -f "$uplay_path3" ]]; then
+    # Uplay is installed in path 3
+    uplay_value="FALSE"
+    uplay_text="Ubisoft Connect ===> $uplay_path3"
 else
     # Uplay is not installed
     uplay_value="FALSE"
@@ -274,6 +301,10 @@ elif [[ -f "$battlenet_path2" ]]; then
     # Battle.net is installed in path 2
     battlenet_value="FALSE"
     battlenet_text="Battle.net ===> $battlenet_path2"
+elif [[ -f "$battlenet_path3" ]]; then
+    # Battle.net is installed in path 3
+    battlenet_value="FALSE"
+    battlenet_text="Battle.net ===> $battlenet_path3"
 else
     # Battle.net is not installed
     battlenet_value="FALSE"
@@ -289,6 +320,10 @@ elif [[ -f "$eaapp_path2" ]]; then
      # EA App is installed in path 2
      eaapp_value="FALSE"
      eaapp_text="EA App ===> $eaapp_path2"
+elif [[ -f "$eaapp_path3" ]]; then
+     # EA App is installed in path 3
+     eaapp_value="FALSE"
+     eaapp_text="EA App ===> $eaapp_path3"
 else
      # EA App is not installed
      eaapp_value="FALSE"
@@ -304,6 +339,10 @@ elif [[ -f "$amazongames_path2" ]]; then
     # Amazon Games is installed in path 2
     amazongames_value="FALSE"
     amazongames_text="Amazon Games ===> $amazongames_path2"
+elif [[ -f "$amazongames_path3" ]]; then
+    # Amazon Games is installed in path 3
+    amazongames_value="FALSE"
+    amazongames_text="Amazon Games ===> $amazongames_path3"
 else
     # Amazon Games is not installed
     amazongames_value="FALSE"
@@ -319,6 +358,10 @@ elif [[ -f "$itchio_path2" ]]; then
     # itch.io is installed in path 2
     itchio_value="FALSE"
     itchio_text="itch.io ===> $itchio_path2"
+elif [[ -f "$itchio_path3" ]]; then
+    # itch.io is installed in path 3
+    itchio_value="FALSE"
+    itchio_text="itch.io ===> $itchio_path3"
 else
     # itch.io is not installed
     itchio_value="FALSE"
@@ -334,6 +377,10 @@ elif [[ -f "$legacygames_path2" ]]; then
     # Legacy Games is installed in path 2
     legacygames_value="FALSE"
     legacygames_text="Legacy Games ===> $legacygames_path2"
+elif [[ -f "$legacygames_path3" ]]; then
+    # Legacy Games is installed in path 3
+    legacygames_value="FALSE"
+    legacygames_text="Legacy Games ===> $legacygames_path3"
 else
     # Legacy Games is not installed
     legacygames_value="FALSE"
@@ -349,6 +396,10 @@ elif [[ -f "$humblegames_path2" ]]; then
     # Humble Games is installed in path 2 on local drive
     humblegames_value="FALSE"
     humblegames_text="Humble Games Collection ===> $humblegames_path2"
+elif [[ -f "$humblegames_path3" ]]; then
+    # Humble Games is installed in path 3 on local drive
+    humblegames_value="FALSE"
+    humblegames_text="Humble Games Collection ===> $humblegames_path3"
 else
     # Humble Games is not installed
     humblegames_value="FALSE"
@@ -364,6 +415,10 @@ elif [[ -f "$indiegala_path2" ]]; then
     # indiegala is installed in path 2 on local drive
     indiegala_value="FALSE"
     indiegala_text="IndieGala ===> $indiegala_path2"
+elif [[ -f "$indiegala_path3" ]]; then
+    # indiegala is installed in path 3 on local drive
+    indiegala_value="FALSE"
+    indiegala_text="IndieGala ===> $indiegala_path3"
 else
     # indiegala is not installed
     indiegala_value="FALSE"
@@ -379,6 +434,10 @@ elif [[ -f "$rockstar_path2" ]]; then
     # Rockstar is installed in path 2 on local drive
     rockstar_value="FALSE"
     rockstar_text="Rockstar Games Launcher ===> $rockstar_path2"
+elif [[ -f "$rockstar_path3" ]]; then
+    # Rockstar is installed in path 3 on local drive
+    rockstar_value="FALSE"
+    rockstar_text="Rockstar Games Launcher ===> $rockstar_path3"
 else
     # Rockstar is not installed
     rockstar_value="FALSE"
@@ -394,6 +453,10 @@ elif [[ -f "$glyph_path2" ]]; then
     # Glyph is installed in path 2 on local drive
     glyph_value="FALSE"
     glyph_text="Glyph Launcher ===> $glyph_path2"
+elif [[ -f "$glyph_path3" ]]; then
+    # Glyph is installed in path 3 on local drive
+    glyph_value="FALSE"
+    glyph_text="Glyph Launcher ===> $glyph_path3"
 else
     # Glyph is not installed
     glyph_value="FALSE"
@@ -409,6 +472,10 @@ elif [[ -f "$minecraft_path2" ]]; then
     # Minecraft is installed in path 2 on local drive
     minecraft_value="FALSE"
     minecraft_text="Minecraft ===> $minecraft_path2"
+elif [[ -f "$minecraft_path3" ]]; then
+    # Minecraft is installed in path 3 on local drive
+    minecraft_value="FALSE"
+    minecraft_text="Minecraft ===> $minecraft_path3"
 else
     # Minecraft is not installed
     minecraft_value="FALSE"
@@ -424,6 +491,10 @@ elif [[ -f "$psplus_path2" ]]; then
     # PlaystationPlus is installed in path 2 on local drive
     psplus_value="FALSE"
     psplus_text="Playstation Plus ===> $psplus_path2"
+elif [[ -f "$psplus_path3" ]]; then
+    # PlaystationPlus is installed in path 3 on local drive
+    psplus_value="FALSE"
+    psplus_text="Playstation Plus ===> $psplus_path3"
 else
     # PlaystationPlus is not installed
     psplus_value="FALSE"
@@ -440,6 +511,10 @@ elif [[ -f "$vkplay_path2" ]]; then
     # VK Play is installed in path 2 on local drive
     vkplay_value="FALSE"
     vkplay_text="VK Play ===> $vkplay_path2"
+elif [[ -f "$vkplay_path3" ]]; then
+    # VK Play is installed in path 3 on local drive
+    vkplay_value="FALSE"
+    vkplay_text="VK Play ===> $vkplay_path3"
 else
     # VK Play is not installed
     vkplay_value="FALSE"
@@ -890,6 +965,10 @@ if [[ $options == "Uninstall" ]]; then
             # Epic Games Launcher was installed using a separate app ID
             # Add code here to delete the EpicGamesLauncher app ID folder
             rm -rf "${logged_in_home}/.local/share/Steam/steamapps/compatdata/EpicGamesLauncher"
+        elif [[ -f "$epic_games_launcher_path3" ]]; then
+            # Epic Games Launcher was installed using a separate app ID in the app ID folder
+            # Add code here to delete the EpicGamesLauncher app ID folder
+            rm -rf "${logged_in_home}/.local/share/Steam/steamapps/compatdata/2580882702"
         fi
     fi
 
@@ -904,6 +983,10 @@ if [[ $options == "Uninstall" ]]; then
             # GOG Galaxy was installed using a separate app ID
             # Add code here to delete the GogGalaxyLauncher app ID folder
             rm -rf "${logged_in_home}/.local/share/Steam/steamapps/compatdata/GogGalaxyLauncher"
+        elif [[ -f "$gog_galaxy_path3" ]]; then
+            # GOG Galaxy was installed using a separate app ID in the app ID folder
+            # Add code here to delete the GogGalaxyLauncher app ID folder
+            rm -rf "${logged_in_home}/.local/share/Steam/steamapps/compatdata/3087017152"
         fi
     fi
 
@@ -918,6 +1001,10 @@ if [[ $options == "Uninstall" ]]; then
             # Uplay was installed using a separate app ID
             # Add code here to delete the UplayLauncher app ID folder
             rm -rf "${logged_in_home}/.local/share/Steam/steamapps/compatdata/UplayLauncher"
+        elif [[ -f "$uplay_path3" ]]; then
+            # Uplay was installed using a separate app ID in the app ID folder
+            # Add code here to delete the UplayLauncher app ID folder
+            rm -rf "${logged_in_home}/.local/share/Steam/steamapps/compatdata/2231225300"
         fi
     fi
 
@@ -932,6 +1019,10 @@ if [[ $options == "Uninstall" ]]; then
             # Battle.net was installed using a separate app ID
             # Add code here to delete the Battle.netLauncher app ID folder
             rm -rf "${logged_in_home}/.local/share/Steam/steamapps/compatdata/Battle.netLauncher"
+        elif [[ -f "$battlenet_path3" ]]; then
+            # Battle.net was installed using a separate app ID in the app ID folder
+            # Add code here to delete the Battle.netLauncher app ID folder
+            rm -rf "${logged_in_home}/.local/share/Steam/steamapps/compatdata/2419219301"
         fi
     fi
 
@@ -946,6 +1037,10 @@ if [[ $options == "Uninstall" ]]; then
             # EA App was installed using a separate app ID
             # Add code here to delete the EALauncher app ID folder
             rm -rf "${logged_in_home}/.local/share/Steam/steamapps/compatdata/TheEAappLauncher"
+        elif [[ -f "$eaapp_path3" ]]; then
+            # EA App was installed using a separate app ID in the app ID folder
+            # Add code here to delete the EALauncher app ID folder
+            rm -rf "${logged_in_home}/.local/share/Steam/steamapps/compatdata/4253976432"
         fi
     fi
 
@@ -960,6 +1055,10 @@ if [[ $options == "Uninstall" ]]; then
             # Amazon Games was installed using a separate app ID
             # Add code here to delete the AmazonGamesLauncher app ID folder
             rm -rf "${logged_in_home}/.local/share/Steam/steamapps/compatdata/AmazonGamesLauncher"
+        elif [[ -f "$amazongames_path3" ]]; then
+            # Amazon Games was installed using a separate app ID in the app ID folder
+            # Add code here to delete the AmazonGamesLauncher app ID folder
+            rm -rf "${logged_in_home}/.local/share/Steam/steamapps/compatdata/3865774986"
         fi
     fi
 
@@ -974,6 +1073,10 @@ if [[ $options == "Uninstall" ]]; then
             # Legacy Games was installed using a separate app ID
             # Add code here to delete the LegacyGamesLauncher app ID folder
             rm -rf "${logged_in_home}/.local/share/Steam/steamapps/compatdata/LegacyGamesLauncher"
+        elif [[ -f "$legacygames_path3" ]]; then
+            # Legacy Games was installed using a separate app ID in the app ID folder
+            # Add code here to delete the LegacyGamesLauncher app ID folder
+            rm -rf "${logged_in_home}/.local/share/Steam/steamapps/compatdata/2488987845"
         fi
     fi
 
@@ -988,6 +1091,10 @@ if [[ $options == "Uninstall" ]]; then
             # Itch.io was installed using a separate app ID
             # Add code here to delete the Itch.ioLauncher app ID folder
             rm -rf "${logged_in_home}/.local/share/Steam/steamapps/compatdata/itchioLauncher"
+        elif [[ -f "$itchio_path3" ]]; then
+            # Itch.io was installed using a separate app ID in the app ID folder
+            # Add code here to delete the Itch.ioLauncher app ID folder
+            rm -rf "${logged_in_home}/.local/share/Steam/steamapps/compatdata/3062070092"
         fi
     fi
 
@@ -1002,6 +1109,10 @@ if [[ $options == "Uninstall" ]]; then
             # Humble Bundle was installed using a separate app ID
             # Add code here to delete the HumbleBundleLauncher app ID folder
             rm -rf "${logged_in_home}/.local/share/Steam/steamapps/compatdata/HumbleGamesLauncher"
+        elif [[ -f "$humblegames_path3" ]]; then
+            # Humble Bundle was installed using a separate app ID in the app ID folder
+            # Add code here to delete the HumbleBundleLauncher app ID folder
+            rm -rf "${logged_in_home}/.local/share/Steam/steamapps/compatdata/2933191291"
         fi
     fi
 
@@ -1016,6 +1127,10 @@ if [[ $options == "Uninstall" ]]; then
             # IndieGala was installed using a separate app ID
             # Add code here to delete the IndieGalaLauncher app ID folder
             rm -rf "${logged_in_home}/.local/share/Steam/steamapps/compatdata/IndieGalaLauncher"
+        elif [[ -f "$indiegala_path3" ]]; then
+            # IndieGala was installed using a separate app ID in the app ID folder
+            # Add code here to delete the IndieGalaLauncher app ID folder
+            rm -rf "${logged_in_home}/.local/share/Steam/steamapps/compatdata/3675413392"
         fi
     fi
 
@@ -1030,6 +1145,10 @@ if [[ $options == "Uninstall" ]]; then
             # Rockstar Games was installed using a separate app ID
             # Add code here to delete the RockstarGamesLauncher app ID folder
             rm -rf "${logged_in_home}/.local/share/Steam/steamapps/compatdata/RockstarGamesLauncher"
+        elif [[ -f "$rockstar_path3" ]]; then
+            # Rockstar Games was installed using a separate app ID in the app ID folder
+            # Add code here to delete the RockstarGamesLauncher app ID folder
+            rm -rf "${logged_in_home}/.local/share/Steam/steamapps/compatdata/2869505794"
         fi
     fi
 
@@ -1044,6 +1163,10 @@ if [[ $options == "Uninstall" ]]; then
             # Glyph was installed using a separate app ID
             # Add code here to delete the GlyphLauncher app ID folder
             rm -rf "${logged_in_home}/.local/share/Steam/steamapps/compatdata/GlyphLauncher"
+        elif [[ -f "$glyph_path3" ]]; then
+            # Glyph was installed using a separate app ID in the app ID folder
+            # Add code here to delete the GlyphLauncher app ID folder
+            rm -rf "${logged_in_home}/.local/share/Steam/steamapps/compatdata/3598178524"
         fi
     fi
 
@@ -1058,6 +1181,10 @@ if [[ $options == "Uninstall" ]]; then
             # Minecraft was installed using a separate app ID
             # Add code here to delete the MinecraftLauncher app ID folder
             rm -rf "${logged_in_home}/.local/share/Steam/steamapps/compatdata/MinecraftLauncher"
+        elif [[ -f "$minecraft_path3" ]]; then
+            # Minecraft was installed using a separate app ID in the app ID folder
+            # Add code here to delete the MinecraftLauncher app ID folder
+            rm -rf "${logged_in_home}/.local/share/Steam/steamapps/compatdata/2662243313"
         fi
     fi
 
@@ -1072,6 +1199,10 @@ if [[ $options == "Uninstall" ]]; then
             # Playstation was installed using a separate app ID
             # Add code here to delete the PlaystationPlusLauncher app ID folder
             rm -rf "${logged_in_home}/.local/share/Steam/steamapps/compatdata/PlaystationPlusLauncher"
+        elif [[ -f "$psplus_path3" ]]; then
+            # Playstation was installed using a separate app ID in the app ID folder
+            # Add code here to delete the PlaystationPlusLauncher app ID folder
+            rm -rf "${logged_in_home}/.local/share/Steam/steamapps/compatdata/3488544902"
         fi
     fi
 
@@ -1087,6 +1218,10 @@ if [[ $options == "Uninstall" ]]; then
             # VKPlayLauncher was installed using a separate app ID
             # Add code here to delete the VKPlayLauncher app ID folder
             rm -rf "${logged_in_home}/.local/share/Steam/steamapps/compatdata/VKPlayLauncher"
+        elif [[ -f "$vkplay_path3" ]]; then
+            # VKPlayLauncher was installed using a separate app ID in the app ID folder
+            # Add code here to delete the VKPlayLauncher app ID folder
+            rm -rf "${logged_in_home}/.local/share/Steam/steamapps/compatdata/4166750127"
         fi
     fi
 
@@ -2193,6 +2328,16 @@ elif [[ -f "$epic_games_launcher_path2" ]]; then
     echo "export epicstartingdir=$epicstartingdir" >> ${logged_in_home}/.config/systemd/user/env_vars
     echo "export epic_games_launcher=EpicGamesLauncher" >> ${logged_in_home}/.config/systemd/user/env_vars
     echo "Epic Games Launcher found at path 2"
+elif [[ -f "$epic_games_launcher_path3" ]]; then
+    # Epic Games Launcher is installed at path 3
+    epicshortcutdirectory="\"$epic_games_launcher_path3\""
+    epiclaunchoptions="STEAM_COMPAT_DATA_PATH=\"${logged_in_home}/.local/share/Steam/steamapps/compatdata/2580882702/\" %command%"
+    epicstartingdir="\"$(dirname "$epic_games_launcher_path3")\""
+    echo "export epicshortcutdirectory=$epicshortcutdirectory" >> ${logged_in_home}/.config/systemd/user/env_vars
+    echo "export epiclaunchoptions=$epiclaunchoptions" >> ${logged_in_home}/.config/systemd/user/env_vars
+    echo "export epicstartingdir=$epicstartingdir" >> ${logged_in_home}/.config/systemd/user/env_vars
+    echo "export epic_games_launcher=2580882702" >> ${logged_in_home}/.config/systemd/user/env_vars
+    echo "Epic Games Launcher found at path 3"
 fi
 
 
@@ -2216,6 +2361,16 @@ elif [[ -f "$gog_galaxy_path2" ]]; then
     echo "export gogstartingdir=$gogstartingdir" >> ${logged_in_home}/.config/systemd/user/env_vars
     echo "export gog_galaxy_launcher=GogGalaxyLauncher" >> ${logged_in_home}/.config/systemd/user/env_vars
     echo "Gog Galaxy Launcher found at path 2"
+elif [[ -f "$gog_galaxy_path3" ]]; then
+    # Gog Galaxy Launcher is installed at path 3
+    gogshortcutdirectory="\"$gog_galaxy_path3\""
+    goglaunchoptions="STEAM_COMPAT_DATA_PATH=\"${logged_in_home}/.local/share/Steam/steamapps/compatdata/3087017152/\" %command%"
+    gogstartingdir="\"$(dirname "$gog_galaxy_path3")\""
+    echo "export gogshortcutdirectory=$gogshortcutdirectory" >> ${logged_in_home}/.config/systemd/user/env_vars
+    echo "export goglaunchoptions=$goglaunchoptions" >> ${logged_in_home}/.config/systemd/user/env_vars
+    echo "export gogstartingdir=$gogstartingdir" >> ${logged_in_home}/.config/systemd/user/env_vars
+    echo "export gog_galaxy_launcher=3087017152" >> ${logged_in_home}/.config/systemd/user/env_vars
+    echo "Gog Galaxy Launcher found at path 3"
 fi
 
 
@@ -2238,7 +2393,17 @@ elif [[ -f "$uplay_path2" ]]; then
     echo "export uplaylaunchoptions=$uplaylaunchoptions" >> ${logged_in_home}/.config/systemd/user/env_vars
     echo "export uplaystartingdir=$uplaystartingdir" >> ${logged_in_home}/.config/systemd/user/env_vars
     echo "export ubisoft_connect_launcher=UplayLauncher" >> ${logged_in_home}/.config/systemd/user/env_vars
-    echo "Ubisoft Connect Launcher found at path 1"
+    echo "Ubisoft Connect Launcher found at path 2"
+elif [[ -f "$uplay_path3" ]]; then
+    # Uplay Launcher is installed at path 3
+    uplayshortcutdirectory="\"$uplay_path3\""
+    uplaylaunchoptions="STEAM_COMPAT_DATA_PATH=\"${logged_in_home}/.local/share/Steam/steamapps/compatdata/2231225300/\" %command%"
+    uplaystartingdir="\"$(dirname "$uplay_path3")\""
+    echo "export uplayshortcutdirectory=$uplayshortcutdirectory" >> ${logged_in_home}/.config/systemd/user/env_vars
+    echo "export uplaylaunchoptions=$uplaylaunchoptions" >> ${logged_in_home}/.config/systemd/user/env_vars
+    echo "export uplaystartingdir=$uplaystartingdir" >> ${logged_in_home}/.config/systemd/user/env_vars
+    echo "export ubisoft_connect_launcher=UplayLauncher" >> ${logged_in_home}/.config/systemd/user/env_vars
+    echo "Ubisoft Connect Launcher found at path 3"
 fi
 
 if [[ -f "$battlenet_path1" ]]; then
@@ -2261,6 +2426,16 @@ elif [[ -f "$battlenet_path2" ]]; then
     echo "export battlenetstartingdir=$battlenetstartingdir" >> ${logged_in_home}/.config/systemd/user/env_vars
     echo "export bnet_launcher=Battle.netLauncher" >> ${logged_in_home}/.config/systemd/user/env_vars
     echo "Battlenet Launcher found at path 2"
+elif [[ -f "$battlenet_path3" ]]; then
+    # Battlenet Launcher is installed at path 3
+    battlenetshortcutdirectory="\"$battlenet_path3\""
+    battlenetlaunchoptions="STEAM_COMPAT_DATA_PATH=\"${logged_in_home}/.local/share/Steam/steamapps/compatdata/2419219301/\" %command%"
+    battlenetstartingdir="\"$(dirname "$battlenet_path3")\""
+    echo "export battlenetshortcutdirectory=$battlenetshortcutdirectory" >> ${logged_in_home}/.config/systemd/user/env_vars
+    echo "export battlenetlaunchoptions=$battlenetlaunchoptions" >> ${logged_in_home}/.config/systemd/user/env_vars
+    echo "export battlenetstartingdir=$battlenetstartingdir" >> ${logged_in_home}/.config/systemd/user/env_vars
+    echo "export bnet_launcher=Battle.netLauncher" >> ${logged_in_home}/.config/systemd/user/env_vars
+    echo "Battlenet Launcher found at path 3"
 fi
 
 if [[ -f "$eaapp_path1" ]]; then
@@ -2283,6 +2458,16 @@ elif [[ -f "$eaapp_path2" ]]; then
     echo "export eaappstartingdir=$eaappstartingdir" >> ${logged_in_home}/.config/systemd/user/env_vars
 	echo "export ea_app_launcher=TheEAappLauncher" >> ${logged_in_home}/.config/systemd/user/env_vars
     echo "EA App Launcher found at path 2"
+elif [[ -f "$eaapp_path3" ]]; then
+    # EA App Launcher is installed at path 3
+    eaappshortcutdirectory="\"$eaapp_path3\""
+    eaapplaunchoptions="STEAM_COMPAT_DATA_PATH=\"${logged_in_home}/.local/share/Steam/steamapps/compatdata/4253976432/\" %command%"
+    eaappstartingdir="\"$(dirname "$eaapp_path3")\""
+    echo "export eaappshortcutdirectory=$eaappshortcutdirectory" >> ${logged_in_home}/.config/systemd/user/env_vars
+    echo "export eaapplaunchoptions=$eaapplaunchoptions" >> ${logged_in_home}/.config/systemd/user/env_vars
+    echo "export eaappstartingdir=$eaappstartingdir" >> ${logged_in_home}/.config/systemd/user/env_vars
+	echo "export ea_app_launcher=TheEAappLauncher" >> ${logged_in_home}/.config/systemd/user/env_vars
+    echo "EA App Launcher found at path 3"
 fi
 
 if [[ -f "$amazongames_path1" ]]; then
@@ -2305,6 +2490,16 @@ elif [[ -f "$amazongames_path2" ]]; then
     echo "export amazonstartingdir=$amazonstartingdir" >> ${logged_in_home}/.config/systemd/user/env_vars
     echo "export amazon_launcher=AmazonGamesLauncher" >> ${logged_in_home}/.config/systemd/user/env_vars
     echo "Amazon Games Launcher found at path 2"
+elif [[ -f "$amazongames_path3" ]]; then
+    # Amazon Games Launcher is installed at path 3
+    amazonshortcutdirectory="\"$amazongames_path3\""
+    amazonlaunchoptions="STEAM_COMPAT_DATA_PATH=\"${logged_in_home}/.local/share/Steam/steamapps/compatdata/3865774986/\" %command%"
+    amazonstartingdir="\"$(dirname "$amazongames_path3")\""
+    echo "export amazonshortcutdirectory=$amazonshortcutdirectory" >> ${logged_in_home}/.config/systemd/user/env_vars
+    echo "export amazonlaunchoptions=$amazonlaunchoptions" >> ${logged_in_home}/.config/systemd/user/env_vars
+    echo "export amazonstartingdir=$amazonstartingdir" >> ${logged_in_home}/.config/systemd/user/env_vars
+    echo "export amazon_launcher=AmazonGamesLauncher" >> ${logged_in_home}/.config/systemd/user/env_vars
+    echo "Amazon Games Launcher found at path 3"
 fi
 
 if [[ -f "$itchio_path1" ]]; then
@@ -2320,6 +2515,14 @@ elif [[ -f "$itchio_path2" ]]; then
     itchioshortcutdirectory="\"$itchio_path2\""
     itchiolaunchoptions="STEAM_COMPAT_DATA_PATH=\"${logged_in_home}/.local/share/Steam/steamapps/compatdata/itchioLauncher/\" %command%"
     itchiostartingdir="\"$(dirname "$itchio_path2")\""
+    echo "export itchioshortcutdirectory=$itchioshortcutdirectory" >> ${logged_in_home}/.config/systemd/user/env_vars
+    echo "export itchiolaunchoptions=$itchiolaunchoptions" >> ${logged_in_home}/.config/systemd/user/env_vars
+    echo "export itchiostartingdir=$itchiostartingdir" >> ${logged_in_home}/.config/systemd/user/env_vars
+elif [[ -f "$itchio_path3" ]]; then
+    # itchio Launcher is installed at path 3
+    itchioshortcutdirectory="\"$itchio_path3\""
+    itchiolaunchoptions="STEAM_COMPAT_DATA_PATH=\"${logged_in_home}/.local/share/Steam/steamapps/compatdata/3062070092/\" %command%"
+    itchiostartingdir="\"$(dirname "$itchio_path3")\""
     echo "export itchioshortcutdirectory=$itchioshortcutdirectory" >> ${logged_in_home}/.config/systemd/user/env_vars
     echo "export itchiolaunchoptions=$itchiolaunchoptions" >> ${logged_in_home}/.config/systemd/user/env_vars
     echo "export itchiostartingdir=$itchiostartingdir" >> ${logged_in_home}/.config/systemd/user/env_vars
@@ -2341,6 +2544,14 @@ elif [[ -f "$legacygames_path2" ]]; then
     echo "export legacyshortcutdirectory=$legacyshortcutdirectory" >> ${logged_in_home}/.config/systemd/user/env_vars
     echo "export legacylaunchoptions=$legacylaunchoptions" >> ${logged_in_home}/.config/systemd/user/env_vars
     echo "export legacystartingdir=$legacystartingdir" >> ${logged_in_home}/.config/systemd/user/env_vars
+elif [[ -f "$legacygames_path3" ]]; then
+    # Legacy Games Launcher is installed at path 3
+    legacyshortcutdirectory="\"$legacygames_path3\""
+    legacylaunchoptions="STEAM_COMPAT_DATA_PATH=\"${logged_in_home}/.local/share/Steam/steamapps/compatdata/2488987845/\" %command%"
+    legacystartingdir="\"$(dirname "$legacygames_path3")\""
+    echo "export legacyshortcutdirectory=$legacyshortcutdirectory" >> ${logged_in_home}/.config/systemd/user/env_vars
+    echo "export legacylaunchoptions=$legacylaunchoptions" >> ${logged_in_home}/.config/systemd/user/env_vars
+    echo "export legacystartingdir=$legacystartingdir" >> ${logged_in_home}/.config/systemd/user/env_vars
 fi
 
 if [[ -f "$humblegames_path1" ]]; then
@@ -2356,6 +2567,14 @@ elif [[ -f "$humblegames_path2" ]]; then
     humbleshortcutdirectory="\"$humblegames_path2\""
     humblelaunchoptions="STEAM_COMPAT_DATA_PATH=\"${logged_in_home}/.local/share/Steam/steamapps/compatdata/HumbleGamesLauncher/\" %command%"
     humblestartingdir="\"$(dirname "$humblegames_path2")\""
+    echo "export humbleshortcutdirectory=$humbleshortcutdirectory" >> ${logged_in_home}/.config/systemd/user/env_vars
+    echo "export humblelaunchoptions=$humblelaunchoptions" >> ${logged_in_home}/.config/systemd/user/env_vars
+    echo "export humblestartingdir=$humblestartingdir" >> ${logged_in_home}/.config/systemd/user/env_vars
+elif [[ -f "$humblegames_path3" ]]; then
+    # Humble Games Launcher is installed at path 3
+    humbleshortcutdirectory="\"$humblegames_path3\""
+    humblelaunchoptions="STEAM_COMPAT_DATA_PATH=\"${logged_in_home}/.local/share/Steam/steamapps/compatdata/2933191291/\" %command%"
+    humblestartingdir="\"$(dirname "$humblegames_path3")\""
     echo "export humbleshortcutdirectory=$humbleshortcutdirectory" >> ${logged_in_home}/.config/systemd/user/env_vars
     echo "export humblelaunchoptions=$humblelaunchoptions" >> ${logged_in_home}/.config/systemd/user/env_vars
     echo "export humblestartingdir=$humblestartingdir" >> ${logged_in_home}/.config/systemd/user/env_vars
@@ -2377,6 +2596,14 @@ elif [[ -f "$indiegala_path2" ]]; then
     echo "export indieshortcutdirectory=$indieshortcutdirectory" >> ${logged_in_home}/.config/systemd/user/env_vars
     echo "export indielaunchoptions=$indielaunchoptions" >> ${logged_in_home}/.config/systemd/user/env_vars
     echo "export indiestartingdir=$indiestartingdir" >> ${logged_in_home}/.config/systemd/user/env_vars
+elif [[ -f "$indiegala_path3" ]]; then
+    # indiegala Launcher is installed at path 3
+    indieshortcutdirectory="\"$indiegala_path3\""
+    indielaunchoptions="STEAM_COMPAT_DATA_PATH=\"${logged_in_home}/.local/share/Steam/steamapps/compatdata/3675413392/\" %command%"
+    indiestartingdir="\"$(dirname "$indiegala_path3")\""
+    echo "export indieshortcutdirectory=$indieshortcutdirectory" >> ${logged_in_home}/.config/systemd/user/env_vars
+    echo "export indielaunchoptions=$indielaunchoptions" >> ${logged_in_home}/.config/systemd/user/env_vars
+    echo "export indiestartingdir=$indiestartingdir" >> ${logged_in_home}/.config/systemd/user/env_vars
 fi
 
 if [[ -f "$rockstar_path1" ]]; then
@@ -2392,6 +2619,14 @@ elif [[ -f "$rockstar_path2" ]]; then
     rockstarshortcutdirectory="\"$rockstar_path2\""
     rockstarlaunchoptions="STEAM_COMPAT_DATA_PATH=\"${logged_in_home}/.local/share/Steam/steamapps/compatdata/RockstarGamesLauncher/\" %command%"
     rockstarstartingdir="\"$(dirname "$rockstar_path2")\""
+    echo "export rockstarshortcutdirectory=$rockstarshortcutdirectory" >> ${logged_in_home}/.config/systemd/user/env_vars
+    echo "export rockstarlaunchoptions=$rockstarlaunchoptions" >> ${logged_in_home}/.config/systemd/user/env_vars
+    echo "export rockstarstartingdir=$rockstarstartingdir" >> ${logged_in_home}/.config/systemd/user/env_vars
+elif [[ -f "$rockstar_path3" ]]; then
+    # rockstar Launcher is installed at path 3
+    rockstarshortcutdirectory="\"$rockstar_path3\""
+    rockstarlaunchoptions="STEAM_COMPAT_DATA_PATH=\"${logged_in_home}/.local/share/Steam/steamapps/compatdata/2869505794/\" %command%"
+    rockstarstartingdir="\"$(dirname "$rockstar_path3")\""
     echo "export rockstarshortcutdirectory=$rockstarshortcutdirectory" >> ${logged_in_home}/.config/systemd/user/env_vars
     echo "export rockstarlaunchoptions=$rockstarlaunchoptions" >> ${logged_in_home}/.config/systemd/user/env_vars
     echo "export rockstarstartingdir=$rockstarstartingdir" >> ${logged_in_home}/.config/systemd/user/env_vars
@@ -2413,6 +2648,14 @@ elif [[ -f "$glyph_path2" ]]; then
     echo "export glyphshortcutdirectory=$glyphshortcutdirectory" >> ${logged_in_home}/.config/systemd/user/env_vars
     echo "export glyphlaunchoptions=$glyphlaunchoptions" >> ${logged_in_home}/.config/systemd/user/env_vars
     echo "export glyphstartingdir=$glyphstartingdir" >> ${logged_in_home}/.config/systemd/user/env_vars
+elif [[ -f "$glyph_path3" ]]; then
+    # Glyph is installed at path 3
+    glyphshortcutdirectory="\"$glyph_path3\""
+    glyphlaunchoptions="STEAM_COMPAT_DATA_PATH=\"${logged_in_home}/.local/share/Steam/steamapps/compatdata/3598178524/\" %command%"
+    glyphstartingdir="\"$(dirname "$glyph_path3")\""
+    echo "export glyphshortcutdirectory=$glyphshortcutdirectory" >> ${logged_in_home}/.config/systemd/user/env_vars
+    echo "export glyphlaunchoptions=$glyphlaunchoptions" >> ${logged_in_home}/.config/systemd/user/env_vars
+    echo "export glyphstartingdir=$glyphstartingdir" >> ${logged_in_home}/.config/systemd/user/env_vars
 fi
 
 if [[ -f "$minecraft_path1" ]]; then
@@ -2427,7 +2670,15 @@ elif [[ -f "$minecraft_path2" ]]; then
     # Minecraft is installed at path 2
     minecraftshortcutdirectory="\"$minecraft_path2\""
     minecraftlaunchoptions="STEAM_COMPAT_DATA_PATH=\"${logged_in_home}/.local/share/Steam/steamapps/compatdata/MinecraftLauncher/\" %command%"
-    minecraftstartingdir="\"$(dirname "$minecraft_path1")\""
+    minecraftstartingdir="\"$(dirname "$minecraft_path2")\""
+    echo "export minecraftshortcutdirectory=$minecraftshortcutdirectory" >> ${logged_in_home}/.config/systemd/user/env_vars
+    echo "export minecraftlaunchoptions=$minecraftlaunchoptions" >> ${logged_in_home}/.config/systemd/user/env_vars
+    echo "export minecraftstartingdir=$minecraftstartingdir" >> ${logged_in_home}/.config/systemd/user/env_vars
+elif [[ -f "$minecraft_path3" ]]; then
+    # Minecraft is installed at path 3
+    minecraftshortcutdirectory="\"$minecraft_path3\""
+    minecraftlaunchoptions="STEAM_COMPAT_DATA_PATH=\"${logged_in_home}/.local/share/Steam/steamapps/compatdata/2662243313/\" %command%"
+    minecraftstartingdir="\"$(dirname "$minecraft_path3")\""
     echo "export minecraftshortcutdirectory=$minecraftshortcutdirectory" >> ${logged_in_home}/.config/systemd/user/env_vars
     echo "export minecraftlaunchoptions=$minecraftlaunchoptions" >> ${logged_in_home}/.config/systemd/user/env_vars
     echo "export minecraftstartingdir=$minecraftstartingdir" >> ${logged_in_home}/.config/systemd/user/env_vars
@@ -2449,6 +2700,14 @@ elif [[ -f "$psplus_path2" ]]; then
     echo "export psplusshortcutdirectory=$psplusshortcutdirectory" >> ${logged_in_home}/.config/systemd/user/env_vars
     echo "export pspluslaunchoptions=$pspluslaunchoptions" >> ${logged_in_home}/.config/systemd/user/env_vars
     echo "export psplusstartingdir=$psplusstartingdir" >> ${logged_in_home}/.config/systemd/user/env_vars
+elif [[ -f "$psplus_path3" ]]; then
+    # Playstation is installed at path 3
+    psplusshortcutdirectory="\"$psplus_path3\""
+    pspluslaunchoptions="STEAM_COMPAT_DATA_PATH=\"${logged_in_home}/.local/share/Steam/steamapps/compatdata/3488544902/\" %command%"
+    psplusstartingdir="\"$(dirname "$psplus_path3")\""
+    echo "export psplusshortcutdirectory=$psplusshortcutdirectory" >> ${logged_in_home}/.config/systemd/user/env_vars
+    echo "export pspluslaunchoptions=$pspluslaunchoptions" >> ${logged_in_home}/.config/systemd/user/env_vars
+    echo "export psplusstartingdir=$psplusstartingdir" >> ${logged_in_home}/.config/systemd/user/env_vars
 fi
 
 if [[ -f "$vkplay_path1" ]]; then
@@ -2467,6 +2726,15 @@ elif [[ -f "$vkplay_path2" ]]; then
     echo "export vkplayshortcutdirectory=$vkplayshortcutdirectory" >> ${logged_in_home}/.config/systemd/user/env_vars
     echo "export vkplaylaunchoptions=$vkplaylaunchoptions" >> ${logged_in_home}/.config/systemd/user/env_vars
     echo "export vkplaystartingdir=$vkplaystartingdir" >> ${logged_in_home}/.config/systemd/user/env_vars
+elif [[ -f "$vkplay_path3" ]]; then
+    # VK Play is installed at path 3
+    vkplayhortcutdirectory="\"$vkplay_path3\""
+    vkplaylaunchoptions="STEAM_COMPAT_DATA_PATH=\"${logged_in_home}/.local/share/Steam/steamapps/compatdata/4166750127/\" %command%"
+    vkplaystartingdir="\"$(dirname "$vkplay_path3")\""
+    echo "export vkplayshortcutdirectory=$vkplayshortcutdirectory" >> ${logged_in_home}/.config/systemd/user/env_vars
+    echo "export vkplaylaunchoptions=$vkplaylaunchoptions" >> ${logged_in_home}/.config/systemd/user/env_vars
+    echo "export vkplaystartingdir=$vkplaystartingdir" >> ${logged_in_home}/.config/systemd/user/env_vars
+fi
 fi
 
 
