@@ -1018,32 +1018,32 @@ if new_shortcuts_added or shortcuts_updated:
     # Assuming 'games' is a list of game dictionaries
     games = [shortcut for shortcut in shortcuts['shortcuts'].values()]
 
-    for game in games:
-        # Skip if 'appname' or 'exe' is None
-        if game.get('appname') is None or game.get('exe') is None:
-            continue
+    # Create the path to the output file
+    output_file_path = f"{logged_in_home}/.config/systemd/user/NSLGameScanner_output.log"
 
-        # Create a dictionary to hold the shortcut information
-        shortcut_info = {
-            'appid': str(game.get('appid')),
-            'appname': game.get('appname'),
-            'exe': game.get('exe'),
-            'StartDir': game.get('StartDir'),
-            'icon': f"{logged_in_home}/.steam/root/userdata/{steamid3}/config/grid/{get_file_name('icons', game.get('appid'))}",
-            'LaunchOptions': game.get('LaunchOptions'),
-            'GameID': game.get('GameID', "default_game_id")  # Use a default value if game_id is not defined
-        }
+    # Open the output file in append mode
+    with open(output_file_path, 'a') as output_file:
+        for game in games:
+            # Skip if 'appname' or 'exe' is None
+            if game.get('appname') is None or game.get('exe') is None:
+                continue
 
-        # Print the shortcut information in JSON format
-        message = json.dumps(shortcut_info)
-        print(message, flush=True)  # Print to stdout
+            # Create a dictionary to hold the shortcut information
+            shortcut_info = {
+                'appid': str(game.get('appid')),
+                'appname': game.get('appname'),
+                'exe': game.get('exe'),
+                'StartDir': game.get('StartDir'),
+                'icon': f"{logged_in_home}/.steam/root/userdata/{steamid3}/config/grid/{get_file_name('icons', game.get('appid'))}",
+                'LaunchOptions': game.get('LaunchOptions'),
+                'GameID': game.get('GameID', "default_game_id")  # Use a default value if game_id is not defined
+            }
+
+            # Print the shortcut information in JSON format
+            message = json.dumps(shortcut_info)
+            print(message, flush=True)  # Print to stdout
+
+            # Print the shortcut information to the output file
+            print(message, file=output_file, flush=True)
 
 print("All finished!")
-
-# Create the path to the output file
-output_file_path = f"{logged_in_home}/.config/systemd/user/NSLGameScanner_output.log"
-
-# Open the output file in append mode
-with open(output_file_path, 'a') as output_file:
-    # Print the shortcut information to the output file
-    print(message, file=output_file, flush=True)
