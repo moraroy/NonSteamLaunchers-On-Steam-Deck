@@ -2735,7 +2735,6 @@ elif [[ -f "$vkplay_path3" ]]; then
     echo "export vkplaylaunchoptions=$vkplaylaunchoptions" >> ${logged_in_home}/.config/systemd/user/env_vars
     echo "export vkplaystartingdir=$vkplaystartingdir" >> ${logged_in_home}/.config/systemd/user/env_vars
 fi
-fi
 
 
 
