@@ -1040,4 +1040,10 @@ if new_shortcuts_added or shortcuts_updated:
 
 print("All finished!")
 
+# Create the path to the output file
+output_file_path = f"{logged_in_home}/.config/systemd/user/NSLGameScanner_output.log"
 
+# Open the output file in append mode
+with open(output_file_path, 'a') as output_file:
+    # Print the shortcut information to the output file
+    print(message, file=output_file, flush=True)
