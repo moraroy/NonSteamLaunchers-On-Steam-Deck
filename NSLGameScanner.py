@@ -1021,8 +1021,8 @@ if new_shortcuts_added or shortcuts_updated:
     # Create the path to the output file
     output_file_path = f"{logged_in_home}/.config/systemd/user/NSLGameScanner_output.log"
 
-    # Open the output file in append mode
-    with open(output_file_path, 'a') as output_file:
+    # Open the output file in write mode
+    with open(output_file_path, 'w') as output_file:
         for game in games:
             # Skip if 'appname' or 'exe' is None
             if game.get('appname') is None or game.get('exe') is None:
