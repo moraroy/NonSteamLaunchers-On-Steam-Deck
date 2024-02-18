@@ -2402,7 +2402,7 @@ elif [[ -f "$uplay_path3" ]]; then
     echo "export uplayshortcutdirectory=$uplayshortcutdirectory" >> ${logged_in_home}/.config/systemd/user/env_vars
     echo "export uplaylaunchoptions=$uplaylaunchoptions" >> ${logged_in_home}/.config/systemd/user/env_vars
     echo "export uplaystartingdir=$uplaystartingdir" >> ${logged_in_home}/.config/systemd/user/env_vars
-    echo "export ubisoft_connect_launcher=UplayLauncher" >> ${logged_in_home}/.config/systemd/user/env_vars
+    echo "export ubisoft_connect_launcher=2231225300" >> ${logged_in_home}/.config/systemd/user/env_vars
     echo "Ubisoft Connect Launcher found at path 3"
 fi
 
@@ -2434,7 +2434,7 @@ elif [[ -f "$battlenet_path3" ]]; then
     echo "export battlenetshortcutdirectory=$battlenetshortcutdirectory" >> ${logged_in_home}/.config/systemd/user/env_vars
     echo "export battlenetlaunchoptions=$battlenetlaunchoptions" >> ${logged_in_home}/.config/systemd/user/env_vars
     echo "export battlenetstartingdir=$battlenetstartingdir" >> ${logged_in_home}/.config/systemd/user/env_vars
-    echo "export bnet_launcher=Battle.netLauncher" >> ${logged_in_home}/.config/systemd/user/env_vars
+    echo "export bnet_launcher=2419219301" >> ${logged_in_home}/.config/systemd/user/env_vars
     echo "Battlenet Launcher found at path 3"
 fi
 
@@ -2466,7 +2466,7 @@ elif [[ -f "$eaapp_path3" ]]; then
     echo "export eaappshortcutdirectory=$eaappshortcutdirectory" >> ${logged_in_home}/.config/systemd/user/env_vars
     echo "export eaapplaunchoptions=$eaapplaunchoptions" >> ${logged_in_home}/.config/systemd/user/env_vars
     echo "export eaappstartingdir=$eaappstartingdir" >> ${logged_in_home}/.config/systemd/user/env_vars
-	echo "export ea_app_launcher=TheEAappLauncher" >> ${logged_in_home}/.config/systemd/user/env_vars
+	echo "export ea_app_launcher=4253976432" >> ${logged_in_home}/.config/systemd/user/env_vars
     echo "EA App Launcher found at path 3"
 fi
 
@@ -2498,7 +2498,7 @@ elif [[ -f "$amazongames_path3" ]]; then
     echo "export amazonshortcutdirectory=$amazonshortcutdirectory" >> ${logged_in_home}/.config/systemd/user/env_vars
     echo "export amazonlaunchoptions=$amazonlaunchoptions" >> ${logged_in_home}/.config/systemd/user/env_vars
     echo "export amazonstartingdir=$amazonstartingdir" >> ${logged_in_home}/.config/systemd/user/env_vars
-    echo "export amazon_launcher=AmazonGamesLauncher" >> ${logged_in_home}/.config/systemd/user/env_vars
+    echo "export amazon_launcher=3865774986" >> ${logged_in_home}/.config/systemd/user/env_vars
     echo "Amazon Games Launcher found at path 3"
 fi
 
