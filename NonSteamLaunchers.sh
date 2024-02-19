@@ -2720,14 +2720,14 @@ fi
 
 
 
-# Detach script from Steam process
-nohup sh -c 'sleep 10; /usr/bin/steam' &
+# Directory to be checked
+dir="${logged_in_home}/homebrew/plugins/NonSteamLaunchersDecky"
 
-# Define the directory
-dir="${logged_in_home}/homebrew/NonSteamLaunchersDecky/"
-
-# Check if the directory does not exist
+# Check if directory does not exist
 if [ ! -d "$dir" ]; then
+    # Detach script from Steam process
+    nohup sh -c 'sleep 10; /usr/bin/steam' &
+
     # Close all instances of Steam
     steam_pid() { pgrep -x steam ; }
     steam_running=$(steam_pid)
@@ -2735,9 +2735,9 @@ if [ ! -d "$dir" ]; then
 
     # Wait for the steam process to exit
     while steam_pid > /dev/null; do sleep 5; done
-else
-    echo "Directory $dir exists. Not restarting Steam."
 fi
+
+
 
 
 
