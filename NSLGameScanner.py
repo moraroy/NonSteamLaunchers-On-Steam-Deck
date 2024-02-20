@@ -923,7 +923,7 @@ if new_shortcuts_added or shortcuts_updated:
         file.write(vdf.binary_dumps(shortcuts))
 
     # Load the configset_controller_neptune.vdf file
-    with open(controller_config_path, 'r') as f:
+    with open(f"{controller_config_path}", 'r') as f:
         config = vdf.load(f)
 
     # Add new entries for the games
@@ -1006,7 +1006,7 @@ if new_shortcuts_added or shortcuts_updated:
         }
 
     # Save the updated config
-    with open(controller_config_path, 'w') as f:
+    with open(f"{controller_config_path}", 'w') as f:
         vdf.dump(config, f)
 
     # Print the created shortcuts
