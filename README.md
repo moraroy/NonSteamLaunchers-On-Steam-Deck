@@ -187,6 +187,44 @@ Most importantly, `ruff` is used to lint all python code.
     git commit -m "commit message"
     ```
 
+### Conventional Commits
+
+While not currently enforced, by using [conventional commits](https://www.conventionalcommits.org/en/v1.0.0/#summary), it's possible to automatically generate changelogs and version numbers via [release-please](https://github.com/googleapis/release-please).
+
+To help with that, the [commitizen](https://commitizen-tools.github.io/commitizen/) tool can be installed.
+
+#### Usage
+
+```bash
+# install cz
+npm install -g commitizen cz-conventional-changelog
+brew install commitizen
+
+# make repo cz friendly
+commitizen init cz-conventional-changelog --save-dev --save-exact
+npm install
+
+# add file to commit
+git add .gitignore
+
+# run cz
+λ git cz
+cz-cli@4.3.0, cz-conventional-changelog@3.3.0
+
+? Select the type of change that you're committing: chore:    Other changes that don't modify src or test files
+? What is the scope of this change (e.g. component or file name): (press enter to skip) .gitignore
+? Write a short, imperative tense description of the change (max 81 chars):
+ (17) update .gitignore
+? Provide a longer description of the change: (press enter to skip)
+
+? Are there any breaking changes? No
+? Does this change affect any open issues? No
+[main 0a9920d] chore(.gitignore): update .gitignore
+ 1 file changed, 131 insertions(+)
+
+λ git push
+```
+
 ### Formatting
 
 > **TL;DR**: The [Ruff formatter](https://astral.sh/blog/the-ruff-formatter) is an extremely fast Python formatter, written in Rust. It’s over 30x faster than Black and 100x faster than YAPF, formatting large-scale Python projects in milliseconds — all while achieving >99.9% Black compatibility.
