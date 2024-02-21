@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "non-steam-launchers"
-version = "2.99.1"
+version = "3.8.0"
 description = ""
 authors = [
     "moraroy <88516395+moraroy@users.noreply.github.com>",
@@ -10,19 +10,25 @@ license = "MIT"
 readme = "README.md"
 
 [tool.poetry.dependencies]
-python = "^3.11"
+python = ">=3.11,<3.13"
+python-decouple = "^3.8"
+python-steamgriddb = "^1.0.5"
 requests = "^2.31.0"
 vdf = "^3.4"
 
 [tool.poetry.group.dev.dependencies]
-ipython = "^8.4.0"
-pytest = "^7.1.3"
-pytest-asyncio = "^0.19.0"
-pytest-cov = "^4.0.0"
+coverage = "^7.3.2"
+hypothesis = {extras = ["cli"], version = "^6.88.4"}
+icecream = "^2.1.3"
+ipython = "^8.17.2"
+poetry-plugin-export = "^1.6.0"
+pytest = "^7.4.3"
+pytest-asyncio = "^0.21.1"
+pytest-cov = "^4.1.0"
 pytest-datafiles = "^3.0.0"
-pytest-xdist = "^2.5.0"
-rich = "^12.6.0"
-ruff = "^0.0.269"
+pytest-xdist = "^3.4.0"
+rich = "^13.6.0"
+ruff = "^0.1.5"
 
 [tool.ruff]
 # Enable pycodestyle (`E`) and Pyflakes (`F`) codes by default.
