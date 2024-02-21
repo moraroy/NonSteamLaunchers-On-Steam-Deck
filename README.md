@@ -186,6 +186,11 @@ Most importantly, `ruff` is used to lint all python code.
     git add .
     git commit -m "commit message"
     ```
+* Bypass pre-commit hooks
+  * Sometimes, it's necessary to bypass pre-commit hooks. This can be done with the `--no-verify` flag.
+    ```bash
+    git commit -m "commit message" --no-verify
+    ```
 
 ### Conventional Commits
 
