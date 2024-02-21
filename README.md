@@ -203,7 +203,6 @@ To help with that, the [commitizen](https://commitizen-tools.github.io/commitize
 ```bash
 # install cz
 npm install -g commitizen cz-conventional-changelog
-brew install commitizen
 
 # make repo cz friendly
 commitizen init cz-conventional-changelog --save-dev --save-exact
@@ -245,30 +244,31 @@ cz-cli@4.3.0, cz-conventional-changelog@3.3.0
 
 ### Additional tooling
 
-Additional tooling includes but is not limited to:
+#### TODO
+
+* Add [devbox](https://www.jetpack.io/devbox/) 👌
 
 #### asdf
 
 * Install [asdf](https://asdf-vm.com/guide/getting-started.html#_2-download-asdf)
-* Usage
+* Add plugins
     ```bash
-    # add python plugin
     asdf plugin-add python
-
+    asdf plugin-add poetry https://github.com/asdf-community/asdf-poetry.git
+    asdf plugin add nodejs https://github.com/asdf-vm/asdf-nodejs.git
+    ```
+* Usage
+  * Install local plugins in repo
+    ```bash
+    asdf install
+    ```
+  * Install specific plugins
+    ```bash
     # install stable python
     asdf install python <latest|3.11.4>
 
     # set stable to system python
     asdf global python latest
-
-    # add poetry asdf plugin
-    asdf plugin-add poetry https://github.com/asdf-community/asdf-poetry.git
-
-    # install latest version via asdf
-    asdf install poetry <latest|1.5.1>
-
-    # set latest version as default
-    asdf global poetry latest
     ```
 
 #### shellcheck
