@@ -155,8 +155,8 @@ def get_unsigned_shortcut_id(signed_shortcut_id):
 api_cache = {}
 
 #API KEYS FOR NONSTEAMLAUNCHER USE ONLY
-sgdb = SteamGridDB('8d4131fd8213502c20276b738f7acb1a')
-api_key = '8d4131fd8213502c20276b738f7acb1a'
+sgdb = SteamGridDB('36e4bedbfdda27f42f9ef4a44f80955c')
+api_key = '36e4bedbfdda27f42f9ef4a44f80955c'
 
 #GLOBAL VARS
 created_shortcuts = []
@@ -180,6 +180,8 @@ def get_sgdb_art(game_id, app_id):
 	print("Downloading grids artwork of size 920x430...")
 	download_artwork(game_id, api_key, "grids", app_id, "920x430")
 
+
+
 def download_artwork(game_id, api_key, art_type, shortcut_id, dimensions=None):
     # Create a cache key based on the function's arguments
     cache_key = (game_id, art_type, dimensions)
@@ -190,11 +192,11 @@ def download_artwork(game_id, api_key, art_type, shortcut_id, dimensions=None):
     else:
         filename = get_file_name(art_type, shortcut_id)
     file_path = f"{logged_in_home}/.steam/root/userdata/{steamid3}/config/grid/{filename}"
-    
+
     directory = os.path.dirname(file_path)
     if not os.path.exists(directory):
         os.makedirs(directory)
-        
+
     if os.path.exists(file_path):
         print(f"Artwork for {game_id} already exists. Skipping download.")
         return
@@ -215,6 +217,11 @@ def download_artwork(game_id, api_key, art_type, shortcut_id, dimensions=None):
             data = response.json()
             # Store the result in the cache
             api_cache[cache_key] = data
+        else:
+            print(f"Error making API call: {response.status_code}")
+            # Store the failed status in the cache
+            api_cache[cache_key] = None
+            return
 
     # Continue with the rest of your function using `data`
     for artwork in data['data']:
@@ -231,6 +238,7 @@ def download_artwork(game_id, api_key, art_type, shortcut_id, dimensions=None):
             print(f"Error downloading image: {e}")
             if art_type == 'icons':
                 download_artwork(game_id, api_key, 'icons_ico', shortcut_id)
+
 
 def get_game_id(game_name):
     print(f"Searching for game ID for: {game_name}")
@@ -905,15 +913,6 @@ if amazon_games:
 
 
 
-# Push down when more scanners are added
-#PipingInfoToDeckyPlugin
-PIPE_PATH = "/tmp/NSLGameScanner_pipe"
-
-# Check if the pipe does not exist
-if not os.path.exists(PIPE_PATH):
-    # Create the named pipe
-    os.mkfifo(PIPE_PATH)
-
 # Only write back to the shortcuts.vdf and config.vdf files if new shortcuts were added or compattools changed
 if new_shortcuts_added or shortcuts_updated:
     print(f"Saving new config and shortcuts files")
@@ -924,7 +923,7 @@ if new_shortcuts_added or shortcuts_updated:
         file.write(vdf.binary_dumps(shortcuts))
 
     # Load the configset_controller_neptune.vdf file
-    with open(controller_config_path, 'r') as f:
+    with open(f"{controller_config_path}", 'r') as f:
         config = vdf.load(f)
 
     # Add new entries for the games
@@ -1007,7 +1006,7 @@ if new_shortcuts_added or shortcuts_updated:
         }
 
     # Save the updated config
-    with open(controller_config_path, 'w') as f:
+    with open(f"{controller_config_path}", 'w') as f:
         vdf.dump(config, f)
 
     # Print the created shortcuts
@@ -1019,8 +1018,11 @@ if new_shortcuts_added or shortcuts_updated:
     # Assuming 'games' is a list of game dictionaries
     games = [shortcut for shortcut in shortcuts['shortcuts'].values()]
 
-    # Open the pipe for writing
-    with open(PIPE_PATH, 'w') as pipe:
+    # Create the path to the output file
+    output_file_path = f"{logged_in_home}/.config/systemd/user/NSLGameScanner_output.log"
+
+    # Open the output file in write mode
+    with open(output_file_path, 'w') as output_file:
         for game in games:
             # Skip if 'appname' or 'exe' is None
             if game.get('appname') is None or game.get('exe') is None:
@@ -1039,8 +1041,9 @@ if new_shortcuts_added or shortcuts_updated:
 
             # Print the shortcut information in JSON format
             message = json.dumps(shortcut_info)
-            pipe.write(message + '\n')  # Write to the pipe
+            print(message, flush=True)  # Print to stdout
+
+            # Print the shortcut information to the output file
+            print(message, file=output_file, flush=True)
 
 print("All finished!")
-
-
