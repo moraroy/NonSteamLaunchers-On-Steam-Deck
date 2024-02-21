@@ -1,0 +1,8 @@
+certifi==2024.2.2 ; python_version >= "3.11" and python_version < "3.13"
+charset-normalizer==3.3.2 ; python_version >= "3.11" and python_version < "3.13"
+idna==3.6 ; python_version >= "3.11" and python_version < "3.13"
+python-decouple==3.8 ; python_version >= "3.11" and python_version < "3.13"
+python-steamgriddb==1.0.5 ; python_version >= "3.11" and python_version < "3.13"
+requests==2.31.0 ; python_version >= "3.11" and python_version < "3.13"
+urllib3==2.2.1 ; python_version >= "3.11" and python_version < "3.13"
+vdf==3.4 ; python_version >= "3.11" and python_version < "3.13"

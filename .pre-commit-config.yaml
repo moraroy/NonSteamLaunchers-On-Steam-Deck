@@ -1,0 +1,43 @@
+fail_fast: true
+
+repos:
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.2.2
+    hooks:
+      - id: ruff
+        args: [--fix, --exit-non-zero-on-fix]
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.5.0
+    hooks:
+    - id: check-yaml
+    - id: check-added-large-files
+      args: ['--maxkb=1024']
+    - id: check-docstring-first
+      exclude: |
+          (?x)^(
+              hello.py
+          )$
+    - id: check-executables-have-shebangs
+    - id: check-merge-conflict
+    - id: check-shebang-scripts-are-executable
+    - id: check-symlinks
+    - id: check-toml
+    - id: check-yaml
+      args: [--unsafe]
+    - id: debug-statements
+    - id: destroyed-symlinks
+    - id: detect-private-key
+    - id: end-of-file-fixer
+    - id: fix-byte-order-marker
+    - id: mixed-line-ending
+    - id: pretty-format-json
+      # https://pre-commit.com/#regular-expressions
+      exclude: |
+          (?x)^(
+              .devcontainer/devcontainer.json|
+              .vscode/launch.json|
+              .vscode/settings.json|
+              .vscode/extensions.json
+          )$
+      args: ['--autofix', '--indent=2', '--no-sort-keys']
+    - id: requirements-txt-fixer
