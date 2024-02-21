@@ -170,6 +170,36 @@ source .venv/bin/activate
 python -m pip install -r requirements.txt 
 ```
 
+### Pre-commit hooks
+
+Pre-commit hooks are installed via `pre-commit` and are run automatically on `git commit`. 
+
+Most importantly, `ruff` is used to lint all python code.
+
+* Install [pre-commit](https://pre-commit.com/#install)
+* Install pre-commit hooks
+    ```bash
+    pre-commit install
+    ```
+* Trigger pre-commit hooks automatically on `git commit`
+    ```bash
+    git add .
+    git commit -m "commit message"
+    ```
+
+### Formatting
+
+> **TL;DR**: The [Ruff formatter](https://astral.sh/blog/the-ruff-formatter) is an extremely fast Python formatter, written in Rust. It’s over 30x faster than Black and 100x faster than YAPF, formatting large-scale Python projects in milliseconds — all while achieving >99.9% Black compatibility.
+
+* While it runs automatically on commits, it can also be run manually
+    ```bash
+    # check for errors
+    ruff check .
+
+    # fix (some) errors automatically
+    ruff check . --fix
+    ```
+
 ### Additional tooling
 
 Additional tooling includes but is not limited to:
