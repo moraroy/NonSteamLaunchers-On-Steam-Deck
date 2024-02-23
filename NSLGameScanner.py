@@ -838,7 +838,7 @@ if not os.path.exists(registry_file_path):
     print("Battle.net game data not found. Skipping Battle.net Games Scanner.")
 else:
     game_dict = getBnetGameInfo(registry_file_path)
-    if game_dict is None:
+    if game_dict is None or 'unknown':
         # Skip the rest of the Battle.net scanner
         pass
     else:
