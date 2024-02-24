@@ -851,7 +851,10 @@ else:
             if game == "Overwatch":
                 game = "Overwatch 2"
 
-            if game_info['flavor']:
+            if game_info['flavor'] == "unknown":
+                pass
+
+            elif game_info['flavor']:
                 launch_options = f"STEAM_COMPAT_DATA_PATH=\"{logged_in_home}/.local/share/Steam/steamapps/compatdata/{bnet_launcher}/\" %command% \"battlenet://{game_info['flavor']}\""
                 exe_path = f"\"{logged_in_home}/.local/share/Steam/steamapps/compatdata/{bnet_launcher}/pfx/drive_c/Program Files (x86)/Battle.net/Battle.net.exe\" --exec=\"launch {game_info['flavor']}\""
                 start_dir = f"\"{logged_in_home}/.local/share/Steam/steamapps/compatdata/{bnet_launcher}/pfx/drive_c/Program Files (x86)/Battle.net/\""
