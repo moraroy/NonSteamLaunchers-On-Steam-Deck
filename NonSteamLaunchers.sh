@@ -2720,11 +2720,12 @@ fi
 
 
 
-# Directory to be checked
-dir="${logged_in_home}/homebrew/plugins/NonSteamLaunchersDecky"
+# Directories to be checked
+dir1="${logged_in_home}/homebrew/plugins/NonSteamLaunchersDecky"
+dir2="${logged_in_home}/homebrew/plugins/NonSteamLaunchersDeckytest-main"
 
-# Check if directory does not exist
-if [ ! -d "$dir" ]; then
+# Check if either directory does not exist
+if [ ! -d "$dir1" ] || [ ! -d "$dir2" ]; then
     # Detach script from Steam process
     nohup sh -c 'sleep 10; /usr/bin/steam' &
 
@@ -2736,6 +2737,7 @@ if [ ! -d "$dir" ]; then
     # Wait for the steam process to exit
     while steam_pid > /dev/null; do sleep 5; done
 fi
+
 
 
 
