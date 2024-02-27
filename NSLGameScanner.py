@@ -308,6 +308,9 @@ def check_if_shortcut_exists(shortcut_id, display_name, exe_path, start_dir, lau
     if any(s.get('appname') == display_name and s.get('exe') == exe_path and s.get('StartDir') == start_dir and s.get('LaunchOptions') == launch_options for s in shortcuts['shortcuts'].values()):
         print(f"Existing shortcut found based on matching fields for game {display_name}. Skipping creation.")
         return True
+    if any(s.get('AppName') == display_name and s.get('Exe') == exe_path and s.get('StartDir') == start_dir and s.get('LaunchOptions') == launch_options for s in shortcuts['shortcuts'].values()):
+        print(f"Existing shortcut found based on matching fields for game {display_name}. Skipping creation.")
+        return True
 #End of Code
 
 
