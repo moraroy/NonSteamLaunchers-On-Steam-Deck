@@ -1055,7 +1055,6 @@ if new_shortcuts_added or shortcuts_updated:
 
     # Create the path to the output file
     output_file_path = f"{logged_in_home}/.config/systemd/user/NSLGameScanner_output.log"
-    print(decky_shortcuts.values())
     # Open the output file in write mode
     with open(output_file_path, 'w') as output_file:
         for game in decky_shortcuts.values():
