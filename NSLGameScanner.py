@@ -184,8 +184,6 @@ def get_sgdb_art(game_id, app_id):
     global hero64
     print(f"Downloading icons artwork...")
     download_artwork(game_id, api_key, "icons", app_id)
-    print(f"Downloading grids artwork...")
-    grid64 = download_artwork(game_id, api_key, "grids", app_id)
     print(f"Downloading logos artwork...")
     logo64 = download_artwork(game_id, api_key, "logos", app_id)
     print(f"Downloading heroes artwork...")
