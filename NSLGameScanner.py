@@ -917,7 +917,9 @@ if amazon_games:
 #End of Amazon Games Scanner
 
 
-
+sys.path.insert(0, os.path.expanduser(f"{logged_in_home}/homebrew")  # Add the directory containing aiohttp to the Python path
+import aiohttp
+import asyncio
 
 # Only write back to the shortcuts.vdf and config.vdf files if new shortcuts were added or compattools changed
 if new_shortcuts_added or shortcuts_updated:
@@ -1023,10 +1025,6 @@ if new_shortcuts_added or shortcuts_updated:
 
     # Assuming 'games' is a list of game dictionaries
     games = [shortcut for shortcut in shortcuts['shortcuts'].values()]
-    
-    sys.path.append(f"{logged_in_home}/homebrew")  # Add the directory containing aiohttp to the Python path
-    import aiohttp
-    import asyncio
 
     async def send_data():
         # Create a session
