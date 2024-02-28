@@ -11,6 +11,7 @@ import subprocess
 import sqlite3
 from urllib.request import urlopen
 from urllib.request import urlretrieve
+from base64 import b64encode
 import xml.etree.ElementTree as ET
 
 # Path to the env_vars file
@@ -163,6 +164,11 @@ created_shortcuts = []
 new_shortcuts_added = False
 shortcuts_updated = False
 shortcut_id = None  # Initialize shortcut_id
+decky_shortcuts = {}
+gridp64 = ""
+grid64 = ""
+logo64 = ""
+hero64 = ""
 
 # Load the existing shortcuts
 with open(f"{logged_in_home}/.steam/root/userdata/{steamid3}/config/shortcuts.vdf", 'rb') as file:
@@ -172,13 +178,22 @@ with open(f"{logged_in_home}/.steam/root/config/config.vdf", 'r') as file:
     config_data = vdf.load(file)
 
 def get_sgdb_art(game_id, app_id):
-	for art_type in ["icons", "logos", "heroes", "grids"]:
-		print(f"Downloading {art_type} artwork...")
-		download_artwork(game_id, api_key, art_type, app_id)
-	print("Downloading grids artwork of size 600x900...")
-	download_artwork(game_id, api_key, "grids", app_id, "600x900")
-	print("Downloading grids artwork of size 920x430...")
-	download_artwork(game_id, api_key, "grids", app_id, "920x430")
+    global grid64
+    global gridp64
+    global logo64
+    global hero64
+    print(f"Downloading icons artwork...")
+    download_artwork(game_id, api_key, "icons", app_id)
+    print(f"Downloading grids artwork...")
+    grid64 = download_artwork(game_id, api_key, "grids", app_id)
+    print(f"Downloading logos artwork...")
+    logo64 = download_artwork(game_id, api_key, "logos", app_id)
+    print(f"Downloading heroes artwork...")
+    hero64 = download_artwork(game_id, api_key, "heroes", app_id)
+    print("Downloading grids artwork of size 600x900...")
+    gridp64 = download_artwork(game_id, api_key, "grids", app_id, "600x900")
+    print("Downloading grids artwork of size 920x430...")
+    grid64 =download_artwork(game_id, api_key, "grids", app_id, "920x430")
 
 
 
@@ -199,7 +214,8 @@ def download_artwork(game_id, api_key, art_type, shortcut_id, dimensions=None):
 
     if os.path.exists(file_path):
         print(f"Artwork for {game_id} already exists. Skipping download.")
-        return
+        with open(file_path, 'rb') as image_file:
+            return b64encode(image_file.read()).decode('utf-8')
 
     # If the result is in the cache, use it
     if cache_key in api_cache:
@@ -233,7 +249,7 @@ def download_artwork(game_id, api_key, art_type, shortcut_id, dimensions=None):
             if response.status_code == 200:
                 with open(file_path, 'wb') as file:
                     file.write(response.content)
-                break
+                return b64encode(response.content).decode('utf-8')
         except requests.exceptions.RequestException as e:
             print(f"Error downloading image: {e}")
             if art_type == 'icons':
@@ -293,11 +309,11 @@ def add_compat_tool(app_id, launchoptions):
         config_data['InstallConfigStore']['Software']['Valve']['Steam']['CompatToolMapping'][str(app_id)]['config'] = ''
         config_data['InstallConfigStore']['Software']['Valve']['Steam']['CompatToolMapping'][str(app_id)]['priority'] = '250'
         print(f"Updated CompatToolMapping entry for appid: {app_id}")
-        return True
+        return compat_tool_name
     else:
         config_data['InstallConfigStore']['Software']['Valve']['Steam']['CompatToolMapping'][str(app_id)] = {'name': f'{compat_tool_name}', 'config': '', 'priority': '250'}
         print(f"Created new CompatToolMapping entry for appid: {app_id}")
-        return True
+        return compat_tool_name
 
 def check_if_shortcut_exists(shortcut_id, display_name, exe_path, start_dir, launch_options):
     # Check if the game already exists in the shortcuts using the id
@@ -322,11 +338,16 @@ print(sys.path)
 # Create an empty dictionary to store the app IDs
 app_ids = {}
 
-#Create Launcher Shortcuts
+#Create Shortcuts
 def create_new_entry(shortcutdirectory, appname, launchoptions, startingdir):
     global new_shortcuts_added
     global shortcuts_updated
     global created_shortcuts
+    global decky_shortcuts
+    global grid64
+    global gridp64
+    global logo64
+    global hero64
     # Check if the launcher is installed
     if not shortcutdirectory or not appname or not launchoptions or not startingdir:
         print(f"{appname} is not installed. Skipping.")
@@ -349,6 +370,7 @@ def create_new_entry(shortcutdirectory, appname, launchoptions, startingdir):
         get_sgdb_art(game_id, unsigned_shortcut_id)
 
     # Create a new entry for the Steam shortcut
+    compatTool= add_compat_tool(unsigned_shortcut_id, launchoptions)
     new_entry = {
         'appid': str(signed_shortcut_id),
         'appname': appname,
@@ -357,12 +379,24 @@ def create_new_entry(shortcutdirectory, appname, launchoptions, startingdir):
         'icon': f"{logged_in_home}/.steam/root/userdata/{steamid3}/config/grid/{get_file_name('icons', unsigned_shortcut_id)}",
         'LaunchOptions': launchoptions,
     }
+    decky_entry = {
+        'appname': appname,
+        'exe': exe_path,
+        'StartDir': startingdir,
+        'icon': f"{logged_in_home}/.steam/root/userdata/{steamid3}/config/grid/{get_file_name('icons', unsigned_shortcut_id)}",
+        'LaunchOptions': launchoptions,
+        'CompatTool': compatTool,
+        'WideGrid': gridp64,
+        'Grid': grid64,
+        'Hero': hero64,
+        'Logo': logo64,
+    }
     # Add the new entry to the shortcuts dictionary and add proton
     shortcuts['shortcuts'][str(signed_shortcut_id)] = new_entry
+    decky_shortcuts[appname] = decky_entry
     print(f"Added new entry for {appname} to shortcuts.")
     new_shortcuts_added = True
     created_shortcuts.append(appname)
-    add_compat_tool(unsigned_shortcut_id, launchoptions)
 
 
 create_new_entry(os.environ.get('epicshortcutdirectory'), 'Epic Games', os.environ.get('epiclaunchoptions'), os.environ.get('epicstartingdir'))
@@ -917,6 +951,8 @@ if amazon_games:
 #End of Amazon Games Scanner
 
 
+
+
 # Only write back to the shortcuts.vdf and config.vdf files if new shortcuts were added or compattools changed
 if new_shortcuts_added or shortcuts_updated:
     print(f"Saving new config and shortcuts files")
@@ -1019,28 +1055,28 @@ if new_shortcuts_added or shortcuts_updated:
         for name in created_shortcuts:
             print(name)
 
-    # Assuming 'games' is a list of game dictionaries
-    games = [shortcut for shortcut in shortcuts['shortcuts'].values()]
-
     # Create the path to the output file
     output_file_path = f"{logged_in_home}/.config/systemd/user/NSLGameScanner_output.log"
-
+    print(decky_shortcuts.values())
     # Open the output file in write mode
     with open(output_file_path, 'w') as output_file:
-        for game in games:
+        for game in decky_shortcuts.values():
             # Skip if 'appname' or 'exe' is None
             if game.get('appname') is None or game.get('exe') is None:
                 continue
 
             # Create a dictionary to hold the shortcut information
             shortcut_info = {
-                'appid': str(game.get('appid')),
                 'appname': game.get('appname'),
                 'exe': game.get('exe'),
                 'StartDir': game.get('StartDir'),
-                'icon': f"{logged_in_home}/.steam/root/userdata/{steamid3}/config/grid/{get_file_name('icons', game.get('appid'))}",
+                'icon': game.get('icon'),
                 'LaunchOptions': game.get('LaunchOptions'),
-                'GameID': game.get('GameID', "default_game_id")  # Use a default value if game_id is not defined
+                'CompatTool': game.get('CompatTool'),
+                'WideGrid': game.get('WideGrid'),
+                'Grid': game.get('Grid'),
+                'Hero': game.get('Hero'),
+                'Logo': game.get('Logo'),
             }
 
             # Print the shortcut information in JSON format
