@@ -300,8 +300,6 @@ def add_compat_tool(app_id, launchoptions):
     if 'CompatToolMapping' not in config_data['InstallConfigStore']['Software']['Valve']['Steam']:
         config_data['InstallConfigStore']['Software']['Valve']['Steam']['CompatToolMapping'] = {}
         print(f"CompatToolMapping key not found in config.vdf, creating.")
-    if str(app_id) in config_data['InstallConfigStore']['Software']['Valve']['Steam']['CompatToolMapping'] and config_data['InstallConfigStore']['Software']['Valve']['Steam']['CompatToolMapping'][str(app_id)]['name'] == f'{compat_tool_name}':
-        return False
     if 'chrome' in launchoptions:
         return False
     elif str(app_id) in config_data['InstallConfigStore']['Software']['Valve']['Steam']['CompatToolMapping']:
