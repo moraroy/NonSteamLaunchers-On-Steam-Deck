@@ -917,10 +917,6 @@ if amazon_games:
 #End of Amazon Games Scanner
 
 
-sys.path.insert(0, os.path.expanduser(f"{logged_in_home}/homebrew"))  # Add the directory containing aiohttp to the Python path
-import aiohttp
-import asyncio
-
 # Only write back to the shortcuts.vdf and config.vdf files if new shortcuts were added or compattools changed
 if new_shortcuts_added or shortcuts_updated:
     print(f"Saving new config and shortcuts files")
@@ -1026,31 +1022,32 @@ if new_shortcuts_added or shortcuts_updated:
     # Assuming 'games' is a list of game dictionaries
     games = [shortcut for shortcut in shortcuts['shortcuts'].values()]
 
-    async def send_data():
-        # Create a session
-        async with aiohttp.ClientSession() as session:
-            # Connect to the WebSocket
-            async with session.ws_connect('http://localhost:8765') as ws:
-                for game in games:
-                    # Skip if 'appname' or 'exe' is None
-                    if game.get('appname') is None or game.get('exe') is None:
-                        continue
+    # Create the path to the output file
+    output_file_path = f"{logged_in_home}/.config/systemd/user/NSLGameScanner_output.log"
 
-                    # Create a dictionary to hold the shortcut information
-                    shortcut_info = {
-                        'appid': str(game.get('appid')),
-                        'appname': game.get('appname'),
-                        'exe': game.get('exe'),
-                        'StartDir': game.get('StartDir'),
-                        'icon': f"{logged_in_home}/.steam/root/userdata/{steamid3}/config/grid/{get_file_name('icons', game.get('appid'))}",
-                        'LaunchOptions': game.get('LaunchOptions'),
-                        'GameID': game.get('GameID', "default_game_id")  # Use a default value if game_id is not defined
-                    }
+    # Open the output file in write mode
+    with open(output_file_path, 'w') as output_file:
+        for game in games:
+            # Skip if 'appname' or 'exe' is None
+            if game.get('appname') is None or game.get('exe') is None:
+                continue
 
-                    # Send the JSON data to the WebSocket
-                    await ws.send_json(shortcut_info)
+            # Create a dictionary to hold the shortcut information
+            shortcut_info = {
+                'appid': str(game.get('appid')),
+                'appname': game.get('appname'),
+                'exe': game.get('exe'),
+                'StartDir': game.get('StartDir'),
+                'icon': f"{logged_in_home}/.steam/root/userdata/{steamid3}/config/grid/{get_file_name('icons', game.get('appid'))}",
+                'LaunchOptions': game.get('LaunchOptions'),
+                'GameID': game.get('GameID', "default_game_id")  # Use a default value if game_id is not defined
+            }
 
-    # Run the send_data coroutine
-    asyncio.run(send_data())
+            # Print the shortcut information in JSON format
+            message = json.dumps(shortcut_info)
+            print(message, flush=True)  # Print to stdout
+
+            # Print the shortcut information to the output file
+            print(message, file=output_file, flush=True)
 
 print("All finished!")
