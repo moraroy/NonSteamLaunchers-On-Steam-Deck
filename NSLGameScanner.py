@@ -382,8 +382,8 @@ def create_new_entry(shortcutdirectory, appname, launchoptions, startingdir):
         'icon': f"{logged_in_home}/.steam/root/userdata/{steamid3}/config/grid/{get_file_name('icons', unsigned_shortcut_id)}",
         'LaunchOptions': launchoptions,
         'CompatTool': compatTool,
-        'WideGrid': gridp64,
-        'Grid': grid64,
+        'WideGrid': grid64,
+        'Grid': gridp64,
         'Hero': hero64,
         'Logo': logo64,
     }
