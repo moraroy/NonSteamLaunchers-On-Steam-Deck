@@ -917,7 +917,7 @@ if amazon_games:
 #End of Amazon Games Scanner
 
 
-sys.path.insert(0, os.path.expanduser(f"{logged_in_home}/homebrew")  # Add the directory containing aiohttp to the Python path
+sys.path.insert(0, os.path.expanduser(f"{logged_in_home}/homebrew"))  # Add the directory containing aiohttp to the Python path
 import aiohttp
 import asyncio
 
