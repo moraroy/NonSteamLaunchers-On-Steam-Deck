@@ -13,52 +13,6 @@ from urllib.request import urlopen
 from urllib.request import urlretrieve
 from base64 import b64encode
 import xml.etree.ElementTree as ET
-import dbus
-import logging
-
-# Create and configure a logger object
-logger = logging.getLogger('mylogger')
-logger.setLevel(logging.DEBUG)
-handler = logging.StreamHandler(stream=sys.stdout)
-logger.addHandler(handler)
-
-# Get the session bus
-bus = dbus.SessionBus()
-
-# Check the value of the DBUS_SESSION_BUS_ADDRESS environment variable
-dbus_address = os.environ.get('DBUS_SESSION_BUS_ADDRESS')
-if not dbus_address or not dbus_address.startswith('unix:path='):
-    # Set the value of the DBUS_SESSION_BUS_ADDRESS environment variable
-    dbus_address = f'unix:path=/run/user/{os.getuid()}/bus'
-    os.environ['DBUS_SESSION_BUS_ADDRESS'] = dbus_address
-    logger.info(f'Set the DBUS_SESSION_BUS_ADDRESS to {dbus_address}')
-
-# Get the NetworkManager service object
-try:
-    nm = bus.get_object('org.freedesktop.NetworkManager', '/org/freedesktop/NetworkManager')
-    logger.info('Got the NetworkManager service object')
-except dbus.DBusException as e:
-    logger.error('Failed to get the NetworkManager service object: %s', e)
-    exit(1)
-
-# Get the device interface
-try:
-    device = dbus.Interface(nm, 'org.freedesktop.NetworkManager.Device')
-    logger.info('Got the device interface')
-except dbus.DBusException as e:
-    logger.error('Failed to get the device interface: %s', e)
-    exit(1)
-
-# Get the properties of the eth0 device
-try:
-    props = device.GetProperties('eth0')
-    logger.info('Got the properties of the eth0 device')
-except dbus.DBusException as e:
-    logger.error('Failed to get the properties of the eth0 device: %s', e)
-    exit(1)
-
-# Print the properties
-print(props)
 
 
 
