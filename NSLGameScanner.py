@@ -19,13 +19,19 @@ import logging
 # Create and configure a logger object
 logger = logging.getLogger('mylogger')
 logger.setLevel(logging.DEBUG)
-handler = logging.StreamHandler()
-formatter = logging.Formatter('%(levelname)s:%(message)s')
-handler.setFormatter(formatter)
+handler = logging.StreamHandler(stream=sys.stdout)
 logger.addHandler(handler)
 
 # Get the session bus
 bus = dbus.SessionBus()
+
+# Check the value of the DBUS_SESSION_BUS_ADDRESS environment variable
+dbus_address = os.environ.get('DBUS_SESSION_BUS_ADDRESS')
+if not dbus_address or not dbus_address.startswith('unix:path='):
+    # Set the value of the DBUS_SESSION_BUS_ADDRESS environment variable
+    dbus_address = f'unix:path=/run/user/{os.getuid()}/bus'
+    os.environ['DBUS_SESSION_BUS_ADDRESS'] = dbus_address
+    logger.info(f'Set the DBUS_SESSION_BUS_ADDRESS to {dbus_address}')
 
 # Get the NetworkManager service object
 try:
@@ -53,6 +59,7 @@ except dbus.DBusException as e:
 
 # Print the properties
 print(props)
+
 
 
 # Path to the env_vars file
