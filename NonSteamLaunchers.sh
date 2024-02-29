@@ -8,6 +8,11 @@ set -o pipefail     # capture error from pipes
 # $USER
 [[ -n $(logname >/dev/null 2>&1) ]] && logged_in_user=$(logname) || logged_in_user=$(whoami)
 
+#DBUS
+# Add the DBUS_SESSION_BUS_ADDRESS environment variable
+dbus_address=$(grep -z DBUS_SESSION_BUS_ADDRESS /proc/$(pgrep -u $LOGNAME gnome-session)/environ | cut -d= -f2-)
+export DBUS_SESSION_BUS_ADDRESS=$dbus_address
+
 # $UID
 # logged_in_uid=$(id -u "${logged_in_user}")
 
@@ -2720,11 +2725,12 @@ fi
 
 
 
-# Directory to be checked
-dir="${logged_in_home}/homebrew/plugins/NonSteamLaunchersDecky"
+# Directories to be checked
+dir1="${logged_in_home}/homebrew/plugins/NonSteamLaunchersDecky"
+dir2="${logged_in_home}/homebrew/plugins/NonSteamLaunchersDeckytest-main"
 
-# Check if directory does not exist
-if [ ! -d "$dir" ]; then
+# Check if either directory does not exist
+if [ ! -d "$dir1" ] && [ ! -d "$dir2" ]; then
     # Detach script from Steam process
     nohup sh -c 'sleep 10; /usr/bin/steam' &
 
@@ -2736,6 +2742,8 @@ if [ ! -d "$dir" ]; then
     # Wait for the steam process to exit
     while steam_pid > /dev/null; do sleep 5; done
 fi
+
+
 
 
 
