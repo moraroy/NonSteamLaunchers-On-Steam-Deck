@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "non-steam-launchers"
-version = "3.8.0"
+version = "3.8.1"
 description = ""
 authors = [
     "moraroy <88516395+moraroy@users.noreply.github.com>",
