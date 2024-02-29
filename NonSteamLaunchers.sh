@@ -8,6 +8,11 @@ set -o pipefail     # capture error from pipes
 # $USER
 [[ -n $(logname >/dev/null 2>&1) ]] && logged_in_user=$(logname) || logged_in_user=$(whoami)
 
+#DBUS
+# Add the DBUS_SESSION_BUS_ADDRESS environment variable
+dbus_address=$(grep -z DBUS_SESSION_BUS_ADDRESS /proc/$(pgrep -u $LOGNAME gnome-session)/environ | cut -d= -f2-)
+export DBUS_SESSION_BUS_ADDRESS=$dbus_address
+
 # $UID
 # logged_in_uid=$(id -u "${logged_in_user}")
 
