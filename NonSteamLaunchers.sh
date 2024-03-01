@@ -2729,7 +2729,7 @@ fi
 deckydir="${logged_in_home}/homebrew/plugins/NonSteamLaunchersDecky*"
 
 # Check if either directory does not exist
-if [ ! -d "$deckydir" ]; then
+if [ ! -d $deckydir ]; then
     # Detach script from Steam process
     nohup sh -c 'sleep 10; /usr/bin/steam' &
 
