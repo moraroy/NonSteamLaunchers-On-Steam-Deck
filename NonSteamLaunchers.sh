@@ -2726,10 +2726,12 @@ fi
 
 
 # Directories to be checked
-deckydir="${logged_in_home}/homebrew/plugins/NonSteamLaunchersDecky*"
+dir1="${logged_in_home}/homebrew/plugins/NonSteamLaunchersDecky"
+dir2="${logged_in_home}/homebrew/plugins/NonSteamLaunchersDeckytest-main"
+dir3="${logged_in_home}/homebrew/plugins/NonSteamLaunchersDeckytest-no-service-file"
 
 # Check if either directory does not exist
-if [ ! -d $deckydir ]; then
+if [ ! -d "$dir1" ] && [ ! -d "$dir2" ] && [ ! -d "$dir3" ]; then
     # Detach script from Steam process
     nohup sh -c 'sleep 10; /usr/bin/steam' &
 
