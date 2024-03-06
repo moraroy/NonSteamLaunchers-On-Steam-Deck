@@ -58,7 +58,7 @@ for arg in "${args[@]}"; do
 	fi
 done
 
-if ["$nopython" = false]; then
+if [ "$nopython" = false ]; then
 	#Download Modules
 	# Define the repository and the folders to clone
 	repo_url='https://github.com/moraroy/NonSteamLaunchers-On-Steam-Deck/archive/refs/heads/main.zip'
@@ -2763,7 +2763,7 @@ fi
 
 
 
-if ["$nopython" = false]; then
+if [ "$nopython" = false ]; then
 
 	#Setup NSLGameScanner.service
 	python_script_path="${logged_in_home}/.config/systemd/user/NSLGameScanner.py"
