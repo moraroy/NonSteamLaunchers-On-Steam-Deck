@@ -22,7 +22,7 @@ hypothesis = {extras = ["cli"], version = "^6.88.4"}
 icecream = "^2.1.3"
 ipython = "^8.17.2"
 poetry-plugin-export = "^1.6.0"
-pytest = "^7.4.3"
+pytest = "^8.0.2"
 pytest-asyncio = "^0.23.5"
 pytest-cov = "^4.1.0"
 pytest-datafiles = "^3.0.0"
