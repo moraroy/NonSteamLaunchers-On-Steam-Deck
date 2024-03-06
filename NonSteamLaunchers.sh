@@ -51,116 +51,123 @@ check_for_updates() {
 # Get the command line arguments
 args=("$@")
 
-
-
-#Download Modules
-# Define the repository and the folders to clone
-repo_url='https://github.com/moraroy/NonSteamLaunchers-On-Steam-Deck/archive/refs/heads/main.zip'
-folders_to_clone=('requests' 'urllib3' 'steamgrid' 'vdf')
-
-# Define the parent folder
-logged_in_home=$(eval echo ~$user)
-parent_folder="${logged_in_home}/.config/systemd/user/Modules"
-mkdir -p "${parent_folder}"
-
-# Check if the folders already exist
-folders_exist=true
-for folder in "${folders_to_clone[@]}"; do
-  if [ ! -d "${parent_folder}/${folder}" ]; then
-    folders_exist=false
-    break
-  fi
-done
-
-if [ "${folders_exist}" = false ]; then
-  # Download the repository as a zip file
-  zip_file_path="${parent_folder}/repo.zip"
-  wget -O "${zip_file_path}" "${repo_url}"
-
-  # Extract the zip file
-  unzip -d "${parent_folder}" "${zip_file_path}"
-
-  # Move the folders to the parent directory and delete the unnecessary files
-  for folder in "${folders_to_clone[@]}"; do
-    destination_path="${parent_folder}/${folder}"
-    source_path="${parent_folder}/NonSteamLaunchers-On-Steam-Deck-main/Modules/${folder}"
-    if [ ! -d "${destination_path}" ]; then
-      mv "${source_path}" "${destination_path}"
-    fi
-  done
-
-  # Delete the downloaded zip file and the extracted repository folder
-  rm "${zip_file_path}"
-  rm -r "${parent_folder}/NonSteamLaunchers-On-Steam-Deck-main"
-fi
-#End of Download Modules
-
-
-#Service File rough update
-rm -rf ${logged_in_home}/.config/systemd/user/NSLGameScanner.py
-
-# Delete the service file
-rm -rf ${logged_in_home}/.config/systemd/user/nslgamescanner.service
-
-# Remove the symlink
-unlink ${logged_in_home}/.config/systemd/user/default.target.wants/nslgamescanner.service
-
-# Reload the systemd user instance
-systemctl --user daemon-reload
-
-# Define your Python script path
-python_script_path="${logged_in_home}/.config/systemd/user/NSLGameScanner.py"
-
-# Define your GitHub link
-github_link="https://raw.githubusercontent.com/moraroy/NonSteamLaunchers-On-Steam-Deck/main/NSLGameScanner.py"
-curl -o $python_script_path $github_link
-
-# Define the path to the env_vars file
-env_vars="${logged_in_home}/.config/systemd/user/env_vars"
-#End of Rough Update of the .py
-
-
-
-
-if [ -f "$env_vars" ]; then
-    echo "env_vars file found. Running the .py file."
-    live="and is LIVE."
-else
-    echo "env_vars file not found. Not Running the .py file."
-    live="and is not LIVE."
-fi
-
-
-
-# Check if "Decky Plugin" is one of the arguments
-decky_plugin=false
 for arg in "${args[@]}"; do
-  if [ "$arg" = "Decky Plugin" ]; then
-    decky_plugin=true
-    break
-  fi
+	if [ "$arg" = "NoPython" ]; then
+		nopython=true
+		break
+	fi
 done
 
-# If the Decky Plugin argument is set, check if the env_vars file exists
-if [ "$decky_plugin" = true ]; then
-    if [ -f "$env_vars" ]; then
-        # If the env_vars file exists, run the .py file and continue with the script
-        echo "Decky Plugin argument set and env_vars file found. Running the .py file..."
-        python3 $python_script_path
-        echo "Python script ran. Continuing with the script..."
-    else
-        # If the env_vars file does not exist, exit the script
-        echo "Decky Plugin argument set but env_vars file not found. Exiting the script."
-        exit 0
-    fi
-else
-    # If the Decky Plugin argument is not set, continue with the script
-    echo "Decky Plugin argument not set. Continuing with the script..."
-    python3 $python_script_path
-    echo "env_vars file found. Running the .py file."
-    live="and is LIVE."
-fi
+if ["$nopython" = false]; then
 
+	#Download Modules
+	# Define the repository and the folders to clone
+	repo_url='https://github.com/moraroy/NonSteamLaunchers-On-Steam-Deck/archive/refs/heads/main.zip'
+	folders_to_clone=('requests' 'urllib3' 'steamgrid' 'vdf')
+	
+	# Define the parent folder
+	logged_in_home=$(eval echo ~$user)
+	parent_folder="${logged_in_home}/.config/systemd/user/Modules"
+	mkdir -p "${parent_folder}"
+	
+	# Check if the folders already exist
+	folders_exist=true
+	for folder in "${folders_to_clone[@]}"; do
+	  if [ ! -d "${parent_folder}/${folder}" ]; then
+	    folders_exist=false
+	    break
+	  fi
+	done
+	
+	if [ "${folders_exist}" = false ]; then
+	  # Download the repository as a zip file
+	  zip_file_path="${parent_folder}/repo.zip"
+	  wget -O "${zip_file_path}" "${repo_url}"
+	
+	  # Extract the zip file
+	  unzip -d "${parent_folder}" "${zip_file_path}"
+	
+	  # Move the folders to the parent directory and delete the unnecessary files
+	  for folder in "${folders_to_clone[@]}"; do
+	    destination_path="${parent_folder}/${folder}"
+	    source_path="${parent_folder}/NonSteamLaunchers-On-Steam-Deck-main/Modules/${folder}"
+	    if [ ! -d "${destination_path}" ]; then
+	      mv "${source_path}" "${destination_path}"
+	    fi
+	  done
+	
+	  # Delete the downloaded zip file and the extracted repository folder
+	  rm "${zip_file_path}"
+	  rm -r "${parent_folder}/NonSteamLaunchers-On-Steam-Deck-main"
+	fi
+	#End of Download Modules
+	
+	
+	#Service File rough update
+	rm -rf ${logged_in_home}/.config/systemd/user/NSLGameScanner.py
+	
+	# Delete the service file
+	rm -rf ${logged_in_home}/.config/systemd/user/nslgamescanner.service
+	
+	# Remove the symlink
+	unlink ${logged_in_home}/.config/systemd/user/default.target.wants/nslgamescanner.service
+	
+	# Reload the systemd user instance
+	systemctl --user daemon-reload
+	
+	# Define your Python script path
+	python_script_path="${logged_in_home}/.config/systemd/user/NSLGameScanner.py"
+	
+	# Define your GitHub link
+	github_link="https://raw.githubusercontent.com/moraroy/NonSteamLaunchers-On-Steam-Deck/main/NSLGameScanner.py"
+	curl -o $python_script_path $github_link
+	
+	# Define the path to the env_vars file
+	env_vars="${logged_in_home}/.config/systemd/user/env_vars"
+	#End of Rough Update of the .py
+	
+	
+	
+	
+	if [ -f "$env_vars" ]; then
+	    echo "env_vars file found. Running the .py file."
+	    live="and is LIVE."
+	else
+	    echo "env_vars file not found. Not Running the .py file."
+	    live="and is not LIVE."
+	fi
+	
+	
+	
+	# Check if "Decky Plugin" is one of the arguments
+	decky_plugin=false
+	for arg in "${args[@]}"; do
+	  if [ "$arg" = "Decky Plugin" ]; then
+	    decky_plugin=true
+	    break
+	  fi
+	done
+	
+	# If the Decky Plugin argument is set, check if the env_vars file exists
+	if [ "$decky_plugin" = true ]; then
+	    if [ -f "$env_vars" ]; then
+	        # If the env_vars file exists, run the .py file and continue with the script
+	        echo "Decky Plugin argument set and env_vars file found. Running the .py file..."
+	        python3 $python_script_path
+	        echo "Python script ran. Continuing with the script..."
+	    else
+	        # If the env_vars file does not exist, exit the script
+	        echo "Decky Plugin argument set but env_vars file not found. Exiting the script."
+	        exit 0
+	    fi
+	else
+	    # If the Decky Plugin argument is not set, continue with the script
+	    echo "Decky Plugin argument not set. Continuing with the script..."
+	    python3 $python_script_path
+	    echo "env_vars file found. Running the .py file."
+	    live="and is LIVE."
+	fi
+fi
 
 
 
@@ -2757,30 +2764,30 @@ fi
 
 
 
-
-#Setup NSLGameScanner.service
-python_script_path="${logged_in_home}/.config/systemd/user/NSLGameScanner.py"
-
-# Define your GitHub link
-github_link="https://raw.githubusercontent.com/moraroy/NonSteamLaunchers-On-Steam-Deck/main/NSLGameScanner.py"
-
-# Check if the service is already running
-service_status=$(systemctl --user is-active nslgamescanner.service)
-
-if [ "$service_status" = "active" ] || [ "$service_status" = "activating" ]
-then
-    echo "Service is already running or activating. Stopping the service..."
-    systemctl --user stop nslgamescanner.service
+if ["$nopython" = false]; then
+	#Setup NSLGameScanner.service
+	python_script_path="${logged_in_home}/.config/systemd/user/NSLGameScanner.py"
+	
+	# Define your GitHub link
+	github_link="https://raw.githubusercontent.com/moraroy/NonSteamLaunchers-On-Steam-Deck/main/NSLGameScanner.py"
+	
+	# Check if the service is already running
+	service_status=$(systemctl --user is-active nslgamescanner.service)
+	
+	if [ "$service_status" = "active" ] || [ "$service_status" = "activating" ]
+	then
+	    echo "Service is already running or activating. Stopping the service..."
+	    systemctl --user stop nslgamescanner.service
+	fi
+	
+	echo "Updating Python script from GitHub..."
+	
+	curl -o $python_script_path $github_link
+	
+	echo "Starting the service..."
+	
+	python3 $python_script_path
 fi
-
-echo "Updating Python script from GitHub..."
-
-curl -o $python_script_path $github_link
-
-echo "Starting the service..."
-
-python3 $python_script_path
-
 
 
 
