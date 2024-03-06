@@ -50,7 +50,7 @@ check_for_updates() {
 
 # Get the command line arguments
 args=("$@")
-
+nopython=false
 for arg in "${args[@]}"; do
 	if [ "$arg" = "NoPython" ]; then
 		nopython=true
@@ -59,7 +59,6 @@ for arg in "${args[@]}"; do
 done
 
 if ["$nopython" = false]; then
-
 	#Download Modules
 	# Define the repository and the folders to clone
 	repo_url='https://github.com/moraroy/NonSteamLaunchers-On-Steam-Deck/archive/refs/heads/main.zip'
@@ -2765,6 +2764,7 @@ fi
 
 
 if ["$nopython" = false]; then
+
 	#Setup NSLGameScanner.service
 	python_script_path="${logged_in_home}/.config/systemd/user/NSLGameScanner.py"
 	
