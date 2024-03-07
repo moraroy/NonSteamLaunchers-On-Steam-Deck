@@ -663,7 +663,8 @@ else
     done
 
  	# Join the custom_websites array into a string with commas and spaces
-	custom_websites_str=$(IFS=', '; echo "${custom_websites[*]}")
+	custom_websites_str=$(printf ", %s" "${custom_websites[@]}")
+	custom_websites_str=${custom_websites_str:2}  # Remove the leading comma and space
 
 	# Split the custom_websites_str variable back into an array using ',' as the delimiter
 	IFS=', ' read -ra custom_websites <<< "$custom_websites_str"
