@@ -662,6 +662,15 @@ else
         fi
     done
 
+ 	# If command line arguments were provided, join the custom websites with commas
+	if [ ${#args[@]} -gt 0 ]; then
+    	custom_websites_str=$(IFS=','; echo "${custom_websites[*]}")
+	else
+    	custom_websites_str="${custom_websites[@]}"
+	fi
+
+	echo "Custom websites: $custom_websites_str"
+
     # TODO: error handling for unbound variable $selected_launchers_str on line 564
     # Convert the selected_launchers array to a string by joining its elements with a `|` delimiter.
     selected_launchers_str=$(IFS="|"; echo "${selected_launchers[*]}")
