@@ -662,14 +662,13 @@ else
         fi
     done
 
- 	# If command line arguments were provided, join the custom websites with commas
-	if [ ${#args[@]} -gt 0 ]; then
-    	custom_websites_str=$(IFS=','; echo "${custom_websites[*]}")
-	else
-    	custom_websites_str="${custom_websites[@]}"
-	fi
+ 	# Join the custom_websites array into a string with commas and spaces
+	custom_websites_str=$(IFS=', '; echo "${custom_websites[*]}")
 
-	echo "Custom websites: $custom_websites_str"
+	# Split the custom_websites_str variable back into an array using ',' as the delimiter
+	IFS=', ' read -ra custom_websites <<< "$custom_websites_str"
+
+ 	
 
     # TODO: error handling for unbound variable $selected_launchers_str on line 564
     # Convert the selected_launchers array to a string by joining its elements with a `|` delimiter.
