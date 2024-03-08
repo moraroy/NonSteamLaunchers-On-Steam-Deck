@@ -651,17 +651,13 @@ else
     # Initialize an array to store the selected launchers
     selected_launchers=()
 
- 	IFS=", "
     for arg in "${args[@]}"; do
         if [[ "$arg" =~ ^https?:// ]]; then
 			website=${arg#https://}
 	  
             # Check if the arg is not an empty string before adding it to the custom_websites array
             if [ -n "$website" ]; then
-				IFS=',' read -ra websites <<< "$website"
-				for site in "${websites[@]}"; do
-                	custom_websites+=("$site")
-				done
+                custom_websites+=("$website")
             fi
         else
             selected_launchers+=("$arg")
