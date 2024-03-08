@@ -658,7 +658,10 @@ else
 	  
             # Check if the arg is not an empty string before adding it to the custom_websites array
             if [ -n "$website" ]; then
-                custom_websites+=("$website")
+				IFS=',' read -ra websites <<< "$website"
+				for site in "${websites[@]}"; do
+                	custom_websites+=("$site")
+				done
             fi
         else
             selected_launchers+=("$arg")
