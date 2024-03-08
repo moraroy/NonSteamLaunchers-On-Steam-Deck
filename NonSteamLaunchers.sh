@@ -656,8 +656,8 @@ else
 			website=${arg#https://}
 	  
             # Check if the arg is not an empty string before adding it to the custom_websites array
-            if [ -n "$arg" ]; then
-                custom_websites+=("$arg")
+            if [ -n "$website" ]; then
+                custom_websites+=("$website")
             fi
         else
             selected_launchers+=("$arg")
