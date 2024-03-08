@@ -664,13 +664,6 @@ else
         fi
     done
 
- 	# Join the custom_websites array into a string with commas and spaces
-	custom_websites_str=$(printf "%s, " "${custom_websites[@]}")
-	custom_websites_str=${custom_websites_str%, } 
-
-	# Split the custom_websites_str variable back into an array using ',' as the delimiter
-	IFS=', ' read -ra custom_websites <<< "$custom_websites_str"
-
  	
 
     # TODO: error handling for unbound variable $selected_launchers_str on line 564
