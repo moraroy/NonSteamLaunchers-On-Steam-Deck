@@ -651,6 +651,7 @@ else
     # Initialize an array to store the selected launchers
     selected_launchers=()
 
+ 	IFS=", "
     for arg in "${args[@]}"; do
         if [[ "$arg" =~ ^https?:// ]]; then
 			website=${arg#https://}
