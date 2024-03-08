@@ -653,6 +653,8 @@ else
 
     for arg in "${args[@]}"; do
         if [[ "$arg" =~ ^https?:// ]]; then
+			website=${arg#https://}
+	  
             # Check if the arg is not an empty string before adding it to the custom_websites array
             if [ -n "$arg" ]; then
                 custom_websites+=("$arg")
