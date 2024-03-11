@@ -1104,7 +1104,7 @@ if [[ $options == "Uninstall" ]]; then
             rm -rf "${logged_in_home}/.local/share/Steam/steamapps/compatdata/VKPlayLauncher"
         fi
     fi
-
+    rm -rf ${logged_in_home}/.config/systemd/user/env_vars
     # Display a message to the user indicating that the operation was successful
         zenity --info --text="The selected launchers have now been deleted." --width=200 --height=150
     exit
