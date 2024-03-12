@@ -2740,7 +2740,7 @@ fi
 # Directories to be checked
 dir1="${logged_in_home}/homebrew/plugins/NonSteamLaunchersDecky"
 dir2="${logged_in_home}/homebrew/plugins/NonSteamLaunchersDeckytest-main"
-dir3="${logged_in_home}/homebrew/plugins/NonSteamLaunchersDeckytest-no-service-file"
+dir3="${logged_in_home}/homebrew/plugins/NonSteamLaunchersDeckytest-develop"
 
 # Check if either directory does not exist
 if [ ! -d "$dir1" ] && [ ! -d "$dir2" ] && [ ! -d "$dir3" ]; then
