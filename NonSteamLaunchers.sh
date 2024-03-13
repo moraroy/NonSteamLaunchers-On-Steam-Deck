@@ -2807,3 +2807,4 @@ fi
 # TODO: might be better to relocate temp files to `/tmp` or even use `mktemp -d` since `rm -rf` is potentially dangerous without the `-i` flag
 # Delete NonSteamLaunchersInstallation subfolder in Downloads folder
 rm -rf "$download_dir"
+rm $pipe_path
