@@ -24,7 +24,7 @@ logged_in_home=$(eval echo "~${logged_in_user}")
 download_dir="${logged_in_home}/Downloads/NonSteamLaunchersInstallation"
 
 # Create a log file in the same directory as the desktop file/.sh file
-exec >> "${logged_in_home}/Downloads/NonSteamLaunchers-install.log" 2>&1
+exec 2>> "${logged_in_home}/Downloads/NonSteamLaunchers-install.log"
 
 # Version number (major.minor)
 version=v3.8.1
