@@ -23,8 +23,13 @@ logged_in_home=$(eval echo "~${logged_in_user}")
 # $PWD (working directory)
 download_dir="${logged_in_home}/Downloads/NonSteamLaunchersInstallation"
 
+# Create a named pipe if it doesn't exist
+pipe_path="/tmp/nsl_pipe"
+[[ ! -p $pipe_path ]] && mkfifo $pipe_path
+
 # Create a log file in the same directory as the desktop file/.sh file
-exec >> "${logged_in_home}/Downloads/NonSteamLaunchers-install.log" 2>&1
+# and also send output to the named pipe
+exec > >(tee -a "${logged_in_home}/Downloads/NonSteamLaunchers-install.log" >$pipe_path) 2>&1
 
 # Version number (major.minor)
 version=v3.8.1
