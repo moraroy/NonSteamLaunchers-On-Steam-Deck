@@ -52,15 +52,19 @@ check_for_updates() {
 
 # Get the command line arguments
 args=("$@")
-nopython=false
+deckyplugin=false
+installchrome=false
 for arg in "${args[@]}"; do
-	if [ "$arg" = "NoPython" ]; then
-		nopython=true
+	if [ "$arg" = "DeckyPlugin" ]; then
+		deckyplugin=true
 		break
+  	if [ "$arg" = "Chrome" ]; then
+   		installchrome=true
+	 	break
 	fi
 done
 
-if [ "${nopython}" = false ]; then
+if [ "${deckyplugin}" = false ]; then
 	#Download Modules
 	# Define the repository and the folders to clone
 	repo_url='https://github.com/moraroy/NonSteamLaunchers-On-Steam-Deck/archive/refs/heads/main.zip'
@@ -2149,7 +2153,7 @@ echo "99"
 echo "# Checking if Chrome is installed...please wait..."
 
 # Check if user selected any of the options
-if [[ $options == *"Netflix"* ]] || [[ $options == *"Fortnite"* ]] || [[ $options == *"Xbox Game Pass"* ]] || [[ $options == *"Geforce Now"* ]] || [[ $options == *"Amazon Luna"* ]] || [[ $options == *"Hulu"* ]] || [[ $options == *"Disney+"* ]] || [[ $options == *"Amazon Prime Video"* ]] || [[ $options == *"Youtube"* ]] || [[ $options == *"Twitch"* ]] || [[ $options == *"movie-web"* ]]; then
+if [[ "${installchrome}" = true}} || [[ $options == *"Netflix"* ]] || [[ $options == *"Fortnite"* ]] || [[ $options == *"Xbox Game Pass"* ]] || [[ $options == *"Geforce Now"* ]] || [[ $options == *"Amazon Luna"* ]] || [[ $options == *"Hulu"* ]] || [[ $options == *"Disney+"* ]] || [[ $options == *"Amazon Prime Video"* ]] || [[ $options == *"Youtube"* ]] || [[ $options == *"Twitch"* ]] || [[ $options == *"movie-web"* ]]; then
     # User selected one of the options
     echo "User selected one of the options"
 
@@ -2738,14 +2742,8 @@ else
 fi
 
 
-
-# Directories to be checked
-dir1="${logged_in_home}/homebrew/plugins/NonSteamLaunchersDecky"
-dir2="${logged_in_home}/homebrew/plugins/NonSteamLaunchersDeckytest-main"
-dir3="${logged_in_home}/homebrew/plugins/NonSteamLaunchersDeckytest-develop"
-
 # Check if either directory does not exist
-if [ ! -d "$dir1" ] && [ ! -d "$dir2" ] && [ ! -d "$dir3" ]; then
+if [ "${deckyplugin}" = false ]; then
     # Detach script from Steam process
     nohup sh -c 'sleep 10; /usr/bin/steam' &
 
@@ -2756,22 +2754,6 @@ if [ ! -d "$dir1" ] && [ ! -d "$dir2" ] && [ ! -d "$dir3" ]; then
 
     # Wait for the steam process to exit
     while steam_pid > /dev/null; do sleep 5; done
-fi
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-if [ "${nopython}" = false ]; then
 
 	#Setup NSLGameScanner.service
 	python_script_path="${logged_in_home}/.config/systemd/user/NSLGameScanner.py"
