@@ -1,4 +1,4 @@
-⁸#!/usr/bin/env bash
+#!/usr/bin/env bash
 
 set -x              # activate debugging (execution shown)
 set -o pipefail     # capture error from pipes
@@ -105,7 +105,7 @@ for arg in "${args[@]}"; do
     fi
     #End of Download Modules
   fi
-fi
+  done
 
 
 	
