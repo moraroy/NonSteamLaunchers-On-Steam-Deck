@@ -107,7 +107,6 @@ for arg in "${args[@]}"; do
   fi
   done
 
-
 	
 	#Service File rough update
 	rm -rf ${logged_in_home}/.config/systemd/user/NSLGameScanner.py
@@ -173,7 +172,6 @@ for arg in "${args[@]}"; do
 	    echo "env_vars file found. Running the .py file."
 	    live="and is LIVE."
 	fi
-fi
 
 
 
@@ -2154,7 +2152,7 @@ echo "99"
 echo "# Checking if Chrome is installed...please wait..."
 
 # Check if user selected any of the options
-if [[ "${installchrome}" = true}} || [[ $options == *"Netflix"* ]] || [[ $options == *"Fortnite"* ]] || [[ $options == *"Xbox Game Pass"* ]] || [[ $options == *"Geforce Now"* ]] || [[ $options == *"Amazon Luna"* ]] || [[ $options == *"Hulu"* ]] || [[ $options == *"Disney+"* ]] || [[ $options == *"Amazon Prime Video"* ]] || [[ $options == *"Youtube"* ]] || [[ $options == *"Twitch"* ]] || [[ $options == *"movie-web"* ]]; then
+if $installchrome || [[ $options == *"Netflix"* ]] || [[ $options == *"Fortnite"* ]] || [[ $options == *"Xbox Game Pass"* ]] || [[ $options == *"Geforce Now"* ]] || [[ $options == *"Amazon Luna"* ]] || [[ $options == *"Hulu"* ]] || [[ $options == *"Disney+"* ]] || [[ $options == *"Amazon Prime Video"* ]] || [[ $options == *"Youtube"* ]] || [[ $options == *"Twitch"* ]] || [[ $options == *"movie-web"* ]]; then
     # User selected one of the options
     echo "User selected one of the options"
 
