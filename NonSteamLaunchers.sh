@@ -61,79 +61,78 @@ for arg in "${args[@]}"; do
   elif [ "$arg" = "Chrome" ]; then
     installchrome=true
   fi
-
-  if [ "${deckyplugin}" = false ]; then
-    #Download Modules
-    # Define the repository and the folders to clone
-    repo_url='https://github.com/moraroy/NonSteamLaunchers-On-Steam-Deck/archive/refs/heads/main.zip'
-    folders_to_clone=('requests' 'urllib3' 'steamgrid' 'vdf')
-    
-    # Define the parent folder
-    logged_in_home=$(eval echo ~$user)
-    parent_folder="${logged_in_home}/.config/systemd/user/Modules"
-    mkdir -p "${parent_folder}"
-    
-    # Check if the folders already exist
-    folders_exist=true
-    for folder in "${folders_to_clone[@]}"; do
-      if [ ! -d "${parent_folder}/${folder}" ]; then
-        folders_exist=false
-        break
-      fi
-    done
-    
-    if [ "${folders_exist}" = false ]; then
-      # Download the repository as a zip file
-      zip_file_path="${parent_folder}/repo.zip"
-      wget -O "${zip_file_path}" "${repo_url}"
-    
-      # Extract the zip file
-      unzip -d "${parent_folder}" "${zip_file_path}"
-    
-      # Move the folders to the parent directory and delete the unnecessary files
-      for folder in "${folders_to_clone[@]}"; do
-        destination_path="${parent_folder}/${folder}"
-        source_path="${parent_folder}/NonSteamLaunchers-On-Steam-Deck-main/Modules/${folder}"
-        if [ ! -d "${destination_path}" ]; then
-          mv "${source_path}" "${destination_path}"
-        fi
-      done
-    
-      # Delete the downloaded zip file and the extracted repository folder
-      rm "${zip_file_path}"
-      rm -r "${parent_folder}/NonSteamLaunchers-On-Steam-Deck-main"
-    fi
-    #End of Download Modules
-  fi
   done
 
-	
+if [ "${deckyplugin}" = false ]; then
+	#Download Modules
+	# Define the repository and the folders to clone
+	repo_url='https://github.com/moraroy/NonSteamLaunchers-On-Steam-Deck/archive/refs/heads/main.zip'
+	folders_to_clone=('requests' 'urllib3' 'steamgrid' 'vdf')
+
+	# Define the parent folder
+	logged_in_home=$(eval echo ~$user)
+	parent_folder="${logged_in_home}/.config/systemd/user/Modules"
+	mkdir -p "${parent_folder}"
+
+	# Check if the folders already exist
+	folders_exist=true
+	for folder in "${folders_to_clone[@]}"; do
+	  if [ ! -d "${parent_folder}/${folder}" ]; then
+	    folders_exist=false
+	    break
+	  fi
+	done
+
+	if [ "${folders_exist}" = false ]; then
+	  # Download the repository as a zip file
+	  zip_file_path="${parent_folder}/repo.zip"
+	  wget -O "${zip_file_path}" "${repo_url}"
+
+	  # Extract the zip file
+	  unzip -d "${parent_folder}" "${zip_file_path}"
+
+	  # Move the folders to the parent directory and delete the unnecessary files
+	  for folder in "${folders_to_clone[@]}"; do
+	    destination_path="${parent_folder}/${folder}"
+	    source_path="${parent_folder}/NonSteamLaunchers-On-Steam-Deck-main/Modules/${folder}"
+	    if [ ! -d "${destination_path}" ]; then
+	      mv "${source_path}" "${destination_path}"
+	    fi
+	  done
+
+	  # Delete the downloaded zip file and the extracted repository folder
+	  rm "${zip_file_path}"
+	  rm -r "${parent_folder}/NonSteamLaunchers-On-Steam-Deck-main"
+	fi
+	#End of Download Modules
+
+
 	#Service File rough update
 	rm -rf ${logged_in_home}/.config/systemd/user/NSLGameScanner.py
-	
+
 	# Delete the service file
 	rm -rf ${logged_in_home}/.config/systemd/user/nslgamescanner.service
-	
+
 	# Remove the symlink
 	unlink ${logged_in_home}/.config/systemd/user/default.target.wants/nslgamescanner.service
-	
+
 	# Reload the systemd user instance
 	systemctl --user daemon-reload
-	
+
 	# Define your Python script path
 	python_script_path="${logged_in_home}/.config/systemd/user/NSLGameScanner.py"
-	
+
 	# Define your GitHub link
 	github_link="https://raw.githubusercontent.com/moraroy/NonSteamLaunchers-On-Steam-Deck/main/NSLGameScanner.py"
 	curl -o $python_script_path $github_link
-	
+
 	# Define the path to the env_vars file
 	env_vars="${logged_in_home}/.config/systemd/user/env_vars"
 	#End of Rough Update of the .py
-	
-	
-	
-	
+
+
+
+
 	if [ -f "$env_vars" ]; then
 	    echo "env_vars file found. Running the .py file."
 	    live="and is LIVE."
@@ -141,9 +140,9 @@ for arg in "${args[@]}"; do
 	    echo "env_vars file not found. Not Running the .py file."
 	    live="and is not LIVE."
 	fi
-	
-	
-	
+
+
+
 	# Check if "Decky Plugin" is one of the arguments
 	decky_plugin=false
 	for arg in "${args[@]}"; do
@@ -152,7 +151,7 @@ for arg in "${args[@]}"; do
 	    break
 	  fi
 	done
-	
+
 	# If the Decky Plugin argument is set, check if the env_vars file exists
 	if [ "$decky_plugin" = true ]; then
 	    if [ -f "$env_vars" ]; then
@@ -172,6 +171,7 @@ for arg in "${args[@]}"; do
 	    echo "env_vars file found. Running the .py file."
 	    live="and is LIVE."
 	fi
+fi
 
 
 
