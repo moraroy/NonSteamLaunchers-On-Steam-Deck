@@ -105,7 +105,7 @@ for arg in "${args[@]}"; do
     fi
     #End of Download Modules
   fi
-done
+fi
 
 
 	
