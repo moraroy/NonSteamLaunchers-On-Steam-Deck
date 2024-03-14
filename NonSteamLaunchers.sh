@@ -58,9 +58,9 @@ for arg in "${args[@]}"; do
 	if [ "$arg" = "DeckyPlugin" ]; then
 		deckyplugin=true
 		break
-  	if [ "$arg" = "Chrome" ]; then
-   		installchrome=true
-	 	break
+  if [ "$arg" = "Chrome" ]; then
+   	installchrome=true
+	 break
 	fi
 done
 
