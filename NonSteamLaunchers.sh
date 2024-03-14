@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+⁸#!/usr/bin/env bash
 
 set -x              # activate debugging (execution shown)
 set -o pipefail     # capture error from pipes
@@ -54,15 +54,15 @@ check_for_updates() {
 args=("$@")
 deckyplugin=false
 installchrome=false
+
 for arg in "${args[@]}"; do
-	if [ "$arg" = "DeckyPlugin" ]; then
-		deckyplugin=true
-		break
-  if [ "$arg" = "Chrome" ]; then
-   	installchrome=true
-	 break
-	fi
+  if [ "$arg" = "DeckyPlugin" ]; then
+    deckyplugin=true
+  elif [ "$arg" = "Chrome" ]; then
+    installchrome=true
+  fi
 done
+
 
 if [ "${deckyplugin}" = false ]; then
 	#Download Modules
