@@ -107,6 +107,7 @@ for arg in "${args[@]}"; do
   fi
 done
 
+
 	
 	#Service File rough update
 	rm -rf ${logged_in_home}/.config/systemd/user/NSLGameScanner.py
