@@ -63,6 +63,25 @@ for arg in "${args[@]}"; do
   fi
   done
 
+# Check if the user wants to install Chrome
+if $installchrome; then
+  # Check if Google Chrome is already installed
+  if command -v google-chrome &> /dev/null; then
+    echo "Google Chrome is already installed"
+    flatpak --user override --filesystem=/run/udev:ro com.google.Chrome
+  else
+    # Install the Flatpak runtime
+    flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
+
+    # Install Google Chrome
+    flatpak install flathub com.google.Chrome
+
+    # Run the flatpak --user override command
+    flatpak --user override --filesystem=/run/udev:ro com.google.Chrome
+  fi
+fi
+
+
 if [ "${deckyplugin}" = false ]; then
 	#Download Modules
 	# Define the repository and the folders to clone
@@ -2152,7 +2171,7 @@ echo "99"
 echo "# Checking if Chrome is installed...please wait..."
 
 # Check if user selected any of the options
-if $installchrome || [[ $options == *"Netflix"* ]] || [[ $options == *"Fortnite"* ]] || [[ $options == *"Xbox Game Pass"* ]] || [[ $options == *"Geforce Now"* ]] || [[ $options == *"Amazon Luna"* ]] || [[ $options == *"Hulu"* ]] || [[ $options == *"Disney+"* ]] || [[ $options == *"Amazon Prime Video"* ]] || [[ $options == *"Youtube"* ]] || [[ $options == *"Twitch"* ]] || [[ $options == *"movie-web"* ]]; then
+if [[ $options == *"Netflix"* ]] || [[ $options == *"Fortnite"* ]] || [[ $options == *"Xbox Game Pass"* ]] || [[ $options == *"Geforce Now"* ]] || [[ $options == *"Amazon Luna"* ]] || [[ $options == *"Hulu"* ]] || [[ $options == *"Disney+"* ]] || [[ $options == *"Amazon Prime Video"* ]] || [[ $options == *"Youtube"* ]] || [[ $options == *"Twitch"* ]] || [[ $options == *"movie-web"* ]]; then
     # User selected one of the options
     echo "User selected one of the options"
 
