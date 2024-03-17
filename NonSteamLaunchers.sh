@@ -2572,7 +2572,7 @@ fi
 
 if [[ $options == *"movie-web"* ]]; then
     # User selected movie-web
-    moviewebchromelaunchoptions="run --branch=stable --arch=x86_64 --command=/app/bin/chrome --file-forwarding com.google.Chrome @@u @@ --window-size=1280,800 --force-device-scale-factor=1.00 --device-scale-factor=1.00 --kiosk https://mw.lonelil.ru/ --chrome-kiosk-type=fullscreen --no-first-run --enable-features=OverlayScrollbar"
+    moviewebchromelaunchoptions="run --branch=stable --arch=x86_64 --command=/app/bin/chrome --file-forwarding com.google.Chrome @@u @@ --window-size=1280,800 --force-device-scale-factor=1.00 --device-scale-factor=1.00 --kiosk https://scootydooter.vercel.app/ --chrome-kiosk-type=fullscreen --no-first-run --enable-features=OverlayScrollbar"
     echo "export moviewebchromelaunchoptions=$moviewebchromelaunchoptions" >> ${logged_in_home}/.config/systemd/user/env_vars
 fi
 
