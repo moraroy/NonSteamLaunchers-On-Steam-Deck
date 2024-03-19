@@ -1593,7 +1593,7 @@ if [[ $options == *"Battle.net"* ]]; then
     "$STEAM_RUNTIME" "$proton_dir/proton" run "$battle_file" Battle.net-Setup.exe --lang=enUS --installpath="C:\Program Files (x86)\Battle.net"
 
     # Wait for the process to finish or timeout after a certain number of attempts
-    max_attempts=10
+    max_attempts=20
     attempt=0
     while true; do
         if pgrep -f "Battle.net.exe" > /dev/null; then
