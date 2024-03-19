@@ -1574,7 +1574,7 @@ if [[ $options == *"Battle.net"* ]]; then
     fi
 
     # Change working directory to Proton's
-    cd $proton_dir
+    cd "$proton_dir"
 
     # Set the STEAM_COMPAT_CLIENT_INSTALL_PATH environment variable
     export STEAM_COMPAT_CLIENT_INSTALL_PATH="${logged_in_home}/.local/share/Steam"
@@ -1582,31 +1582,36 @@ if [[ $options == *"Battle.net"* ]]; then
     # Set the STEAM_COMPAT_DATA_PATH environment variable for Epic Games Launcher
     export STEAM_COMPAT_DATA_PATH="${logged_in_home}/.local/share/Steam/steamapps/compatdata/${appid}"
 
-    # Download BATTLE file
+    # Download BATTLE file if not already present
     if [ ! -f "$battle_file" ]; then
         echo "Downloading BATTLE file"
-        wget $battle_url -O $battle_file
+        wget "$battle_url" -O "$battle_file"
     fi
 
     # Run the BATTLE file using Proton with the /passive option
     echo "Running BATTLE file using Proton with the /passive option"
     "$STEAM_RUNTIME" "$proton_dir/proton" run "$battle_file" Battle.net-Setup.exe --lang=enUS --installpath="C:\Program Files (x86)\Battle.net"
-	wait
- 	# Run the BATTLE file using Proton with the /passive option
-    echo "Running BATTLE file using Proton with the /passive option"
-    "$STEAM_RUNTIME" "$proton_dir/proton" run "$battle_file" Battle.net-Setup.exe --lang=enUS --installpath="C:\Program Files (x86)\Battle.net"
 
+    # Wait for the process to finish or timeout after a certain number of attempts
+    max_attempts=10
+    attempt=0
     while true; do
-    if pgrep -f "Battle.net.exe" > /dev/null; then
-        pkill -f "Battle.net.exe"
-        break
-    fi
-    sleep 1
+        if pgrep -f "Battle.net.exe" > /dev/null; then
+            pkill -f "Battle.net.exe"
+            break
+        fi
+        sleep 1
+        ((attempt++))
+        if [ "$attempt" -ge "$max_attempts" ]; then
+            echo "Timeout: Battle.net process did not terminate."
+            break
+        fi
     done
-
 fi
 
 wait
+
+
 
 echo "80"
 echo "# Downloading & Installing Amazon Games...please wait..."
