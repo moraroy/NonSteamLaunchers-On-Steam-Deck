@@ -43,6 +43,7 @@ Supported Streaming Sites for games and as well as any website. 🌐
 </h1>
 
 - Website Shortcut Creator ✔️
+- Fortnite
 - Xbox Game Pass ✔️
 - GeForce Now ✔️
 - Amazon Luna ✔️
