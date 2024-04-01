@@ -94,7 +94,7 @@ How to Install 🔧
 How to Uninstall 🗑
 </h1>
 
-+ Just run the script, and hit "Uninstall". Alternatively, if you want to totally wipe evrything from NonSteamLaunchers click "Start Fresh".
++ Just run the script, and hit "Uninstall". Alternatively, if you want to totally wipe everything from NonSteamLaunchers click "Start Fresh".
 + That's it.
 
 <h1 align="center">
