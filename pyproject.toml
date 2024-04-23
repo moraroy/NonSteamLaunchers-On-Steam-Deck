@@ -28,7 +28,7 @@ pytest-cov = "^5.0.0"
 pytest-datafiles = "^3.0.0"
 pytest-xdist = "^3.4.0"
 rich = "^13.6.0"
-ruff = "^0.3.0"
+ruff = "^0.4.1"
 
 [tool.ruff]
 # Enable pycodestyle (`E`) and Pyflakes (`F`) codes by default.
