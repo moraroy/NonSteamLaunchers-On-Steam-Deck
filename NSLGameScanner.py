@@ -4,6 +4,7 @@ import json
 import shutil
 import binascii
 import ctypes
+import gzip
 import zipfile
 import time
 import sys
@@ -59,6 +60,8 @@ ea_app_launcher = os.environ.get('ea_app_launcher', '')
 gog_galaxy_launcher = os.environ.get('gog_galaxy_launcher', '')
 bnet_launcher = os.environ.get('bnet_launcher', '')
 amazon_launcher = os.environ.get('amazon_launcher', '')
+itchio_launcher = os.environ.get('itchio_launcher', '')
+
 
 
 #Variables of the Launchers
@@ -954,6 +957,80 @@ if amazon_games:
 
 
 #End of Amazon Games Scanner
+
+
+
+#Itchio Scanner
+def get_itch_games(itch_db_location):
+    print(f"Checking if {itch_db_location} exists...")
+    if not os.path.exists(itch_db_location):
+        print(f"Path not found: {itch_db_location}. Continuing with the rest of the code...")
+        return []
+
+    print("Opening and reading the database file...")
+    with open(itch_db_location, 'rb') as f:
+        shortcut_bytes = f.read()
+
+    print("Parsing the database file...")
+    paths = parse_butler_db(shortcut_bytes)
+
+    print("Converting paths to games...")
+    games = [dbpath_to_game(path) for path in paths if dbpath_to_game(path) is not None]
+    # Remove duplicates
+    games = list(set(games))
+    print(f"Found {len(games)} unique games.")
+    return games
+
+def parse_butler_db(content):
+    print("Finding matches in the database content...")
+    pattern = rb'\{"basePath":"(.*?)","totalSize".*?"candidates":\[(.*?)\]\}'
+    matches = re.findall(pattern, content)
+    print(f"Found {len(matches)} matches.")
+
+    print("Converting matches to database paths...")
+    db_paths = []
+    for match in matches:
+        base_path = match[0].decode(errors='ignore')
+        candidates_json = b'[' + match[1] + b']'
+        candidates = json.loads(candidates_json.decode(errors='ignore'))
+        paths = [candidate['path'] for candidate in candidates]
+        db_paths.append((base_path, paths))
+    print(f"Converted {len(matches)} matches to {len(db_paths)} database paths.")
+    return db_paths
+
+def dbpath_to_game(paths):
+    # Convert the Windows-style path from the database to a Unix-style path
+    db_path = paths[0].replace("\\\\", "/").replace("C:", "")
+    linux_path = "/home/deck/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c" + db_path
+    receipt_path = os.path.join(linux_path, ".itch", "receipt.json.gz")
+    if not os.path.exists(receipt_path):
+        return None
+
+    for executable in paths[1]:
+        exe_path = os.path.join(linux_path, executable)
+        if os.access(exe_path, os.X_OK):  # check if file is executable
+            with gzip.open(receipt_path, 'rb') as f:
+                receipt_str = f.read().decode()
+                receipt = json.loads(receipt_str)
+                return (linux_path, executable, receipt['game']['title'])
+# Usage:
+itch_db_location = f"{logged_in_home}/.local/share/Steam/steamapps/compatdata/{itchio_launcher}/pfx/drive_c/users/steamuser/AppData/Roaming/itch/db/butler.db-wal"
+print(f"Getting games from {itch_db_location}...")
+games = get_itch_games(itch_db_location)
+print("Printing games...")
+for game in games:
+    print(game)
+
+for game in games:
+    linux_path, executable, game_title = game
+    exe_path = f"\"{os.path.join(linux_path, executable)}\""
+    start_dir = f"\"{linux_path}\""
+    launchoptions = f"STEAM_COMPAT_DATA_PATH=\"{logged_in_home}/.local/share/Steam/steamapps/compatdata/{itchio_launcher}/\" %command%"
+    create_new_entry(exe_path, game_title, launchoptions, start_dir)
+
+
+
+#End of Itchio Scanner
 
 
 

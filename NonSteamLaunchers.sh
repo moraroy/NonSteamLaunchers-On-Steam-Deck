@@ -29,7 +29,7 @@ download_dir="${logged_in_home}/Downloads/NonSteamLaunchersInstallation"
 exec >> "${logged_in_home}/Downloads/NonSteamLaunchers-install.log" 2>&1
 
 # Version number (major.minor)
-version=v3.8.1
+version=v3.8.5
 
 # TODO: tighten logic to check whether major/minor version is up-to-date via `-eq`, `-lt`, or `-gt` operators
 # Check repo releases via GitHub API then display current stable version
@@ -105,17 +105,17 @@ if [ "${deckyplugin}" = false ]; then
 	if [ "${folders_exist}" = false ]; then
 	  # Download the repository as a zip file
 	  zip_file_path="${parent_folder}/repo.zip"
-	  wget -O "${zip_file_path}" "${repo_url}"
+	  wget -O "${zip_file_path}" "${repo_url}" || { echo 'Download failed with error code: $?'; exit 1; }
 
 	  # Extract the zip file
-	  unzip -d "${parent_folder}" "${zip_file_path}"
+	  unzip -d "${parent_folder}" "${zip_file_path}" || { echo 'Unzip failed with error code: $?'; exit 1; }
 
 	  # Move the folders to the parent directory and delete the unnecessary files
 	  for folder in "${folders_to_clone[@]}"; do
 	    destination_path="${parent_folder}/${folder}"
 	    source_path="${parent_folder}/NonSteamLaunchers-On-Steam-Deck-main/Modules/${folder}"
 	    if [ ! -d "${destination_path}" ]; then
-	      mv "${source_path}" "${destination_path}"
+	      mv "${source_path}" "${destination_path}" || { echo 'Move failed with error code: $?'; exit 1; }
 	    fi
 	  done
 
@@ -2367,6 +2367,8 @@ if [[ -f "$itchio_path1" ]]; then
     echo "export itchioshortcutdirectory=$itchioshortcutdirectory" >> ${logged_in_home}/.config/systemd/user/env_vars
     echo "export itchiolaunchoptions=$itchiolaunchoptions" >> ${logged_in_home}/.config/systemd/user/env_vars
     echo "export itchiostartingdir=$itchiostartingdir" >> ${logged_in_home}/.config/systemd/user/env_vars
+    echo "export itchio_launcher=NonSteamLaunchers" >> ${logged_in_home}/.config/systemd/user/env_vars
+    echo "itchio Launcher found at path 1"
 elif [[ -f "$itchio_path2" ]]; then
     # itchio Launcher is installed at path 2
     itchioshortcutdirectory="\"$itchio_path2\""
@@ -2375,6 +2377,8 @@ elif [[ -f "$itchio_path2" ]]; then
     echo "export itchioshortcutdirectory=$itchioshortcutdirectory" >> ${logged_in_home}/.config/systemd/user/env_vars
     echo "export itchiolaunchoptions=$itchiolaunchoptions" >> ${logged_in_home}/.config/systemd/user/env_vars
     echo "export itchiostartingdir=$itchiostartingdir" >> ${logged_in_home}/.config/systemd/user/env_vars
+    echo "export itchio_launcher=itchioLauncher" >> ${logged_in_home}/.config/systemd/user/env_vars
+    echo "itchio Launcher found at path 2"
 fi
 
 if [[ -f "$legacygames_path1" ]]; then
