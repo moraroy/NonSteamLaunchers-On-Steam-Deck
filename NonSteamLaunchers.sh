@@ -2207,8 +2207,7 @@ fi
 # wait for Google Chrome to finish
 wait
 
-# Delete NonSteamLaunchersInstallation subfolder in Downloads folder
-rm -rf "$download_dir"
+
 
     echo "100"
     echo "# Installation Complete - Steam will now restart. Your launchers will be in your library!...Food for thought...do Jedis use Force Compatability?"
