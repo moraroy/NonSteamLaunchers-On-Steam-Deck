@@ -252,384 +252,41 @@ chrome_path="/usr/bin/flatpak"
 chrome_startdir="\"/usr/bin\""
 chromedirectory="\"$chrome_path\""
 
-# Check if Epic Games Launcher is installed
+#Zenity Launcher Check Installation
 function CheckInstallations {
-if [[ -f "$epic_games_launcher_path1" ]]; then
-    # Epic Games Launcher is installed in path 1
-    epic_games_value="FALSE"
-    epic_games_text="Epic Games ===> $epic_games_launcher_path1"
-elif [[ -f "$epic_games_launcher_path2" ]]; then
-    # Epic Games Launcher is installed in path 2
-    epic_games_value="FALSE"
-    epic_games_text="Epic Games ===> $epic_games_launcher_path2"
-else
-    # Epic Games Launcher is not installed
-    epic_games_value="FALSE"
-    epic_games_text="Epic Games"
-fi
+    declare -A paths1 paths2 names
+    paths1=(["epic_games"]="$epic_games_launcher_path1" ["gog_galaxy"]="$gog_galaxy_path1" ["uplay"]="$uplay_path1" ["battlenet"]="$battlenet_path1" ["eaapp"]="$eaapp_path1" ["amazongames"]="$amazongames_path1" ["itchio"]="$itchio_path1" ["legacygames"]="$legacygames_path1" ["humblegames"]="$humblegames_path1" ["indiegala"]="$indiegala_path1" ["rockstar"]="$rockstar_path1" ["glyph"]="$glyph_path1" ["minecraft"]="$minecraft_path1" ["psplus"]="$psplus_path1" ["vkplay"]="$vkplay_path1")
+    paths2=(["epic_games"]="$epic_games_launcher_path2" ["gog_galaxy"]="$gog_galaxy_path2" ["uplay"]="$uplay_path2" ["battlenet"]="$battlenet_path2" ["eaapp"]="$eaapp_path2" ["amazongames"]="$amazongames_path2" ["itchio"]="$itchio_path2" ["legacygames"]="$legacygames_path2" ["humblegames"]="$humblegames_path2" ["indiegala"]="$indiegala_path2" ["rockstar"]="$rockstar_path2" ["glyph"]="$glyph_path2" ["minecraft"]="$minecraft_path2" ["psplus"]="$psplus_path2" ["vkplay"]="$vkplay_path2")
+    names=(["epic_games"]="Epic Games" ["gog_galaxy"]="GOG Galaxy" ["uplay"]="Ubisoft Connect" ["battlenet"]="Battle.net" ["eaapp"]="EA App" ["amazongames"]="Amazon Games" ["itchio"]="itch.io" ["legacygames"]="Legacy Games" ["humblegames"]="Humble Games Collection" ["indiegala"]="IndieGala" ["rockstar"]="Rockstar Games Launcher" ["glyph"]="Glyph Launcher" ["minecraft"]="Minecraft" ["psplus"]="Playstation Plus" ["vkplay"]="VK Play")
 
-# Check if GOG Galaxy is installed
-if [[ -f "$gog_galaxy_path1" ]]; then
-    # GOG Galaxy is installed in path 1
-    gog_galaxy_value="FALSE"
-    gog_galaxy_text="GOG Galaxy ===> $gog_galaxy_path1"
-elif [[ -f "$gog_galaxy_path2" ]]; then
-    # GOG Galaxy is installed in path 2
-    gog_galaxy_value="FALSE"
-    gog_galaxy_text="GOG Galaxy ===> $gog_galaxy_path2"
-else
-    # GOG Galaxy is not installed
-    gog_galaxy_value="FALSE"
-    gog_galaxy_text="GOG Galaxy"
-fi
-
-
-# Check if Uplay is installed
-if [[ -f "$uplay_path1" ]]; then
-    # Uplay is installed in path 1
-    uplay_value="FALSE"
-    uplay_text="Ubisoft Connect ===> $uplay_path1"
-elif [[ -f "$uplay_path2" ]]; then
-    # Uplay is installed in path 2
-    uplay_value="FALSE"
-    uplay_text="Ubisoft Connect ===> $uplay_path2"
-else
-    # Uplay is not installed
-    uplay_value="FALSE"
-    uplay_text="Ubisoft Connect"
-fi
-
-# Check if Battle.net is installed
-if [[ -f "$battlenet_path1" ]]; then
-    # Battle.net is installed in path 1
-    battlenet_value="FALSE"
-    battlenet_text="Battle.net ===> $battlenet_path1"
-elif [[ -f "$battlenet_path2" ]]; then
-    # Battle.net is installed in path 2
-    battlenet_value="FALSE"
-    battlenet_text="Battle.net ===> $battlenet_path2"
-else
-    # Battle.net is not installed
-    battlenet_value="FALSE"
-    battlenet_text="Battle.net"
-fi
-
-# Check if EA App is installed
-if [[ -f "$eaapp_path1" ]]; then
-    # EA App is installed in path 1
-    eaapp_value="FALSE"
-    eaapp_text="EA App ===> $eaapp_path1"
-elif [[ -f "$eaapp_path2" ]]; then
-     # EA App is installed in path 2
-     eaapp_value="FALSE"
-     eaapp_text="EA App ===> $eaapp_path2"
-else
-     # EA App is not installed
-     eaapp_value="FALSE"
-     eaapp_text="EA App"
-fi
-
-# Check if Amazon Games is installed
-if [[ -f "$amazongames_path1" ]]; then
-    # Amazon Games is installed in path 1
-    amazongames_value="FALSE"
-    amazongames_text="Amazon Games ===> $amazongames_path1"
-elif [[ -f "$amazongames_path2" ]]; then
-    # Amazon Games is installed in path 2
-    amazongames_value="FALSE"
-    amazongames_text="Amazon Games ===> $amazongames_path2"
-else
-    # Amazon Games is not installed
-    amazongames_value="FALSE"
-    amazongames_text="Amazon Games"
-fi
-
-# Check if itch.io is installed
-if [[ -f "$itchio_path1" ]]; then
-    # itch.io is installed in path 1
-    itchio_value="FALSE"
-    itchio_text="itch.io ===> $itchio_path1"
-elif [[ -f "$itchio_path2" ]]; then
-    # itch.io is installed in path 2
-    itchio_value="FALSE"
-    itchio_text="itch.io ===> $itchio_path2"
-else
-    # itch.io is not installed
-    itchio_value="FALSE"
-    itchio_text="itch.io"
-fi
-
-# Check if Legacy Games Launcher is installed
-if [[ -f "$legacygames_path1" ]]; then
-    # Legacy Games is installed in path 1
-    legacygames_value="FALSE"
-    legacygames_text="Legacy Games ===> $legacygames_path1"
-elif [[ -f "$legacygames_path2" ]]; then
-    # Legacy Games is installed in path 2
-    legacygames_value="FALSE"
-    legacygames_text="Legacy Games ===> $legacygames_path2"
-else
-    # Legacy Games is not installed
-    legacygames_value="FALSE"
-    legacygames_text="Legacy Games - Broken, Use at own risk"
-fi
-
-# Check if Humble Games Launcher is installed
-if [[ -f "$humblegames_path1" ]]; then
-    # Humble Games is installed in path 1 on local drive
-    humblegames_value="FALSE"
-    humblegames_text="Humble Games Collection ===> $humblegames_path1"
-elif [[ -f "$humblegames_path2" ]]; then
-    # Humble Games is installed in path 2 on local drive
-    humblegames_value="FALSE"
-    humblegames_text="Humble Games Collection ===> $humblegames_path2"
-else
-    # Humble Games is not installed
-    humblegames_value="FALSE"
-    humblegames_text="Humble Games Collection - Use Desktop Mode to sign in, then launch Game Mode"
-fi
-
-# Check if indiegala is installed
-if [[ -f "$indiegala_path1" ]]; then
-    # indiegala is installed in path 1 on local drive
-    indiegala_value="FALSE"
-    indiegala_text="IndieGala ===> $indiegala_path1"
-elif [[ -f "$indiegala_path2" ]]; then
-    # indiegala is installed in path 2 on local drive
-    indiegala_value="FALSE"
-    indiegala_text="IndieGala ===> $indiegala_path2"
-else
-    # indiegala is not installed
-    indiegala_value="FALSE"
-    indiegala_text="IndieGala"
-fi
-
-# Check if Rockstar is installed
-if [[ -f "$rockstar_path1" ]]; then
-    # Rockstar is installed in path 1 on local drive
-    rockstar_value="FALSE"
-    rockstar_text="Rockstar Games Launcher ===> $rockstar_path1"
-elif [[ -f "$rockstar_path2" ]]; then
-    # Rockstar is installed in path 2 on local drive
-    rockstar_value="FALSE"
-    rockstar_text="Rockstar Games Launcher ===> $rockstar_path2"
-else
-    # Rockstar is not installed
-    rockstar_value="FALSE"
-    rockstar_text="Rockstar Games Launcher"
-fi
-
-# Check if Glyph is installed
-if [[ -f "$glyph_path1" ]]; then
-    # Glyph is installed in path 1 on local drive
-    glyph_value="FALSE"
-    glyph_text="Glyph Launcher ===> $glyph_path1"
-elif [[ -f "$glyph_path2" ]]; then
-    # Glyph is installed in path 2 on local drive
-    glyph_value="FALSE"
-    glyph_text="Glyph Launcher ===> $glyph_path2"
-else
-    # Glyph is not installed
-    glyph_value="FALSE"
-    glyph_text="Glyph Launcher"
-fi
-
-# Check if Minecraft is installed
-if [[ -f "$minecraft_path1" ]]; then
-    # Minecraft is installed in path 1 on local drive
-    minecraft_value="FALSE"
-    minecraft_text="Minecraft ===> $minecraft_path1"
-elif [[ -f "$minecraft_path2" ]]; then
-    # Minecraft is installed in path 2 on local drive
-    minecraft_value="FALSE"
-    minecraft_text="Minecraft ===> $minecraft_path2"
-else
-    # Minecraft is not installed
-    minecraft_value="FALSE"
-    minecraft_text="Minecraft - Close black screen to continue installation"
-fi
-
-# Check if PlaystationPlus is installed
-if [[ -f "$psplus_path1" ]]; then
-    # PlaystationPlus is installed in path 1 on local drive
-    psplus_value="FALSE"
-    psplus_text="Playstation Plus ===> $psplus_path1"
-elif [[ -f "$psplus_path2" ]]; then
-    # PlaystationPlus is installed in path 2 on local drive
-    psplus_value="FALSE"
-    psplus_text="Playstation Plus ===> $psplus_path2"
-else
-    # PlaystationPlus is not installed
-    psplus_value="FALSE"
-    psplus_text="Playstation Plus"
-fi
-
-
-# Check if VK Play is installed
-if [[ -f "$vkplay_path1" ]]; then
-    # VK Play is installed in path 1 on local drive
-    vkplay_value="FALSE"
-    vkplay_text="VK Play ===> $vkplay_path1"
-elif [[ -f "$vkplay_path2" ]]; then
-    # VK Play is installed in path 2 on local drive
-    vkplay_value="FALSE"
-    vkplay_text="VK Play ===> $vkplay_path2"
-else
-    # VK Play is not installed
-    vkplay_value="FALSE"
-    vkplay_text="VK Play"
-fi }
+    for launcher in "${!names[@]}"; do
+        if [[ -f "${paths1[$launcher]}" ]]; then
+            declare -g "${launcher}_value"="FALSE"
+            declare -g "${launcher}_text"="${names[$launcher]} ===> ${paths1[$launcher]}"
+        elif [[ -f "${paths2[$launcher]}" ]]; then
+            declare -g "${launcher}_value"="FALSE"
+            declare -g "${launcher}_text"="${names[$launcher]} ===> ${paths2[$launcher]}"
+        else
+            declare -g "${launcher}_value"="FALSE"
+            declare -g "${launcher}_text"="${names[$launcher]}"
+        fi
+    done
+}
 
 # Verify launchers are installed
 function CheckInstallationDirectory {
-    # Check if NonSteamLaunchers is installed
-    if [[ -d "${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers" ]]; then
-        # NonSteamLaunchers is installed
-        nonsteamlauncher_move_value="TRUE"
-    else
-        # NonSteamLaunchers is not installed
-        nonsteamlauncher_move_value="FALSE"
-    fi
+    declare -A paths names
+    paths=(["nonsteamlauncher"]="${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers" ["epicgameslauncher"]="${logged_in_home}/.local/share/Steam/steamapps/compatdata/EpicGamesLauncher" ["goggalaxylauncher"]="${logged_in_home}/.local/share/Steam/steamapps/compatdata/GogGalaxyLauncher" ["uplaylauncher"]="${logged_in_home}/.local/share/Steam/steamapps/compatdata/UplayLauncher" ["battlenetlauncher"]="${logged_in_home}/.local/share/Steam/steamapps/compatdata/Battle.netLauncher" ["eaapplauncher"]="${logged_in_home}/.local/share/Steam/steamapps/compatdata/TheEAappLauncher" ["amazongameslauncher"]="${logged_in_home}/.local/share/Steam/steamapps/compatdata/AmazonGamesLauncher" ["itchiolauncher"]="${logged_in_home}/.local/share/Steam/steamapps/compatdata/itchioLauncher" ["legacygameslauncher"]="${logged_in_home}/.local/share/Steam/steamapps/compatdata/LegacyGamesLauncher" ["humblegameslauncher"]="${logged_in_home}/.local/share/Steam/steamapps/compatdata/HumbleGamesLauncher" ["indiegalalauncher"]="${logged_in_home}/.local/share/Steam/steamapps/compatdata/IndieGalaLauncher" ["rockstargameslauncher"]="${logged_in_home}/.local/share/Steam/steamapps/compatdata/RockstarGamesLauncher" ["glyphlauncher"]="${logged_in_home}/.local/share/Steam/steamapps/compatdata/GlyphLauncher" ["minecraftlauncher"]="${logged_in_home}/.local/share/Steam/steamapps/compatdata/MinecraftLauncher" ["pspluslauncher"]="${logged_in_home}/.local/share/Steam/steamapps/compatdata/PlaystationPlusLauncher" ["vkplaylauncher"]="${logged_in_home}/.local/share/Steam/steamapps/compatdata/VKPlayLauncher")
+    names=(["nonsteamlauncher"]="NonSteamLaunchers" ["epicgameslauncher"]="EpicGamesLauncher" ["goggalaxylauncher"]="GogGalaxyLauncher" ["uplaylauncher"]="UplayLauncher" ["battlenetlauncher"]="Battle.netLauncher" ["eaapplauncher"]="TheEAappLauncher" ["amazongameslauncher"]="AmazonGamesLauncher" ["itchiolauncher"]="itchioLauncher" ["legacygameslauncher"]="LegacyGamesLauncher" ["humblegameslauncher"]="HumbleGamesLauncher" ["indiegalalauncher"]="IndieGalaLauncher" ["rockstargameslauncher"]="RockstarGamesLauncher" ["glyphlauncher"]="GlyphLauncher" ["minecraftlauncher"]="MinecraftLauncher" ["pspluslauncher"]="PlaystationPlusLauncher" ["vkplaylauncher"]="VKPlayLauncher")
 
-    # Check if EpicGamesLauncher is installed
-    if [[ -d "${logged_in_home}/.local/share/Steam/steamapps/compatdata/EpicGamesLauncher" ]]; then
-        # EpicGamesLauncher is installed
-        epicgameslauncher_move_value="TRUE"
-    else
-        # EpicGamesLauncher is not installed
-        epicgameslauncher_move_value="FALSE"
-    fi
-
-    # Check if GogGalaxyLauncher is installed
-    if [[ -d "${logged_in_home}/.local/share/Steam/steamapps/compatdata/GogGalaxyLauncher" ]]; then
-        # GogGalaxyLauncher is installed
-        goggalaxylauncher_move_value="TRUE"
-    else
-        # GogGalaxyLauncher is not installed
-        goggalaxylauncher_move_value="FALSE"
-    fi
-
-
-    # Check if UplayLauncher is installed
-    if [[ -d "${logged_in_home}/.local/share/Steam/steamapps/compatdata/UplayLauncher" ]]; then
-        # UplayLauncher is installed
-        uplaylauncher_move_value="TRUE"
-    else
-        # UplayLauncher is not installed
-        uplaylauncher_move_value="FALSE"
-    fi
-
-    # Check if Battle.netLauncher is installed
-    if [[ -d "${logged_in_home}/.local/share/Steam/steamapps/compatdata/Battle.netLauncher" ]]; then
-        # Battle.netLauncher is installed
-        battlenetlauncher_move_value="TRUE"
-    else
-        # Battle.netLauncher is not installed
-        battlenetlauncher_move_value="FALSE"
-    fi
-
-    # Check if TheEAappLauncher is installed
-    if [[ -d "${logged_in_home}/.local/share/Steam/steamapps/compatdata/TheEAappLauncher" ]]; then
-        # TheEAappLauncher is installed
-        eaapplauncher_move_value="TRUE"
-    else
-        # TheEAappLauncher is not installed
-        eaapplauncher_move_value="FALSE"
-    fi
-
-    # Check if AmazonGamesLauncher is installed
-    if [[ -d "${logged_in_home}/.local/share/Steam/steamapps/compatdata/AmazonGamesLauncher" ]]; then
-        # AmazonGamesLauncher is installed
-        amazongameslauncher_move_value="TRUE"
-    else
-        # AmazonGamesLauncher is not installed
-        amazongameslauncher_move_value="FALSE"
-    fi
-
-    # Check if itchioLauncher is installed
-    if [[ -d "${logged_in_home}/.local/share/Steam/steamapps/compatdata/itchioLauncher" ]]; then
-        # itchioLauncher is installed
-        itchiolauncher_move_value="TRUE"
-    else
-        # itchioLauncher is not installed
-        itchiolauncher_move_value="FALSE"
-    fi
-
-    # Check if LegacyGamesLauncher is installed
-    if [[ -d "${logged_in_home}/.local/share/Steam/steamapps/compatdata/LegacyGamesLauncher" ]]; then
-        # LegacyGamesLauncher is installed
-        legacygameslauncher_move_value="TRUE"
-    else
-        # LegacyGamesLauncher is not installed
-        legacygameslauncher_move_value="FALSE"
-    fi
-
-    # Check if HumbleGamesLauncher is installed
-    if [[ -d "${logged_in_home}/.local/share/Steam/steamapps/compatdata/HumbleGamesLauncher" ]]; then
-        # HumbleGamesLauncher is installed
-        humblegameslauncher_move_value="TRUE"
-    else
-        # HumbleGamesLauncher is not installed
-        humblegameslauncher_move_value="FALSE"
-    fi
-
-    # Check if indiegala is installed
-    if [[ -d "${logged_in_home}/.local/share/Steam/steamapps/compatdata/IndieGalaLauncher" ]]; then
-        # indiegalaLauncher is installed
-        indiegalalauncher_move_value="TRUE"
-    else
-        # indiegalaLauncher is not installed
-        indiegalalauncher_move_value="FALSE"
-    fi
-
-    # Check if rockstar is installed
-    if [[ -d "${logged_in_home}/.local/share/Steam/steamapps/compatdata/RockstarGamesLauncher" ]]; then
-        # rockstar games launcher is installed
-        rockstargameslauncher_move_value="TRUE"
-    else
-        # rockstar games launcher is not installed
-        rockstargameslauncher_move_value="FALSE"
-    fi
-
-    # Check if Glyph is installed
-    if [[ -d "${logged_in_home}/.local/share/Steam/steamapps/compatdata/GlyphLauncher" ]]; then
-        # Glyph is installed
-        glyphlauncher_move_value="TRUE"
-    else
-        # Glyph is not installed
-        glyphlauncher_move_value="FALSE"
-    fi
-
-    # Check if Minecraft is installed
-    if [[ -d "${logged_in_home}/.local/share/Steam/steamapps/compatdata/MinecraftLauncher" ]]; then
-        # Minecraft is installed
-        minecraftlauncher_move_value="TRUE"
-    else
-        # Minecraft is not installed
-        minecraftlauncher_move_value="FALSE"
-    fi
-
-    # TODO: `pspluslauncher_move_value` is unused (SC2034)
-    # Check if PlaystationPlus is installed
-    if [[ -d "${logged_in_home}/.local/share/Steam/steamapps/compatdata/PlaystationPlusLauncher" ]]; then
-        # PlaystationPlus is installed
-        pspluslauncher_move_value="TRUE"
-    else
-        # PlaystationPlus is not installed
-        pspluslauncher_move_value="FALSE"
-    fi
-
-
-    # Check if VK Play is installed
-    if [[ -d "${logged_in_home}/.local/share/Steam/steamapps/compatdata/VKPlayLauncher" ]]; then
-        # VK Play is installed
-        vkplaylauncher_move_value="TRUE"
-    else
-        # VK Play is not installed
-        vkplay_move_value="FALSE"
-    fi }
-
-
+    for launcher in "${!names[@]}"; do
+        if [[ -d "${paths[$launcher]}" ]]; then
+            declare -g "${launcher}_move_value"="TRUE"
+        else
+            declare -g "${launcher}_move_value"="FALSE"
+        fi
+    done
+}
 
 
 #Get SD Card Path
