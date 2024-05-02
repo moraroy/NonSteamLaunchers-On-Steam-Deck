@@ -66,7 +66,7 @@ for arg in "${args[@]}"; do
 # Check if the user wants to install Chrome
 if $installchrome; then
   # Check if Google Chrome is already installed
-  if command -v google-chrome &> /dev/null; then
+  if flatpak list | grep com.google.Chrome &> /dev/null; then
     echo "Google Chrome is already installed"
     flatpak --user override --filesystem=/run/udev:ro com.google.Chrome
   else
@@ -80,7 +80,6 @@ if $installchrome; then
     flatpak --user override --filesystem=/run/udev:ro com.google.Chrome
   fi
 fi
-
 
 if [ "${deckyplugin}" = false ]; then
 	#Download Modules
@@ -2189,7 +2188,7 @@ if [[ $options == *"Netflix"* ]] || [[ $options == *"Fortnite"* ]] || [[ $option
     echo "User selected one of the options"
 
     # Check if Google Chrome is already installed
-    if command -v google-chrome &> /dev/null; then
+    if flatpak list | grep com.google.Chrome &> /dev/null; then
         echo "Google Chrome is already installed"
         flatpak --user override --filesystem=/run/udev:ro com.google.Chrome
     else
@@ -2197,12 +2196,13 @@ if [[ $options == *"Netflix"* ]] || [[ $options == *"Fortnite"* ]] || [[ $option
         flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
 
         # Install Google Chrome
-        flatpak install flathub com.google.Chrome
+        flatpak install flathub com.google.Chrome -y
 
         # Run the flatpak --user override command
         flatpak --user override --filesystem=/run/udev:ro com.google.Chrome
     fi
 fi
+
 
 # wait for Google Chrome to finish
 wait
