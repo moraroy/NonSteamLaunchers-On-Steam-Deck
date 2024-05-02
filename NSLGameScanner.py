@@ -181,9 +181,25 @@ grid64 = ""
 logo64 = ""
 hero64 = ""
 
-# Load the existing shortcuts
-with open(f"{logged_in_home}/.steam/root/userdata/{steamid3}/config/shortcuts.vdf", 'rb') as file:
-    shortcuts = vdf.binary_loads(file.read())
+# Define the path to the shortcuts file
+shortcuts_file = f"{logged_in_home}/.steam/root/userdata/{steamid3}/config/shortcuts.vdf"
+
+# Check if the shortcuts file exists
+if not os.path.exists(shortcuts_file):
+    # If the file does not exist, create a new file with an empty "shortcuts" section
+    with open(shortcuts_file, 'wb') as file:
+        vdf.binary_dumps({'shortcuts': {}}, file)
+else:
+    # If the file exists, try to load it
+    try:
+        with open(shortcuts_file, 'rb') as file:
+            shortcuts = vdf.binary_loads(file.read())
+    except Exception as e:
+        print(f"Error reading shortcuts file: {e}")
+        # If an error occurs when reading the file, create a new file with an empty "shortcuts" section
+        with open(shortcuts_file, 'wb') as file:
+            vdf.binary_dumps({'shortcuts': {}}, file)
+
 # Open the config.vdf file
 with open(f"{logged_in_home}/.steam/root/config/config.vdf", 'r') as file:
     config_data = vdf.load(file)
@@ -1039,10 +1055,16 @@ for game in games:
 if new_shortcuts_added or shortcuts_updated:
     print(f"Saving new config and shortcuts files")
     conf = vdf.dumps(config_data, pretty=True)
-    with open(f"{logged_in_home}/.steam/root/config/config.vdf", 'w') as file:
-        file.write(conf)
-    with open(f"{logged_in_home}/.steam/root/userdata/{steamid3}/config/shortcuts.vdf", 'wb') as file:
-        file.write(vdf.binary_dumps(shortcuts))
+    try:
+        with open(f"{logged_in_home}/.steam/root/config/config.vdf", 'w') as file:
+            file.write(conf)
+    except IOError as e:
+        print(f"Error writing to config.vdf: {e}")
+    try:
+        with open(f"{logged_in_home}/.steam/root/userdata/{steamid3}/config/shortcuts.vdf", 'wb') as file:
+            file.write(vdf.binary_dumps(shortcuts))
+    except IOError as e:
+        print(f"Error writing to shortcuts.vdf: {e}")
 
     # Print the created shortcuts
     if created_shortcuts:
@@ -1053,31 +1075,35 @@ if new_shortcuts_added or shortcuts_updated:
     # Create the path to the output file
     output_file_path = f"{logged_in_home}/.config/systemd/user/NSLGameScanner_output.log"
     # Open the output file in write mode
-    with open(output_file_path, 'w') as output_file:
-        for game in decky_shortcuts.values():
-            # Skip if 'appname' or 'exe' is None
-            if game.get('appname') is None or game.get('exe') is None:
-                continue
+    try:
+        with open(output_file_path, 'w') as output_file:
+            for game in decky_shortcuts.values():
+                # Skip if 'appname' or 'exe' is None
+                if game.get('appname') is None or game.get('exe') is None:
+                    continue
 
-            # Create a dictionary to hold the shortcut information
-            shortcut_info = {
-                'appname': game.get('appname'),
-                'exe': game.get('exe'),
-                'StartDir': game.get('StartDir'),
-                'icon': game.get('icon'),
-                'LaunchOptions': game.get('LaunchOptions'),
-                'CompatTool': game.get('CompatTool'),
-                'WideGrid': game.get('WideGrid'),
-                'Grid': game.get('Grid'),
-                'Hero': game.get('Hero'),
-                'Logo': game.get('Logo'),
-            }
+                # Create a dictionary to hold the shortcut information
+                shortcut_info = {
+                    'appname': game.get('appname'),
+                    'exe': game.get('exe'),
+                    'StartDir': game.get('StartDir'),
+                    'icon': game.get('icon'),
+                    'LaunchOptions': game.get('LaunchOptions'),
+                    'CompatTool': game.get('CompatTool'),
+                    'WideGrid': game.get('WideGrid'),
+                    'Grid': game.get('Grid'),
+                    'Hero': game.get('Hero'),
+                    'Logo': game.get('Logo'),
+                }
 
-            # Print the shortcut information in JSON format
-            message = json.dumps(shortcut_info)
-            print(message, flush=True)  # Print to stdout
+                # Print the shortcut information in JSON format
+                message = json.dumps(shortcut_info)
+                print(message, flush=True)  # Print to stdout
 
-            # Print the shortcut information to the output file
-            print(message, file=output_file, flush=True)
+                # Print the shortcut information to the output file
+                print(message, file=output_file, flush=True)
+    except IOError as e:
+        print(f"Error writing to output file: {e}")
 
 print("All finished!")
+
