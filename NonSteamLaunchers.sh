@@ -74,7 +74,7 @@ if $installchrome; then
     flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
 
     # Install Google Chrome
-    flatpak install flathub com.google.Chrome
+    flatpak install flathub com.google.Chrome -y
 
     # Run the flatpak --user override command
     flatpak --user override --filesystem=/run/udev:ro com.google.Chrome
