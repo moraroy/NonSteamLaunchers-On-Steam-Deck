@@ -546,9 +546,10 @@ if [[ $options == "Start Fresh" ]] || [[ $selected_launchers == "Start Fresh" ]]
     fi
 fi
 
+# Check if any arguments were passed
 if [[ ${#args[@]} -eq 0 ]]; then
-# Check if the cancel button was clicked
-    # The OK button was not clicked
+    # No arguments were passed, use Zenity
+    action="Uninstall"
     # Define the launcher options
     options=$(zenity --list --checklist \
         --title="Uninstall Launchers" \
@@ -571,18 +572,14 @@ if [[ ${#args[@]} -eq 0 ]]; then
         FALSE "Playstation Plus"\
         FALSE "VK Play")
 	else
-     	# Arguments were passed, use them as options
-    	options="${args[@]}"  # The args are the selected options
-	fi
-
- 		# Check if the options contain "Uninstall"
-	if [[ $options == *"Uninstall"* ]]; then
-   		# Remove "Uninstall" from the options
-    	options=${options//Uninstall/}
+    	# Arguments were passed, use them as options
+    	action="${args[0]}"
+    	unset 'args[0]'  # Remove the action from the args array
+    	options="${args[@]}"  # The remaining args are the selected options
 	fi
 
 
-    if [[ $options != "" ]]; then
+    if [[ $action == "Uninstall" ]]; then
         # The Uninstall button was clicked
     # Add code here to handle the uninstallation of the selected launcher(s)
     if [[ $options == *"Epic Games"* ]]; then
