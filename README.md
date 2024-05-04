@@ -19,6 +19,12 @@ Features  ✅
 - MicroSD Support 💾 This script supports moving the entire prefix to a microSD. The script will install launchers and games to your SD card, and the launchers in Steam will point to the SD card installation. This allows you to save internal storage space on your Steam Deck!
 
 <h1 align="center">
+Currently Working On 👷‍♂️
+</h1>
+
+* Decky Loader Plugin is available [here](https://github.com/moraroy/NonSteamLaunchersDecky)
+
+<h1 align="center">
 Supported Stores 🛍
 </h1>
 
@@ -98,11 +104,6 @@ How to Uninstall 🗑
 + Just run the script, and hit "Uninstall". Alternatively, if you want to totally wipe everything from NonSteamLaunchers click "Start Fresh".
 + That's it.
 
-<h1 align="center">
-Currently Working On 👷‍♂️
-</h1>
-
-* Decky Loader Plugin is available [here](https://github.com/moraroy/NonSteamLaunchersDecky)
 
 <h1 align="center">
 Contributing 🤝
