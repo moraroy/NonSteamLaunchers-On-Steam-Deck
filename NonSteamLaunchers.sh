@@ -915,12 +915,6 @@ else
         proton_dir=$(find "${logged_in_home}/.steam/root/compatibilitytools.d" -maxdepth 1 -type d -name "GE-Proton*" | sort -V | tail -n1)
         echo "All done :)"
     fi
-    #Delete old GE-Proton Versions
-    for dir in "${logged_in_home}/.steam/root/compatibilitytools.d/GE-Proton"*; do
-        if [ "$dir" != "$proton_dir" ]; then
-            rm -rf "$dir"
-        fi
-    done
 fi
 
 
