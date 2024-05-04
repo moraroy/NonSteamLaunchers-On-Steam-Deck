@@ -812,8 +812,20 @@ move_to_sd() {
     fi
 }
 
-if [[ $options == "Move to SD Card" ]]; then
-    CheckInstallationDirectory
+# Check if the first command line argument is "Move to SD Card"
+if [[ $1 == "Move to SD Card" ]]; then
+    # Shift the arguments to remove the first one
+    shift
+
+    # Use the remaining arguments as the launcher IDs to move
+    for launcher in "$@"; do
+        move_to_sd "$launcher"
+    done
+else
+    # The first command line argument is not "Move to SD Card"
+    # Use Zenity to get the launcher IDs to move
+    if [[ $options == "Move to SD Card" ]]; then
+        CheckInstallationDirectory
 
     move_options=$(zenity --list --text="Which launcher IDs do you want to move to the SD card?" --checklist --column="Select" --column="Launcher ID" $nonsteamlauncher_move_value "NonSteamLaunchers" $epicgameslauncher_move_value "EpicGamesLauncher" $goggalaxylauncher_move_value "GogGalaxyLauncher" $uplaylauncher_move_value "UplayLauncher" $battlenetlauncher_move_value "Battle.netLauncher" $eaapplauncher_move_value "TheEAappLauncher" $amazongameslauncher_move_value "AmazonGamesLauncher" $itchiolauncher_move_value "itchioLauncher" $legacygameslauncher_move_value "LegacyGamesLauncher" $humblegameslauncher_move_value "HumbleGamesLauncher" $indiegalalauncher_move_value "IndieGalaLauncher" $rockstargameslauncher_move_value "RockstarGamesLauncher" $glyphlauncher_move_value "GlyphLauncher" $minecraftlauncher_move_value "MinecraftLauncher" $pspluslauncher_move_value "PlaystationPlusLauncher" $vkplaylauncher_move_value "VKPlayLauncher" --width=335 --height=524)
 
@@ -826,10 +838,18 @@ if [[ $options == "Move to SD Card" ]]; then
         done
     fi
 
-    # TODO: verify non-zero exit is necessary
-    # ! Why the non-zero return?
-    # Exit the script
-    exit 1
+        IFS="|" read -ra selected_launchers <<< "$move_options"
+        for launcher in "${selected_launchers[@]}"; do
+            move_to_sd "$launcher"
+        done
+
+        if [ $? -eq 0 ]; then
+            zenity --info --text="The selected directories have been moved to the SD card and symbolic links have been created." --width=200 --height=150
+        fi
+        # Exit the script
+        exit 0
+    fi
+
 fi
 
 # Get the command line arguments
