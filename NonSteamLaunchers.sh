@@ -546,7 +546,7 @@ if [[ $options == "Start Fresh" ]] || [[ $selected_launchers == "Start Fresh" ]]
     fi
 fi
 
-if [[ $options == "Uninstall" ]]; then
+if [[ ${#args[@]} -eq 0 ]]; then
 # Check if the cancel button was clicked
     # The OK button was not clicked
     # Define the launcher options
@@ -570,6 +570,17 @@ if [[ $options == "Uninstall" ]]; then
         FALSE "Minecraft"\
         FALSE "Playstation Plus"\
         FALSE "VK Play")
+	else
+     	# Arguments were passed, use them as options
+    	options="${args[@]}"  # The args are the selected options
+	fi
+
+ 		# Check if the options contain "Uninstall"
+	if [[ $options == *"Uninstall"* ]]; then
+   		# Remove "Uninstall" from the options
+    	options=${options//Uninstall/}
+	fi
+
 
     if [[ $options != "" ]]; then
         # The Uninstall button was clicked
