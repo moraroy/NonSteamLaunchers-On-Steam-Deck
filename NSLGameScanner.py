@@ -762,9 +762,7 @@ def getGogGameInfo(filePath):
                     launch_command = re.findall(r'\"(.+?)\"', split_line[1])
                     if launch_command:
                         launch_command = launch_command[0]
-            if game_id and game_name and (exe_path or launch_command):
-                if depends_on and depends_on in game_dict:
-                    exe_path = game_dict[depends_on]['exe']
+            if game_id and game_name and launch_command:
                 game_dict[game_name] = {'id': game_id, 'exe': exe_path}
                 game_id = None
                 game_name = None
@@ -773,6 +771,7 @@ def getGogGameInfo(filePath):
                 launch_command = None
 
     return game_dict
+
 
 
 # Define your paths
