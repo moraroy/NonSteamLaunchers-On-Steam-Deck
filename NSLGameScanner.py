@@ -723,7 +723,7 @@ else:
 
 
 
-# Gog Galaxy Scanner
+#Gog Galaxy Scanner
 def getGogGameInfo(filePath):
     # Check if the file contains any GOG entries
     with open(filePath, 'r') as file:
@@ -737,6 +737,8 @@ def getGogGameInfo(filePath):
         game_id = None
         game_name = None
         exe_path = None
+        depends_on = None
+        launch_command = None
         for line in file:
             split_line = line.split("=")
             if len(split_line) > 1:
@@ -752,13 +754,26 @@ def getGogGameInfo(filePath):
                     exe_path = re.findall(r'\"(.+?)\"', split_line[1])
                     if exe_path:
                         exe_path = exe_path[0].replace('\\\\', '\\')
-            if game_id and game_name and exe_path:
+                if "dependsOn" in line:
+                    depends_on = re.findall(r'\"(.+?)\"', split_line[1])
+                    if depends_on:
+                        depends_on = depends_on[0]
+                if "launchCommand" in line:
+                    launch_command = re.findall(r'\"(.+?)\"', split_line[1])
+                    if launch_command:
+                        launch_command = launch_command[0]
+            if game_id and game_name and (exe_path or launch_command):
+                if depends_on and depends_on in game_dict:
+                    exe_path = game_dict[depends_on]['exe']
                 game_dict[game_name] = {'id': game_id, 'exe': exe_path}
                 game_id = None
                 game_name = None
                 exe_path = None
+                depends_on = None
+                launch_command = None
 
     return game_dict
+
 
 # Define your paths
 gog_games_directory = f"{logged_in_home}/.local/share/Steam/steamapps/compatdata/{gog_galaxy_launcher}/pfx/drive_c/Program Files (x86)/GOG Galaxy/Games"
