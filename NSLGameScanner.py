@@ -749,7 +749,8 @@ def getGogGameInfo(filePath):
                 if "gameName" in line:
                     game_name = re.findall(r'\"(.+?)\"', split_line[1])
                     if game_name:
-                        game_name = game_name[0]
+                        game_name = bytes(game_name[0], 'utf-8').decode('unicode_escape')
+                        game_name = game_name.replace('!22', '™')
                 if "exe" in line and "GOG Galaxy" in line and not "unins000.exe" in line:
                     exe_path = re.findall(r'\"(.+?)\"', split_line[1])
                     if exe_path:
