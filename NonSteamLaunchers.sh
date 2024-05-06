@@ -70,8 +70,13 @@ if $installchrome; then
     echo "Google Chrome is already installed"
     flatpak --user override --filesystem=/run/udev:ro com.google.Chrome
   else
-    # Install the Flatpak runtime
-    flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
+    # Check if the Flathub repository exists
+    if flatpak remote-list | grep flathub &> /dev/null; then
+      echo "Flathub repository exists"
+    else
+      # Add the Flathub repository
+      flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
+    fi
 
     # Install Google Chrome
     flatpak install --user flathub com.google.Chrome -y
@@ -80,6 +85,7 @@ if $installchrome; then
     flatpak --user override --filesystem=/run/udev:ro com.google.Chrome
   fi
 fi
+
 
 
 if [ "${deckyplugin}" = false ]; then
@@ -1868,8 +1874,13 @@ if [[ $options == *"Netflix"* ]] || [[ $options == *"Fortnite"* ]] || [[ $option
         echo "Google Chrome is already installed"
         flatpak --user override --filesystem=/run/udev:ro com.google.Chrome
     else
-        # Install the Flatpak runtime
-        flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
+        # Check if the Flathub repository exists
+        if flatpak remote-list | grep flathub &> /dev/null; then
+            echo "Flathub repository exists"
+        else
+            # Add the Flathub repository
+            flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
+        fi
 
         # Install Google Chrome
         flatpak install --user flathub com.google.Chrome -y
@@ -1878,6 +1889,7 @@ if [[ $options == *"Netflix"* ]] || [[ $options == *"Fortnite"* ]] || [[ $option
         flatpak --user override --filesystem=/run/udev:ro com.google.Chrome
     fi
 fi
+
 
 
 # wait for Google Chrome to finish
