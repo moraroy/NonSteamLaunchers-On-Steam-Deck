@@ -1665,7 +1665,7 @@ wait
 > ${logged_in_home}/.config/systemd/user/env_vars
 
 
-# Function to handle common operations
+# Function to write to env_vars
 set_launcher_vars() {
     local launcher_path="$1"
     local launcher_name="$2"
@@ -1684,7 +1684,7 @@ set_launcher_vars() {
 }
 
 
-# Checking Files For Shortcuts and Setting Directories For Shortcuts
+# Checking Files For Shortcuts and Setting Directories For Shortcuts for env_vars
 if [[ -f "$epic_games_launcher_path1" ]]; then
     set_launcher_vars "$epic_games_launcher_path1" "epic" " -opengl" "NonSteamLaunchers"
 elif [[ -f "$epic_games_launcher_path2" ]]; then
