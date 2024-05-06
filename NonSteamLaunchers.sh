@@ -65,16 +65,21 @@ for arg in "${args[@]}"; do
 
 # Check if the user wants to install Chrome
 if $installchrome; then
-  # Check if Google Chrome is already installed
-  if flatpak list | grep com.google.Chrome &> /dev/null; then
-    echo "Google Chrome is already installed"
+  # Check if Google Chrome is already installed for the current user
+  if flatpak list --user | grep com.google.Chrome &> /dev/null; then
+    echo "Google Chrome is already installed for the current user"
     flatpak --user override --filesystem=/run/udev:ro com.google.Chrome
   else
-    # Install the Flatpak runtime
-    flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
+    # Check if the Flathub repository exists for the current user
+    if flatpak remote-list --user | grep flathub &> /dev/null; then
+      echo "Flathub repository exists for the current user"
+    else
+      # Add the Flathub repository for the current user
+      flatpak remote-add --user --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
+    fi
 
-    # Install Google Chrome
-    flatpak install flathub com.google.Chrome -y
+    # Install Google Chrome for the current user
+    flatpak install --user flathub com.google.Chrome -y
 
     # Run the flatpak --user override command
     flatpak --user override --filesystem=/run/udev:ro com.google.Chrome
