@@ -79,7 +79,7 @@ if $installchrome; then
     fi
 
     # Install Google Chrome
-    flatpak install flathub com.google.Chrome
+    flatpak install --user flathub com.google.Chrome
 
     # Run the flatpak --user override command
     flatpak --user override --filesystem=/run/udev:ro com.google.Chrome
