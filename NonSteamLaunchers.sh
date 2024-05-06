@@ -1634,11 +1634,16 @@ if [[ $options == *"Netflix"* ]] || [[ $options == *"Fortnite"* ]] || [[ $option
         echo "Google Chrome is already installed"
         flatpak --user override --filesystem=/run/udev:ro com.google.Chrome
     else
-        # Install the Flatpak runtime
-        flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
+        # Check if the Flathub repository exists
+        if flatpak remote-list | grep flathub &> /dev/null; then
+            echo "Flathub repository exists"
+        else
+            # Add the Flathub repository
+            flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
+        fi
 
         # Install Google Chrome
-        flatpak install flathub com.google.Chrome -y
+        flatpak install --user flathub com.google.Chrome -y
 
         # Run the flatpak --user override command
         flatpak --user override --filesystem=/run/udev:ro com.google.Chrome
@@ -1665,7 +1670,7 @@ wait
 > ${logged_in_home}/.config/systemd/user/env_vars
 
 
-# Function to write to env_vars
+# Function to handle common operations
 set_launcher_vars() {
     local launcher_path="$1"
     local launcher_name="$2"
@@ -1684,7 +1689,7 @@ set_launcher_vars() {
 }
 
 
-# Checking Files For Shortcuts and Setting Directories For Shortcuts for env_vars
+# Checking Files For Shortcuts and Setting Directories For Shortcuts
 if [[ -f "$epic_games_launcher_path1" ]]; then
     set_launcher_vars "$epic_games_launcher_path1" "epic" " -opengl" "NonSteamLaunchers"
 elif [[ -f "$epic_games_launcher_path2" ]]; then
