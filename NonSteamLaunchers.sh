@@ -1073,80 +1073,46 @@ export STEAM_COMPAT_CLIENT_INSTALL_PATH="${logged_in_home}/.local/share/Steam"
 export STEAM_COMPAT_DATA_PATH="${logged_in_home}/.local/share/Steam/steamapps/compatdata/${appid}"
 
 wait
+echo "30"
+echo "# Downloading & Installing Epic Games...please wait..."
 
-###Install Launchers
-function install_launcher {
-    launcher_name=$1
-    appid_name=$2
-    file_name=$3
-    file_url=$4
-    run_command=$5
-    install_args=$6
-    progress_update=$7
-    pre_install_command=$8
-    post_install_command=$9
+# Check if the user selected Epic Games Launcher
+if [[ $options == *"Epic Games"* ]]; then
+    # User selected Epic Games Launcher
+    echo "User selected Epic Games"
 
-    echo "${progress_update}"
-    echo "# Downloading & Installing ${launcher_name}...please wait..."
-
-    # Check if the user selected the launcher
-    if [[ $options == *"${launcher_name}"* ]]; then
-        # User selected the launcher
-        echo "User selected ${launcher_name}"
-
-        # Set the appid for the launcher
-        if [ "$use_separate_appids" = true ]; then
-            appid=${appid_name}
-        else
-            appid=NonSteamLaunchers
-        fi
-
-        # Create app id folder in compatdata folder if it doesn't exist
-        if [ ! -d "${logged_in_home}/.local/share/Steam/steamapps/compatdata/$appid" ]; then
-            mkdir -p "${logged_in_home}/.local/share/Steam/steamapps/compatdata/$appid"
-        fi
-
-        # Change working directory to Proton's
-        cd $proton_dir
-
-        # Set the STEAM_COMPAT_CLIENT_INSTALL_PATH environment variable
-        export STEAM_COMPAT_CLIENT_INSTALL_PATH="${logged_in_home}/.local/share/Steam"
-
-        # Set the STEAM_COMPAT_DATA_PATH environment variable for the launcher
-        export STEAM_COMPAT_DATA_PATH="${logged_in_home}/.local/share/Steam/steamapps/compatdata/${appid}"
-
-        # Download file
-        if [ ! -f "$file_name" ]; then
-            echo "Downloading ${file_name}"
-            wget $file_url -O $file_name
-        fi
-
-        # Execute the pre-installation command, if provided
-        if [ -n "$pre_install_command" ]; then
-            echo "Executing pre-install command for ${launcher_name}"
-            eval "$pre_install_command"
-        fi
-
-        # Run the file using Proton with the specified command and installation arguments
-        echo "Running ${file_name} using Proton with the specified command and installation arguments"
-        "$STEAM_RUNTIME" "$proton_dir/proton" run ${run_command} ${install_args}
-
-        # Execute the post-installation command, if provided
-        if [ -n "$post_install_command" ]; then
-            echo "Executing post-install command for ${launcher_name}"
-            eval "$post_install_command"
-        fi
-
-        # Wait for the installation process to complete
-        wait
+    # Set the appid for the Epic Games Launcher
+    if [ "$use_separate_appids" = true ]; then
+        appid=EpicGamesLauncher
+    else
+        appid=NonSteamLaunchers
     fi
-}
 
-###Install Epic Games Launcher
-install_launcher "Epic Games" "EpicGamesLauncher" "$msi_file" "$msi_url" "MsiExec.exe /i "$msi_file" -opengl /qn" "30"
+    # Create app id folder in compatdata folder if it doesn't exist
+    if [ ! -d "${logged_in_home}/.local/share/Steam/steamapps/compatdata/$appid" ]; then
+        mkdir -p "${logged_in_home}/.local/share/Steam/steamapps/compatdata/$appid"
+    fi
 
+    # Change working directory to Proton's
+    cd $proton_dir
 
-###Install Gog Galaxy
+    # Set the STEAM_COMPAT_CLIENT_INSTALL_PATH environment variable
+    export STEAM_COMPAT_CLIENT_INSTALL_PATH="${logged_in_home}/.local/share/Steam"
+
+    # Set the STEAM_COMPAT_DATA_PATH environment variable for Epic Games Launcher
+    export STEAM_COMPAT_DATA_PATH="${logged_in_home}/.local/share/Steam/steamapps/compatdata/${appid}"
+
+    # Download MSI file
+    if [ ! -f "$msi_file" ]; then
+        echo "Downloading MSI file"
+        wget $msi_url -O $msi_file
+    fi
+
+    # Run the MSI file using Proton with the /passive option
+    echo "Running MSI file using Proton with the /passive option"
+    "$STEAM_RUNTIME" "$proton_dir/proton" run MsiExec.exe /i "$msi_file" -opengl /qn
+fi
+
 # TODO: capture PID of each `wait` process to make sure it's not an infinite loop
 # Wait for the MSI file to finish running
 wait
@@ -1223,11 +1189,49 @@ else
 fi
 
 wait
+echo "50"
+echo "# Downloading & Installing Ubisoft Connect ...please wait..."
 
-###Install Ubisoft Connect
-install_launcher "Ubisoft Connect" "UplayLauncher" "$ubi_file" "$ubi_url" "$ubi_file" "/S" "50"
+# Check if user selected Uplay
+if [[ $options == *"Ubisoft Connect"* ]]; then
+    # User selected Uplay
+    echo "User selected Uplay"
+
+    # Set the appid for the Ubisoft Launcher
+    if [ "$use_separate_appids" = true ]; then
+        appid=UplayLauncher
+    else
+        appid=NonSteamLaunchers
+    fi
+
+    # Create app id folder in compatdata folder if it doesn't exist
+    if [ ! -d "${logged_in_home}/.local/share/Steam/steamapps/compatdata/$appid" ]; then
+        mkdir -p "${logged_in_home}/.local/share/Steam/steamapps/compatdata/$appid"
+    fi
+
+    # Change working directory to Proton's
+    cd $proton_dir
+
+    # Set the STEAM_COMPAT_CLIENT_INSTALL_PATH environment variable
+    export STEAM_COMPAT_CLIENT_INSTALL_PATH="${logged_in_home}/.local/share/Steam"
+
+    # Set the STEAM_COMPAT_DATA_PATH environment variable for Epic Games Launcher
+    export STEAM_COMPAT_DATA_PATH="${logged_in_home}/.local/share/Steam/steamapps/compatdata/${appid}"
+
+    # Download UBI file
+    if [ ! -f "$ubi_file" ]; then
+        echo "Downloading UBI file"
+        wget --no-check-certificate $ubi_url -O $ubi_file
+    fi
+
+    # Run the UBI file using Proton with the /passive option
+    echo "Running UBI file using Proton with the /passive option"
+    "$STEAM_RUNTIME" "$proton_dir/proton" run "$ubi_file" /S
+fi
 
 
+
+wait
 echo "70"
 echo "# Downloading & Installing Battle.net...please wait..."
 
@@ -1291,6 +1295,7 @@ fi
 wait
 
 
+
 echo "80"
 echo "# Downloading & Installing Amazon Games...please wait..."
 
@@ -1343,7 +1348,6 @@ if [[ $options == *"Amazon Games"* ]]; then
 fi
 
 wait
-
 
 echo "88"
 echo "# Downloading & Installing EA App...please wait..."
@@ -1401,11 +1405,90 @@ if [[ $options == *"EA App"* ]]; then
     wait
 fi
 
-###Install Itchio
-install_launcher "itch.io" "itchioLauncher" "$itchio_file" "$itchio_url" "$itchio_file" "" "89" "" ""
+wait
+echo "89"
+echo "# Downloading & Installing itch.io...please wait..."
 
-###Install Legacy Games
-install_launcher "Legacy Games" "LegacyGamesLauncher" "$legacygames_file" "$legacygames_url" "$legacygames_file" "/S" "90" "" ""
+# Check if the user selected itchio Launcher
+if [[ $options == *"itch.io"* ]]; then
+    # User selected itchio Launcher
+    echo "User selected itch.io"
+
+    # Set the appid for the itchio Launcher
+    if [ "$use_separate_appids" = true ]; then
+        appid=itchioLauncher
+    else
+        appid=NonSteamLaunchers
+    fi
+
+    # Create app id folder in compatdata folder if it doesn't exist
+    if [ ! -d "${logged_in_home}/.local/share/Steam/steamapps/compatdata/$appid" ]; then
+        mkdir -p "${logged_in_home}/.local/share/Steam/steamapps/compatdata/$appid"
+    fi
+
+    # Change working directory to Proton's
+    cd $proton_dir
+
+    # Set the STEAM_COMPAT_CLIENT_INSTALL_PATH environment variable
+    export STEAM_COMPAT_CLIENT_INSTALL_PATH="${logged_in_home}/.local/share/Steam"
+
+    # Set the STEAM_COMPAT_DATA_PATH environment variable for Epic Games Launcher
+    export STEAM_COMPAT_DATA_PATH="${logged_in_home}/.local/share/Steam/steamapps/compatdata/${appid}"
+
+    # Download itchio file
+    if [ ! -f "$itchio_file" ]; then
+        echo "Downloading itchio file"
+        wget $itchio_url -O $itchio_file
+    fi
+
+    # Run the itchio file using Proton with the /passive option
+    echo "Running itchio file using Proton with the /passive option"
+    "$STEAM_RUNTIME" "$proton_dir/proton" run "$itchio_file"
+fi
+
+wait
+echo "90"
+echo "# Downloading & Installing Legacy Games...please wait..."
+
+# Check if user selected Legacy Games
+if [[ $options == *"Legacy Games"* ]]; then
+    # User selected Legacy Games
+    echo "User selected Legacy Games"
+
+    # Set the appid for the Legacy Games Launcher
+    if [ "$use_separate_appids" = true ]; then
+        appid=LegacyGamesLauncher
+    else
+        appid=NonSteamLaunchers
+    fi
+
+    # Create app id folder in compatdata folder if it doesn't exist
+    if [ ! -d "${logged_in_home}/.local/share/Steam/steamapps/compatdata/$appid" ]; then
+        mkdir -p "${logged_in_home}/.local/share/Steam/steamapps/compatdata/$appid"
+    fi
+
+    # Change working directory to Proton's
+    cd $proton_dir
+
+    # Set the STEAM_COMPAT_CLIENT_INSTALL_PATH environment variable
+    export STEAM_COMPAT_CLIENT_INSTALL_PATH="${logged_in_home}/.local/share/Steam"
+
+    # Set the STEAM_COMPAT_DATA_PATH environment variable for Legacy Games Launcher
+    export STEAM_COMPAT_DATA_PATH="${logged_in_home}/.local/share/Steam/steamapps/compatdata/${appid}"
+
+    # Download Legacy file
+    if [ ! -f "$legacygames_file" ]; then
+        echo "Downloading Legacy file"
+        wget $legacygames_url -O $legacygames_file
+    fi
+
+    # Run the Legacy file using Proton with the /passive option
+    echo "Running Legacy file using Proton with the /passive option"
+    "$STEAM_RUNTIME" "$proton_dir/proton" run "$legacygames_file" /S
+fi
+
+# Wait for the Legacy file to finish running
+wait
 
 echo "91"
 echo "# Downloading & Installing Humble Games Collection...please wait..."
@@ -1489,17 +1572,134 @@ fi
 
 wait
 
-###Install IndieGala
-indiegala_pre_install_command='echo "92"; echo "# Downloading & Installing Indie Gala...please wait..."'
-install_launcher "IndieGala" "IndieGalaLauncher" "$indiegala_file" "$indiegala_url" "$indiegala_file" "/S" "92" "" ""
+echo "92"
+echo "# Downloading & Installing Indie Gala...please wait..."
 
-###Install Rockstar Launcher
-rockstar_pre_install_command='echo "93"; echo "# Downloading & Installing Rockstar Games Launcher...please wait..."'
-install_launcher "Rockstar Games Launcher" "RockstarGamesLauncher" "$rockstar_file" "$rockstar_url" "$rockstar_file" "93" "" ""
+# Check if user selected indiegala
+if [[ $options == *"IndieGala"* ]]; then
+    # User selected indiegala
+    echo "User selected IndieGala"
 
-###Install Glyph Launcher
-install_launcher "Glyph Launcher" "GlyphLauncher" "$glyph_file" "$glyph_url" "$glyph_file" "" "94" "" ""
+    # Set the appid for the indiegala Launcher
+    if [ "$use_separate_appids" = true ]; then
+        appid=IndieGalaLauncher
+    else
+        appid=NonSteamLaunchers
+    fi
 
+    # Create app id folder in compatdata folder if it doesn't exist
+    if [ ! -d "${logged_in_home}/.local/share/Steam/steamapps/compatdata/$appid" ]; then
+        mkdir -p "${logged_in_home}/.local/share/Steam/steamapps/compatdata/$appid"
+    fi
+
+    # Change working directory to Proton's
+    cd $proton_dir
+
+    # Set the STEAM_COMPAT_CLIENT_INSTALL_PATH environment variable
+    export STEAM_COMPAT_CLIENT_INSTALL_PATH="${logged_in_home}/.local/share/Steam"
+
+    # Set the STEAM_COMPAT_DATA_PATH environment variable for Legacy Games Launcher
+    export STEAM_COMPAT_DATA_PATH="${logged_in_home}/.local/share/Steam/steamapps/compatdata/${appid}"
+
+    # Download indiegala file
+    if [ ! -f "$indiegala_file" ]; then
+        echo "Downloading indiegala file"
+        wget $indiegala_url -O $indiegala_file
+    fi
+
+      # Run the indiegala file using Proton with the /passive option
+      echo "Running IndieGala file using Proton with the /passive option"
+      "$STEAM_RUNTIME" "$proton_dir/proton" run "$indiegala_file" /S
+fi
+
+# Wait for the Indie file to finish running
+wait
+
+echo "93"
+echo "# Downloading & Installing Rockstar Games Launcher...please wait..."
+
+# Check if user selected rockstar games launcher
+if [[ $options == *"Rockstar Games Launcher"* ]]; then
+    # User selected rockstar games
+    echo "User selected Rockstar Games Launcher"
+
+    # Set the appid for the indiegala Launcher
+    if [ "$use_separate_appids" = true ]; then
+        appid=RockstarGamesLauncher
+    else
+        appid=NonSteamLaunchers
+    fi
+
+    # Create app id folder in compatdata folder if it doesn't exist
+    if [ ! -d "${logged_in_home}/.local/share/Steam/steamapps/compatdata/$appid" ]; then
+        mkdir -p "${logged_in_home}/.local/share/Steam/steamapps/compatdata/$appid"
+    fi
+
+    # Change working directory to Proton's
+    cd $proton_dir
+
+    # Set the STEAM_COMPAT_CLIENT_INSTALL_PATH environment variable
+    export STEAM_COMPAT_CLIENT_INSTALL_PATH="${logged_in_home}/.local/share/Steam"
+
+    # Set the STEAM_COMPAT_DATA_PATH environment variable for Legacy Games Launcher
+    export STEAM_COMPAT_DATA_PATH="${logged_in_home}/.local/share/Steam/steamapps/compatdata/${appid}"
+
+    # Download rockstar games file
+    if [ ! -f "$rockstar_file" ]; then
+        echo "Downloading rockstar file"
+        wget $rockstar_url -O $rockstar_file
+    fi
+
+    # Run the rockstar file using Proton with the /passive option
+    echo "Running Rockstar Games Launcher file using Proton with the /passive option"
+    "$STEAM_RUNTIME" "$proton_dir/proton" run "$rockstar_file"
+fi
+
+# Wait for the rockstar file to finish running
+wait
+
+echo "94"
+echo "# Downloading & Installing Glyph Launcher...please wait..."
+
+# Check if user selected Glyph
+if [[ $options == *"Glyph Launcher"* ]]; then
+    # User selected Glyph
+    echo "User selected Glyph Launcher"
+
+    # Set the appid for Glyph
+    if [ "$use_separate_appids" = true ]; then
+        appid=GlyphLauncher
+    else
+        appid=NonSteamLaunchers
+    fi
+
+    # Create app id folder in compatdata folder if it doesn't exist
+    if [ ! -d "${logged_in_home}/.local/share/Steam/steamapps/compatdata/$appid" ]; then
+        mkdir -p "${logged_in_home}/.local/share/Steam/steamapps/compatdata/$appid"
+    fi
+
+    # Change working directory to Proton's
+    cd $proton_dir
+
+    # Set the STEAM_COMPAT_CLIENT_INSTALL_PATH environment variable
+    export STEAM_COMPAT_CLIENT_INSTALL_PATH="${logged_in_home}/.local/share/Steam"
+
+    # Set the STEAM_COMPAT_DATA_PATH environment variable for Legacy Games Launcher
+    export STEAM_COMPAT_DATA_PATH="${logged_in_home}/.local/share/Steam/steamapps/compatdata/${appid}"
+
+    # Download Glyph file
+    if [ ! -f "$glyph_file" ]; then
+        echo "Downloading Glyph file"
+        wget $glyph_url -O $glyph_file
+    fi
+
+    # Run the Glyph file using Proton with the /passive option
+    echo "Running Glyph Launcher file using Proton with the /passive option"
+    "$STEAM_RUNTIME" "$proton_dir/proton" run "$glyph_file"
+fi
+
+# Wait for the Glyph file to finish running
+wait
 
 echo "95"
 echo "# Downloading & Installing Minecraft Launcher...please wait..."
@@ -1556,9 +1756,47 @@ fi
 # Wait for the Minecraft file to finish running
 wait
 
-###Install PlayStation Plus
-psplus_pre_install_command='echo "96"; echo "# Downloading & Installing Playstation Plus...please wait..."'
-install_launcher "Playstation Plus" "PlaystationPlusLauncher" "$psplus_file" "$psplus_url" "$psplus_file" "/q" "96" "" ""
+echo "96"
+echo "# Downloading & Installing Playstation Plus...please wait..."
+
+# Check if the user selected Playstation Launcher
+if [[ $options == *"Playstation Plus"* ]]; then
+    # User selected PlayStation Plus Launcher
+    echo "User selected PlayStation Plus"
+
+    # Set the appid for the PlayStation Plus Launcher
+    if [ "$use_separate_appids" = true ]; then
+    appid=PlaystationPlusLauncher
+    else
+    appid=NonSteamLaunchers
+    fi
+
+    # Create app id folder in compatdata folder if it doesn't exist
+    if [ ! -d "${logged_in_home}/.local/share/Steam/steamapps/compatdata/$appid" ]; then
+        mkdir -p "${logged_in_home}/.local/share/Steam/steamapps/compatdata/$appid"
+    fi
+
+    # Change working directory to Proton's
+    cd $proton_dir
+
+    # Set the STEAM_COMPAT_CLIENT_INSTALL_PATH environment variable
+    export STEAM_COMPAT_CLIENT_INSTALL_PATH="${logged_in_home}/.local/share/Steam"
+
+    # Set the STEAM_COMPAT_DATA_PATH environment variable for Epic Games Launcher
+    export STEAM_COMPAT_DATA_PATH="${logged_in_home}/.local/share/Steam/steamapps/compatdata/${appid}"
+
+    # Download MSI file
+    if [ ! -f "$psplus_file" ]; then
+        echo "Downloading MSI file"
+        wget $psplus_url -O $psplus_file
+    fi
+
+    # Run the Playstation file using Proton with the /passive option
+    echo "Running Playstation file using Proton with the /passive option"
+    "$STEAM_RUNTIME" "$proton_dir/proton" run "$psplus_file" /q
+fi
+
+wait
 
 
 echo "98"
@@ -1620,35 +1858,6 @@ if [[ "$options" == *"VK Play"* ]]; then
 
 fi
 
-wait
-echo "99"
-echo "# Checking if Chrome is installed...please wait..."
-
-# Check if user selected any of the options
-if [[ $options == *"Netflix"* ]] || [[ $options == *"Fortnite"* ]] || [[ $options == *"Xbox Game Pass"* ]] || [[ $options == *"Geforce Now"* ]] || [[ $options == *"Amazon Luna"* ]] || [[ $options == *"Hulu"* ]] || [[ $options == *"Disney+"* ]] || [[ $options == *"Amazon Prime Video"* ]] || [[ $options == *"Youtube"* ]] || [[ $options == *"Twitch"* ]] || [[ $options == *"movie-web"* ]]; then
-    # User selected one of the options
-    echo "User selected one of the options"
-
-    # Check if Google Chrome is already installed
-    if flatpak list | grep com.google.Chrome &> /dev/null; then
-        echo "Google Chrome is already installed"
-        flatpak --user override --filesystem=/run/udev:ro com.google.Chrome
-    else
-        # Check if the Flathub repository exists
-        if flatpak remote-list | grep flathub &> /dev/null; then
-            echo "Flathub repository exists"
-        else
-            # Add the Flathub repository
-            flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
-        fi
-
-        # Install Google Chrome
-        flatpak install --user flathub com.google.Chrome -y
-
-        # Run the flatpak --user override command
-        flatpak --user override --filesystem=/run/udev:ro com.google.Chrome
-    fi
-fi
 
 
 # wait for Google Chrome to finish
