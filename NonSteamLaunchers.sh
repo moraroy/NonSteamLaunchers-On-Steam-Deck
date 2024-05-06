@@ -79,7 +79,7 @@ if $installchrome; then
     fi
 
     # Install Google Chrome
-    flatpak install --user flathub com.google.Chrome -y
+    flatpak install flathub com.google.Chrome -y
 
     # Run the flatpak --user override command
     flatpak --user override --filesystem=/run/udev:ro com.google.Chrome
@@ -1883,7 +1883,7 @@ if [[ $options == *"Netflix"* ]] || [[ $options == *"Fortnite"* ]] || [[ $option
         fi
 
         # Install Google Chrome
-        flatpak install --user flathub com.google.Chrome -y
+        flatpak install flathub com.google.Chrome -y
 
         # Run the flatpak --user override command
         flatpak --user override --filesystem=/run/udev:ro com.google.Chrome
