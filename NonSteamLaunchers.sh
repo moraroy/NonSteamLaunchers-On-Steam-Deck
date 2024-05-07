@@ -1879,116 +1879,305 @@ wait
 > ${logged_in_home}/.config/systemd/user/env_vars
 
 
-# Function to write to env_vars
-set_launcher_vars() {
-    local launcher_path="$1"
-    local launcher_name="$2"
-    local args_option="$3"
-    local compat_data_path="$4"
-
-    local shortcut_directory="\"${launcher_path}\"${args_option}"
-    local launch_options="STEAM_COMPAT_DATA_PATH=\"${logged_in_home}/.local/share/Steam/steamapps/compatdata/${compat_data_path}/\" %command%"
-    local starting_dir="\"$(dirname "${launcher_path}")\""
-
-    echo "export ${launcher_name}shortcutdirectory=${shortcut_directory}" >> ${logged_in_home}/.config/systemd/user/env_vars
-    echo "export ${launcher_name}launchoptions=${launch_options}" >> ${logged_in_home}/.config/systemd/user/env_vars
-    echo "export ${launcher_name}startingdir=${starting_dir}" >> ${logged_in_home}/.config/systemd/user/env_vars
-    echo "export ${launcher_name}_launcher=${compat_data_path}" >> ${logged_in_home}/.config/systemd/user/env_vars
-    echo "${launcher_name} Launcher found at path"
-}
-
-
-# Checking Files For Shortcuts and Setting Directories for env_vars
+# Checking Files For Shortcuts and Setting Directories For Shortcuts
 if [[ -f "$epic_games_launcher_path1" ]]; then
-    set_launcher_vars "$epic_games_launcher_path1" "epic" " -opengl" "NonSteamLaunchers"
+    # Epic Games Launcher is installed at path 1
+    epicshortcutdirectory="\"$epic_games_launcher_path1\" -opengl"
+    epiclaunchoptions="STEAM_COMPAT_DATA_PATH=\"${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/\" %command%"
+    epicstartingdir="\"$(dirname "$epic_games_launcher_path1")\""
+    echo "export epicshortcutdirectory=$epicshortcutdirectory" >> ${logged_in_home}/.config/systemd/user/env_vars
+    echo "export epiclaunchoptions=$epiclaunchoptions" >> ${logged_in_home}/.config/systemd/user/env_vars
+    echo "export epicstartingdir=$epicstartingdir" >> ${logged_in_home}/.config/systemd/user/env_vars
+    echo "export epic_games_launcher=NonSteamLaunchers" >> ${logged_in_home}/.config/systemd/user/env_vars
+    echo "Epic Games Launcher found at path 1"
 elif [[ -f "$epic_games_launcher_path2" ]]; then
-    set_launcher_vars "$epic_games_launcher_path2" "epic" "-opengl" "EpicGamesLauncher"
+    # Epic Games Launcher is installed at path 2
+    epicshortcutdirectory="\"$epic_games_launcher_path2\""
+    epiclaunchoptions="STEAM_COMPAT_DATA_PATH=\"${logged_in_home}/.local/share/Steam/steamapps/compatdata/EpicGamesLauncher/\" %command%"
+    epicstartingdir="\"$(dirname "$epic_games_launcher_path2")\""
+    echo "export epicshortcutdirectory=$epicshortcutdirectory" >> ${logged_in_home}/.config/systemd/user/env_vars
+    echo "export epiclaunchoptions=$epiclaunchoptions" >> ${logged_in_home}/.config/systemd/user/env_vars
+    echo "export epicstartingdir=$epicstartingdir" >> ${logged_in_home}/.config/systemd/user/env_vars
+    echo "export epic_games_launcher=EpicGamesLauncher" >> ${logged_in_home}/.config/systemd/user/env_vars
+    echo "Epic Games Launcher found at path 2"
 fi
 
+
 if [[ -f "$gog_galaxy_path1" ]]; then
-    set_launcher_vars "$gog_galaxy_path1" "gog" "" "NonSteamLaunchers"
+    # Gog Galaxy Launcher is installed at path 1
+    gogshortcutdirectory="\"$gog_galaxy_path1\""
+    goglaunchoptions="STEAM_COMPAT_DATA_PATH=\"${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/\" %command%"
+    gogstartingdir="\"$(dirname "$gog_galaxy_path1")\""
+    echo "export gogshortcutdirectory=$gogshortcutdirectory" >> ${logged_in_home}/.config/systemd/user/env_vars
+    echo "export goglaunchoptions=$goglaunchoptions" >> ${logged_in_home}/.config/systemd/user/env_vars
+    echo "export gogstartingdir=$gogstartingdir" >> ${logged_in_home}/.config/systemd/user/env_vars
+    echo "export gog_galaxy_launcher=NonSteamLaunchers" >> ${logged_in_home}/.config/systemd/user/env_vars
+    echo "Gog Galaxy Launcher found at path 1"
 elif [[ -f "$gog_galaxy_path2" ]]; then
-    set_launcher_vars "$gog_galaxy_path2" "gog" "" "GogGalaxyLauncher"
+    # Gog Galaxy Launcher is installed at path 2
+    gogshortcutdirectory="\"$gog_galaxy_path2\""
+    goglaunchoptions="STEAM_COMPAT_DATA_PATH=\"${logged_in_home}/.local/share/Steam/steamapps/compatdata/GogGalaxyLauncher/\" %command%"
+    gogstartingdir="\"$(dirname "$gog_galaxy_path2")\""
+    echo "export gogshortcutdirectory=$gogshortcutdirectory" >> ${logged_in_home}/.config/systemd/user/env_vars
+    echo "export goglaunchoptions=$goglaunchoptions" >> ${logged_in_home}/.config/systemd/user/env_vars
+    echo "export gogstartingdir=$gogstartingdir" >> ${logged_in_home}/.config/systemd/user/env_vars
+    echo "export gog_galaxy_launcher=GogGalaxyLauncher" >> ${logged_in_home}/.config/systemd/user/env_vars
+    echo "Gog Galaxy Launcher found at path 2"
 fi
 
 
 if [[ -f "$uplay_path1" ]]; then
-    set_launcher_vars "$uplay_path1" "uplay" "" "NonSteamLaunchers"
+    # Uplay Launcher is installed at path 1
+    uplayshortcutdirectory="\"$uplay_path1\""
+    uplaylaunchoptions="STEAM_COMPAT_DATA_PATH=\"${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/\" %command%"
+    uplaystartingdir="\"$(dirname "$uplay_path1")\""
+    echo "export uplayshortcutdirectory=$uplayshortcutdirectory" >> ${logged_in_home}/.config/systemd/user/env_vars
+    echo "export uplaylaunchoptions=$uplaylaunchoptions" >> ${logged_in_home}/.config/systemd/user/env_vars
+    echo "export uplaystartingdir=$uplaystartingdir" >> ${logged_in_home}/.config/systemd/user/env_vars
+    echo "export ubisoft_connect_launcher=NonSteamLaunchers" >> ${logged_in_home}/.config/systemd/user/env_vars
+    echo "Ubisoft Connect Launcher found at path 1"
 elif [[ -f "$uplay_path2" ]]; then
-    set_launcher_vars "$uplay_path2" "uplay" "" "UplayLauncher"
+    # Uplay Launcher is installed at path 2
+    uplayshortcutdirectory="\"$uplay_path2\""
+    uplaylaunchoptions="STEAM_COMPAT_DATA_PATH=\"${logged_in_home}/.local/share/Steam/steamapps/compatdata/UplayLauncher/\" %command%"
+    uplaystartingdir="\"$(dirname "$uplay_path2")\""
+    echo "export uplayshortcutdirectory=$uplayshortcutdirectory" >> ${logged_in_home}/.config/systemd/user/env_vars
+    echo "export uplaylaunchoptions=$uplaylaunchoptions" >> ${logged_in_home}/.config/systemd/user/env_vars
+    echo "export uplaystartingdir=$uplaystartingdir" >> ${logged_in_home}/.config/systemd/user/env_vars
+    echo "export ubisoft_connect_launcher=UplayLauncher" >> ${logged_in_home}/.config/systemd/user/env_vars
+    echo "Ubisoft Connect Launcher found at path 1"
 fi
 
 if [[ -f "$battlenet_path1" ]]; then
-    set_launcher_vars "$battlenet_path1" "battlenet" "" "NonSteamLaunchers"
+    # Battlenet Launcher is installed at path 1
+    battlenetshortcutdirectory="\"$battlenet_path1\""
+    battlenetlaunchoptions="STEAM_COMPAT_DATA_PATH=\"${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/\" %command%"
+    battlenetstartingdir="\"$(dirname "$battlenet_path1")\""
+    echo "export battlenetshortcutdirectory=$battlenetshortcutdirectory" >> ${logged_in_home}/.config/systemd/user/env_vars
+    echo "export battlenetlaunchoptions=$battlenetlaunchoptions" >> ${logged_in_home}/.config/systemd/user/env_vars
+    echo "export battlenetstartingdir=$battlenetstartingdir" >> ${logged_in_home}/.config/systemd/user/env_vars
+    echo "export bnet_launcher=NonSteamLaunchers" >> ${logged_in_home}/.config/systemd/user/env_vars
+    echo "Battlenet Launcher found at path 1"
 elif [[ -f "$battlenet_path2" ]]; then
-    set_launcher_vars "$battlenet_path2" "battlenet" "" "Battle.netLauncher"
+    # Battlenet Launcher is installed at path 2
+    battlenetshortcutdirectory="\"$battlenet_path2\""
+    battlenetlaunchoptions="STEAM_COMPAT_DATA_PATH=\"${logged_in_home}/.local/share/Steam/steamapps/compatdata/Battle.netLauncher/\" %command%"
+    battlenetstartingdir="\"$(dirname "$battlenet_path2")\""
+    echo "export battlenetshortcutdirectory=$battlenetshortcutdirectory" >> ${logged_in_home}/.config/systemd/user/env_vars
+    echo "export battlenetlaunchoptions=$battlenetlaunchoptions" >> ${logged_in_home}/.config/systemd/user/env_vars
+    echo "export battlenetstartingdir=$battlenetstartingdir" >> ${logged_in_home}/.config/systemd/user/env_vars
+    echo "export bnet_launcher=Battle.netLauncher" >> ${logged_in_home}/.config/systemd/user/env_vars
+    echo "Battlenet Launcher found at path 2"
 fi
 
 if [[ -f "$eaapp_path1" ]]; then
-    set_launcher_vars "$eaapp_path1" "eaapp" "" "NonSteamLaunchers"
+    # EA App Launcher is installed at path 1
+    eaappshortcutdirectory="\"$eaapp_path1\""
+    eaapplaunchoptions="STEAM_COMPAT_DATA_PATH=\"${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/\" %command%"
+    eaappstartingdir="\"$(dirname "$eaapp_path1")\""
+    echo "export eaappshortcutdirectory=$eaappshortcutdirectory" >> ${logged_in_home}/.config/systemd/user/env_vars
+    echo "export eaapplaunchoptions=$eaapplaunchoptions" >> ${logged_in_home}/.config/systemd/user/env_vars
+    echo "export eaappstartingdir=$eaappstartingdir" >> ${logged_in_home}/.config/systemd/user/env_vars
+	echo "export ea_app_launcher=NonSteamLaunchers" >> ${logged_in_home}/.config/systemd/user/env_vars
+    echo "EA App Launcher found at path 1"
 elif [[ -f "$eaapp_path2" ]]; then
-    set_launcher_vars "$eaapp_path2" "eaapp" "" "TheEAappLauncher"
+    # EA App Launcher is installed at path 2
+    eaappshortcutdirectory="\"$eaapp_path2\""
+    eaapplaunchoptions="STEAM_COMPAT_DATA_PATH=\"${logged_in_home}/.local/share/Steam/steamapps/compatdata/TheEAappLauncher/\" %command%"
+    eaappstartingdir="\"$(dirname "$eaapp_path2")\""
+    echo "export eaappshortcutdirectory=$eaappshortcutdirectory" >> ${logged_in_home}/.config/systemd/user/env_vars
+    echo "export eaapplaunchoptions=$eaapplaunchoptions" >> ${logged_in_home}/.config/systemd/user/env_vars
+    echo "export eaappstartingdir=$eaappstartingdir" >> ${logged_in_home}/.config/systemd/user/env_vars
+	echo "export ea_app_launcher=TheEAappLauncher" >> ${logged_in_home}/.config/systemd/user/env_vars
+    echo "EA App Launcher found at path 2"
 fi
 
-
 if [[ -f "$amazongames_path1" ]]; then
-    set_launcher_vars "$amazongames_path1" "amazon" "" "NonSteamLaunchers"
+    # Amazon Games Launcher is installed at path 1
+    amazonshortcutdirectory="\"$amazongames_path1\""
+    amazonlaunchoptions="STEAM_COMPAT_DATA_PATH=\"${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/\" %command%"
+    amazonstartingdir="\"$(dirname "$amazongames_path1")\""
+    echo "export amazonshortcutdirectory=$amazonshortcutdirectory" >> ${logged_in_home}/.config/systemd/user/env_vars
+    echo "export amazonlaunchoptions=$amazonlaunchoptions" >> ${logged_in_home}/.config/systemd/user/env_vars
+    echo "export amazonstartingdir=$amazonstartingdir" >> ${logged_in_home}/.config/systemd/user/env_vars
+    echo "export amazon_launcher=NonSteamLaunchers" >> ${logged_in_home}/.config/systemd/user/env_vars
+    echo "Amazon Games Launcher found at path 1"
 elif [[ -f "$amazongames_path2" ]]; then
-    set_launcher_vars "$amazongames_path2" "amazon" "" "AmazonGamesLauncher"
+    # Amazon Games Launcher is installed at path 2
+    amazonshortcutdirectory="\"$amazongames_path2\""
+    amazonlaunchoptions="STEAM_COMPAT_DATA_PATH=\"${logged_in_home}/.local/share/Steam/steamapps/compatdata/AmazonGamesLauncher/\" %command%"
+    amazonstartingdir="\"$(dirname "$amazongames_path2")\""
+    echo "export amazonshortcutdirectory=$amazonshortcutdirectory" >> ${logged_in_home}/.config/systemd/user/env_vars
+    echo "export amazonlaunchoptions=$amazonlaunchoptions" >> ${logged_in_home}/.config/systemd/user/env_vars
+    echo "export amazonstartingdir=$amazonstartingdir" >> ${logged_in_home}/.config/systemd/user/env_vars
+    echo "export amazon_launcher=AmazonGamesLauncher" >> ${logged_in_home}/.config/systemd/user/env_vars
+    echo "Amazon Games Launcher found at path 2"
 fi
 
 if [[ -f "$itchio_path1" ]]; then
-    set_launcher_vars "$itchio_path1" "itchio" "" "NonSteamLaunchers"
+    # itchio Launcher is installed at path 1
+    itchioshortcutdirectory="\"$itchio_path1\""
+    itchiolaunchoptions="STEAM_COMPAT_DATA_PATH=\"${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/\" %command%"
+    itchiostartingdir="\"$(dirname "$itchio_path1")\""
+    echo "export itchioshortcutdirectory=$itchioshortcutdirectory" >> ${logged_in_home}/.config/systemd/user/env_vars
+    echo "export itchiolaunchoptions=$itchiolaunchoptions" >> ${logged_in_home}/.config/systemd/user/env_vars
+    echo "export itchiostartingdir=$itchiostartingdir" >> ${logged_in_home}/.config/systemd/user/env_vars
+    echo "export itchio_launcher=NonSteamLaunchers" >> ${logged_in_home}/.config/systemd/user/env_vars
+    echo "itchio Launcher found at path 1"
 elif [[ -f "$itchio_path2" ]]; then
-    set_launcher_vars "$itchio_path2" "itchio" "" "itchioLauncher"
+    # itchio Launcher is installed at path 2
+    itchioshortcutdirectory="\"$itchio_path2\""
+    itchiolaunchoptions="STEAM_COMPAT_DATA_PATH=\"${logged_in_home}/.local/share/Steam/steamapps/compatdata/itchioLauncher/\" %command%"
+    itchiostartingdir="\"$(dirname "$itchio_path2")\""
+    echo "export itchioshortcutdirectory=$itchioshortcutdirectory" >> ${logged_in_home}/.config/systemd/user/env_vars
+    echo "export itchiolaunchoptions=$itchiolaunchoptions" >> ${logged_in_home}/.config/systemd/user/env_vars
+    echo "export itchiostartingdir=$itchiostartingdir" >> ${logged_in_home}/.config/systemd/user/env_vars
+    echo "export itchio_launcher=itchioLauncher" >> ${logged_in_home}/.config/systemd/user/env_vars
+    echo "itchio Launcher found at path 2"
 fi
 
 if [[ -f "$legacygames_path1" ]]; then
-    set_launcher_vars "$legacygames_path1" "legacy" "" "NonSteamLaunchers"
+    # Legacy Games Launcher is installed at path 1
+    legacyshortcutdirectory="\"$legacygames_path1\""
+    legacylaunchoptions="STEAM_COMPAT_DATA_PATH=\"${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/\" %command%"
+    legacystartingdir="\"$(dirname "$legacygames_path1")\""
+    echo "export legacyshortcutdirectory=$legacyshortcutdirectory" >> ${logged_in_home}/.config/systemd/user/env_vars
+    echo "export legacylaunchoptions=$legacylaunchoptions" >> ${logged_in_home}/.config/systemd/user/env_vars
+    echo "export legacystartingdir=$legacystartingdir" >> ${logged_in_home}/.config/systemd/user/env_vars
 elif [[ -f "$legacygames_path2" ]]; then
-    set_launcher_vars "$legacygames_path2" "legacy" "" "LegacyGamesLauncher"
+    # Legacy Games Launcher is installed at path 2
+    legacyshortcutdirectory="\"$legacygames_path2\""
+    legacylaunchoptions="STEAM_COMPAT_DATA_PATH=\"${logged_in_home}/.local/share/Steam/steamapps/compatdata/LegacyGamesLauncher/\" %command%"
+    legacystartingdir="\"$(dirname "$legacygames_path2")\""
+    echo "export legacyshortcutdirectory=$legacyshortcutdirectory" >> ${logged_in_home}/.config/systemd/user/env_vars
+    echo "export legacylaunchoptions=$legacylaunchoptions" >> ${logged_in_home}/.config/systemd/user/env_vars
+    echo "export legacystartingdir=$legacystartingdir" >> ${logged_in_home}/.config/systemd/user/env_vars
 fi
 
 if [[ -f "$humblegames_path1" ]]; then
-    set_launcher_vars "$humblegames_path1" "humble" "" "NonSteamLaunchers"
+    # Humble Games Launcher is installed at path 1
+    humbleshortcutdirectory="\"$humblegames_path1\""
+    humblelaunchoptions="STEAM_COMPAT_DATA_PATH=\"${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/\" %command%"
+    humblestartingdir="\"$(dirname "$humblegames_path1")\""
+    echo "export humbleshortcutdirectory=$humbleshortcutdirectory" >> ${logged_in_home}/.config/systemd/user/env_vars
+    echo "export humblelaunchoptions=$humblelaunchoptions" >> ${logged_in_home}/.config/systemd/user/env_vars
+    echo "export humblestartingdir=$humblestartingdir" >> ${logged_in_home}/.config/systemd/user/env_vars
 elif [[ -f "$humblegames_path2" ]]; then
-    set_launcher_vars "$humblegames_path2" "humble" "" "HumbleGamesLauncher"
+    # Humble Games Launcher is installed at path 2
+    humbleshortcutdirectory="\"$humblegames_path2\""
+    humblelaunchoptions="STEAM_COMPAT_DATA_PATH=\"${logged_in_home}/.local/share/Steam/steamapps/compatdata/HumbleGamesLauncher/\" %command%"
+    humblestartingdir="\"$(dirname "$humblegames_path2")\""
+    echo "export humbleshortcutdirectory=$humbleshortcutdirectory" >> ${logged_in_home}/.config/systemd/user/env_vars
+    echo "export humblelaunchoptions=$humblelaunchoptions" >> ${logged_in_home}/.config/systemd/user/env_vars
+    echo "export humblestartingdir=$humblestartingdir" >> ${logged_in_home}/.config/systemd/user/env_vars
 fi
 
 if [[ -f "$indiegala_path1" ]]; then
-    set_launcher_vars "$indiegala_path1" "indie" "" "NonSteamLaunchers"
+    # indiegala Launcher is installed at path 1
+    indieshortcutdirectory="\"$indiegala_path1\""
+    indielaunchoptions="STEAM_COMPAT_DATA_PATH=\"${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/\" %command%"
+    indiestartingdir="\"$(dirname "$indiegala_path1")\""
+    echo "export indieshortcutdirectory=$indieshortcutdirectory" >> ${logged_in_home}/.config/systemd/user/env_vars
+    echo "export indielaunchoptions=$indielaunchoptions" >> ${logged_in_home}/.config/systemd/user/env_vars
+    echo "export indiestartingdir=$indiestartingdir" >> ${logged_in_home}/.config/systemd/user/env_vars
 elif [[ -f "$indiegala_path2" ]]; then
-    set_launcher_vars "$indiegala_path2" "indie" "" "IndieGalaLauncher"
+    # indiegala Launcher is installed at path 2
+    indieshortcutdirectory="\"$indiegala_path2\""
+    indielaunchoptions="STEAM_COMPAT_DATA_PATH=\"${logged_in_home}/.local/share/Steam/steamapps/compatdata/IndieGalaLauncher/\" %command%"
+    indiestartingdir="\"$(dirname "$indiegala_path2")\""
+    echo "export indieshortcutdirectory=$indieshortcutdirectory" >> ${logged_in_home}/.config/systemd/user/env_vars
+    echo "export indielaunchoptions=$indielaunchoptions" >> ${logged_in_home}/.config/systemd/user/env_vars
+    echo "export indiestartingdir=$indiestartingdir" >> ${logged_in_home}/.config/systemd/user/env_vars
 fi
 
 if [[ -f "$rockstar_path1" ]]; then
-    set_launcher_vars "$rockstar_path1" "rockstar" "" "NonSteamLaunchers"
+    # rockstar Launcher is installed at path 1
+    rockstarshortcutdirectory="\"$rockstar_path1\""
+    rockstarlaunchoptions="STEAM_COMPAT_DATA_PATH=\"${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/\" %command%"
+    rockstarstartingdir="\"$(dirname "$rockstar_path1")\""
+    echo "export rockstarshortcutdirectory=$rockstarshortcutdirectory" >> ${logged_in_home}/.config/systemd/user/env_vars
+    echo "export rockstarlaunchoptions=$rockstarlaunchoptions" >> ${logged_in_home}/.config/systemd/user/env_vars
+    echo "export rockstarstartingdir=$rockstarstartingdir" >> ${logged_in_home}/.config/systemd/user/env_vars
 elif [[ -f "$rockstar_path2" ]]; then
-    set_launcher_vars "$rockstar_path2" "rockstar" "" "RockstarGamesLauncher"
+    # rockstar Launcher is installed at path 2
+    rockstarshortcutdirectory="\"$rockstar_path2\""
+    rockstarlaunchoptions="STEAM_COMPAT_DATA_PATH=\"${logged_in_home}/.local/share/Steam/steamapps/compatdata/RockstarGamesLauncher/\" %command%"
+    rockstarstartingdir="\"$(dirname "$rockstar_path2")\""
+    echo "export rockstarshortcutdirectory=$rockstarshortcutdirectory" >> ${logged_in_home}/.config/systemd/user/env_vars
+    echo "export rockstarlaunchoptions=$rockstarlaunchoptions" >> ${logged_in_home}/.config/systemd/user/env_vars
+    echo "export rockstarstartingdir=$rockstarstartingdir" >> ${logged_in_home}/.config/systemd/user/env_vars
 fi
 
 if [[ -f "$glyph_path1" ]]; then
-    set_launcher_vars "$glyph_path1" "glyph" "" "NonSteamLaunchers"
+    # Glyph is installed at path 1
+    glyphshortcutdirectory="\"$glyph_path1\""
+    glyphlaunchoptions="STEAM_COMPAT_DATA_PATH=\"${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/\" %command%"
+    glyphstartingdir="\"$(dirname "$glyph_path1")\""
+    echo "export glyphshortcutdirectory=$glyphshortcutdirectory" >> ${logged_in_home}/.config/systemd/user/env_vars
+    echo "export glyphlaunchoptions=$glyphlaunchoptions" >> ${logged_in_home}/.config/systemd/user/env_vars
+    echo "export glyphstartingdir=$glyphstartingdir" >> ${logged_in_home}/.config/systemd/user/env_vars
 elif [[ -f "$glyph_path2" ]]; then
-    set_launcher_vars "$glyph_path2" "glyph" "" "GlyphLauncher"
+    # Glyph is installed at path 2
+    glyphshortcutdirectory="\"$glyph_path2\""
+    glyphlaunchoptions="STEAM_COMPAT_DATA_PATH=\"${logged_in_home}/.local/share/Steam/steamapps/compatdata/GlyphLauncher/\" %command%"
+    glyphstartingdir="\"$(dirname "$glyph_path2")\""
+    echo "export glyphshortcutdirectory=$glyphshortcutdirectory" >> ${logged_in_home}/.config/systemd/user/env_vars
+    echo "export glyphlaunchoptions=$glyphlaunchoptions" >> ${logged_in_home}/.config/systemd/user/env_vars
+    echo "export glyphstartingdir=$glyphstartingdir" >> ${logged_in_home}/.config/systemd/user/env_vars
 fi
 
 if [[ -f "$minecraft_path1" ]]; then
-    set_launcher_vars "$minecraft_path1" "minecraft" "" "NonSteamLaunchers"
+    # Minecraft is installed at path 1
+    minecraftshortcutdirectory="\"$minecraft_path1\""
+    minecraftlaunchoptions="STEAM_COMPAT_DATA_PATH=\"${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/\" %command%"
+    minecraftstartingdir="\"$(dirname "$minecraft_path1")\""
+    echo "export minecraftshortcutdirectory=$minecraftshortcutdirectory" >> ${logged_in_home}/.config/systemd/user/env_vars
+    echo "export minecraftlaunchoptions=$minecraftlaunchoptions" >> ${logged_in_home}/.config/systemd/user/env_vars
+    echo "export minecraftstartingdir=$minecraftstartingdir" >> ${logged_in_home}/.config/systemd/user/env_vars
 elif [[ -f "$minecraft_path2" ]]; then
-    set_launcher_vars "$minecraft_path2" "minecraft" "" "MinecraftLauncher"
+    # Minecraft is installed at path 2
+    minecraftshortcutdirectory="\"$minecraft_path2\""
+    minecraftlaunchoptions="STEAM_COMPAT_DATA_PATH=\"${logged_in_home}/.local/share/Steam/steamapps/compatdata/MinecraftLauncher/\" %command%"
+    minecraftstartingdir="\"$(dirname "$minecraft_path1")\""
+    echo "export minecraftshortcutdirectory=$minecraftshortcutdirectory" >> ${logged_in_home}/.config/systemd/user/env_vars
+    echo "export minecraftlaunchoptions=$minecraftlaunchoptions" >> ${logged_in_home}/.config/systemd/user/env_vars
+    echo "export minecraftstartingdir=$minecraftstartingdir" >> ${logged_in_home}/.config/systemd/user/env_vars
 fi
 
 if [[ -f "$psplus_path1" ]]; then
-    set_launcher_vars "$psplus_path1" "psplus" "" "NonSteamLaunchers"
+    # Playstation is installed at path 1
+    psplusshortcutdirectory="\"$psplus_path1\""
+    pspluslaunchoptions="STEAM_COMPAT_DATA_PATH=\"${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/\" %command%"
+    psplusstartingdir="\"$(dirname "$psplus_path1")\""
+    echo "export psplusshortcutdirectory=$psplusshortcutdirectory" >> ${logged_in_home}/.config/systemd/user/env_vars
+    echo "export pspluslaunchoptions=$pspluslaunchoptions" >> ${logged_in_home}/.config/systemd/user/env_vars
+    echo "export psplusstartingdir=$psplusstartingdir" >> ${logged_in_home}/.config/systemd/user/env_vars
 elif [[ -f "$psplus_path2" ]]; then
-    set_launcher_vars "$psplus_path2" "psplus" "" "PlaystationPlusLauncher"
+    # Playstation is installed at path 2
+    psplusshortcutdirectory="\"$psplus_path2\""
+    pspluslaunchoptions="STEAM_COMPAT_DATA_PATH=\"${logged_in_home}/.local/share/Steam/steamapps/compatdata/PlaystationPlusLauncher/\" %command%"
+    psplusstartingdir="\"$(dirname "$psplus_path2")\""
+    echo "export psplusshortcutdirectory=$psplusshortcutdirectory" >> ${logged_in_home}/.config/systemd/user/env_vars
+    echo "export pspluslaunchoptions=$pspluslaunchoptions" >> ${logged_in_home}/.config/systemd/user/env_vars
+    echo "export psplusstartingdir=$psplusstartingdir" >> ${logged_in_home}/.config/systemd/user/env_vars
 fi
 
 if [[ -f "$vkplay_path1" ]]; then
-    set_launcher_vars "$vkplay_path1" "vkplay" "" "NonSteamLaunchers"
+    # VK Play is installed at path 1
+    vkplayhortcutdirectory="\"$vkplay_path1\""
+    vkplaylaunchoptions="STEAM_COMPAT_DATA_PATH=\"${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/\" %command%"
+    vkplaystartingdir="\"$(dirname "$vkplay_path1")\""
+    echo "export vkplayshortcutdirectory=$vkplayshortcutdirectory" >> ${logged_in_home}/.config/systemd/user/env_vars
+    echo "export vkplaylaunchoptions=$vkplaylaunchoptions" >> ${logged_in_home}/.config/systemd/user/env_vars
+    echo "export vkplaystartingdir=$vkplaystartingdir" >> ${logged_in_home}/.config/systemd/user/env_vars
 elif [[ -f "$vkplay_path2" ]]; then
-    set_launcher_vars "$vkplay_path2" "vkplay" "" "VKPlayLauncher"
+    # VK Play is installed at path 2
+    vkplayhortcutdirectory="\"$vkplay_path2\""
+    vkplaylaunchoptions="STEAM_COMPAT_DATA_PATH=\"${logged_in_home}/.local/share/Steam/steamapps/compatdata/VKPlayLauncher/\" %command%"
+    vkplaystartingdir="\"$(dirname "$vkplay_path2")\""
+    echo "export vkplayshortcutdirectory=$vkplayshortcutdirectory" >> ${logged_in_home}/.config/systemd/user/env_vars
+    echo "export vkplaylaunchoptions=$vkplaylaunchoptions" >> ${logged_in_home}/.config/systemd/user/env_vars
+    echo "export vkplaystartingdir=$vkplaystartingdir" >> ${logged_in_home}/.config/systemd/user/env_vars
 fi
 
 
