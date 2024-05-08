@@ -739,6 +739,7 @@ def getGogGameInfo(filePath):
         exe_path = None
         depends_on = None
         launch_command = None
+        start_menu_link = None
         for line in file:
             split_line = line.split("=")
             if len(split_line) > 1:
@@ -763,13 +764,18 @@ def getGogGameInfo(filePath):
                     launch_command = re.findall(r'\"(.+?)\"', split_line[1])
                     if launch_command:
                         launch_command = launch_command[0]
-            if game_id and game_name and launch_command:
+                if "startMenuLink" in line:
+                    start_menu_link = re.findall(r'\"(.+?)\"', split_line[1])
+                    if start_menu_link:
+                        start_menu_link = start_menu_link[0]
+            if game_id and game_name and launch_command and "[GOG.com]" in start_menu_link:
                 game_dict[game_name] = {'id': game_id, 'exe': exe_path}
                 game_id = None
                 game_name = None
                 exe_path = None
                 depends_on = None
                 launch_command = None
+                start_menu_link = None
 
     return game_dict
 
