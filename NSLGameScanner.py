@@ -727,7 +727,7 @@ else:
 def getGogGameInfo(filePath):
     # Check if the file contains any GOG entries
     with open(filePath, 'r') as file:
-        if "GOG.com" not in file.read():
+        if "[Software\\Wow6432Node\\GOG.com\\Games\\" not in file.read():
             print("No GOG entries found in the registry file. Skipping GOG Galaxy Games Scanner.")
             return {}
 
@@ -740,37 +740,36 @@ def getGogGameInfo(filePath):
         depends_on = None
         launch_command = None
         for line in file:
-            if "[Software\\Wow6432Node\\GOG.com\\Games\\" in line:
-                split_line = line.split("=")
-                if len(split_line) > 1:
-                    if "gameID" in line:
-                        game_id = re.findall(r'\"(.+?)\"', split_line[1])
-                        if game_id:
-                            game_id = game_id[0]
-                    if "gameName" in line:
-                        game_name = re.findall(r'\"(.+?)\"', split_line[1])
-                        if game_name:
-                            game_name = bytes(game_name[0], 'utf-8').decode('unicode_escape')
-                            game_name = game_name.replace('!22', '™')
-                    if "exe" in line and "GOG Galaxy" in line and not "unins000.exe" in line:
-                        exe_path = re.findall(r'\"(.+?)\"', split_line[1])
-                        if exe_path:
-                            exe_path = exe_path[0].replace('\\\\', '\\')
-                    if "dependsOn" in line:
-                        depends_on = re.findall(r'\"(.+?)\"', split_line[1])
-                        if depends_on:
-                            depends_on = depends_on[0]
-                    if "launchCommand" in line:
-                        launch_command = re.findall(r'\"(.+?)\"', split_line[1])
-                        if launch_command:
-                            launch_command = launch_command[0]
-                if game_id and game_name and launch_command:
-                    game_dict[game_name] = {'id': game_id, 'exe': exe_path}
-                    game_id = None
-                    game_name = None
-                    exe_path = None
-                    depends_on = None
-                    launch_command = None
+            split_line = line.split("=")
+            if len(split_line) > 1:
+                if "gameID" in line:
+                    game_id = re.findall(r'\"(.+?)\"', split_line[1])
+                    if game_id:
+                        game_id = game_id[0]
+                if "gameName" in line:
+                    game_name = re.findall(r'\"(.+?)\"', split_line[1])
+                    if game_name:
+                        game_name = bytes(game_name[0], 'utf-8').decode('unicode_escape')
+                        game_name = game_name.replace('!22', '™')
+                if "exe" in line and "GOG Galaxy" in line and not "unins000.exe" in line:
+                    exe_path = re.findall(r'\"(.+?)\"', split_line[1])
+                    if exe_path:
+                        exe_path = exe_path[0].replace('\\\\', '\\')
+                if "dependsOn" in line:
+                    depends_on = re.findall(r'\"(.+?)\"', split_line[1])
+                    if depends_on:
+                        depends_on = depends_on[0]
+                if "launchCommand" in line:
+                    launch_command = re.findall(r'\"(.+?)\"', split_line[1])
+                    if launch_command:
+                        launch_command = launch_command[0]
+            if game_id and game_name and launch_command:
+                game_dict[game_name] = {'id': game_id, 'exe': exe_path}
+                game_id = None
+                game_name = None
+                exe_path = None
+                depends_on = None
+                launch_command = None
 
     return game_dict
 
