@@ -768,7 +768,7 @@ def getGogGameInfo(filePath):
                     start_menu_link = re.findall(r'\"(.+?)\"', split_line[1])
                     if start_menu_link:
                         start_menu_link = start_menu_link[0]
-            if game_id and game_name and launch_command and "[GOG.com]" in start_menu_link:
+            if game_id and game_name and launch_command and start_menu_link and "[GOG.com]" in start_menu_link:
                 game_dict[game_name] = {'id': game_id, 'exe': exe_path}
                 game_id = None
                 game_name = None
@@ -778,6 +778,7 @@ def getGogGameInfo(filePath):
                 start_menu_link = None
 
     return game_dict
+
 
 
 
