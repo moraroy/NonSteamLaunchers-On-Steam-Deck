@@ -1270,6 +1270,20 @@ if [[ $options == *"Battle.net"* ]]; then
     # Run the BATTLE file using Proton with the /passive option
     echo "Running BATTLE file using Proton with the /passive option"
     "$STEAM_RUNTIME" "$proton_dir/proton" run "$battle_file" Battle.net-Setup.exe --lang=enUS --installpath="C:\Program Files (x86)\Battle.net"
+    max_attempts=20
+    attempt=0
+    while true; do
+        if pgrep -f "Battle.net.exe" || pgrep -f "BlizzardError.exe" > /dev/null; then
+            pkill -f "Battle.net.exe" || pkill -f "BlizzardError.exe"
+            break
+        fi
+        sleep 1
+        ((attempt++))
+        if [ "$attempt" -ge "$max_attempts" ]; then
+            echo "Timeout: Battle.net process did not terminate."
+            break
+        fi
+    done
 	wait
 	# Run the BATTLE file using Proton with the /passive option
     echo "Running BATTLE file using Proton with the /passive option"
@@ -1279,8 +1293,8 @@ if [[ $options == *"Battle.net"* ]]; then
     max_attempts=20
     attempt=0
     while true; do
-        if pgrep -f "Battle.net.exe" > /dev/null; then
-            pkill -f "Battle.net.exe"
+        if pgrep -f "Battle.net.exe" || pgrep -f "BlizzardError.exe" > /dev/null; then
+            pkill -f "Battle.net.exe" || pkill -f "BlizzardError.exe"
             break
         fi
         sleep 1
@@ -1291,7 +1305,6 @@ if [[ $options == *"Battle.net"* ]]; then
         fi
     done
 fi
-
 wait
 
 
@@ -1388,22 +1401,24 @@ if [[ $options == *"EA App"* ]]; then
     echo "Running EA App file using Proton with the /passive option"
     "$STEAM_RUNTIME" "$proton_dir/proton" run "$eaapp_file" /quiet
 
-    counter=0
+    max_attempts=20
+    attempt=0
     while true; do
-        if pgrep -f "EABackgroundService.exe" > /dev/null; then
-            pkill -f "EABackgroundService.exe"
+        if pgrep -f "EADesktop.exe" || pgrep -f "EABacgroundSer" > /dev/null; then
+            pkill -f "EADesktop.ex" || pkill -f "EABacgroundSer"
             break
         fi
         sleep 1
-        counter=$((counter + 1))
-        if [ $counter -ge 10 ]; then
+        ((attempt++))
+        if [ "$attempt" -ge "$max_attempts" ]; then
+            echo "Timeout: EABacgroundSer process did not terminate."
             break
         fi
     done
-
-    # Wait for the EA App file to finish running
-    wait
 fi
+
+
+
 
 wait
 echo "89"
