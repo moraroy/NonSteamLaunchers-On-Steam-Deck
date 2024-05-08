@@ -787,11 +787,13 @@ else:
     game_dict = getGogGameInfo(registry_file_path)
 
     for game, game_info in game_dict.items():
-        if game_info['id'] and game_info['exe']:
+        if game_info['id']:
             launch_options = f"STEAM_COMPAT_DATA_PATH=\"{logged_in_home}/.local/share/Steam/steamapps/compatdata/{gog_galaxy_launcher}/\" %command% /command=runGame /gameId={game_info['id']} /path=\"{game_info['exe']}\""
-            exe_path = f"\"{game_info['exe']}\""
-            start_dir = os.path.dirname(exe_path)
+            exe_path = f"\"{logged_in_home}/.local/share/Steam/steamapps/compatdata/{gog_galaxy_launcher}/pfx/drive_c/Program Files (x86)/GOG Galaxy/GalaxyClient.exe\""
+            start_dir = f"\"{logged_in_home}/.local/share/Steam/steamapps/compatdata/{gog_galaxy_launcher}/pfx/drive_c/Program Files (x86)/GOG Galaxy/\""
             create_new_entry(exe_path, game, launch_options, start_dir)
+
+# End of Gog Galaxy Scanner
 
 
 # End of Gog Galaxy Scanner
