@@ -69,7 +69,7 @@ Finds Games Automatically
 - Epic Games 🎮          Full SD Card Support 💾
 - Ubisoft Connect 🎮
 - EA App 🎮
-- Gog Galaxy 🎮
+- Gog Galaxy 🎮          Full SD Card Support 💾
 - Battle.net 🎮
 - Amazon Games 🎮        Full SD Card Support 💾
 - Itch.io 🎮
