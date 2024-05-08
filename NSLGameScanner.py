@@ -796,6 +796,7 @@ else:
 # End of Gog Galaxy Scanner
 
 
+
 #Battle.net Scanner
 # Define your mapping
 flavor_mapping = {
