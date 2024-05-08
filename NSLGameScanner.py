@@ -727,9 +727,10 @@ else:
 def getGogGameInfo(filePath):
     # Check if the file contains any GOG entries
     with open(filePath, 'r') as file:
-        if "[Software\\Wow6432Node\\GOG.com\\Games\\" not in file.read():
+        if "Software\\Wow6432Node\\GOG.com\\Games\\" not in file.read():
             print("No GOG entries found in the registry file. Skipping GOG Galaxy Games Scanner.")
             return {}
+
 
     # If GOG entries exist, parse the registry file
     game_dict = {}
