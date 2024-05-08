@@ -727,10 +727,9 @@ else:
 def getGogGameInfo(filePath):
     # Check if the file contains any GOG entries
     with open(filePath, 'r') as file:
-        if "Software\\Wow6432Node\\GOG.com\\Games\\" not in file.read():
+        if "GOG.com" not in file.read():
             print("No GOG entries found in the registry file. Skipping GOG Galaxy Games Scanner.")
             return {}
-
 
     # If GOG entries exist, parse the registry file
     game_dict = {}
@@ -793,9 +792,6 @@ else:
             exe_path = f"\"{logged_in_home}/.local/share/Steam/steamapps/compatdata/{gog_galaxy_launcher}/pfx/drive_c/Program Files (x86)/GOG Galaxy/GalaxyClient.exe\""
             start_dir = f"\"{logged_in_home}/.local/share/Steam/steamapps/compatdata/{gog_galaxy_launcher}/pfx/drive_c/Program Files (x86)/GOG Galaxy/\""
             create_new_entry(exe_path, game, launch_options, start_dir)
-
-# End of Gog Galaxy Scanner
-
 
 # End of Gog Galaxy Scanner
 
