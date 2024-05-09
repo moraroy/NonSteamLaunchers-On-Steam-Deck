@@ -24,6 +24,15 @@ Currently Working On 👷‍♂️
 
 * Decky Loader Plugin is available [here](https://github.com/moraroy/NonSteamLaunchersDecky)
 
+
+<p align="center">
+▶️ YouTube Tutorial 🡺🡺🡺 https://youtu.be/sxMmI8I9G_g 🡸🡸🡸 ▶️
+</p>
+<p align="center">
+📖 Step-by-step Article 🡺🡺🡺 <a href="https://steamdeckhq.com/news/nonsteamlaunchers-adds-scan-support-launchers">here</a> 🡸🡸🡸 📖
+</p>
+
+
 <h1 align="center">
 Supported Stores 🛍
 </h1>
@@ -90,12 +99,7 @@ How to Install 🔧
 
 <!--- TODO: handful of broken icons (cf. 🡺🡺🡺 ); probably should remove or replace them with more common font to handle unicode-->
 
-<p align="center">
-▶️ YouTube Tutorial 🡺🡺🡺 https://www.youtube.com/watch?v=svOj4MTEAVc 🡸🡸🡸 ▶️
-</p>
-<p align="center">
-📖 Step-by-step Article 🡺🡺🡺 <a href="https://steamdeckhq.com/news/nonsteamlaunchers-adds-scan-support-launchers">here</a> 🡸🡸🡸 📖
-</p>
+
 
 <h1 align="center">
 How to Uninstall 🗑
