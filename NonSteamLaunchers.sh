@@ -1381,22 +1381,18 @@ if [[ $options == *"EA App"* ]]; then
 
     # Run the EA App file using Proton with the /passive option
     echo "Running EA App file using Proton with the /passive option"
-    "$STEAM_RUNTIME" "$proton_dir/proton" run "$eaapp_file" /quiet
+    "$STEAM_RUNTIME" "$proton_dir/proton" run "$eaapp_file" "/quiet" &
 
-    max_attempts=20
-    attempt=0
     while true; do
-        if pgrep -f "EADesktop.exe" || pgrep -f "EABacgroundSer" > /dev/null; then
-            pkill -f "EADesktop.ex" || pkill -f "EABacgroundSer"
+        if pgrep -f "EADesktop.exe" > /dev/null; then
+            pkill -f "EADesktop.exe"
             break
         fi
         sleep 1
-        ((attempt++))
-        if [ "$attempt" -ge "$max_attempts" ]; then
-            echo "Timeout: EABacgroundSer process did not terminate."
-            break
-        fi
     done
+
+    # Wait for the Amazon file to finish running
+    wait
 fi
 
 
@@ -1440,7 +1436,18 @@ if [[ $options == *"itch.io"* ]]; then
 
     # Run the itchio file using Proton with the /passive option
     echo "Running itchio file using Proton with the /passive option"
-    "$STEAM_RUNTIME" "$proton_dir/proton" run "$itchio_file"
+    "$STEAM_RUNTIME" "$proton_dir/proton" run "$itchio_file" --silent
+
+    while true; do
+        if pgrep -f "itch.exe" > /dev/null; then
+            pkill -f "itch.exe"
+            break
+        fi
+        sleep 1
+    done
+
+    # Wait for the itch file to finish running
+    wait
 fi
 
 wait
