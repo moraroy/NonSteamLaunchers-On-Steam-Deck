@@ -29,7 +29,7 @@ download_dir="${logged_in_home}/Downloads/NonSteamLaunchersInstallation"
 exec >> "${logged_in_home}/Downloads/NonSteamLaunchers-install.log" 2>&1
 
 # Version number (major.minor)
-version=v3.8.7
+version=v3.8.8
 
 # TODO: tighten logic to check whether major/minor version is up-to-date via `-eq`, `-lt`, or `-gt` operators
 # Check repo releases via GitHub API then display current stable version
@@ -358,7 +358,7 @@ separate_app_ids=false
 # Check if any command line arguments were provided
 if [ ${#args[@]} -eq 0 ]; then
     # No command line arguments were provided, so display the main zenity window
-    selected_launchers=$(zenity --list --text="Which launchers do you want to download and install?" --checklist --column="$version" --column="Default = one App ID Installation, One Prefix, NonSteamLaunchers - updated the NSLGameScanner.py $live" FALSE "SEPARATE APP IDS - CHECK THIS TO SEPARATE YOUR PREFIX" $epic_games_value "$epic_games_text" $gog_galaxy_value "$gog_galaxy_text" $uplay_value "$uplay_text" $battlenet_value "$battlenet_text" $amazongames_value "$amazongames_text" $eaapp_value "$eaapp_text" $legacygames_value "$legacygames_text" $itchio_value "$itchio_text" $humblegames_value "$humblegames_text" $indiegala_value "$indiegala_text" $rockstar_value "$rockstar_text" $glyph_value "$glyph_text" $minecraft_value "$minecraft_text" $psplus_value "$psplus_text" $vkplay_value "$vkplay_text" FALSE "Fortnite" FALSE "Xbox Game Pass" FALSE "GeForce Now" FALSE "Amazon Luna" FALSE "Netflix" FALSE "Hulu" FALSE "Disney+" FALSE "Amazon Prime Video" FALSE "movie-web" FALSE "Youtube" FALSE "Twitch" --width=800 --height=740 --extra-button="Uninstall" --extra-button="Stop NSLGameScanner" --extra-button="Start Fresh" --extra-button="Move to SD Card" --extra-button="Update Proton-GE")
+    selected_launchers=$(zenity --list --text="Which launchers do you want to download and install?" --checklist --column="$version" --column="Default = one App ID Installation, One Prefix, NonSteamLaunchers - updated the NSLGameScanner.py $live" FALSE "SEPARATE APP IDS - CHECK THIS TO SEPARATE YOUR PREFIX" $epic_games_value "$epic_games_text" $gog_galaxy_value "$gog_galaxy_text" $uplay_value "$uplay_text" $battlenet_value "$battlenet_text" $amazongames_value "$amazongames_text" $eaapp_value "$eaapp_text" $legacygames_value "$legacygames_text" $itchio_value "$itchio_text" $humblegames_value "$humblegames_text" $indiegala_value "$indiegala_text" $rockstar_value "$rockstar_text" $glyph_value "$glyph_text" $minecraft_value "$minecraft_text" $psplus_value "$psplus_text" $vkplay_value "$vkplay_text" FALSE "RemotePlayWhatever" FALSE "Fortnite" FALSE "Xbox Game Pass" FALSE "GeForce Now" FALSE "Amazon Luna" FALSE "Netflix" FALSE "Hulu" FALSE "Disney+" FALSE "Amazon Prime Video" FALSE "movie-web" FALSE "Youtube" FALSE "Twitch" --width=800 --height=740 --extra-button="Uninstall" --extra-button="Stop NSLGameScanner" --extra-button="Start Fresh" --extra-button="Move to SD Card" --extra-button="Update Proton-GE")
 
     # Check if the user clicked the 'Cancel' button or selected one of the extra buttons
     if [ $? -eq 1 ] || [[ $selected_launchers == "Start Fresh" ]] || [[ $selected_launchers == "Move to SD Card" ]] || [[ $selected_launchers == "Uninstall" ]]; then
@@ -554,6 +554,7 @@ function StartFreshFunction {
     rm -rf ${logged_in_home}/.config/systemd/user/Modules
     rm -rf ${logged_in_home}/.config/systemd/user/env_vars
     rm -rf ${logged_in_home}/.config/systemd/user/NSLGameScanner.py
+    rm -rf ${logged_in_home}/.local/share/applications/RemotePlayWhatever
 
     # Delete the service file
     rm -rf ${logged_in_home}/.config/systemd/user/nslgamescanner.service
@@ -2233,6 +2234,41 @@ elif [[ -f "$vkplay_path2" ]]; then
     echo "export vkplayshortcutdirectory=$vkplayshortcutdirectory" >> ${logged_in_home}/.config/systemd/user/env_vars
     echo "export vkplaylaunchoptions=$vkplaylaunchoptions" >> ${logged_in_home}/.config/systemd/user/env_vars
     echo "export vkplaystartingdir=$vkplaystartingdir" >> ${logged_in_home}/.config/systemd/user/env_vars
+fi
+
+
+#Other Applications
+if [[ $options == *"RemotePlayWhatever"* ]]; then
+    # Set the directory path
+    DIRECTORY="${logged_in_home}/.local/share/applications"
+
+    # Check if the directory exists
+    if [ ! -d "$DIRECTORY" ]; then
+        mkdir -p "$DIRECTORY"
+    fi
+
+    # Get the latest release URL for RemotePlayWhatever
+    RELEASE_URL=$(curl -s https://api.github.com/repos/m4dEngi/RemotePlayWhatever/releases/latest | grep -o 'https://github.com/m4dEngi/RemotePlayWhatever/releases/download/.*RemotePlayWhatever.*\.AppImage')
+
+    # Download the latest RemotePlayWhatever AppImage
+    wget -P "$DIRECTORY" "$RELEASE_URL"
+
+    # Get the downloaded file name
+    DOWNLOADED_FILE=$(basename "$RELEASE_URL")
+
+    # Rename the downloaded file
+    mv "$DIRECTORY/$DOWNLOADED_FILE" "$DIRECTORY/RemotePlayWhatever"
+
+    # Make the file executable
+    chmod +x "$DIRECTORY/RemotePlayWhatever"
+
+
+    echo "RemotePlayWhatever downloaded, renamed to Remote Play Whatever, made executable, created in $DIRECTORY"
+
+    steamos-add-to-steam "$DIRECTORY/RemotePlayWhatever"
+    sleep 5
+    wait
+    echo "added RemotePlayWhatever to steamos"
 fi
 
 
