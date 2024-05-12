@@ -78,7 +78,6 @@ humbleshortcutdirectory = os.environ.get('humbleshortcutdirectory')
 indieshortcutdirectory = os.environ.get('indieshortcutdirectory')
 rockstarshortcutdirectory = os.environ.get('rockstarshortcutdirectory')
 glyphshortcutdirectory = os.environ.get('glyphshortcutdirectory')
-minecraftshortcutdirectory = os.environ.get('minecraftshortcutdirectory')
 psplusshortcutdirectory = os.environ.get('psplusshortcutdirectory')
 vkplayhortcutdirectory = os.environ.get('vkplayhortcutdirectory')
 #Streaming
@@ -379,7 +378,7 @@ def create_new_entry(shortcutdirectory, appname, launchoptions, startingdir):
     signed_shortcut_id = get_steam_shortcut_id(exe_path, appname)
     unsigned_shortcut_id = get_unsigned_shortcut_id(signed_shortcut_id)
     # Only store the app ID for specific launchers
-    if appname in ['Epic Games', 'Gog Galaxy', 'Ubisoft Connect', 'Battle.net', 'EA App', 'Amazon Games', 'itch.io', 'Legacy Games', 'Humble Bundle', 'IndieGala Client', 'Rockstar Games Launcher', 'Glyph', 'Minecraft: Java Edition', 'Playstation Plus', 'VK Play']:
+    if appname in ['Epic Games', 'Gog Galaxy', 'Ubisoft Connect', 'Battle.net', 'EA App', 'Amazon Games', 'itch.io', 'Legacy Games', 'Humble Bundle', 'IndieGala Client', 'Rockstar Games Launcher', 'Glyph', 'Playstation Plus', 'VK Play']:
         app_ids[appname] = unsigned_shortcut_id
     # Check if the game already exists in the shortcuts
     if check_if_shortcut_exists(signed_shortcut_id, appname, exe_path, startingdir, launchoptions):
@@ -434,7 +433,6 @@ create_new_entry(os.environ.get('humbleshortcutdirectory'), 'Humble Bundle', os.
 create_new_entry(os.environ.get('indieshortcutdirectory'), 'IndieGala Client', os.environ.get('indielaunchoptions'), os.environ.get('indiestartingdir'))
 create_new_entry(os.environ.get('rockstarshortcutdirectory'), 'Rockstar Games Launcher', os.environ.get('rockstarlaunchoptions'), os.environ.get('rockstarstartingdir'))
 create_new_entry(os.environ.get('glyphshortcutdirectory'), 'Glyph', os.environ.get('glyphlaunchoptions'), os.environ.get('glyphstartingdir'))
-create_new_entry(os.environ.get('minecraftshortcutdirectory'), 'Minecraft: Java Edition', os.environ.get('minecraftlaunchoptions'), os.environ.get('minecraftstartingdir'))
 create_new_entry(os.environ.get('psplusshortcutdirectory'), 'Playstation Plus', os.environ.get('pspluslaunchoptions'), os.environ.get('psplusstartingdir'))
 create_new_entry(os.environ.get('vkplayhortcutdirectory'), 'VK Play', os.environ.get('vkplaylaunchoptions'), os.environ.get('vkplaystartingdir'))
 create_new_entry(os.environ.get('chromedirectory'), 'Xbox Game Pass', os.environ.get('xboxchromelaunchoptions'), os.environ.get('chrome_startdir'))
@@ -521,7 +519,6 @@ folder_names = {
     'Humble Bundle': 'HumbleGamesLauncher',
     'IndieGala Client': 'IndieGalaLauncher',
     'Rockstar Games Launcher': 'RockstarGamesLauncher',
-    'Minecraft: Java Edition': 'MinecraftLauncher',
     'Playstation Plus': 'PlaystationPlusLauncher',
     'VK Play': 'VKPlayLauncher',
 }
