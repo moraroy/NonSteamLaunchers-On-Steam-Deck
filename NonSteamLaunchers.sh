@@ -19,9 +19,6 @@ export DBUS_SESSION_BUS_ADDRESS=$dbus_address
 # $HOME
 logged_in_home=$(eval echo "~${logged_in_user}")
 
-# Initialize the env_vars file
-> ${logged_in_home}/.config/systemd/user/env_vars
-
 # TODO: `/tmp` or `mktemp -d` might be a better option (see: EOF)
 # $PWD (working directory)
 download_dir="${logged_in_home}/Downloads/NonSteamLaunchersInstallation"
