@@ -49,7 +49,6 @@ Supported Stores 🛍
 - Rockstar Games Launcher ✔️
 - Ubisoft Connect ✔️
 - Glyph ✔️
-- Minecraft ✔️
 - Playstation Plus ✔️
 - VK Play ✔️
 
