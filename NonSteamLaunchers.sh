@@ -552,6 +552,7 @@ function StartFreshFunction {
     rm -rf ${logged_in_home}/.config/systemd/user/env_vars
     rm -rf ${logged_in_home}/.config/systemd/user/NSLGameScanner.py
     rm -rf ${logged_in_home}/.local/share/applications/RemotePlayWhatever
+    rm -rf ${logged_in_home}/Downloads/NonSteamLaunchers-install.log
 
     # Delete the service file
     rm -rf ${logged_in_home}/.config/systemd/user/nslgamescanner.service
@@ -1629,13 +1630,99 @@ if [[ $options == *"Rockstar Games Launcher"* ]]; then
 
     # Download rockstar games file
     if [ ! -f "$rockstar_file" ]; then
-        echo "Downloading rockstar file"
+        echo "Downloading Rockstar file"
         wget $rockstar_url -O $rockstar_file
     fi
 
-    # Run the rockstar file using Proton with the /passive option
-    echo "Running Rockstar Games Launcher file using Proton with the /passive option"
-    "$STEAM_RUNTIME" "$proton_dir/proton" run "$rockstar_file"
+    #Manually Install Rockstar Game Launcher
+
+    # Define directories and files
+    toolsDir=$(dirname "$(readlink -f "$0")")
+    checksumType='sha256'
+    rstarInstallUnzipFileDir="${logged_in_home}/Downloads/NonSteamLaunchersInstallation/Rockstar"
+    rstarInstallDir="${logged_in_home}/.local/share/Steam/steamapps/compatdata/${appid}/pfx/drive_c/Program Files/Rockstar Games/Launcher"
+    rstarStartMenuRunShortcutFolder="${logged_in_home}/.local/share/Steam/steamapps/compatdata/${appid}/pfx/drive_c/users/steamuser/AppData/Roaming/Microsoft/Windows/Start Menu/Programs/Rockstar Games"
+    rstarStartMenuRunShortcut="$rstarStartMenuRunShortcutFolder/Rockstar Games Launcher.lnk"
+    rstarRunTarget="$rstarInstallDir/LauncherPatcher.exe"
+    rstarInstallUnzipFile=$rockstar_file
+    url=$rockstar_url
+
+    # Define checksum
+    checksum='589f6b251424e01dcd912e6a059d2d98f33fa73aadcd6376c0e1f1109f594b48'
+
+    # Verify checksum (sha256sum command may vary based on distribution)
+    echo "$checksum $rstarInstallUnzipFile" | sha256sum -c -
+
+    # Extract files from EXE and capture the output
+    output=$(7z e "$rockstar_file" -o"$rstarInstallUnzipFileDir" -aoa)
+
+    # Parse the output to get the ProductVersion
+    version=$(echo "$output" | grep 'ProductVersion:' | awk '{print $2}')
+
+    ls -l "$rstarInstallUnzipFileDir"
+
+    # Create Program Files folders to prepare for copying files
+    mkdir -p "$rstarInstallDir/Redistributables/VCRed"
+    mkdir -p "$rstarInstallDir/ThirdParty/Steam"
+    mkdir -p "$rstarInstallDir/ThirdParty/Epic"
+
+    cp "$rstarInstallUnzipFileDir/449" "$rstarInstallDir/Redistributables/VCRed/vc_redist.x64.exe"
+    cp "$rstarInstallUnzipFileDir/450" "$rstarInstallDir/Redistributables/VCRed/vc_redist.x86.exe"
+    cp "$rstarInstallUnzipFileDir/451" "$rstarInstallDir/ThirdParty/Steam/steam_api64.dll"
+
+    while IFS=' ' read -r number dll; do
+    dll=${dll//\//\\}
+    filename=$(basename "$dll" | tr -d '\r')
+
+    if [[ $dll == Redistributables\\* ]] || [[ $dll == ThirdParty\\Steam\\* ]] || [[ $number == 474 ]] || [[ $number == 475 ]]; then
+        continue
+    elif [[ $dll == ThirdParty\\Epic\\* ]]; then
+        cp "$rstarInstallUnzipFileDir/$number" "$epicInstallDir/$filename"
+    else
+        cp "$rstarInstallUnzipFileDir/$number" "$rstarInstallDir/$filename"
+    fi
+    done < "$download_dir/Rockstar/211"
+
+    cp "$rstarInstallUnzipFileDir/474" "$rstarInstallDir/ThirdParty/Epic/EOSSDK-Win64-Shipping.dll"
+    cp "$rstarInstallUnzipFileDir/475" "$rstarInstallDir/ThirdParty/Epic/EOSSDK-Win64-Shipping-1.14.2.dll"
+
+    # Use a loop for chmod commands
+    for file in Launcher.exe LauncherPatcher.exe offline.pak RockstarService.exe RockstarSteamHelper.exe uninstall.exe; do
+    chmod +x "$rstarInstallDir/$file"
+    done
+
+    size_kb=$(du -sk "$rstarInstallDir" | cut -f1)
+    size_hex=$(printf '%08x\n' $size_kb)
+
+    wine_registry_path="HKEY_LOCAL_MACHINE\\Software\\WOW6432Node\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\Rockstar Games Launcher"
+
+    # Use a loop for registry commands
+    declare -A registry_keys=(
+    ["DisplayName"]="Rockstar Games Launcher"
+    ["DisplayIcon"]="C:\\Program Files\\Rockstar Games\\Launcher\\Launcher.exe, 0"
+    ["DisplayVersion"]="$version"
+    ["Publisher"]="Rockstar Games"
+    ["InstallLocation"]="C:\\Program Files\\Rockstar Games\\Launcher"
+    ["EstimatedSize"]="0x$size_hex"
+    ["UninstallString"]="C:\\Program Files\\Rockstar Games\\Launcher\\uninstall.exe"
+    ["QuietUninstallString"]="\"C:\\Program Files\\Rockstar Games\\Launcher\\uninstall.exe\" /S"
+    ["HelpLink"]="https://www.rockstargames.com/support"
+    ["URLInfoAbout"]="https://www.rockstargames.com/support"
+    ["URLUpdateInfo"]="https://www.rockstargames.com"
+    ["NoModify"]="0x1"
+    ["NoRepair"]="0x1"
+    ["Comments"]="Rockstar Games Launcher"
+    ["Readme"]="https://www.rockstargames.com/support"
+    )
+
+    for key in "${!registry_keys[@]}"; do
+    "$STEAM_RUNTIME" "$proton_dir/proton" run reg add "$wine_registry_path" /v "$key" /t REG_SZ /d "${registry_keys[$key]}" /f
+    done
+
+    "$STEAM_RUNTIME" "$proton_dir/proton" run "$rstarInstallDir/Redistributables/VCRed/vc_redist.x64.exe" /install /quiet /norestart
+    "$STEAM_RUNTIME" "$proton_dir/proton" run "$rstarInstallDir/Redistributables/VCRed/vc_redist.x86.exe" /install /quiet /norestart
+
+    rm -rf "$rstarInstallUnzipFileDir"
 fi
 
 # Wait for the rockstar file to finish running
