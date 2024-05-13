@@ -1721,8 +1721,7 @@ if [[ $options == *"Rockstar Games Launcher"* ]]; then
 
     "$STEAM_RUNTIME" "$proton_dir/proton" run "$rstarInstallDir/Redistributables/VCRed/vc_redist.x64.exe" /install /quiet /norestart
     "$STEAM_RUNTIME" "$proton_dir/proton" run "$rstarInstallDir/Redistributables/VCRed/vc_redist.x86.exe" /install /quiet /norestart
-
-    rm -rf "$rstarInstallUnzipFileDir"
+	wait
 fi
 
 # Wait for the rockstar file to finish running
