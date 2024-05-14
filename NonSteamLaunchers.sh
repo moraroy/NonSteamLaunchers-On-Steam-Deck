@@ -552,6 +552,7 @@ function StartFreshFunction {
     rm -rf ${logged_in_home}/.config/systemd/user/env_vars
     rm -rf ${logged_in_home}/.config/systemd/user/NSLGameScanner.py
     rm -rf ${logged_in_home}/.local/share/applications/RemotePlayWhatever
+    rm -rf ${logged_in_home}/.local/share/applications/RemotePlayWhatever.desktop
     rm -rf ${logged_in_home}/Downloads/NonSteamLaunchers-install.log
 
     # Delete the service file
@@ -2230,6 +2231,7 @@ fi
 
 
 #Other Applications
+#Other Applications
 if [[ $options == *"RemotePlayWhatever"* ]]; then
     # Set the directory path
     DIRECTORY="${logged_in_home}/.local/share/applications"
@@ -2254,10 +2256,19 @@ if [[ $options == *"RemotePlayWhatever"* ]]; then
     # Make the file executable
     chmod +x "$DIRECTORY/RemotePlayWhatever"
 
-
     echo "RemotePlayWhatever downloaded, renamed to Remote Play Whatever, made executable, created in $DIRECTORY"
 
-    steamos-add-to-steam "$DIRECTORY/RemotePlayWhatever"
+    # Create a new .desktop file
+    echo "[Desktop Entry]
+    Type=Application
+    Exec=$DIRECTORY/RemotePlayWhatever \"--appid 0\"
+    Name=RemotePlayWhatever
+    Icon=$DIRECTORY/RemotePlayWhatever" > "$DIRECTORY/RemotePlayWhatever.desktop"
+
+    # Make the .desktop file executable
+    chmod +x "$DIRECTORY/RemotePlayWhatever.desktop"
+
+    steamos-add-to-steam "$DIRECTORY/RemotePlayWhatever.desktop"
     sleep 5
     wait
     echo "added RemotePlayWhatever to steamos"
