@@ -299,21 +299,37 @@ get_sd_path() {
     echo $sd_path
 }
 
-#Function For Updating Proton-GE
+# Function For Updating Proton-GE
 function download_ge_proton() {
     echo "Downloading GE-Proton using the GitHub API"
     cd "${logged_in_home}/Downloads/NonSteamLaunchersInstallation"
-    curl -sLOJ "$(curl -s https://api.github.com/repos/GloriousEggroll/proton-ge-custom/releases/latest | grep browser_download_url | cut -d\" -f4 | grep .tar.gz)"
-    curl -sLOJ "$(curl -s https://api.github.com/repos/GloriousEggroll/proton-ge-custom/releases/latest | grep browser_download_url | cut -d\" -f4 | grep .sha512sum)"
+    curl --retry 5 --retry-delay 0 --retry-max-time 60 -sLOJ "$(curl -s https://api.github.com/repos/GloriousEggroll/proton-ge-custom/releases/latest | grep browser_download_url | cut -d\" -f4 | grep .tar.gz)"
+    if [ $? -ne 0 ]; then
+        echo "Curl failed. Exiting."
+        exit 1
+    fi
+    curl --retry 5 --retry-delay 0 --retry-max-time 60 -sLOJ "$(curl -s https://api.github.com/repos/GloriousEggroll/proton-ge-custom/releases/latest | grep browser_download_url | cut -d\" -f4 | grep .sha512sum)"
+    if [ $? -ne 0 ]; then
+        echo "Curl failed. Exiting."
+        exit 1
+    fi
     sha512sum -c ./*.sha512sum
+    if [ $? -ne 0 ]; then
+        echo "Checksum verification failed. Exiting."
+        exit 1
+    fi
     tar -xf GE-Proton*.tar.gz -C "${logged_in_home}/.steam/root/compatibilitytools.d/"
+    if [ $? -ne 0 ]; then
+        echo "Tar extraction failed. Exiting."
+        exit 1
+    fi
     proton_dir=$(find "${logged_in_home}/.steam/root/compatibilitytools.d" -maxdepth 1 -type d -name "GE-Proton*" | sort -V | tail -n1)
     echo "All done :)"
 }
 
 function update_proton() {
     echo "0"
-    echo "# Detecting, Updating and Installing GE-Proton"
+    echo "# Detecting, Updating and Installing GE-Proton...please wait..."
 
     # check to make sure compatabilitytools.d exists and makes it if it doesnt
     if [ ! -d "${logged_in_home}/.steam/root/compatibilitytools.d" ]; then
