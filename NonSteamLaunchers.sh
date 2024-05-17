@@ -1029,9 +1029,14 @@ if [[ $options == *"GOG Galaxy"* ]]; then
     echo "# Downloading & Installing Gog Galaxy...Please wait..."
 
     # Cancel & Exit the GOG Galaxy Setup Wizard
+    end=$((SECONDS+60))  # Timeout after 60 seconds
     while true; do
         if pgrep -f "GalaxySetup.tmp" > /dev/null; then
             pkill -f "GalaxySetup.tmp"
+            break
+        fi
+        if [ $SECONDS -gt $end ]; then
+            echo "Timeout while trying to kill GalaxySetup.tmp"
             break
         fi
         sleep 1
@@ -1200,9 +1205,15 @@ if [[ $options == *"Amazon Games"* ]]; then
     echo "Running Amazon file using Proton with the /passive option"
     "$STEAM_RUNTIME" "${proton_dir}/proton" run "$amazon_file" &
 
+    # Cancel & Exit the Amazon Games Setup Wizard
+    end=$((SECONDS+60))  # Timeout after 60 seconds
     while true; do
         if pgrep -f "Amazon Games.exe" > /dev/null; then
             pkill -f "Amazon Games.exe"
+            break
+        fi
+        if [ $SECONDS -gt $end ]; then
+            echo "Timeout while trying to kill Amazon Games.exe"
             break
         fi
         sleep 1
@@ -1252,16 +1263,33 @@ if [[ $options == *"EA App"* ]]; then
     # Run the EA App file using Proton with the /passive option
     echo "Running EA App file using Proton with the /passive option"
     "$STEAM_RUNTIME" "$proton_dir/proton" run "$eaapp_file" "/quiet" &
-
+    end=$((SECONDS+60))
     while true; do
         if pgrep -f "EADesktop.exe" > /dev/null; then
             pkill -f "EADesktop.exe"
             break
         fi
+        if [ $SECONDS -gt $end ]; then
+            echo "Timeout while trying to kill EADesktop.exe"
+            break
+        fi
         sleep 1
     done
 
-    # Wait for the Amazon file to finish running
+    # Wait for the EA App file to finish running
+    echo "Attempting to kill EAappInstaller.exe"
+    end=$((SECONDS+10))
+    while true; do
+        if pgrep -f "EAappInstaller.exe" > /dev/null; then
+            pkill -f "EAappInstaller.exe"
+            break
+        fi
+        if [ $SECONDS -gt $end ]; then
+            echo "Timeout while trying to kill EAappInstaller.exe"
+            break
+        fi
+        sleep 1
+    done
     wait
 fi
 
@@ -1307,10 +1335,14 @@ if [[ $options == *"itch.io"* ]]; then
     # Run the itchio file using Proton with the /passive option
     echo "Running itchio file using Proton with the /passive option"
     "$STEAM_RUNTIME" "$proton_dir/proton" run "$itchio_file" --silent
-
+    end=$((SECONDS+60))
     while true; do
         if pgrep -f "itch.exe" > /dev/null; then
             pkill -f "itch.exe"
+            break
+        fi
+        if [ $SECONDS -gt $end ]; then
+            echo "Timeout while trying to kill itch.exe"
             break
         fi
         sleep 1
