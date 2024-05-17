@@ -609,111 +609,238 @@ if [[ $options == "Start Fresh" ]] || [[ $selected_launchers == "Start Fresh" ]]
 fi
 
 
-#Uninstall
-uninstall_launcher() {
-    local uninstall_options=$1
-    local launcher=$2
-    local path1=$3
-    local path2=$4
-    local remove_path1=$5
-    local remove_path2=$6
+if [[ $options == "Uninstall" ]]; then
+# Check if the cancel button was clicked
+    # The OK button was not clicked
+    # Define the launcher options
+    options=$(zenity --list --checklist \
+        --title="Uninstall Launchers" \
+        --text="Select the launchers you want to Uninstall..." \
+        --column="Select" --column="This will delete the launcher and all of its games and files." \
+        --width=508 --height=507 \
+        FALSE "Epic Games" \
+        FALSE "Gog Galaxy" \
+        FALSE "Uplay" \
+        FALSE "Battle.net" \
+        FALSE "EA App" \
+        FALSE "Amazon Games" \
+        FALSE "Legacy Games" \
+        FALSE "itch.io" \
+        FALSE "Humble Bundle" \
+        FALSE "IndieGala" \
+        FALSE "Rockstar Games Launcher" \
+        FALSE "Glyph Launcher" \
+        FALSE "Playstation Plus"\
+        FALSE "VK Play")
 
-    if [[ $uninstall_options == *"Uninstall $launcher"* ]]; then
-        if [[ -f "$path1" ]]; then
-            rm -rf "$remove_path1"
-            zenity --info --text="$launcher has been uninstalled." --width=200 --height=150 &
-            sleep 3
-            killall zenity
-        elif [[ -f "$path2" ]]; then
-            rm -rf "$remove_path2"
-            zenity --info --text="$launcher has been uninstalled." --width=200 --height=150 &
-            sleep 3
-            killall zenity
+    if [[ $options != "" ]]; then
+        # The Uninstall button was clicked
+    # Add code here to handle the uninstallation of the selected launcher(s)
+    if [[ $options == *"Epic Games"* ]]; then
+        # User selected to uninstall Epic Games Launcher
+        # Check if Epic Games Launcher was installed using the NonSteamLaunchers prefix
+        if [[ -f "$epic_games_launcher_path1" ]]; then
+            # Epic Games Launcher was installed using the NonSteamLaunchers prefix
+            # Add code here to run the Epic Games Launcher uninstaller
+            rm -rf "${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/Program Files (x86)/Epic Games"
+        elif [[ -f "$epic_games_launcher_path2" ]]; then
+            # Epic Games Launcher was installed using a separate app ID
+            # Add code here to delete the EpicGamesLauncher app ID folder
+            rm -rf "${logged_in_home}/.local/share/Steam/steamapps/compatdata/EpicGamesLauncher"
         fi
     fi
-}
 
-
-# Function to process uninstall options
-process_uninstall_options() {
-    local uninstall_options=$1
-    if [[ -n $uninstall_options ]]; then
-        # Call uninstall_launcher for each launcher
-        # Add more launchers as needed
-        uninstall_launcher "$uninstall_options" "Epic Games" "$epic_games_launcher_path1" "$epic_games_launcher_path2" "${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/Program Files (x86)/Epic Games" "${logged_in_home}/.local/share/Steam/steamapps/compatdata/EpicGamesLauncher"
-
-        uninstall_launcher "$uninstall_options" "Gog Galaxy" "$gog_galaxy_path1" "$gog_galaxy_path2" "${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/Program Files (x86)/GOG Galaxy" "${logged_in_home}/.local/share/Steam/steamapps/compatdata/GogGalaxyLauncher"
-        uninstall_launcher "$uninstall_options" "Uplay" "$uplay_path1" "$uplay_path2" "${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/Program Files (x86)/Ubisoft" "${logged_in_home}/.local/share/Steam/steamapps/compatdata/UplayLauncher"
-        uninstall_launcher "$uninstall_options" "Battle.net" "$battlenet_path1" "$battlenet_path2" "${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/Program Files (x86)/Battle.net" "${logged_in_home}/.local/share/Steam/steamapps/compatdata/Battle.netLauncher"
-        uninstall_launcher "$uninstall_options" "EA App" "$eaapp_path1" "$eaapp_path2" "${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/Program Files/Electronic Arts" "${logged_in_home}/.local/share/Steam/steamapps/compatdata/TheEAappLauncher"
-        uninstall_launcher "$uninstall_options" "Amazon Games" "$amazongames_path1" "$amazongames_path2" "${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/users/steamuser/AppData/Local/Amazon Games" "${logged_in_home}/.local/share/Steam/steamapps/compatdata/AmazonGamesLauncher"
-        uninstall_launcher "$uninstall_options" "Legacy Games" "$legacygames_path1" "$legacygames_path2" "${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/Program Files/Legacy Games" "${logged_in_home}/.local/share/Steam/steamapps/compatdata/LegacyGamesLauncher"
-        uninstall_launcher "$uninstall_options" "itch.io" "$itchio_path1" "$itchio_path2" "${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/users/steamuser/AppData/Local/itch" "${logged_in_home}/.local/share/Steam/steamapps/compatdata/itchioLauncher"
-        uninstall_launcher "$uninstall_options" "Humble Bundle" "$humblegames_path1" "$humblegames_path2" "${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/Program Files/Humble App" "${logged_in_home}/.local/share/Steam/steamapps/compatdata/HumbleGamesLauncher"
-        uninstall_launcher "$uninstall_options" "IndieGala" "$indiegala_path1" "$indiegala_path2" "${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/Program Files/IGClient" "${logged_in_home}/.local/share/Steam/steamapps/compatdata/IndieGalaLauncher"
-        uninstall_launcher "$uninstall_options" "Rockstar Games Launcher" "$rockstar_path1" "$rockstar_path2" "${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/Program Files/Rockstar Games" "${logged_in_home}/.local/share/Steam/steamapps/compatdata/RockstarGamesLauncher"
-        uninstall_launcher "$uninstall_options" "Glyph Launcher" "$glyph_path1" "$glyph_path2" "${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/Program Files (x86)/Glyph" "${logged_in_home}/.local/share/Steam/steamapps/compatdata/GlyphLauncher"
-        uninstall_launcher "$uninstall_options" "Playstation Plus" "$psplus_path1" "$psplus_path2" "${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/Program Files (x86)/PlayStationPlus" "${logged_in_home}/.local/share/Steam/steamapps/compatdata/PlaystationPlusLauncher"
-        uninstall_launcher "$uninstall_options" "VK Play" "$vkplay_path1" "$vkplay_path2" "${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/users/steamuser/AppData/Local/GameCenter" "${logged_in_home}/.local/share/Steam/steamapps/compatdata/VKPlayLauncher"
-        return 0
+    if [[ $options == *"Gog Galaxy"* ]]; then
+        # User selected to uninstall GOG Galaxy
+        # Check if GOG Galaxy was installed using the NonSteamLaunchers prefix
+        if [[ -f "$gog_galaxy_path1" ]]; then
+            # GOG Galaxy was installed using the NonSteamLaunchers prefix
+            # Add code here to run the GOG Galaxy uninstaller
+            rm -rf "${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/Program Files (x86)/GOG Galaxy"
+        elif [[ -f "$gog_galaxy_path2" ]]; then
+            # GOG Galaxy was installed using a separate app ID
+            # Add code here to delete the GogGalaxyLauncher app ID folder
+            rm -rf "${logged_in_home}/.local/share/Steam/steamapps/compatdata/GogGalaxyLauncher"
+        fi
     fi
+
+    if [[ $options == *"Uplay"* ]]; then
+        # User selected to uninstall Uplay
+        # Check if Uplay was installed using the NonSteamLaunchers prefix
+        if [[ -f "$uplay_path1" ]]; then
+            # Uplay was installed using the NonSteamLaunchers prefix
+            # Add code here to run the Uplay uninstaller
+            rm -rf "${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/Program Files (x86)/Ubisoft"
+        elif [[ -f "$uplay_path2" ]]; then
+            # Uplay was installed using a separate app ID
+            # Add code here to delete the UplayLauncher app ID folder
+            rm -rf "${logged_in_home}/.local/share/Steam/steamapps/compatdata/UplayLauncher"
+        fi
+    fi
+
+    if [[ $options == *"Battle.net"* ]]; then
+        # User selected to uninstall Battle.net
+        # Check if Battle.net was installed using the NonSteamLaunchers prefix
+        if [[ -f "$battlenet_path1" ]]; then
+            # Battle.net was installed using the NonSteamLaunchers prefix
+            # Add code here to run the Battle.net uninstaller
+            rm -rf "${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/Program Files (x86)/Battle.net"
+        elif [[ -f "$battlenet_path2" ]]; then
+            # Battle.net was installed using a separate app ID
+            # Add code here to delete the Battle.netLauncher app ID folder
+            rm -rf "${logged_in_home}/.local/share/Steam/steamapps/compatdata/Battle.netLauncher"
+        fi
+    fi
+
+    if [[ $options == *"EA App"* ]]; then
+        # User selected to uninstall EA App
+        # Check if EA App was installed using the NonSteamLaunchers prefix
+        if [[ -f "$eaapp_path1" ]]; then
+            # EA App was installed using the NonSteamLaunchers prefix
+            # Add code here to run the EA App uninstaller
+            rm -rf "${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/Program Files/Electronic Arts"
+        elif [[ -f "$eaapp_path2" ]]; then
+            # EA App was installed using a separate app ID
+            # Add code here to delete the EALauncher app ID folder
+            rm -rf "${logged_in_home}/.local/share/Steam/steamapps/compatdata/TheEAappLauncher"
+        fi
+    fi
+
+    if [[ $options == *"Amazon Games"* ]]; then
+        # User selected to uninstall Amazon Games
+        # Check if Amazon Games was installed using the NonSteamLaunchers prefix
+        if [[ -f "$amazongames_path1" ]]; then
+            # Amazon Games was installed using the NonSteamLaunchers prefix
+            # Add code here to run the Amazon Games uninstaller
+            rm -rf "${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/users/steamuser/AppData/Local/Amazon Games"
+        elif [[ -f "$amazongames_path2" ]]; then
+            # Amazon Games was installed using a separate app ID
+            # Add code here to delete the AmazonGamesLauncher app ID folder
+            rm -rf "${logged_in_home}/.local/share/Steam/steamapps/compatdata/AmazonGamesLauncher"
+        fi
+    fi
+
+    if [[ $options == *"Legacy Games"* ]]; then
+        # User selected to uninstall Legacy Games
+        # Check if Legacy Games was installed using the NonSteamLaunchers prefix
+        if [[ -f "$legacygames_path1" ]]; then
+            # Legacy Games was installed using the NonSteamLaunchers prefix
+            # Add code here to run the Legacy Games uninstaller
+            rm -rf "${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/Program Files/Legacy Games"
+        elif [[ -f "$legacygames_path2" ]]; then
+            # Legacy Games was installed using a separate app ID
+            # Add code here to delete the LegacyGamesLauncher app ID folder
+            rm -rf "${logged_in_home}/.local/share/Steam/steamapps/compatdata/LegacyGamesLauncher"
+        fi
+    fi
+
+    if [[ $options == *"itch.io"* ]]; then
+        # User selected to uninstall Itch.io
+        # Check if Itch.io was installed using the NonSteamLaunchers prefix
+        if [[ -f "$itchio_path1" ]]; then
+            # Itch.io was installed using the NonSteamLaunchers prefix
+            # Add code here to run the Itch.io uninstaller
+            rm -rf "${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/users/steamuser/AppData/Local/itch"
+        elif [[ -f "$itchio_path2" ]]; then
+            # Itch.io was installed using a separate app ID
+            # Add code here to delete the Itch.ioLauncher app ID folder
+            rm -rf "${logged_in_home}/.local/share/Steam/steamapps/compatdata/itchioLauncher"
+        fi
+    fi
+
+    if [[ $options == *"Humble Bundle"* ]]; then
+        # User selected to uninstall Humble Bundle
+        # Check if Humble Bundle was installed using the NonSteamLaunchers prefix
+        if [[ -f "$humblegames_path1" ]]; then
+            # Humble Bundle was installed using the NonSteamLaunchers prefix
+            # Add code here to run the Humble Bundle uninstaller
+            rm -rf "${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/Program Files/Humble App"
+        elif [[ -f "$humblegames_path2" ]]; then
+            # Humble Bundle was installed using a separate app ID
+            # Add code here to delete the HumbleBundleLauncher app ID folder
+            rm -rf "${logged_in_home}/.local/share/Steam/steamapps/compatdata/HumbleGamesLauncher"
+        fi
+    fi
+
+    if [[ $options == *"IndieGala"* ]]; then
+        # User selected to uninstall IndieGala
+        # Check if IndieGala was installed using the NonSteamLaunchers prefix
+        if [[ -f "$indiegala_path1" ]]; then
+            # IndieGala was installed using the NonSteamLaunchers prefix
+            # Add code here to run the IndieGala uninstaller
+            rm -rf "${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/Program Files/IGClient"
+        elif [[ -f "$indiegala_path2" ]]; then
+            # IndieGala was installed using a separate app ID
+            # Add code here to delete the IndieGalaLauncher app ID folder
+            rm -rf "${logged_in_home}/.local/share/Steam/steamapps/compatdata/IndieGalaLauncher"
+        fi
+    fi
+
+    if [[ $options == *"Rockstar Games Launcher"* ]]; then
+        # User selected to uninstall Rockstar Games
+        # Check if Rockstar Games was installed using the NonSteamLaunchers prefix
+        if [[ -f "$rockstar_path1" ]]; then
+            # Rockstar Games was installed using the NonSteamLaunchers prefix
+            # Add code here to run the Rockstar Games uninstaller
+            rm -rf "${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/Program Files/Rockstar Games"
+        elif [[ -f "$rockstar_path2" ]]; then
+            # Rockstar Games was installed using a separate app ID
+            # Add code here to delete the RockstarGamesLauncher app ID folder
+            rm -rf "${logged_in_home}/.local/share/Steam/steamapps/compatdata/RockstarGamesLauncher"
+        fi
+    fi
+
+    if [[ $options == *"Glyph Launcher"* ]]; then
+        # User selected to uninstall Glyph
+        # Check if Glyph was installed using the NonSteamLaunchers prefix
+        if [[ -f "$glyph_path1" ]]; then
+            # Glyph was installed using NonSteamLaunchers prefix
+            # Add code here to run the Glyph uninstaller
+            rm -rf "${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/Program Files (x86)/Glyph"
+        elif [[ -f "$glyph_path2" ]]; then
+            # Glyph was installed using a separate app ID
+            # Add code here to delete the GlyphLauncher app ID folder
+            rm -rf "${logged_in_home}/.local/share/Steam/steamapps/compatdata/GlyphLauncher"
+        fi
+    fi
+
+
+    if [[ $options == *"Playstation Plus"* ]]; then
+        # User selected to uninstall Playstation
+        # Check if Playstation was installed using the NonSteamLaunchers prefix
+        if [[ -f "$psplus_path1" ]]; then
+            # Playstation was installed using NonSteamLaunchers prefix
+            # Add code here to run the Playstation uninstaller
+            rm -rf "${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/Program Files (x86)/PlayStationPlus"
+        elif [[ -f "$psplus_path2" ]]; then
+            # Playstation was installed using a separate app ID
+            # Add code here to delete the PlaystationPlusLauncher app ID folder
+            rm -rf "${logged_in_home}/.local/share/Steam/steamapps/compatdata/PlaystationPlusLauncher"
+        fi
+    fi
+
+
+    if [[ $options == *"VK Play"* ]]; then
+        # User selected to uninstall VKPlayLauncher
+        # Check if VKPlayLauncher was installed using the NonSteamLaunchers prefix
+        if [[ -f "$vkplay_path1" ]]; then
+            # VKPlayLauncher was installed using NonSteamLaunchers prefix
+            # Add code here to run the VKPlayLauncher uninstaller
+            rm -rf "${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/users/steamuser/AppData/Local/GameCenter"
+        elif [[ -f "$vkplay_path2" ]]; then
+            # VKPlayLauncher was installed using a separate app ID
+            # Add code here to delete the VKPlayLauncher app ID folder
+            rm -rf "${logged_in_home}/.local/share/Steam/steamapps/compatdata/VKPlayLauncher"
+        fi
+    fi
+    rm -rf ${logged_in_home}/.config/systemd/user/env_vars
+    # Display a message to the user indicating that the operation was successful
+        zenity --info --text="The selected launchers have now been deleted." --width=200 --height=150
     exit
-}
 
-if [ $# -gt 0 ]; then
-    # Add a flag that gets set when any launcher is uninstalled
-    local uninstalled_any_launcher=false
-    for arg in "$@"; do
-        if [[ $arg == *"Uninstall "* ]]; then
-            launcher=${arg#"Uninstall "}
-            if [[ -n $launcher ]]; then
-                process_uninstall_options "Uninstall $launcher"
-                # Set the flag to true
-                uninstalled_any_launcher=true
-            fi
-        fi
-    done
-    # Check the flag after the loop
-    if $uninstalled_any_launcher; then
-        exit 0
-    fi
-else
-    # No command line arguments were provided
-    # Check if the Uninstall button was clicked in the GUI
-    if [[ $options == "Uninstall" ]] || [[ $selected_launchers == "Uninstall" ]]; then
-        # The Uninstall button was clicked in the GUI
-        # Display the zenity window to select launchers to uninstall
-        uninstall_options=$(zenity --list --checklist \
-            --title="Uninstall Launchers" \
-            --text="Select the launchers you want to Uninstall..." \
-            --column="Select" --column="This will delete the launcher and all of its games and files." \
-            --width=508 --height=507 \
-            FALSE "Epic Games" \
-            FALSE "Gog Galaxy" \
-            FALSE "Uplay" \
-            FALSE "Battle.net" \
-            FALSE "EA App" \
-            FALSE "Amazon Games" \
-            FALSE "Legacy Games" \
-            FALSE "itch.io" \
-            FALSE "Humble Bundle" \
-            FALSE "IndieGala" \
-            FALSE "Rockstar Games Launcher" \
-            FALSE "Glyph Launcher" \
-            FALSE "Playstation Plus" \
-            FALSE "VK Play" \
-        )
-        # Convert the returned string to an array
-        IFS='|' read -r -a uninstall_options_array <<< "$uninstall_options"
-        # Loop through the array and uninstall each selected launcher
-        for launcher in "${uninstall_options_array[@]}"; do
-            process_uninstall_options "Uninstall $launcher"
-        done
-        exit 0
-    fi
-
+  fi
+  exit
 fi
-#End of Uninstall
 
 
 move_to_sd() {
