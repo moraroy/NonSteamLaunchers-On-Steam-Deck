@@ -2329,30 +2329,31 @@ export PYTHONPATH="${download_dir}/lib/python${python_version}/site-packages/:$P
 # Set the default Steam directory
 steam_dir="${logged_in_home}/.local/share/Steam"
 
-# Check if the loginusers.vdf file exists in the original directory
-if [[ -f "${logged_in_home}/.steam/root/config/loginusers.vdf" ]]; then
+# Check if the loginusers.vdf file exists in either of the two directories
+if [[ -f "${logged_in_home}/.steam/root/config/loginusers.vdf" ]] || [[ -f "/home/deck/.local/share/Steam/config/loginusers.vdf" ]]; then
+    if [[ -f "${logged_in_home}/.steam/root/config/loginusers.vdf" ]]; then
+        file_path="${logged_in_home}/.steam/root/config/loginusers.vdf"
+    else
+        file_path="/home/deck/.local/share/Steam/config/loginusers.vdf"
+    fi
+
     # Extract the block of text for the most recent user
-    most_recent_user=$(sed -n '/"users"/,/"MostRecent" "1"/p' "${logged_in_home}/.steam/root/config/loginusers.vdf")
-elif [[ -f "${logged_in_home}/.local/share/Steam/config/loginusers.vdf" ]]; then
-    # If the file is not in the original directory, check the additional directory
-    most_recent_user=$(sed -n '/"users"/,/"MostRecent" "1"/p' "${logged_in_home}/.local/share/Steam/config/loginusers.vdf")
-fi
+    most_recent_user=$(sed -n '/"users"/,/"MostRecent" "1"/p' "$file_path")
 
-	# Initialize variables
-	max_timestamp=0
-	current_user=""
-	current_steamid=""
-
+    # Initialize variables
+    max_timestamp=0
+    current_user=""
+    current_steamid=""
 
     # Process each user block
-	# Set IFS to only look for Commas to avoid issues with Whitespace in older account names.
+    # Set IFS to only look for Commas to avoid issues with Whitespace in older account names.
     while IFS="," read steamid account timestamp; do
         if (( timestamp > max_timestamp )); then
             max_timestamp=$timestamp
             current_user=$account
             current_steamid=$steamid
         fi
-	# Output our discovered values as comma seperated string to be read into the IDs.
+    # Output our discovered values as comma seperated string to be read into the IDs.
     done < <(echo "$most_recent_user" | awk -v RS='}\n' -F'\n' '
     {
         for(i=1;i<=NF;i++){
@@ -2392,6 +2393,7 @@ fi
 else
     echo "Could not find loginusers.vdf file"
 fi
+
 
 
 
