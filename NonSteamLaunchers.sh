@@ -1916,7 +1916,7 @@ set_launcher_vars() {
         echo "export ${launcher_name}shortcutdirectory=$shortcutdirectory" >> ${logged_in_home}/.config/systemd/user/env_vars
         echo "export ${launcher_name}launchoptions=$launchoptions" >> ${logged_in_home}/.config/systemd/user/env_vars
         echo "export ${launcher_name}startingdir=$startingdir" >> ${logged_in_home}/.config/systemd/user/env_vars
-        echo "export ${launcher_name}_launcher=${launcher_data_path1}" >> ${logged_in_home}/.config/systemd/user/env_vars
+        echo "export ${launcher_name}_games_launcher=${launcher_data_path1}" >> ${logged_in_home}/.config/systemd/user/env_vars
         echo "${launcher_name} found at path 1"
     elif [[ -f "$launcher_path2" ]]; then
         # Launcher is installed at path 2
@@ -1926,14 +1926,14 @@ set_launcher_vars() {
         echo "export ${launcher_name}shortcutdirectory=$shortcutdirectory" >> ${logged_in_home}/.config/systemd/user/env_vars
         echo "export ${launcher_name}launchoptions=$launchoptions" >> ${logged_in_home}/.config/systemd/user/env_vars
         echo "export ${launcher_name}startingdir=$startingdir" >> ${logged_in_home}/.config/systemd/user/env_vars
-        echo "export ${launcher_name}_launcher=${launcher_data_path2}" >> ${logged_in_home}/.config/systemd/user/env_vars
+        echo "export ${launcher_name}_games_launcher=${launcher_data_path2}" >> ${logged_in_home}/.config/systemd/user/env_vars
         echo "${launcher_name} found at path 2"
     fi
 }
 
 # Checking Files For Shortcuts and Setting Directories For Shortcuts
-set_launcher_vars "$epic_games_launcher_path1" "$epic_games_launcher_path2" "epic_games" "NonSteamLaunchers" "EpicGamesLauncher" "-opengl"
-set_launcher_vars "$gog_galaxy_path1" "$gog_galaxy_path2" "gog_galaxy" "NonSteamLaunchers" "GogGalaxyLauncher" ""
+set_launcher_vars "$epic_games_launcher_path1" "$epic_games_launcher_path2" "epic" "NonSteamLaunchers" "EpicGamesLauncher" "-opengl"
+set_launcher_vars "$gog_galaxy_path1" "$gog_galaxy_path2" "gog" "NonSteamLaunchers" "GogGalaxyLauncher" ""
 set_launcher_vars "$uplay_path1" "$uplay_path2" "ubisoft_connect" "NonSteamLaunchers" "UplayLauncher" ""
 set_launcher_vars "$battlenet_path1" "$battlenet_path2" "bnet" "NonSteamLaunchers" "Battle.netLauncher" ""
 set_launcher_vars "$eaapp_path1" "$eaapp_path2" "ea_app" "NonSteamLaunchers" "TheEAappLauncher" ""
@@ -1947,6 +1947,7 @@ set_launcher_vars "$glyph_path1" "$glyph_path2" "glyph" "NonSteamLaunchers" "Gly
 set_launcher_vars "$psplus_path1" "$psplus_path2" "psplus" "NonSteamLaunchers" "PlaystationPlusLauncher" ""
 set_launcher_vars "$vkplay_path1" "$vkplay_path2" "vkplay" "NonSteamLaunchers" "VKPlayLauncher" ""
 #End of writing to env_vars
+
 
 
 #Other Applications
