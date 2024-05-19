@@ -2338,10 +2338,10 @@ elif [[ -f "${logged_in_home}/.local/share/Steam/config/loginusers.vdf" ]]; then
     most_recent_user=$(sed -n '/"users"/,/"MostRecent" "1"/p' "${logged_in_home}/.local/share/Steam/config/loginusers.vdf")
 fi
 
-# Initialize variables
-max_timestamp=0
-current_user=""
-current_steamid=""
+	# Initialize variables
+	max_timestamp=0
+	current_user=""
+	current_steamid=""
 
 
     # Process each user block
