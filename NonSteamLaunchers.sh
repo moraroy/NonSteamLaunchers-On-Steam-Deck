@@ -2469,24 +2469,6 @@ echo "export chrome_startdir=$chrome_startdir" >> ${logged_in_home}/.config/syst
 
 
 
-
-
-# Set the path to the configset_controller_neptune.vdf file
-controller_config_path="${logged_in_home}/.local/share/Steam/steamapps/common/Steam Controller Configs/$steamid3/config/configset_controller_neptune.vdf"
-
-
-
-# Check if the configset_controller_neptune.vdf file exists
-if [[ -f "$controller_config_path" ]]; then
-    # Create a backup copy of the configset_controller_neptune.vdf file
-    cp "$controller_config_path" "$controller_config_path.bak"
-    echo "export controller_config_path=$controller_config_path" >> ${logged_in_home}/.config/systemd/user/env_vars
-    echo "Controller Config Path Found"
-else
-    echo "Could not find $controller_config_path"
-fi
-
-
 # Check if either directory does not exist
 if [ "${deckyplugin}" = false ]; then
     # Detach script from Steam process
