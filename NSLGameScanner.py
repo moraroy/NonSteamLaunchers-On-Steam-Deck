@@ -51,7 +51,6 @@ with open(env_vars_path, 'w') as f:
 steamid3 = os.environ['steamid3']
 logged_in_home = os.environ['logged_in_home']
 compat_tool_name = os.environ['compat_tool_name']
-controller_config_path = os.environ['controller_config_path']
 python_version = os.environ['python_version']
 #Scanner Variables
 epic_games_launcher = os.environ.get('epic_games_launcher', '')
