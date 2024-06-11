@@ -1798,59 +1798,6 @@ if [[ "$options" == *"VK Play"* ]]; then
 
 fi
 
-##temp fix for battlenet
-wait
-echo "70"
-echo "# Downloading & Installing Battle.net...please wait..."
-
-# Check if user selected Battle.net
-if [[ $options == *"Battle.net"* ]]; then
-    # User selected Battle.net
-    echo "User selected Battle.net"
-
-    # Set the appid for the Battlenet Launcher
-    if [ "$use_separate_appids" = true ]; then
-        appid=Battle.netLauncher
-    else
-        appid=NonSteamLaunchers
-    fi
-
-    # Create app id folder in compatdata folder if it doesn't exist
-    if [ ! -d "${logged_in_home}/.local/share/Steam/steamapps/compatdata/$appid" ]; then
-        mkdir -p "${logged_in_home}/.local/share/Steam/steamapps/compatdata/$appid"
-    fi
-
-    # Change working directory to Proton's
-    cd "$proton_dir"
-
-    # Set the STEAM_COMPAT_CLIENT_INSTALL_PATH environment variable
-    export STEAM_COMPAT_CLIENT_INSTALL_PATH="${logged_in_home}/.local/share/Steam"
-
-    # Set the STEAM_COMPAT_DATA_PATH environment variable for Epic Games Launcher
-    export STEAM_COMPAT_DATA_PATH="${logged_in_home}/.local/share/Steam/steamapps/compatdata/${appid}"
-
-    # Download BATTLE file if not already present
-    if [ ! -f "$battle_file" ]; then
-        echo "Downloading BATTLE file"
-        wget "$battle_url" -O "$battle_file"
-    fi
-
-    # Run the BATTLE file using Proton with the /passive option
-    echo "Running BATTLE file using Proton with the /passive option"
-    "$STEAM_RUNTIME" "$proton_dir/proton" run "$battle_file" Battle.net-Setup.exe --lang=enUS --installpath="C:\Program Files (x86)\Battle.net"
-
-    while true; do
-        if pgrep -f "Battle.net.exe" || pgrep -f "BlizzardError.exe" > /dev/null; then
-            pkill -f "Battle.net.exe" || pkill -f "BlizzardError.exe"
-            break
-        fi
-        sleep 1
-    done
-
-    # Wait for the bnet file to finish running
-    wait
-fi
-
 wait
 echo "99"
 echo "# Checking if Chrome is installed...please wait..."
