@@ -1266,7 +1266,7 @@ if [[ $options == *"EA App"* ]]; then
 
     # Run the EA App file using Proton with the /passive option
     echo "Running EA App file using Proton with the /passive option"
-    "$STEAM_RUNTIME" "$proton_dir/proton" run "$eaapp_file" "/quiet" &
+    "$STEAM_RUNTIME" "$proton_dir/proton" run "$eaapp_file" /quiet &
     end=$((SECONDS+60))
     while true; do
         if pgrep -f "EADesktop.exe" > /dev/null; then
