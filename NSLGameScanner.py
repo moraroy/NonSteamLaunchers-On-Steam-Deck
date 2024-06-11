@@ -192,11 +192,15 @@ else:
     try:
         with open(shortcuts_file, 'rb') as file:
             shortcuts = vdf.binary_loads(file.read())
+            # If the file is empty or does not contain the 'shortcuts' key, initialize an empty 'shortcuts' dictionary
+            if not shortcuts or 'shortcuts' not in shortcuts:
+                shortcuts = {'shortcuts': {}}
     except Exception as e:
         print(f"Error reading shortcuts file: {e}")
         # If an error occurs when reading the file, create a new file with an empty "shortcuts" section
         with open(shortcuts_file, 'wb') as file:
             vdf.binary_dumps({'shortcuts': {}}, file)
+
 
 # Open the config.vdf file
 with open(f"{logged_in_home}/.steam/root/config/config.vdf", 'r') as file:
