@@ -639,6 +639,7 @@ def getUplayGameInfo(folderPath, filePath):
         game_name = None
         uplay_install_found = False
         for line in file:
+            line = line.replace("\\x2019", "’")
             if "Uplay Install" in line:
                 uplay_id = re.findall(r'Uplay Install (\d+)', line)
                 if uplay_id:
@@ -650,7 +651,7 @@ def getUplayGameInfo(folderPath, filePath):
                 if game_name:
                     game_name = game_name[0]
                 uplay_install_found = False
-            if uplay_id and game_name and uplay_id in uplay_ids:  # Add the game's info to the dictionary if its ID was found in the folder
+            if uplay_id and game_name and uplay_id in uplay_ids:
                 game_dict[game_name] = uplay_id
                 uplay_id = None  # Reset uplay_id
                 game_name = None  # Reset game_name
