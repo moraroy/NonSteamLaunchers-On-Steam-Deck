@@ -197,9 +197,15 @@ else:
                 shortcuts = {'shortcuts': {}}
     except Exception as e:
         print(f"Error reading shortcuts file: {e}")
-        # If an error occurs when reading the file, create a new file with an empty "shortcuts" section
-        with open(shortcuts_file, 'wb') as file:
-            vdf.binary_dumps({'shortcuts': {}}, file)
+        print("Please check the file and try again.")
+        return
+
+# Check data integrity before writing to file
+if shortcuts and isinstance(shortcuts, dict) and 'shortcuts' in shortcuts:
+    with open(shortcuts_file, 'wb') as file:
+        vdf.binary_dumps(shortcuts, file)
+else:
+    print("The data to be written to the shortcuts file is not valid.")
 
 
 # Open the config.vdf file
