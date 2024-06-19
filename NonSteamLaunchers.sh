@@ -1154,14 +1154,15 @@ if [[ $options == *"Battle.net"* ]]; then
     max_attempts=20
     attempt=0
     while true; do
-        if pgrep -f "Battle.net.exe" || pgrep -f "BlizzardError.exe" > /dev/null; then
+        if pgrep -f "Battle.net.exe" > /dev/null || pgrep -f "BlizzardError.exe" > /dev/null; then
             pkill -f "Battle.net.exe" || pkill -f "BlizzardError.exe"
-            break
-        fi
-        sleep 1
-        ((attempt++))
-        if [ "$attempt" -ge "$max_attempts" ]; then
-            echo "Timeout: Battle.net process did not terminate."
+            sleep 5
+            ((attempt++))
+            if [ "$attempt" -ge "$max_attempts" ]; then
+                echo "Timeout: Battle.net process did not terminate."
+                break
+            fi
+        else
             break
         fi
     done
