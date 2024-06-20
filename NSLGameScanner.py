@@ -198,7 +198,7 @@ else:
     except Exception as e:
         print(f"Error reading shortcuts file: {e}")
         print("Please check the file and try again.")
-        return
+        sys.exit()  # Exit the script if an error occurs
 
 # Check data integrity before writing to file
 if shortcuts and isinstance(shortcuts, dict) and 'shortcuts' in shortcuts:
