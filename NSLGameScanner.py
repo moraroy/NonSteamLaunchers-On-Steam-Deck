@@ -183,11 +183,7 @@ hero64 = ""
 shortcuts_file = f"{logged_in_home}/.steam/root/userdata/{steamid3}/config/shortcuts.vdf"
 
 # Check if the shortcuts file exists
-if not os.path.exists(shortcuts_file):
-    # If the file does not exist, create a new file with an empty "shortcuts" section
-    with open(shortcuts_file, 'wb') as file:
-        vdf.binary_dumps({'shortcuts': {}}, file)
-else:
+if os.path.exists(shortcuts_file):
     # If the file exists, try to load it
     try:
         with open(shortcuts_file, 'rb') as file:
@@ -200,12 +196,16 @@ else:
         print("Please check the file and try again.")
         sys.exit()  # Exit the script if an error occurs
 
-# Check data integrity before writing to file
-if shortcuts and isinstance(shortcuts, dict) and 'shortcuts' in shortcuts:
-    with open(shortcuts_file, 'wb') as file:
-        vdf.binary_dumps(shortcuts, file)
+    # Check data integrity before writing to file
+    if shortcuts and isinstance(shortcuts, dict) and 'shortcuts' in shortcuts:
+        with open(shortcuts_file, 'wb') as file:
+            vdf.binary_dumps(shortcuts, file)
+    else:
+        print("The data to be written to the shortcuts file is not valid.")
 else:
-    print("The data to be written to the shortcuts file is not valid.")
+    # If the file does not exist, create a new file with an empty "shortcuts" section
+    with open(shortcuts_file, 'wb') as file:
+        vdf.binary_dumps({'shortcuts': {}}, file)
 
 
 # Open the config.vdf file
