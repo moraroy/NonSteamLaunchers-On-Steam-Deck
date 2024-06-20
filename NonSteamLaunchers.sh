@@ -2359,23 +2359,13 @@ if [[ -n "$userdata_folder" ]]; then
     # Check if shortcuts_vdf_path is not empty
     if [[ -n "$shortcuts_vdf_path" ]]; then
         # Create backup of shortcuts.vdf file
-        cp "$shortcuts_vdf_path" "$shortcuts_vdf_path.bak"
+        cp "$shortcuts_vdf_path" "$shortcuts_vdf_path.bak_$(date +%Y%m%d_%H%M%S)"
     else
-        # Find config directory for current user
-        config_dir=$(find "$userdata_folder" -maxdepth 1 -type d -name config)
+        # Find or create config directory for current user
+        config_dir=$(find "$userdata_folder" -maxdepth 1 -type d -name config || mkdir -p "$userdata_folder/config/" && echo "$userdata_folder/config/")
 
-        # Check if config_dir is not empty
-        if [[ -n "$config_dir" ]]; then
-            # Create new shortcuts.vdf file at expected location for current user
-            touch "$config_dir/shortcuts.vdf"
-            shortcuts_vdf_path="$config_dir/shortcuts.vdf"
-        else
-            # Create new config directory and new shortcuts.vdf file at expected location for current user
-            mkdir "$userdata_folder/config/"
-            touch "$userdata_folder/config/shortcuts.vdf"
-            config_dir="$userdata_folder/config/"
-            shortcuts_vdf_path="$config_dir/shortcuts.vdf"
-        fi
+        # Create new shortcuts.vdf file at expected location for current user
+        touch "$config_dir/shortcuts.vdf"
     fi
 else
     # Userdata folder was not found
