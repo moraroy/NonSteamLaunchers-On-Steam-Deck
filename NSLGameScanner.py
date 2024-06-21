@@ -196,32 +196,13 @@ hero64 = ""
 # Define the path to the shortcuts file
 shortcuts_file = f"{logged_in_home}/.steam/root/userdata/{steamid3}/config/shortcuts.vdf"
 
-# Check if the shortcuts file exists
-if os.path.exists(shortcuts_file):
-    # If the file exists, try to load it
-    try:
-        with open(shortcuts_file, 'rb') as file:
-            shortcuts = vdf.binary_loads(file.read())
-    except Exception as e:
-        print(f"Error reading shortcuts file: {e}")
-        print("Please check the file and try again.")
-        sys.exit()  # Exit the script if an error occurs
-
-    # If the file is empty or does not contain the 'shortcuts' key, initialize an empty 'shortcuts' dictionary
-    if not shortcuts or 'shortcuts' not in shortcuts:
-        shortcuts = {'shortcuts': {}}
-
-    # Check data integrity before writing to file
-    if shortcuts and isinstance(shortcuts, dict) and 'shortcuts' in shortcuts:
-        with open(shortcuts_file, 'wb') as file:
-            vdf.binary_dumps(shortcuts, file)
-    else:
-        print("The data to be written to the shortcuts file is not valid.")
-
-
+# Load the existing shortcuts
+with open(f"{logged_in_home}/.steam/root/userdata/{steamid3}/config/shortcuts.vdf", 'rb') as file:
+    shortcuts = vdf.binary_loads(file.read())
 # Open the config.vdf file
 with open(f"{logged_in_home}/.steam/root/config/config.vdf", 'r') as file:
     config_data = vdf.load(file)
+
 
 def get_sgdb_art(game_id, app_id):
     global grid64
@@ -1105,7 +1086,6 @@ for game in games:
 
 
 #End of Itchio Scanner
-
 
 
 
