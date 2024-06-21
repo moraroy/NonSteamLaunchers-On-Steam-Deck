@@ -202,13 +202,14 @@ if os.path.exists(shortcuts_file):
     try:
         with open(shortcuts_file, 'rb') as file:
             shortcuts = vdf.binary_loads(file.read())
-            # If the file is empty or does not contain the 'shortcuts' key, initialize an empty 'shortcuts' dictionary
-            if not shortcuts or 'shortcuts' not in shortcuts:
-                shortcuts = {'shortcuts': {}}
     except Exception as e:
         print(f"Error reading shortcuts file: {e}")
         print("Please check the file and try again.")
         sys.exit()  # Exit the script if an error occurs
+
+    # If the file is empty or does not contain the 'shortcuts' key, initialize an empty 'shortcuts' dictionary
+    if not shortcuts or 'shortcuts' not in shortcuts:
+        shortcuts = {'shortcuts': {}}
 
     # Check data integrity before writing to file
     if shortcuts and isinstance(shortcuts, dict) and 'shortcuts' in shortcuts:
@@ -216,10 +217,6 @@ if os.path.exists(shortcuts_file):
             vdf.binary_dumps(shortcuts, file)
     else:
         print("The data to be written to the shortcuts file is not valid.")
-else:
-    # If the file does not exist, create a new file with an empty "shortcuts" section
-    with open(shortcuts_file, 'wb') as file:
-        vdf.binary_dumps({'shortcuts': {}}, file)
 
 
 # Open the config.vdf file
