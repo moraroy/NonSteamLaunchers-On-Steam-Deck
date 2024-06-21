@@ -2348,10 +2348,6 @@ fi
 
 
 
-# Define backup directory
-backup_dir="$userdata_folder/shortcuts.vdf_backups"
-mkdir -p "$backup_dir"
-
 # Check if userdata folder was found
 if [[ -n "$userdata_folder" ]]; then
     # Userdata folder was found
@@ -2362,6 +2358,10 @@ if [[ -n "$userdata_folder" ]]; then
 
     # Check if shortcuts_vdf_path is not empty
     if [[ -n "$shortcuts_vdf_path" ]]; then
+        # Define backup directory
+        backup_dir="$(dirname "$shortcuts_vdf_path")/shortcuts.vdf_backups"
+        mkdir -p "$backup_dir"
+
         # Create backup of shortcuts.vdf file
         cp "$shortcuts_vdf_path" "$backup_dir/shortcuts_vdf.bak_$(date +%Y%m%d_%H%M%S)"
     else
