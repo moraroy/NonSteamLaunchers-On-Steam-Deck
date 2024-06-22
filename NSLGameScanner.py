@@ -600,8 +600,13 @@ if app_ids and not os.path.exists(non_steam_launchers_path):
         # Define the path of the symbolic link
         symlink_path = os.path.join(compatdata_dir, 'NonSteamLaunchers')
 
-        # Create a symbolic link to the renamed NonSteamLaunchers folder
-        os.symlink(new_path, symlink_path)
+        # Check if the symlink already exists
+        if not os.path.islink(symlink_path):
+            # Create a symbolic link to the renamed NonSteamLaunchers folder
+            os.symlink(new_path, symlink_path)
+        else:
+            print('Symlink for NonSteamLaunchers already exists')
+
 
 #End of Refactoring python code from .sh file
 
