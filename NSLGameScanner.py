@@ -193,7 +193,7 @@ grid64 = ""
 logo64 = ""
 hero64 = ""
 
-## Define the path to the shortcuts file
+# Define the path to the shortcuts file
 shortcuts_file = f"{logged_in_home}/.steam/root/userdata/{steamid3}/config/shortcuts.vdf"
 
 # Check if the file exists and is not executable
@@ -201,8 +201,8 @@ if os.path.exists(shortcuts_file):
     # Check if the file is not executable
     if not os.access(shortcuts_file, os.X_OK):
         print("The file exists but is not executable. Making it executable.")
-        # Make the file executable for the user
-        os.chmod(shortcuts_file, os.stat(shortcuts_file).st_mode | 0o100)
+        # Set the file permissions to 755
+        os.chmod(shortcuts_file, 0o755)
     # Write {'shortcuts': {}} to the file
     with open(shortcuts_file, 'wb') as file:
         file.write(vdf.binary_dumps({'shortcuts': {}}))
