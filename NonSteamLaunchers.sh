@@ -2363,7 +2363,7 @@ if [[ -n "$userdata_folder" ]]; then
         mkdir -p "$backup_dir"
 
         # Create backup of shortcuts.vdf file
-        cp "$shortcuts_vdf_path" "$backup_dir/shortcuts_vdf.bak_$(date +%Y%m%d_%H%M%S)"
+        cp "$shortcuts_vdf_path" "$backup_dir/shortcuts_vdf.bak_$(date +%m-%d-%Y_%H:%M:%S)"
     else
         # Find config directory for current user
         config_dir=$(find "$userdata_folder" -maxdepth 1 -type d -name config)
