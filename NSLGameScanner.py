@@ -596,17 +596,22 @@ if app_ids and not os.path.exists(non_steam_launchers_path):
         else:
             print('NonSteamLaunchers is symlinked to a different folder')
     else:
-        # Define the new path of the NonSteamLaunchers folder
-        new_path = os.path.join(compatdata_dir, str(first_app_id))
+        # Check if the current path exists
+        if os.path.exists(current_path):
+            # Define the new path of the NonSteamLaunchers folder
+            new_path = os.path.join(compatdata_dir, str(first_app_id))
 
-        # Move the NonSteamLaunchers folder to the new path
-        shutil.move(current_path, new_path)
+            # Move the NonSteamLaunchers folder to the new path
+            shutil.move(current_path, new_path)
 
-        # Define the path of the symbolic link
-        symlink_path = os.path.join(compatdata_dir, 'NonSteamLaunchers')
+            # Define the path of the symbolic link
+            symlink_path = os.path.join(compatdata_dir, 'NonSteamLaunchers')
 
-        # Create a symbolic link to the renamed NonSteamLaunchers folder
-        os.symlink(new_path, symlink_path)
+            # Create a symbolic link to the renamed NonSteamLaunchers folder
+            os.symlink(new_path, symlink_path)
+        else:
+            print(f"The directory {current_path} does not exist. Skipping.")
+
 
 #End of Refactoring python code from .sh file
 
