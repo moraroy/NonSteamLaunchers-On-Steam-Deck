@@ -554,21 +554,25 @@ for launcher_name, folder in folder_names.items():
         # Get the app ID for this launcher from the app_id_to_name dictionary
         appid = app_ids.get(launcher_name)
 
-        # Define the new path of the folder
-        new_path = os.path.join(compatdata_dir, str(appid))
+        # If appid is not None, proceed with renaming and symlink creation
+        if appid is not None:
+            # Define the new path of the folder
+            new_path = os.path.join(compatdata_dir, str(appid))
 
-        # Check if the new path already exists
-        if os.path.exists(new_path):
-            print(f'{new_path} already exists. Skipping renaming.')
+            # Check if the new path already exists
+            if os.path.exists(new_path):
+                print(f'{new_path} already exists. Skipping renaming.')
+            else:
+                # Rename the folder
+                os.rename(current_path, new_path)
+
+                # Define the path of the symbolic link
+                symlink_path = os.path.join(compatdata_dir, folder)
+
+                # Create a symbolic link to the renamed folder
+                os.symlink(new_path, symlink_path)
         else:
-            # Rename the folder
-            os.rename(current_path, new_path)
-
-            # Define the path of the symbolic link
-            symlink_path = os.path.join(compatdata_dir, folder)
-
-            # Create a symbolic link to the renamed folder
-            os.symlink(new_path, symlink_path)
+            print(f'App ID for {launcher_name} is not available yet.')
     else:
         print(f'{launcher_name}: {folder} does not exist')
 
