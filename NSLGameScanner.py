@@ -197,9 +197,13 @@ hero64 = ""
 shortcuts_file = f"{logged_in_home}/.steam/root/userdata/{steamid3}/config/shortcuts.vdf"
 
 # Check if the file exists and is not executable
-if os.path.exists(shortcuts_file) and not os.access(shortcuts_file, os.X_OK):
-    print("The file exists and is not executable.")
-    # Write {'shortcuts: {}} to the file
+if os.path.exists(shortcuts_file):
+    # Check if the file is not executable
+    if not os.access(shortcuts_file, os.X_OK):
+        print("The file exists but is not executable. Making it executable.")
+        # Make the file executable for the user
+        os.chmod(shortcuts_file, os.stat(shortcuts_file).st_mode | 0o100)
+    # Write {'shortcuts': {}} to the file
     with open(shortcuts_file, 'wb') as file:
         file.write(vdf.binary_dumps({'shortcuts': {}}))
     shortcuts = {'shortcuts': {}}
@@ -211,6 +215,7 @@ else:
         except Exception as e:
             print(f"Error reading file: {e}")
             shortcuts = {}
+
 
 # Check if the 'shortcuts' key is in the loaded data
 if 'shortcuts' not in shortcuts:
