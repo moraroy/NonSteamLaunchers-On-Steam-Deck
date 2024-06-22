@@ -539,6 +539,7 @@ folder_names = {
     'Humble Bundle': 'HumbleGamesLauncher',
     'IndieGala Client': 'IndieGalaLauncher',
     'Rockstar Games Launcher': 'RockstarGamesLauncher',
+    'Glyph': 'GlyphLauncher',
     'Playstation Plus': 'PlaystationPlusLauncher',
     'VK Play': 'VKPlayLauncher',
 }
