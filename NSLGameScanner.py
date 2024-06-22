@@ -594,8 +594,15 @@ if app_ids and not os.path.exists(non_steam_launchers_path):
         # Define the new path of the NonSteamLaunchers folder
         new_path = os.path.join(compatdata_dir, str(first_app_id))
 
-        # Move the NonSteamLaunchers folder to the new path
-        shutil.move(current_path, new_path)
+        # Check if the current path exists before trying to move
+        if os.path.exists(current_path):
+            try:
+                # Move the NonSteamLaunchers folder to the new path
+                shutil.move(current_path, new_path)
+            except Exception as e:
+                print(f"An error occurred while moving {current_path} to {new_path}: {e}")
+        else:
+            print(f"The directory {current_path} does not exist.")
 
         # Define the path of the symbolic link
         symlink_path = os.path.join(compatdata_dir, 'NonSteamLaunchers')
