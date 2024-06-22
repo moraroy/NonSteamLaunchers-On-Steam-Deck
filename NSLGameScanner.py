@@ -511,8 +511,6 @@ for custom_website in custom_websites:
 
 
 
-
-
 # Iterate over each launcher in the app_ids dictionary
 for launcher_name, appid in app_ids.items():
     print(f"The app ID for {launcher_name} is {appid}")
@@ -520,11 +518,12 @@ for launcher_name, appid in app_ids.items():
 # Get the app ID for the first launcher that the user chose to install
 if app_ids:
     appid = app_ids.get(launcher_name)
+    print(f"App ID for the chosen launcher: {appid}")
 
-
-#Create User Friendly Symlinks for the launchers
+# Create User Friendly Symlinks for the launchers
 # Define the path to the compatdata directory
 compatdata_dir = f'{logged_in_home}/.local/share/Steam/steamapps/compatdata'
+print(f"Compatdata directory: {compatdata_dir}")
 
 # Define a dictionary of original folder names
 folder_names = {
@@ -548,17 +547,20 @@ folder_names = {
 for launcher_name, folder in folder_names.items():
     # Define the current path of the folder
     current_path = os.path.join(compatdata_dir, folder)
+    print(f"Current path for {launcher_name}: {current_path}")
 
     # Check if the folder exists
     if os.path.exists(current_path):
         print(f'{launcher_name}: {folder} exists')
         # Get the app ID for this launcher from the app_id_to_name dictionary
         appid = app_ids.get(launcher_name)
+        print(f"App ID for {launcher_name}: {appid}")
 
         # If appid is not None, proceed with renaming and symlink creation
         if appid is not None:
             # Define the new path of the folder
             new_path = os.path.join(compatdata_dir, str(appid))
+            print(f"New path for {launcher_name}: {new_path}")
 
             # Check if the new path already exists
             if os.path.exists(new_path):
@@ -566,26 +568,31 @@ for launcher_name, folder in folder_names.items():
             else:
                 # Rename the folder
                 os.rename(current_path, new_path)
+                print(f"Renamed {current_path} to {new_path}")
 
                 # Define the path of the symbolic link
                 symlink_path = os.path.join(compatdata_dir, folder)
+                print(f"Symlink path for {launcher_name}: {symlink_path}")
 
                 # Create a symbolic link to the renamed folder
                 os.symlink(new_path, symlink_path)
+                print(f"Created symlink at {symlink_path} to {new_path}")
         else:
             print(f'App ID for {launcher_name} is not available yet.')
     else:
         print(f'{launcher_name}: {folder} does not exist')
 
-
 # Check if the NonSteamLaunchers folder exists
 non_steam_launchers_path = os.path.join(compatdata_dir, 'NonSteamLaunchers')
-if app_ids and not os.path.exists(non_steam_launchers_path):
+if app_ids and os.path.exists(non_steam_launchers_path):
+    print("NonSteamLaunchers already exists at the expected path.")
     # Get the first app ID from the app_ids list
     first_app_id = next(iter(app_ids.values()))
+    print(f"First app ID from app_ids: {first_app_id}")
 
     # Define the current path of the NonSteamLaunchers folder
     current_path = os.path.join(compatdata_dir, 'NonSteamLaunchers')
+    print(f"Current path for NonSteamLaunchers: {current_path}")
 
     # Check if NonSteamLaunchers is already a symbolic link
     if os.path.islink(current_path):
@@ -596,24 +603,31 @@ if app_ids and not os.path.exists(non_steam_launchers_path):
         else:
             print('NonSteamLaunchers is symlinked to a different folder')
     else:
+        print("NonSteamLaunchers is not a symbolic link.")
         # Check if the current path exists
         if os.path.exists(current_path):
+            print("NonSteamLaunchers exists at the current path.")
             # Define the new path of the NonSteamLaunchers folder
             new_path = os.path.join(compatdata_dir, str(first_app_id))
+            print(f"New path for NonSteamLaunchers: {new_path}")
 
             # Move the NonSteamLaunchers folder to the new path
             shutil.move(current_path, new_path)
+            print(f"Moved NonSteamLaunchers folder to {new_path}")
 
             # Define the path of the symbolic link
             symlink_path = os.path.join(compatdata_dir, 'NonSteamLaunchers')
+            print(f"Symlink path for NonSteamLaunchers: {symlink_path}")
 
             # Create a symbolic link to the renamed NonSteamLaunchers folder
             os.symlink(new_path, symlink_path)
+            print(f"Created symlink at {symlink_path} to {new_path}")
         else:
             print(f"The directory {current_path} does not exist. Skipping.")
+#End of old refactored Code
 
 
-#End of Refactoring python code from .sh file
+
 
 
 
