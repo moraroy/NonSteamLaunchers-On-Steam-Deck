@@ -579,7 +579,8 @@ for launcher_name, folder in folder_names.items():
 
 
 # Check if the NonSteamLaunchers folder exists
-if app_ids and os.path.exists(os.path.join(compatdata_dir, 'NonSteamLaunchers')):
+non_steam_launchers_path = os.path.join(compatdata_dir, 'NonSteamLaunchers')
+if app_ids and not os.path.exists(non_steam_launchers_path):
     # Get the first app ID from the app_ids list
     first_app_id = next(iter(app_ids.values()))
 
