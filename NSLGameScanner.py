@@ -564,7 +564,7 @@ for launcher_name, folder in folder_names.items():
 
             # Check if the new path already exists
             if os.path.exists(new_path):
-                print(f'{new_path} already exists. Skipping renaming.')
+                print(f'{new_path} already exists. Skipping renaming and symlinking.')
             else:
                 # Rename the folder
                 os.rename(current_path, new_path)
@@ -581,6 +581,7 @@ for launcher_name, folder in folder_names.items():
             print(f'App ID for {launcher_name} is not available yet.')
     else:
         print(f'{launcher_name}: {folder} does not exist')
+
 
 # Check if the NonSteamLaunchers folder exists
 non_steam_launchers_path = os.path.join(compatdata_dir, 'NonSteamLaunchers')
