@@ -194,9 +194,36 @@ logo64 = ""
 hero64 = ""
 
 
-# Load the existing shortcuts
-with open(f"{logged_in_home}/.steam/root/userdata/{steamid3}/config/shortcuts.vdf", 'rb') as file:
-    shortcuts = vdf.binary_loads(file.read())
+
+def create_empty_shortcuts():
+    return {'shortcuts': {}}
+
+def write_shortcuts_to_file(shortcuts_file, shortcuts):
+    with open(shortcuts_file, 'wb') as file:
+        file.write(vdf.binary_dumps(shortcuts))
+    os.chmod(shortcuts_file, 0o755)
+
+# Define the path to the shortcuts file
+shortcuts_file = f"{logged_in_home}/.steam/root/userdata/{steamid3}/config/shortcuts.vdf"
+
+# Check if the file exists
+if os.path.exists(shortcuts_file):
+    # If the file is not executable, write the shortcuts dictionary and make it executable
+    if not os.access(shortcuts_file, os.X_OK):
+        print("The file is not executable. Writing an empty shortcuts dictionary and making it executable.")
+        shortcuts = create_empty_shortcuts()
+        write_shortcuts_to_file(shortcuts_file, shortcuts)
+    else:
+        # Load the existing shortcuts
+        with open(shortcuts_file, 'rb') as file:
+            try:
+                shortcuts = vdf.binary_loads(file.read())
+            except vdf.VDFError as e:
+                print(f"Error reading file: {e}")
+                shortcuts = create_empty_shortcuts()
+else:
+    print("The shortcuts.vdf file does not exist.")
+    sys.exit(1)
 
 # Open the config.vdf file
 with open(f"{logged_in_home}/.steam/root/config/config.vdf", 'r') as file:
