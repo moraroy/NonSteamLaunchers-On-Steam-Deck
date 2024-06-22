@@ -609,6 +609,7 @@ if app_ids and os.path.exists(non_steam_launchers_path):
             print("NonSteamLaunchers exists at the current path.")
             # Define the new path of the NonSteamLaunchers folder
             new_path = os.path.join(compatdata_dir, str(first_app_id))
+            print(f"New path for NonSteamLaunchers: {new_path}")
 
             # Check if the new path already exists
             if os.path.exists(new_path):
@@ -626,6 +627,7 @@ if app_ids and os.path.exists(non_steam_launchers_path):
                 print(f"Created symlink at {symlink_path} to {new_path}")
         else:
             print(f"The directory {current_path} does not exist. Skipping.")
+
 
 #End of old refactored Code
 
