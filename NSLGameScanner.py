@@ -437,9 +437,19 @@ def create_new_entry(shortcutdirectory, appname, launchoptions, startingdir):
         'exe': exe_path,
         'StartDir': startingdir,
         'icon': f"{logged_in_home}/.steam/root/userdata/{steamid3}/config/grid/{get_file_name('icons', unsigned_shortcut_id)}",
+        'ShortcutPath': "",
         'LaunchOptions': launchoptions,
-        'tags': {  # Add the tags field
-            '0': 'NonSteam'
+        'IsHidden': 0,
+        'AllowDesktopConfig': 1,
+        'AllowOverlay': 1,
+        'OpenVR': 0,
+        'Devkit': 0,
+        'DevkitGameID': "",
+        'DevkitOverrideAppID': 0,
+        'LastPlayTime': 0,
+        'FlatpakAppID': "",
+        'tags': {
+            '0': 'NonSteamLaunchers'
         }
     }
     decky_entry = {
