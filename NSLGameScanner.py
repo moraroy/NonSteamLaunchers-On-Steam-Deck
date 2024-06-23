@@ -164,23 +164,9 @@ def get_unsigned_shortcut_id(signed_shortcut_id):
 # Initialize an empty dictionary to serve as the cache
 api_cache = {}
 
-#FOR NONSTEAMLAUNCHER USE ONLY
-url = 'https://kvdb.io/V7iY1Ddg7FXJowFEMSnVDG/SGDDB'
-headers = {
-    'kvdb-read-key': 'QUsROHbBpJyusKrLQvZiBgBea6Su1Au0c304yTRncwm10P1PhByWPZ4M46GW1XEC'
-}
-
-response = requests.get(url, headers=headers)
-
-if response.status_code == 200:
-    api_key = response.text
-    if api_key:
-        sgdb = SteamGridDB(api_key)
-    else:
-        print("Error: No data found.")
-else:
-    print(f"Error: Unable to access. HTTP status code: {response.status_code}")
-
+#API KEYS FOR NONSTEAMLAUNCHER USE ONLY
+sgdb = SteamGridDB('36e4bedbfdda27f42f9ef4a44f80955c')
+api_key = '36e4bedbfdda27f42f9ef4a44f80955c'
 
 #GLOBAL VARS
 created_shortcuts = []
