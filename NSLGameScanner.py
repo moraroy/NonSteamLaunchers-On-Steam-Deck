@@ -218,11 +218,13 @@ if os.path.exists(shortcuts_file):
             try:
                 shortcuts = vdf.binary_loads(file.read())
             except vdf.VDFError as e:
-                print(f"Error reading file: {e}")
-                shortcuts = create_empty_shortcuts()
+                print(f"Error reading file: {e}. The file might be corrupted or unreadable.")
+                print("Exiting the program. Please check the shortcuts.vdf file.")
+                sys.exit(1)
 else:
     print("The shortcuts.vdf file does not exist.")
     sys.exit(1)
+
 
 # Open the config.vdf file
 with open(f"{logged_in_home}/.steam/root/config/config.vdf", 'r') as file:
