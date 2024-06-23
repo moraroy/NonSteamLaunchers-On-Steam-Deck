@@ -413,6 +413,9 @@ def create_new_entry(shortcutdirectory, appname, launchoptions, startingdir):
     exe_path = f"{shortcutdirectory}"
     signed_shortcut_id = get_steam_shortcut_id(exe_path, appname)
     unsigned_shortcut_id = get_unsigned_shortcut_id(signed_shortcut_id)
+    # Only store the app ID for specific launchers
+    if appname in ['Epic Games', 'Gog Galaxy', 'Ubisoft Connect', 'Battle.net', 'EA App', 'Amazon Games', 'itch.io', 'Legacy Games', 'Humble Bundle', 'IndieGala Client', 'Rockstar Games Launcher', 'Glyph', 'Playstation Plus', 'VK Play']:
+        app_ids[appname] = unsigned_shortcut_id
 
     # Check if the game already exists in the shortcuts
     if check_if_shortcut_exists(signed_shortcut_id, appname, exe_path, startingdir, launchoptions):
