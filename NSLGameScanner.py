@@ -155,7 +155,7 @@ def get_steam_shortcut_id(exe_path, display_name):
     signed = ctypes.c_int(id_int)
     # print(f"Signed ID: {signed.value}")
     return signed.value
-    
+
 def get_unsigned_shortcut_id(signed_shortcut_id):
     unsigned = ctypes.c_uint(signed_shortcut_id)
     # print(f"Unsigned ID: {unsigned.value}")
@@ -192,7 +192,6 @@ gridp64 = ""
 grid64 = ""
 logo64 = ""
 hero64 = ""
-
 
 
 def create_empty_shortcuts():
@@ -387,7 +386,15 @@ print(sys.path)
 # Create an empty dictionary to store the app IDs
 app_ids = {}
 
-#Create Shortcuts
+# Get the highest existing key
+if shortcuts['shortcuts']:
+    highest_key = max(int(key) for key in shortcuts['shortcuts'].keys())
+else:
+    highest_key = -1
+
+# Start the counter from the next available number
+counter = highest_key + 1
+
 def create_new_entry(shortcutdirectory, appname, launchoptions, startingdir):
     global new_shortcuts_added
     global shortcuts_updated
@@ -397,6 +404,8 @@ def create_new_entry(shortcutdirectory, appname, launchoptions, startingdir):
     global gridp64
     global logo64
     global hero64
+    global counter  # Add this line to access the counter variable
+
     # Check if the launcher is installed
     if not shortcutdirectory or not appname or not launchoptions or not startingdir:
         print(f"{appname} is not installed. Skipping.")
@@ -404,15 +413,14 @@ def create_new_entry(shortcutdirectory, appname, launchoptions, startingdir):
     exe_path = f"{shortcutdirectory}"
     signed_shortcut_id = get_steam_shortcut_id(exe_path, appname)
     unsigned_shortcut_id = get_unsigned_shortcut_id(signed_shortcut_id)
-    # Only store the app ID for specific launchers
-    if appname in ['Epic Games', 'Gog Galaxy', 'Ubisoft Connect', 'Battle.net', 'EA App', 'Amazon Games', 'itch.io', 'Legacy Games', 'Humble Bundle', 'IndieGala Client', 'Rockstar Games Launcher', 'Glyph', 'Playstation Plus', 'VK Play']:
-        app_ids[appname] = unsigned_shortcut_id
+
     # Check if the game already exists in the shortcuts
     if check_if_shortcut_exists(signed_shortcut_id, appname, exe_path, startingdir, launchoptions):
         # Check if proton needs applying or updating
         if add_compat_tool(unsigned_shortcut_id, launchoptions):
             shortcuts_updated = True
         return
+
     #Get artwork
     game_id = get_game_id(appname)
     if game_id is not None:
@@ -427,6 +435,9 @@ def create_new_entry(shortcutdirectory, appname, launchoptions, startingdir):
         'StartDir': startingdir,
         'icon': f"{logged_in_home}/.steam/root/userdata/{steamid3}/config/grid/{get_file_name('icons', unsigned_shortcut_id)}",
         'LaunchOptions': launchoptions,
+        'tags': {  # Add the tags field
+            '0': 'NonSteam'
+        }
     }
     decky_entry = {
         'appname': appname,
@@ -440,12 +451,18 @@ def create_new_entry(shortcutdirectory, appname, launchoptions, startingdir):
         'Hero': hero64,
         'Logo': logo64,
     }
+
     # Add the new entry to the shortcuts dictionary and add proton
-    shortcuts['shortcuts'][str(signed_shortcut_id)] = new_entry
+    # Use the counter for the key
+    shortcuts['shortcuts'][str(counter)] = new_entry  # Use the counter as the key
     decky_shortcuts[appname] = decky_entry
     print(f"Added new entry for {appname} to shortcuts.")
     new_shortcuts_added = True
     created_shortcuts.append(appname)
+
+    counter += 1  # Increment the counter after adding the new entry
+
+
 
 
 create_new_entry(os.environ.get('epicshortcutdirectory'), 'Epic Games', os.environ.get('epiclaunchoptions'), os.environ.get('epicstartingdir'))
