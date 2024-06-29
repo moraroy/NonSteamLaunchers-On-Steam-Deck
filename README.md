@@ -82,6 +82,7 @@ Finds Games Automatically
 - Battle.net 🎮
 - Amazon Games 🎮        💾 Full SD Card Support
 - Itch.io 🎮
+- Legacy Games 🎮
 
 <h1 align="center">
 How to Install 🔧
