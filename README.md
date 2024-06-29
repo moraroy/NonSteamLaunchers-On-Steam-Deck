@@ -17,6 +17,7 @@ Features  ✅
 - Automatic installation of the most popular launchers in your Steam Deck 🎮
 - Handle automatically the download and installation of your chosen launchers and the games ⌚️ 
 - MicroSD Support 💾 This script supports moving the entire prefix to a microSD. The script will install launchers and games to your SD card, and the launchers in Steam will point to the SD card installation. This allows you to save internal storage space on your Steam Deck!
+- ProtonTricks is comptable with NonSteamLaunchers default installtion (one prefix). This will add a NonSteamLaunchers shorcut in your library, this shortcut doesnt do anything. All you have to do is simply "Hide this Game" in your Library. Right click its properties and choose "Manage" and "Hide this Game". You never have to worry about it again! If you were to open up ProtonTricks to fix any game or launcehr it is now accessible!
 
 <h1 align="center">
 Currently Working On 👷‍♂️
