@@ -29,7 +29,7 @@ download_dir="${logged_in_home}/Downloads/NonSteamLaunchersInstallation"
 exec >> "${logged_in_home}/Downloads/NonSteamLaunchers-install.log" 2>&1
 
 # Version number (major.minor)
-version=v3.9.0
+version=v3.9.1
 
 # TODO: tighten logic to check whether major/minor version is up-to-date via `-eq`, `-lt`, or `-gt` operators
 # Check repo releases via GitHub API then display current stable version
@@ -356,6 +356,7 @@ function update_proton() {
 }
 
 
+
 # Check which app IDs are installed
 CheckInstallations
 CheckInstallationDirectory
@@ -395,7 +396,7 @@ else
     for arg in "${args[@]}"; do
         if [[ "$arg" =~ ^https?:// ]]; then
 			website=${arg#https://}
-	  
+
             # Check if the arg is not an empty string before adding it to the custom_websites array
             if [ -n "$website" ]; then
                 custom_websites+=("$website")
@@ -470,7 +471,7 @@ function StartFreshFunction {
     folder_names=("EpicGamesLauncher" "GogGalaxyLauncher" "UplayLauncher" "Battle.netLauncher" "TheEAappLauncher" "AmazonGamesLauncher" "itchioLauncher" "LegacyGamesLauncher" "HumbleGamesLauncher" "IndieGalaLauncher" "RockstarGamesLauncher" "GlyphLauncher" "PlaystationPlusLauncher" "VKPlayLauncher")
 
     # Define an array of app IDs
-    app_ids=("3772819390" "4294900670" "4063097571" "3786021133" "3448088735" "3923904787" "3440562512" "2948446662" "3303169468" "3595505624" "4272271078" "3259996605" "2588786779" "4090616647" "3494943831" "2390200925" "4253976432" "2221882453" "2296676888" "2486751858" "3974004104" "3811372789" "3788101956" "3782277090" "3640061468" "3216372511" "2882622939" "2800812206" "2580882702")
+    app_ids=("3772819390" "4294900670" "4063097571" "3786021133" "3448088735" "3923904787" "3440562512" "2948446662" "3908676077" "3303169468" "3595505624" "4272271078" "3259996605" "2588786779" "4090616647" "3494943831" "2390200925" "4253976432" "2221882453" "2296676888" "2486751858" "3974004104" "3811372789" "3788101956" "3782277090" "3640061468" "3216372511" "2882622939" "2800812206" "2580882702")
 
     # Iterate over each folder name in the folder_names array
     for folder in "${folder_names[@]}"; do
@@ -608,6 +609,151 @@ if [[ $options == "Start Fresh" ]] || [[ $selected_launchers == "Start Fresh" ]]
     fi
 fi
 
+
+
+#Set Downloads INFO
+echo "10"
+echo "# Setting files in their place"
+
+# Set the appid for the non-Steam game
+appid=NonSteamLaunchers
+
+# Set the URL to download the MSI file from
+msi_url=https://launcher-public-service-prod06.ol.epicgames.com/launcher/api/installer/download/EpicGamesLauncherInstaller.msi
+
+# Set the path to save the MSI file to
+msi_file=${logged_in_home}/Downloads/NonSteamLaunchersInstallation/EpicGamesLauncherInstaller.msi
+
+# Set the URL to download the second file from
+exe_url=https://webinstallers.gog-statics.com/download/GOG_Galaxy_2.0.exe
+
+# Set the path to save the second file to
+exe_file=${logged_in_home}/Downloads/NonSteamLaunchersInstallation/GOG_Galaxy_2.0.exe
+
+# Set the URL to download the third file from
+ubi_url=https://ubi.li/4vxt9
+
+# Set the path to save the third file to
+ubi_file=${logged_in_home}/Downloads/NonSteamLaunchersInstallation/UbisoftConnectInstaller.exe
+
+# Set the URL to download the fifth file from
+battle_url="https://www.battle.net/download/getInstallerForGame?os=win&gameProgram=BATTLENET_APP&version=Live"
+
+# Set the path to save the fifth file to
+battle_file=${logged_in_home}/Downloads/NonSteamLaunchersInstallation/Battle.net-Setup.exe
+
+# Set the URL to download the sixth file from
+amazon_url=https://download.amazongames.com/AmazonGamesSetup.exe
+
+# Set the path to save the sixth file to
+amazon_file=${logged_in_home}/Downloads/NonSteamLaunchersInstallation/AmazonGamesSetup.exe
+
+# Set the URL to download the seventh file from
+eaapp_url=https://origin-a.akamaihd.net/EA-Desktop-Client-Download/installer-releases/EAappInstaller.exe
+
+# Set the path to save the seventh file to
+eaapp_file=${logged_in_home}/Downloads/NonSteamLaunchersInstallation/EAappInstaller.exe
+
+# Set the URL to download the eighth file from
+itchio_url=https://itch.io/app/download?platform=windows
+
+# Set the path to save the eighth file to
+itchio_file=${logged_in_home}/Downloads/NonSteamLaunchersInstallation/itch-setup.exe
+
+# Set the URL to download the ninth file from
+legacygames_url=https://cdn.legacygames.com/LegacyGamesLauncher/legacy-games-launcher-setup-1.10.0-x64-full.exe
+
+# Set the path to save the ninth file to
+legacygames_file=${logged_in_home}/Downloads/NonSteamLaunchersInstallation/legacy-games-launcher-setup-1.10.0-x64-full.exe
+
+# Set the URL to download the tenth file from
+humblegames_url=https://www.humblebundle.com/app/download
+
+# Set the path to save the tenth file to
+humblegames_file=${logged_in_home}/Downloads/NonSteamLaunchersInstallation/Humble-App-Setup-1.1.8+411.exe
+
+# Set the URL to download the eleventh file from
+indiegala_url=https://content.indiegalacdn.com/common/IGClientSetup.exe
+
+# Set the path to save the eleventh file to
+indiegala_file=${logged_in_home}/Downloads/NonSteamLaunchersInstallation/IGClientSetup.exe
+
+# Set the URL to download the twelfth file from
+rockstar_url=https://gamedownloads.rockstargames.com/public/installer/Rockstar-Games-Launcher.exe
+
+# Set the path to save the twelfth file to
+rockstar_file=${logged_in_home}/Downloads/NonSteamLaunchersInstallation/Rockstar-Games-Launcher.exe
+
+# Set the URL to download the Glyph Launcher file from
+glyph_url=https://glyph.dyn.triongames.com/glyph/live/GlyphInstall.exe
+
+# Set the path to save the Glyph Launcher to
+glyph_file=${logged_in_home}/Downloads/NonSteamLaunchersInstallation/GlyphInstall.exe
+
+
+# Set the URL to download the Playstation Launcher file from
+psplus_url=https://download-psplus.playstation.com/downloads/psplus/pc/latest
+
+# Set the path to save the Playstation Launcher to
+psplus_file=${logged_in_home}/Downloads/NonSteamLaunchersInstallation/PlayStationPlus-12.2.0.exe
+
+
+# Set the URL to download the VK Play Launcher file from
+vkplay_url=https://static.gc.vkplay.ru/VKPlayLoader.exe
+
+# Set the path to save the VK Play Launcher to
+vkplay_file=${logged_in_home}/Downloads/NonSteamLaunchersInstallation/VKPlayLoader.exe
+#End of Downloads INFO
+
+
+
+
+
+# Function to handle EA App uninstallation
+handle_uninstall() {
+    mkdir -p ${logged_in_home}/Downloads/NonSteamLaunchersInstallation
+    compatdata_dir=$1
+
+    # Set the path to the Proton directory
+    proton_dir=$(find "${logged_in_home}/.steam/root/compatibilitytools.d" -maxdepth 1 -type d -name "GE-Proton*" | sort -V | tail -n1)
+
+    # Set the paths for the environment variables
+    STEAM_RUNTIME="${logged_in_home}/.steam/root/ubuntu12_32/steam-runtime/run.sh"
+    STEAM_COMPAT_CLIENT_INSTALL_PATH="${logged_in_home}/.local/share/Steam"
+    STEAM_COMPAT_DATA_PATH="${logged_in_home}/.local/share/Steam/steamapps/compatdata/${compatdata_dir}"
+
+    # Export the STEAM_COMPAT_DATA_PATH variable
+    export STEAM_COMPAT_DATA_PATH
+    export STEAM_COMPAT_CLIENT_INSTALL_PATH
+
+    # Download EA App file
+    if [ ! -f "$eaapp_file" ]; then
+        echo "Downloading EA App file"
+        wget $eaapp_url -O $eaapp_file
+    fi
+
+    # Run the EA App file using Proton with the /passive option
+    echo "Running EA App file using Proton with the /passive option"
+    "$STEAM_RUNTIME" "$proton_dir/proton" run "$eaapp_file" /uninstall /quiet
+    wait
+
+    # Display Zenity window
+    zenity --info --text="EA App has been uninstalled." --width=200 --height=150 &
+    sleep 3
+    killall zenity
+}
+
+#Uninstall EA App
+if [[ $uninstall_options == *"Uninstall EA App"* ]]; then
+    if [[ -d "${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/Program Files/Electronic Arts" ]]; then
+        handle_uninstall "NonSteamLaunchers"
+    elif [[ -d "${logged_in_home}/.local/share/Steam/steamapps/compatdata/TheEAappLauncher/pfx/drive_c/Program Files/Electronic Arts" ]]; then
+        handle_uninstall "TheEAappLauncher"
+    fi
+fi
+
+
+
 uninstall_launcher() {
     local uninstall_options=$1
     local launcher=$2
@@ -637,6 +783,7 @@ uninstall_launcher() {
 }
 
 
+
 # Function to process uninstall options
 process_uninstall_options() {
     local uninstall_options=$1
@@ -647,16 +794,27 @@ process_uninstall_options() {
         uninstall_launcher "$uninstall_options" "Gog Galaxy" "$gog_galaxy_path1" "$gog_galaxy_path2" "${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/Program Files (x86)/GOG Galaxy" "${logged_in_home}/.local/share/Steam/steamapps/compatdata/GogGalaxyLauncher" "gog"
         uninstall_launcher "$uninstall_options" "Uplay" "$uplay_path1" "$uplay_path2" "${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/Program Files (x86)/Ubisoft" "${logged_in_home}/.local/share/Steam/steamapps/compatdata/UplayLauncher" "uplay" "ubisoft"
         uninstall_launcher "$uninstall_options" "Battle.net" "$battlenet_path1" "$battlenet_path2" "${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/Program Files (x86)/Battle.net" "${logged_in_home}/.local/share/Steam/steamapps/compatdata/Battle.netLauncher" "battle" "bnet"
-        uninstall_launcher "$uninstall_options" "EA App" "$eaapp_path1" "$eaapp_path2" "${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/Program Files/Electronic Arts" "${logged_in_home}/.local/share/Steam/steamapps/compatdata/TheEAappLauncher" "eaapp" "ea_app"
-        uninstall_launcher "$uninstall_options" "Amazon Games" "$amazongames_path1" "$amazongames_path2" "${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/users/steamuser/AppData/Local/Amazon Games" "${logged_in_home}/.local/share/Steam/steamapps/compatdata/AmazonGamesLauncher" "amazon"
-        uninstall_launcher "$uninstall_options" "Legacy Games" "$legacygames_path1" "$legacygames_path2" "${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/Program Files/Legacy Games" "${logged_in_home}/.local/share/Steam/steamapps/compatdata/LegacyGamesLauncher" "legacy"
-        uninstall_launcher "$uninstall_options" "itch.io" "$itchio_path1" "$itchio_path2" "${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/users/steamuser/AppData/Local/itch" "${logged_in_home}/.local/share/Steam/steamapps/compatdata/itchioLauncher" "itchio"
-        uninstall_launcher "$uninstall_options" "Humble Bundle" "$humblegames_path1" "$humblegames_path2" "${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/Program Files/Humble App" "${logged_in_home}/.local/share/Steam/steamapps/compatdata/HumbleGamesLauncher" "humble"
-        uninstall_launcher "$uninstall_options" "IndieGala" "$indiegala_path1" "$indiegala_path2" "${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/Program Files/IGClient" "${logged_in_home}/.local/share/Steam/steamapps/compatdata/IndieGalaLauncher" "indie"
-        uninstall_launcher "$uninstall_options" "Rockstar Games Launcher" "$rockstar_path1" "$rockstar_path2" "${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/Program Files/Rockstar Games" "${logged_in_home}/.local/share/Steam/steamapps/compatdata/RockstarGamesLauncher" "rockstar"
-        uninstall_launcher "$uninstall_options" "Glyph Launcher" "$glyph_path1" "$glyph_path2" "${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/Program Files (x86)/Glyph" "${logged_in_home}/.local/share/Steam/steamapps/compatdata/GlyphLauncher" "glyph"
-        uninstall_launcher "$uninstall_options" "Playstation Plus" "$psplus_path1" "$psplus_path2" "${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/Program Files (x86)/PlayStationPlus" "${logged_in_home}/.local/share/Steam/steamapps/compatdata/PlaystationPlusLauncher" "psplus"
-        uninstall_launcher "$uninstall_options" "VK Play" "$vkplay_path1" "$vkplay_path2" "${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/users/steamuser/AppData/Local/GameCenter" "${logged_in_home}/.local/share/Steam/steamapps/compatdata/VKPlayLauncher" "vkplay"
+        if [[ $uninstall_options == *"Uninstall EA App"* ]]; then
+            if [[ -d "${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/Program Files/Electronic Arts" ]]; then
+                handle_uninstall "NonSteamLaunchers"
+                wait
+                uninstall_launcher "$uninstall_options" "EA App" "$eaapp_path1" "$eaapp_path2" "${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/Program Files/Electronic Arts" "${logged_in_home}/.local/share/Steam/steamapps/compatdata/TheEAappLauncher" "eaapp" "ea_app"
+            elif [[ -d "${logged_in_home}/.local/share/Steam/steamapps/compatdata/TheEAappLauncher/pfx/drive_c/Program Files/Electronic Arts" ]]; then
+                handle_uninstall "TheEAappLauncher"
+                wait
+                uninstall_launcher "$uninstall_options" "EA App" "$eaapp_path1" "$eaapp_path2" "${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/Program Files/Electronic Arts" "${logged_in_home}/.local/share/Steam/steamapps/compatdata/TheEAappLauncher" "eaapp" "ea_app"
+            fi
+        else
+            uninstall_launcher "$uninstall_options" "Amazon Games" "$amazongames_path1" "$amazongames_path2" "${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/users/steamuser/AppData/Local/Amazon Games" "${logged_in_home}/.local/share/Steam/steamapps/compatdata/AmazonGamesLauncher" "amazon"
+            uninstall_launcher "$uninstall_options" "Legacy Games" "$legacygames_path1" "$legacygames_path2" "${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/Program Files/Legacy Games" "${logged_in_home}/.local/share/Steam/steamapps/compatdata/LegacyGamesLauncher" "legacy"
+            uninstall_launcher "$uninstall_options" "itch.io" "$itchio_path1" "$itchio_path2" "${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/users/steamuser/AppData/Local/itch" "${logged_in_home}/.local/share/Steam/steamapps/compatdata/itchioLauncher" "itchio"
+            uninstall_launcher "$uninstall_options" "Humble Bundle" "$humblegames_path1" "$humblegames_path2" "${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/Program Files/Humble App" "${logged_in_home}/.local/share/Steam/steamapps/compatdata/HumbleGamesLauncher" "humble"
+            uninstall_launcher "$uninstall_options" "IndieGala" "$indiegala_path1" "$indiegala_path2" "${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/Program Files/IGClient" "${logged_in_home}/.local/share/Steam/steamapps/compatdata/IndieGalaLauncher" "indie"
+            uninstall_launcher "$uninstall_options" "Rockstar Games Launcher" "$rockstar_path1" "$rockstar_path2" "${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/Program Files/Rockstar Games" "${logged_in_home}/.local/share/Steam/steamapps/compatdata/RockstarGamesLauncher" "rockstar"
+            uninstall_launcher "$uninstall_options" "Glyph Launcher" "$glyph_path1" "$glyph_path2" "${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/Program Files (x86)/Glyph" "${logged_in_home}/.local/share/Steam/steamapps/compatdata/GlyphLauncher" "glyph"
+            uninstall_launcher "$uninstall_options" "Playstation Plus" "$psplus_path1" "$psplus_path2" "${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/Program Files (x86)/PlayStationPlus" "${logged_in_home}/.local/share/Steam/steamapps/compatdata/PlaystationPlusLauncher" "psplus"
+            uninstall_launcher "$uninstall_options" "VK Play" "$vkplay_path1" "$vkplay_path2" "${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/users/steamuser/AppData/Local/GameCenter" "${logged_in_home}/.local/share/Steam/steamapps/compatdata/VKPlayLauncher" "vkplay"
+        fi
         return 0
     fi
     # If the uninstall was successful, set uninstalled_any_launcher to true
@@ -681,6 +839,7 @@ if [ $# -gt 0 ]; then
     # Check the flag after the loop
     if $uninstalled_any_launcher; then
         echo "Uninstallation completed successfully."
+        rm -rf "$download_dir"
         exit 0
     fi
 else
@@ -716,6 +875,7 @@ else
             process_uninstall_options "Uninstall $launcher"
         done
         echo "Uninstallation completed successfully."
+        rm -rf "$download_dir"
         exit 0
     fi
 fi
@@ -831,97 +991,6 @@ if [[ $options == *"Update Proton-GE"* ]]; then
     update_proton
 fi
 
-echo "10"
-echo "# Setting files in their place"
-
-# Set the appid for the non-Steam game
-appid=NonSteamLaunchers
-
-# Set the URL to download the MSI file from
-msi_url=https://launcher-public-service-prod06.ol.epicgames.com/launcher/api/installer/download/EpicGamesLauncherInstaller.msi
-
-# Set the path to save the MSI file to
-msi_file=${logged_in_home}/Downloads/NonSteamLaunchersInstallation/EpicGamesLauncherInstaller.msi
-
-# Set the URL to download the second file from
-exe_url=https://webinstallers.gog-statics.com/download/GOG_Galaxy_2.0.exe
-
-# Set the path to save the second file to
-exe_file=${logged_in_home}/Downloads/NonSteamLaunchersInstallation/GOG_Galaxy_2.0.exe
-
-# Set the URL to download the third file from
-ubi_url=https://ubi.li/4vxt9
-
-# Set the path to save the third file to
-ubi_file=${logged_in_home}/Downloads/NonSteamLaunchersInstallation/UbisoftConnectInstaller.exe
-
-# Set the URL to download the fifth file from
-battle_url="https://www.battle.net/download/getInstallerForGame?os=win&gameProgram=BATTLENET_APP&version=Live"
-
-# Set the path to save the fifth file to
-battle_file=${logged_in_home}/Downloads/NonSteamLaunchersInstallation/Battle.net-Setup.exe
-
-# Set the URL to download the sixth file from
-amazon_url=https://download.amazongames.com/AmazonGamesSetup.exe
-
-# Set the path to save the sixth file to
-amazon_file=${logged_in_home}/Downloads/NonSteamLaunchersInstallation/AmazonGamesSetup.exe
-
-# Set the URL to download the seventh file from
-eaapp_url=https://origin-a.akamaihd.net/EA-Desktop-Client-Download/installer-releases/EAappInstaller.exe
-
-# Set the path to save the seventh file to
-eaapp_file=${logged_in_home}/Downloads/NonSteamLaunchersInstallation/EAappInstaller.exe
-
-# Set the URL to download the eighth file from
-itchio_url=https://itch.io/app/download?platform=windows
-
-# Set the path to save the eighth file to
-itchio_file=${logged_in_home}/Downloads/NonSteamLaunchersInstallation/itch-setup.exe
-
-# Set the URL to download the ninth file from
-legacygames_url=https://cdn.legacygames.com/LegacyGamesLauncher/legacy-games-launcher-setup-1.10.0-x64-full.exe
-
-# Set the path to save the ninth file to
-legacygames_file=${logged_in_home}/Downloads/NonSteamLaunchersInstallation/legacy-games-launcher-setup-1.10.0-x64-full.exe
-
-# Set the URL to download the tenth file from
-humblegames_url=https://www.humblebundle.com/app/download
-
-# Set the path to save the tenth file to
-humblegames_file=${logged_in_home}/Downloads/NonSteamLaunchersInstallation/Humble-App-Setup-1.1.8+411.exe
-
-# Set the URL to download the eleventh file from
-indiegala_url=https://content.indiegalacdn.com/common/IGClientSetup.exe
-
-# Set the path to save the eleventh file to
-indiegala_file=${logged_in_home}/Downloads/NonSteamLaunchersInstallation/IGClientSetup.exe
-
-# Set the URL to download the twelfth file from
-rockstar_url=https://gamedownloads.rockstargames.com/public/installer/Rockstar-Games-Launcher.exe
-
-# Set the path to save the twelfth file to
-rockstar_file=${logged_in_home}/Downloads/NonSteamLaunchersInstallation/Rockstar-Games-Launcher.exe
-
-# Set the URL to download the Glyph Launcher file from
-glyph_url=https://glyph.dyn.triongames.com/glyph/live/GlyphInstall.exe
-
-# Set the path to save the Glyph Launcher to
-glyph_file=${logged_in_home}/Downloads/NonSteamLaunchersInstallation/GlyphInstall.exe
-
-
-# Set the URL to download the Playstation Launcher file from
-psplus_url=https://download-psplus.playstation.com/downloads/psplus/pc/latest
-
-# Set the path to save the Playstation Launcher to
-psplus_file=${logged_in_home}/Downloads/NonSteamLaunchersInstallation/PlayStationPlus-12.2.0.exe
-
-
-# Set the URL to download the VK Play Launcher file from
-vkplay_url=https://static.gc.vkplay.ru/VKPlayLoader.exe
-
-# Set the path to save the VK Play Launcher to
-vkplay_file=${logged_in_home}/Downloads/NonSteamLaunchersInstallation/VKPlayLoader.exe
 
 echo "20"
 echo "# Creating files & folders"
@@ -948,108 +1017,58 @@ export STEAM_COMPAT_CLIENT_INSTALL_PATH="${logged_in_home}/.local/share/Steam"
 # Set the STEAM_COMPAT_DATA_PATH environment variable for the first file
 export STEAM_COMPAT_DATA_PATH="${logged_in_home}/.local/share/Steam/steamapps/compatdata/${appid}"
 
-wait
-echo "30"
-echo "# Downloading & Installing Epic Games...please wait..."
 
-# Check if the user selected Epic Games Launcher
-if [[ $options == *"Epic Games"* ]]; then
-    # User selected Epic Games Launcher
-    echo "User selected Epic Games"
 
-    # Set the appid for the Epic Games Launcher
-    if [ "$use_separate_appids" = true ]; then
-        appid=EpicGamesLauncher
-    else
-        appid=NonSteamLaunchers
-    fi
 
-    # Create app id folder in compatdata folder if it doesn't exist
-    if [ ! -d "${logged_in_home}/.local/share/Steam/steamapps/compatdata/$appid" ]; then
-        mkdir -p "${logged_in_home}/.local/share/Steam/steamapps/compatdata/$appid"
-    fi
+###Launcher Installations
+#Terminate Processese
+function terminate_processes {
+    process_names=("$@")  # Array of process names
+    for process_name in "${process_names[@]}"; do
+        end=$((SECONDS+75))  # Timeout
+        while ! pgrep -f "$process_name" > /dev/null; do
+            if [ $SECONDS -gt $end ]; then
+                echo "Timeout while waiting for $process_name to start"
+                return 1
+            fi
+            sleep 1
+        done
+        echo "Attempting to terminate $process_name"
+        pkill -f "$process_name"
+        end=$((SECONDS+60))  # Timeout
+        while pgrep -f "$process_name" > /dev/null; do
+            if [ $SECONDS -gt $end ]; then
+                echo "Timeout while trying to kill $process_name, force terminating"
+                pkill -9 -f "$process_name"
+                break
+            fi
+            sleep 1
+        done
+        echo "$process_name terminated successfully"
+    done
+}
 
-    # Change working directory to Proton's
-    cd $proton_dir
 
-    # Set the STEAM_COMPAT_CLIENT_INSTALL_PATH environment variable
-    export STEAM_COMPAT_CLIENT_INSTALL_PATH="${logged_in_home}/.local/share/Steam"
-
-    # Set the STEAM_COMPAT_DATA_PATH environment variable for Epic Games Launcher
-    export STEAM_COMPAT_DATA_PATH="${logged_in_home}/.local/share/Steam/steamapps/compatdata/${appid}"
-
-    # Download MSI file
-    if [ ! -f "$msi_file" ]; then
-        echo "Downloading MSI file"
-        wget $msi_url -O $msi_file
-    fi
-
-    # Run the MSI file using Proton with the /passive option
-    echo "Running MSI file using Proton with the /passive option"
-    "$STEAM_RUNTIME" "$proton_dir/proton" run MsiExec.exe /i "$msi_file" -opengl /qn
-fi
-
-# TODO: capture PID of each `wait` process to make sure it's not an infinite loop
-# Wait for the MSI file to finish running
-wait
-echo "40"
-echo "# Downloading & Installing Gog Galaxy...please wait..."
-
-# Check if the user selected GOG Galaxy
-if [[ $options == *"GOG Galaxy"* ]]; then
-    # User selected GOG Galaxy
-    echo "User selected GOG Galaxy"
-
-    # Set the appid for the Gog Galaxy 2.0
-    if [ "$use_separate_appids" = true ]; then
-        appid=GogGalaxyLauncher
-    else
-        appid=NonSteamLaunchers
-    fi
-
-    # Create app id folder in compatdata folder if it doesn't exist
-    if [ ! -d "${logged_in_home}/.local/share/Steam/steamapps/compatdata/$appid" ]; then
-        mkdir -p "${logged_in_home}/.local/share/Steam/steamapps/compatdata/$appid"
-    fi
-
-    # Change working directory to Proton's
-    cd "$proton_dir"
-
-    # Set the STEAM_COMPAT_CLIENT_INSTALL_PATH environment variable
-    export STEAM_COMPAT_CLIENT_INSTALL_PATH="${logged_in_home}/.local/share/Steam"
-
-    # Set the STEAM_COMPAT_DATA_PATH environment variable for Epic Games Launcher
-    export STEAM_COMPAT_DATA_PATH="${logged_in_home}/.local/share/Steam/steamapps/compatdata/${appid}"
-
-    # Download EXE file
-    if [ ! -f "$exe_file" ]; then
-        echo "Downloading EXE file"
-        wget $exe_url -O $exe_file
-    fi
-
-    # Run the EXE file using Proton without the /passive option
-    echo "Running EXE file using Proton without the /passive option"
-    "$STEAM_RUNTIME" "$proton_dir/proton" run "$exe_file" &
-
+# GOG Galaxy specific installation steps
+function install_gog {
     echo "45"
     echo "# Downloading & Installing Gog Galaxy...Please wait..."
 
-    # Cancel & Exit the GOG Galaxy Setup Wizard
-    end=$((SECONDS+60))  # Timeout after 60 seconds
-    while true; do
-        if pgrep -f "GalaxySetup.tmp" > /dev/null; then
-            pkill -f "GalaxySetup.tmp"
-            break
-        fi
-        if [ $SECONDS -gt $end ]; then
-            echo "Timeout while trying to kill GalaxySetup.tmp"
-            break
-        fi
+    # Define the base directory path
+    base_dir_path="${logged_in_home}/.local/share/Steam/steamapps/compatdata/$appid/pfx/drive_c/users/steamuser/Temp"
+
+    # Wait for the GalaxyInstaller_XXXXX directory to be created by the Galaxy process
+    galaxy_installer_folder=""
+    while [ -z "$galaxy_installer_folder" ]; do
+        galaxy_installer_folder=$(find "$base_dir_path" -maxdepth 1 -type d -name "GalaxyInstaller_*" | head -n1)
         sleep 1
     done
 
+    # Now that the directory exists, terminate the Galaxy process
+    terminate_processes "GalaxySetup.tmp"
+
     # Navigate to %LocalAppData%\Temp
-    cd "${logged_in_home}/.local/share/Steam/steamapps/compatdata/$appid/pfx/drive_c/users/steamuser/Temp"
+    cd "$base_dir_path"
 
     # Find the GalaxyInstaller_XXXXX folder and copy it to C:\Downloads
     galaxy_installer_folder=$(find . -maxdepth 1 -type d -name "GalaxyInstaller_*" | head -n1)
@@ -1064,505 +1083,76 @@ if [[ $options == *"GOG Galaxy"* ]]; then
 
     # Wait for the EXE file to finish running
     wait
-else
-    # Gog Galaxy Launcher is already installed
-    echo "Gog Galaxy Launcher is already installed"
-fi
+}
 
-wait
-echo "50"
-echo "# Downloading & Installing Ubisoft Connect ...please wait..."
 
-# Check if user selected Uplay
-if [[ $options == *"Ubisoft Connect"* ]]; then
-    # User selected Uplay
-    echo "User selected Uplay"
+# Battle.net specific installation steps
+function install_battlenet {
+    terminate_processes "Battle.net.exe" #"BlizzardError.exe"
+}
 
-    # Set the appid for the Ubisoft Launcher
-    if [ "$use_separate_appids" = true ]; then
-        appid=UplayLauncher
-    else
-        appid=NonSteamLaunchers
-    fi
+# Amazon Games specific installation steps
+function install_amazon {
+    terminate_processes "Amazon Games.exe"
+}
 
-    # Create app id folder in compatdata folder if it doesn't exist
-    if [ ! -d "${logged_in_home}/.local/share/Steam/steamapps/compatdata/$appid" ]; then
-        mkdir -p "${logged_in_home}/.local/share/Steam/steamapps/compatdata/$appid"
-    fi
+function install_eaapp {
+    terminate_processes "EADesktop.exe"
+}
 
-    # Change working directory to Proton's
-    cd $proton_dir
+# itch.io specific installation steps
+function install_itchio {
+    terminate_processes "itch.exe"
+}
 
-    # Set the STEAM_COMPAT_CLIENT_INSTALL_PATH environment variable
-    export STEAM_COMPAT_CLIENT_INSTALL_PATH="${logged_in_home}/.local/share/Steam"
-
-    # Set the STEAM_COMPAT_DATA_PATH environment variable for Epic Games Launcher
-    export STEAM_COMPAT_DATA_PATH="${logged_in_home}/.local/share/Steam/steamapps/compatdata/${appid}"
-
-    # Download UBI file
-    if [ ! -f "$ubi_file" ]; then
-        echo "Downloading UBI file"
-        wget --no-check-certificate $ubi_url -O $ubi_file
-    fi
-
-    # Run the UBI file using Proton with the /passive option
-    echo "Running UBI file using Proton with the /passive option"
-    "$STEAM_RUNTIME" "$proton_dir/proton" run "$ubi_file" /S
-fi
-
-
-
-wait
-echo "70"
-echo "# Downloading & Installing Battle.net...please wait..."
-
-# Check if user selected Battle.net
-if [[ $options == *"Battle.net"* ]]; then
-    # User selected Battle.net
-    echo "User selected Battle.net"
-
-    # Set the appid for the Battlenet Launcher
-    if [ "$use_separate_appids" = true ]; then
-        appid=Battle.netLauncher
-    else
-        appid=NonSteamLaunchers
-    fi
-
-    # Create app id folder in compatdata folder if it doesn't exist
-    if [ ! -d "${logged_in_home}/.local/share/Steam/steamapps/compatdata/$appid" ]; then
-        mkdir -p "${logged_in_home}/.local/share/Steam/steamapps/compatdata/$appid"
-    fi
-
-    # Change working directory to Proton's
-    cd "$proton_dir"
-
-    # Set the STEAM_COMPAT_CLIENT_INSTALL_PATH environment variable
-    export STEAM_COMPAT_CLIENT_INSTALL_PATH="${logged_in_home}/.local/share/Steam"
-
-    # Set the STEAM_COMPAT_DATA_PATH environment variable for Epic Games Launcher
-    export STEAM_COMPAT_DATA_PATH="${logged_in_home}/.local/share/Steam/steamapps/compatdata/${appid}"
-
-    # Download BATTLE file if not already present
-    if [ ! -f "$battle_file" ]; then
-        echo "Downloading BATTLE file"
-        wget "$battle_url" -O "$battle_file"
-    fi
-
-    # Run the BATTLE file using Proton with the /passive option
-    echo "Running BATTLE file using Proton with the /passive option"
-    "$STEAM_RUNTIME" "$proton_dir/proton" run "$battle_file" Battle.net-Setup.exe --lang=enUS --installpath="C:\Program Files (x86)\Battle.net"
-
-    # Wait for the process to finish or timeout after a certain number of attempts
-    max_attempts=20
-    attempt=0
-    while true; do
-        if pgrep -f "Battle.net.exe" > /dev/null || pgrep -f "BlizzardError.exe" > /dev/null; then
-            pkill -f "Battle.net.exe" || pkill -f "BlizzardError.exe"
-            sleep 5
-            ((attempt++))
-            if [ "$attempt" -ge "$max_attempts" ]; then
-                echo "Timeout: Battle.net process did not terminate."
-                break
-            fi
-        else
-            break
-        fi
-    done
-fi
-wait
-
-
-
-echo "80"
-echo "# Downloading & Installing Amazon Games...please wait..."
-
-# Check if user selected Amazon Games
-if [[ $options == *"Amazon Games"* ]]; then
-    # User selected Amazon Games
-    echo "User selected Amazon Games"
-
-    # Set the appid for the Amazon Games Launcher
-    if [ "$use_separate_appids" = true ]; then
-        appid=AmazonGamesLauncher
-    else
-        appid=NonSteamLaunchers
-    fi
-
-    # Create app id folder in compatdata folder if it doesn't exist
-    if [ ! -d "${logged_in_home}/.local/share/Steam/steamapps/compatdata/$appid" ]; then
-        mkdir -p "${logged_in_home}/.local/share/Steam/steamapps/compatdata/$appid"
-    fi
-
-    # Change working directory to Proton's
-    cd $proton_dir
-
-    # Set the STEAM_COMPAT_CLIENT_INSTALL_PATH environment variable
-    export STEAM_COMPAT_CLIENT_INSTALL_PATH="${logged_in_home}/.local/share/Steam"
-
-    # Set the STEAM_COMPAT_DATA_PATH environment variable for Amazon Games Launcher
-    export STEAM_COMPAT_DATA_PATH="${logged_in_home}/.local/share/Steam/steamapps/compatdata/${appid}"
-
-    # Download Amazon file
-    if [ ! -f "$amazon_file" ]; then
-        echo "Downloading Amazon file"
-        wget $amazon_url -O $amazon_file
-    fi
-
-    # Run the Amazon file using Proton with the /passive option
-    echo "Running Amazon file using Proton with the /passive option"
-    "$STEAM_RUNTIME" "${proton_dir}/proton" run "$amazon_file" &
-
-    # Cancel & Exit the Amazon Games Setup Wizard
-    end=$((SECONDS+60))  # Timeout after 60 seconds
-    while true; do
-        if pgrep -f "Amazon Games.exe" > /dev/null; then
-            pkill -f "Amazon Games.exe"
-            break
-        fi
-        if [ $SECONDS -gt $end ]; then
-            echo "Timeout while trying to kill Amazon Games.exe"
-            break
-        fi
-        sleep 1
-    done
-
-    # Wait for the Amazon file to finish running
-    wait
-fi
-
-wait
-
-echo "88"
-echo "# Downloading & Installing EA App...please wait..."
-
-# Check if user selected EA App
-if [[ $options == *"EA App"* ]]; then
-    # User selected EA App
-    echo "User selected EA App"
-
-    # Set the appid for the EA App Launcher
-    if [ "$use_separate_appids" = true ]; then
-        appid=TheEAappLauncher
-    else
-        appid=NonSteamLaunchers
-    fi
-
-    # Create app id folder in compatdata folder if it doesn't exist
-    if [ ! -d "${logged_in_home}/.local/share/Steam/steamapps/compatdata/$appid" ]; then
-        mkdir -p "${logged_in_home}/.local/share/Steam/steamapps/compatdata/$appid"
-    fi
-
-    # Change working directory to Proton's
-    cd $proton_dir
-
-    # Set the STEAM_COMPAT_CLIENT_INSTALL_PATH environment variable
-    export STEAM_COMPAT_CLIENT_INSTALL_PATH="${logged_in_home}/.local/share/Steam"
-
-    # Set the STEAM_COMPAT_DATA_PATH environment variable for Epic Games Launcher
-    export STEAM_COMPAT_DATA_PATH="${logged_in_home}/.local/share/Steam/steamapps/compatdata/${appid}"
-
-    # Download EA App file
-    if [ ! -f "$eaapp_file" ]; then
-        echo "Downloading EA App file"
-        wget $eaapp_url -O $eaapp_file
-    fi
-
-    # Run the EA App file using Proton with the /passive option
-    echo "Running EA App file using Proton with the /passive option"
-    "$STEAM_RUNTIME" "$proton_dir/proton" run "$eaapp_file" /quiet &
-    end=$((SECONDS+60))
-    while true; do
-        if pgrep -f "EADesktop.exe" > /dev/null; then
-            pkill -f "EADesktop.exe"
-            break
-        fi
-        if [ $SECONDS -gt $end ]; then
-            echo "Timeout while trying to kill EADesktop.exe"
-            break
-        fi
-        sleep 1
-    done
-
-    # Wait for the EA App file to finish running
-    echo "Attempting to kill EAappInstaller.exe"
-    end=$((SECONDS+10))
-    while true; do
-        if pgrep -f "EAappInstaller.exe" > /dev/null; then
-            pkill -f "EAappInstaller.exe"
-            break
-        fi
-        if [ $SECONDS -gt $end ]; then
-            echo "Timeout while trying to kill EAappInstaller.exe"
-            break
-        fi
-        sleep 1
-    done
-    wait
-fi
-
-
-
-
-wait
-echo "89"
-echo "# Downloading & Installing itch.io...please wait..."
-
-# Check if the user selected itchio Launcher
-if [[ $options == *"itch.io"* ]]; then
-    # User selected itchio Launcher
-    echo "User selected itch.io"
-
-    # Set the appid for the itchio Launcher
-    if [ "$use_separate_appids" = true ]; then
-        appid=itchioLauncher
-    else
-        appid=NonSteamLaunchers
-    fi
-
-    # Create app id folder in compatdata folder if it doesn't exist
-    if [ ! -d "${logged_in_home}/.local/share/Steam/steamapps/compatdata/$appid" ]; then
-        mkdir -p "${logged_in_home}/.local/share/Steam/steamapps/compatdata/$appid"
-    fi
-
-    # Change working directory to Proton's
-    cd $proton_dir
-
-    # Set the STEAM_COMPAT_CLIENT_INSTALL_PATH environment variable
-    export STEAM_COMPAT_CLIENT_INSTALL_PATH="${logged_in_home}/.local/share/Steam"
-
-    # Set the STEAM_COMPAT_DATA_PATH environment variable for Epic Games Launcher
-    export STEAM_COMPAT_DATA_PATH="${logged_in_home}/.local/share/Steam/steamapps/compatdata/${appid}"
-
-    # Download itchio file
-    if [ ! -f "$itchio_file" ]; then
-        echo "Downloading itchio file"
-        wget $itchio_url -O $itchio_file
-    fi
-
-    # Run the itchio file using Proton with the /passive option
-    echo "Running itchio file using Proton with the /passive option"
-    "$STEAM_RUNTIME" "$proton_dir/proton" run "$itchio_file" --silent
-    end=$((SECONDS+60))
-    while true; do
-        if pgrep -f "itch.exe" > /dev/null; then
-            pkill -f "itch.exe"
-            break
-        fi
-        if [ $SECONDS -gt $end ]; then
-            echo "Timeout while trying to kill itch.exe"
-            break
-        fi
-        sleep 1
-    done
-
-    # Wait for the itch file to finish running
-    wait
-fi
-
-wait
-echo "90"
-echo "# Downloading & Installing Legacy Games...please wait..."
-
-# Check if user selected Legacy Games
-if [[ $options == *"Legacy Games"* ]]; then
-    # User selected Legacy Games
-    echo "User selected Legacy Games"
-
-    # Set the appid for the Legacy Games Launcher
-    if [ "$use_separate_appids" = true ]; then
-        appid=LegacyGamesLauncher
-    else
-        appid=NonSteamLaunchers
-    fi
-
-    # Create app id folder in compatdata folder if it doesn't exist
-    if [ ! -d "${logged_in_home}/.local/share/Steam/steamapps/compatdata/$appid" ]; then
-        mkdir -p "${logged_in_home}/.local/share/Steam/steamapps/compatdata/$appid"
-    fi
-
-    # Change working directory to Proton's
-    cd $proton_dir
-
-    # Set the STEAM_COMPAT_CLIENT_INSTALL_PATH environment variable
-    export STEAM_COMPAT_CLIENT_INSTALL_PATH="${logged_in_home}/.local/share/Steam"
-
-    # Set the STEAM_COMPAT_DATA_PATH environment variable for Legacy Games Launcher
-    export STEAM_COMPAT_DATA_PATH="${logged_in_home}/.local/share/Steam/steamapps/compatdata/${appid}"
-
-    # Download Legacy file
-    if [ ! -f "$legacygames_file" ]; then
-        echo "Downloading Legacy file"
-        wget $legacygames_url -O $legacygames_file
-    fi
-
-    # Run the Legacy file using Proton with the /passive option
-    echo "Running Legacy file using Proton with the /passive option"
-    "$STEAM_RUNTIME" "$proton_dir/proton" run "$legacygames_file" /S
-fi
-
-# Wait for the Legacy file to finish running
-wait
-
-echo "91"
-echo "# Downloading & Installing Humble Games Collection...please wait..."
-
-# Check if the user selected Humble Games Launcher
-if [[ $options == *"Humble Games Collection"* ]]; then
-    # User selected Humble Games Launcher
-    echo "User selected Humble Games Collection"
-
-    # Set the appid for the Humble Games Launcher
-    if [ "$use_separate_appids" = true ]; then
-        appid=HumbleGamesLauncher
-    else
-        appid=NonSteamLaunchers
-    fi
-
-    # Create app id folder in compatdata folder if it doesn't exist
-    if [ ! -d "${logged_in_home}/.local/share/Steam/steamapps/compatdata/$appid" ]; then
-        mkdir -p "${logged_in_home}/.local/share/Steam/steamapps/compatdata/$appid"
-    fi
-
-    # Change working directory to Proton's
-    cd $proton_dir
-
-    # Set the STEAM_COMPAT_CLIENT_INSTALL_PATH environment variable
-    export STEAM_COMPAT_CLIENT_INSTALL_PATH="${logged_in_home}/.local/share/Steam"
-
-    # Set the STEAM_COMPAT_DATA_PATH environment variable for Humble Games Launcher
-    export STEAM_COMPAT_DATA_PATH="${logged_in_home}/.local/share/Steam/steamapps/compatdata/${appid}"
-
-    # Download exe file
-    if [ ! -f "$humblegames_file" ]; then
-        echo "Downloading MSI file"
-        wget $humblegames_url -O $humblegames_file
-    fi
-
-    # Run the exe file using Proton with the /passive option
-    echo "Running Exe file using Proton with the /passive option"
-    "$STEAM_RUNTIME" "$proton_dir/proton" run "$humblegames_file" /S /D="C:\Program Files\Humble App"
-    wait
-
+# Humble Games specific installation steps
+function install_humblegames {
     # Create the handle-humble-scheme script
     if [[ ! -f "${logged_in_home}/.local/share/Steam/steamapps/compatdata/$appid/pfx/handle-humble-scheme" ]]; then
-        echo '#!/usr/bin/env sh' > "${logged_in_home}/.local/share/Steam/steamapps/compatdata/$appid/pfx/handle-humble-scheme"
-        echo 'set -e' >> "${logged_in_home}/.local/share/Steam/steamapps/compatdata/$appid/pfx/handle-humble-scheme"
-        echo 'export STEAM_COMPAT_CLIENT_INSTALL_PATH=~/.local/share/Steam' >> "${logged_in_home}/.local/share/Steam/steamapps/compatdata/$appid/pfx/handle-humble-scheme"
-        echo 'export STEAM_COMPAT_DATA_PATH=~/.steam/steam/steamapps/compatdata/'$appid >> "${logged_in_home}/.local/share/Steam/steamapps/compatdata/$appid/pfx/handle-humble-scheme"
-        echo 'FIXED_SCHEME="$(echo "$1" | sed "s/?/\//")"' >> "${logged_in_home}/.local/share/Steam/steamapps/compatdata/$appid/pfx/handle-humble-scheme"
-        echo 'echo $FIXED_SCHEME > /home/deck/.local/share/Steam/steamapps/compatdata/'$appid'/pfx/drive_c/.auth' >> "${logged_in_home}/.local/share/Steam/steamapps/compatdata/$appid/pfx/handle-humble-scheme"
-        echo "\"$STEAM_RUNTIME\" \"$proton_dir/proton\" run ~/.local/share/Steam/steamapps/compatdata/$appid/pfx/start-humble.cmd" >> "${logged_in_home}/.local/share/Steam/steamapps/compatdata/$appid/pfx/handle-humble-scheme"
+        cat << EOF > "${logged_in_home}/.local/share/Steam/steamapps/compatdata/$appid/pfx/handle-humble-scheme"
+    #!/usr/bin/env sh
+    set -e
+    export STEAM_COMPAT_CLIENT_INSTALL_PATH=~/.local/share/Steam
+    export STEAM_COMPAT_DATA_PATH=~/.steam/steam/steamapps/compatdata/$appid
+    FIXED_SCHEME="\$(echo "\$1" | sed "s/?/\//")"
+    echo \$FIXED_SCHEME > /home/deck/.local/share/Steam/steamapps/compatdata/$appid/pfx/drive_c/.auth
+    "$STEAM_RUNTIME" "$proton_dir/proton" run ~/.local/share/Steam/steamapps/compatdata/$appid/pfx/start-humble.cmd
+EOF
         chmod +x "${logged_in_home}/.local/share/Steam/steamapps/compatdata/$appid/pfx/handle-humble-scheme"
     fi
-    wait
 
     # Create the Humble-scheme-handler.desktop file
     if [[ ! -f "${logged_in_home}/.local/share/applications/Humble-scheme-handler.desktop" ]]; then
-        echo "[Desktop Entry]" > "${logged_in_home}/.local/share/applications/Humble-scheme-handler.desktop"
-        echo "Name=Humble App (Login)" >> "${logged_in_home}/.local/share/applications/Humble-scheme-handler.desktop"
-        echo "Comment=Target for handling Humble App logins. You should not run this manually." >> "${logged_in_home}/.local/share/applications/Humble-scheme-handler.desktop"
-        echo "Exec=${logged_in_home}/.local/share/Steam/steamapps/compatdata/$appid/pfx/handle-humble-scheme %u" >> "${logged_in_home}/.local/share/applications/Humble-scheme-handler.desktop"
-        echo "Type=Application" >> "${logged_in_home}/.local/share/applications/Humble-scheme-handler.desktop"
-        echo "MimeType=x-scheme-handler/humble;" >> "${logged_in_home}/.local/share/applications/Humble-scheme-handler.desktop"
+        cat << EOF > "${logged_in_home}/.local/share/applications/Humble-scheme-handler.desktop"
+    [Desktop Entry]
+    Name=Humble App (Login)
+    Comment=Target for handling Humble App logins. You should not run this manually.
+    Exec=${logged_in_home}/.local/share/Steam/steamapps/compatdata/$appid/pfx/handle-humble-scheme %u
+    Type=Application
+    MimeType=x-scheme-handler/humble;
+EOF
         desktop-file-install --rebuild-mime-info-cache --dir=${logged_in_home}/.local/share/applications "${logged_in_home}/.local/share/applications/Humble-scheme-handler.desktop"
     fi
 
-    wait
-
     # Create the start-humble.cmd script
     if [[ ! -f "${logged_in_home}/.local/share/Steam/steamapps/compatdata/$appid/pfx/start-humble.cmd" ]]; then
-        echo '@echo off' > "${logged_in_home}/.local/share/Steam/steamapps/compatdata/$appid/pfx/start-humble.cmd"
-        echo 'cd /d "C:\Program Files\Humble App\"' >> "${logged_in_home}/.local/share/Steam/steamapps/compatdata/$appid/pfx/start-humble.cmd"
-        echo 'set /p Url=<"C:\.auth"' >> "${logged_in_home}/.local/share/Steam/steamapps/compatdata/$appid/pfx/start-humble.cmd"
-        echo 'if defined Url (' >> "${logged_in_home}/.local/share/Steam/steamapps/compatdata/$appid/pfx/start-humble.cmd"
-        echo '    start "" "Humble App.exe" "%Url%"' >> "${logged_in_home}/.local/share/Steam/steamapps/compatdata/$appid/pfx/start-humble.cmd"
-        echo ') else (' >> "${logged_in_home}/.local/share/Steam/steamapps/compatdata/$appid/pfx/start-humble.cmd"
-        echo '    start "" "Humble App.exe" "%*"' >> "${logged_in_home}/.local/share/Steam/steamapps/compatdata/$appid/pfx/start-humble.cmd"
-        echo ')' >> "${logged_in_home}/.local/share/Steam/steamapps/compatdata/$appid/pfx/start-humble.cmd"
-        echo 'exit' >> "${logged_in_home}/.local/share/Steam/steamapps/compatdata/$appid/pfx/start-humble.cmd"
+        cat << EOF > "${logged_in_home}/.local/share/Steam/steamapps/compatdata/$appid/pfx/start-humble.cmd"
+    @echo off
+    cd /d "C:\Program Files\Humble App\"
+    set /p Url=<"C:\.auth"
+    if defined Url (
+        start "" "Humble App.exe" "%Url%"
+    ) else (
+        start "" "Humble App.exe" "%*"
+    )
+    exit
+EOF
     fi
-fi
+    wait
+}
 
-wait
-
-echo "92"
-echo "# Downloading & Installing Indie Gala...please wait..."
-
-# Check if user selected indiegala
-if [[ $options == *"IndieGala"* ]]; then
-    # User selected indiegala
-    echo "User selected IndieGala"
-
-    # Set the appid for the indiegala Launcher
-    if [ "$use_separate_appids" = true ]; then
-        appid=IndieGalaLauncher
-    else
-        appid=NonSteamLaunchers
-    fi
-
-    # Create app id folder in compatdata folder if it doesn't exist
-    if [ ! -d "${logged_in_home}/.local/share/Steam/steamapps/compatdata/$appid" ]; then
-        mkdir -p "${logged_in_home}/.local/share/Steam/steamapps/compatdata/$appid"
-    fi
-
-    # Change working directory to Proton's
-    cd $proton_dir
-
-    # Set the STEAM_COMPAT_CLIENT_INSTALL_PATH environment variable
-    export STEAM_COMPAT_CLIENT_INSTALL_PATH="${logged_in_home}/.local/share/Steam"
-
-    # Set the STEAM_COMPAT_DATA_PATH environment variable for Legacy Games Launcher
-    export STEAM_COMPAT_DATA_PATH="${logged_in_home}/.local/share/Steam/steamapps/compatdata/${appid}"
-
-    # Download indiegala file
-    if [ ! -f "$indiegala_file" ]; then
-        echo "Downloading indiegala file"
-        wget $indiegala_url -O $indiegala_file
-    fi
-
-      # Run the indiegala file using Proton with the /passive option
-      echo "Running IndieGala file using Proton with the /passive option"
-      "$STEAM_RUNTIME" "$proton_dir/proton" run "$indiegala_file" /S
-fi
-
-# Wait for the Indie file to finish running
-wait
-
-echo "93"
-echo "# Downloading & Installing Rockstar Games Launcher...please wait..."
-
-# Check if user selected rockstar games launcher
-if [[ $options == *"Rockstar Games Launcher"* ]]; then
-    # User selected rockstar games
-    echo "User selected Rockstar Games Launcher"
-
-    # Set the appid for the indiegala Launcher
-    if [ "$use_separate_appids" = true ]; then
-        appid=RockstarGamesLauncher
-    else
-        appid=NonSteamLaunchers
-    fi
-
-    # Create app id folder in compatdata folder if it doesn't exist
-    if [ ! -d "${logged_in_home}/.local/share/Steam/steamapps/compatdata/$appid" ]; then
-        mkdir -p "${logged_in_home}/.local/share/Steam/steamapps/compatdata/$appid"
-    fi
-
-    # Change working directory to Proton's
-    cd $proton_dir
-
-    # Set the STEAM_COMPAT_CLIENT_INSTALL_PATH environment variable
-    export STEAM_COMPAT_CLIENT_INSTALL_PATH="${logged_in_home}/.local/share/Steam"
-
-    # Set the STEAM_COMPAT_DATA_PATH environment variable for Legacy Games Launcher
-    export STEAM_COMPAT_DATA_PATH="${logged_in_home}/.local/share/Steam/steamapps/compatdata/${appid}"
-
-    # Download rockstar games file
-    if [ ! -f "$rockstar_file" ]; then
-        echo "Downloading Rockstar file"
-        wget $rockstar_url -O $rockstar_file
-    fi
-
+# Rockstar Games Launcher specific installation steps
+function install_rockstar {
     #Manually Install Rockstar Game Launcher
 
     # Define directories and files
@@ -1650,156 +1240,150 @@ if [[ $options == *"Rockstar Games Launcher"* ]]; then
 
     "$STEAM_RUNTIME" "$proton_dir/proton" run "$rstarInstallDir/Redistributables/VCRed/vc_redist.x64.exe" /install /quiet /norestart
     "$STEAM_RUNTIME" "$proton_dir/proton" run "$rstarInstallDir/Redistributables/VCRed/vc_redist.x86.exe" /install /quiet /norestart
-fi
-
-# Wait for the rockstar file to finish running
-wait
-
-echo "94"
-echo "# Downloading & Installing Glyph Launcher...please wait..."
-
-# Check if user selected Glyph
-if [[ $options == *"Glyph Launcher"* ]]; then
-    # User selected Glyph
-    echo "User selected Glyph Launcher"
-
-    # Set the appid for Glyph
-    if [ "$use_separate_appids" = true ]; then
-        appid=GlyphLauncher
-    else
-        appid=NonSteamLaunchers
-    fi
-
-    # Create app id folder in compatdata folder if it doesn't exist
-    if [ ! -d "${logged_in_home}/.local/share/Steam/steamapps/compatdata/$appid" ]; then
-        mkdir -p "${logged_in_home}/.local/share/Steam/steamapps/compatdata/$appid"
-    fi
-
-    # Change working directory to Proton's
-    cd $proton_dir
-
-    # Set the STEAM_COMPAT_CLIENT_INSTALL_PATH environment variable
-    export STEAM_COMPAT_CLIENT_INSTALL_PATH="${logged_in_home}/.local/share/Steam"
-
-    # Set the STEAM_COMPAT_DATA_PATH environment variable for Legacy Games Launcher
-    export STEAM_COMPAT_DATA_PATH="${logged_in_home}/.local/share/Steam/steamapps/compatdata/${appid}"
-
-    # Download Glyph file
-    if [ ! -f "$glyph_file" ]; then
-        echo "Downloading Glyph file"
-        wget $glyph_url -O $glyph_file
-    fi
-
-    # Run the Glyph file using Proton with the /passive option
-    echo "Running Glyph Launcher file using Proton with the /passive option"
-    "$STEAM_RUNTIME" "$proton_dir/proton" run "$glyph_file"
-fi
-
-# Wait for the Glyph file to finish running
-wait
-
-
-echo "96"
-echo "# Downloading & Installing Playstation Plus...please wait..."
-
-# Check if the user selected Playstation Launcher
-if [[ $options == *"Playstation Plus"* ]]; then
-    # User selected PlayStation Plus Launcher
-    echo "User selected PlayStation Plus"
-
-    # Set the appid for the PlayStation Plus Launcher
-    if [ "$use_separate_appids" = true ]; then
-    appid=PlaystationPlusLauncher
-    else
-    appid=NonSteamLaunchers
-    fi
-
-    # Create app id folder in compatdata folder if it doesn't exist
-    if [ ! -d "${logged_in_home}/.local/share/Steam/steamapps/compatdata/$appid" ]; then
-        mkdir -p "${logged_in_home}/.local/share/Steam/steamapps/compatdata/$appid"
-    fi
-
-    # Change working directory to Proton's
-    cd $proton_dir
-
-    # Set the STEAM_COMPAT_CLIENT_INSTALL_PATH environment variable
-    export STEAM_COMPAT_CLIENT_INSTALL_PATH="${logged_in_home}/.local/share/Steam"
-
-    # Set the STEAM_COMPAT_DATA_PATH environment variable for Epic Games Launcher
-    export STEAM_COMPAT_DATA_PATH="${logged_in_home}/.local/share/Steam/steamapps/compatdata/${appid}"
-
-    # Download MSI file
-    if [ ! -f "$psplus_file" ]; then
-        echo "Downloading MSI file"
-        wget $psplus_url -O $psplus_file
-    fi
-
-    # Run the Playstation file using Proton with the /passive option
-    echo "Running Playstation file using Proton with the /passive option"
-    "$STEAM_RUNTIME" "$proton_dir/proton" run "$psplus_file" /q
-fi
-
-wait
-
-
-echo "98"
-echo "# Downloading & Installing VK Play...please wait..."
-
-# Check if the user selected VK Play Launcher
-if [[ "$options" == *"VK Play"* ]]; then
-    # User selected VK Play Launcher
-    echo "User selected VK Play"
-
-    # Set the appid for the VK Play Launcher
-    if [ "$use_separate_appids" = true ]; then
-    	appid=VKPlayLauncher
-    else
-    	appid=NonSteamLaunchers
-    fi
-
-    # Create app id folder in compatdata folder if it doesn't exist
-    if [ ! -d "${logged_in_home}/.local/share/Steam/steamapps/compatdata/$appid" ]; then
-        mkdir -p "${logged_in_home}/.local/share/Steam/steamapps/compatdata/$appid"
-    fi
-
-    # Change working directory to Proton's
-    cd "$proton_dir"
-
-    # Set the STEAM_COMPAT_CLIENT_INSTALL_PATH environment variable
-    export STEAM_COMPAT_CLIENT_INSTALL_PATH="${logged_in_home}/.local/share/Steam"
-
-    # Set the STEAM_COMPAT_DATA_PATH environment variable for VK Play Launcher
-    export STEAM_COMPAT_DATA_PATH="${logged_in_home}/.local/share/Steam/steamapps/compatdata/${appid}"
-
-    # Download VK Play file
-    if [ ! -f "$vkplay_file" ]; then
-        echo "Downloading VK Play file"
-		wget "$vkplay_url" -O "$vkplay_file"
-    fi
-
-	# Run the VK Play file using Proton with the /passive option
-	echo "Running VK Play file using Proton with the /passive option"
-	"$STEAM_RUNTIME" "$proton_dir/proton" run "$vkplay_file"
-
-	counter=0
-    while true; do
-        if pgrep -f "*GameCenter.exe*" > /dev/null; then
-            pkill -f "*GameCenter.exe*"
-            break
-        fi
-        sleep 1
-        counter=$((counter + 1))
-        if [ $counter -ge 30 ]; then
-            break
-        fi
-    done
-
-    # Wait for the VK Play file to finish running
     wait
+}
 
-	echo "VK Play Installation is complete."
+# VK Play specific installation steps
+function install_vkplay {
+    terminate_processes "GameCenter.exe"
+}
 
-fi
+
+
+#Launcher Installs
+function install_launcher {
+    launcher_name=$1
+    appid_name=$2
+    file_name=$3
+    file_url=$4
+    run_command=$5
+    progress_update=$6
+    pre_install_command=$7
+    post_install_command=$8
+    run_in_background=$9  # New parameter to specify if the launcher should run in the background
+
+    echo "${progress_update}"
+    echo "# Downloading & Installing ${launcher_name}...please wait..."
+
+    # Check if the user selected the launcher
+    if [[ $options == *"${launcher_name}"* ]]; then
+        # User selected the launcher
+        echo "User selected ${launcher_name}"
+
+        # Set the appid for the launcher
+        if [ "$use_separate_appids" = true ]; then
+            appid=${appid_name}
+        else
+            appid=NonSteamLaunchers
+        fi
+
+        # Create app id folder in compatdata folder if it doesn't exist
+        if [ ! -d "${logged_in_home}/.local/share/Steam/steamapps/compatdata/$appid" ]; then
+            mkdir -p "${logged_in_home}/.local/share/Steam/steamapps/compatdata/$appid"
+        fi
+
+        # Change working directory to Proton's
+        cd $proton_dir
+
+        # Set the STEAM_COMPAT_CLIENT_INSTALL_PATH environment variable
+        export STEAM_COMPAT_CLIENT_INSTALL_PATH="${logged_in_home}/.local/share/Steam"
+
+        # Set the STEAM_COMPAT_DATA_PATH environment variable for the launcher
+        export STEAM_COMPAT_DATA_PATH="${logged_in_home}/.local/share/Steam/steamapps/compatdata/${appid}"
+
+        # Download file
+        if [ ! -f "$file_name" ]; then
+            echo "Downloading ${file_name}"
+            wget $file_url -O $file_name
+        fi
+
+        # Execute the pre-installation command, if provided
+        if [ -n "$pre_install_command" ]; then
+            echo "Executing pre-install command for ${launcher_name}"
+            eval "$pre_install_command"
+        fi
+
+        # Run the file using Proton with the specified command
+        echo "Running ${file_name} using Proton with the specified command"
+        if [ "$run_in_background" = true ]; then
+            if [ "$launcher_name" = "GOG Galaxy" ]; then
+                "$STEAM_RUNTIME" "$proton_dir/proton" run "$exe_file" &
+                install_gog
+            elif [ "$launcher_name" = "Battle.net" ]; then
+                "$STEAM_RUNTIME" "$proton_dir/proton" run "$battle_file" Battle.net-Setup.exe --lang=enUS --installpath="C:\Program Files (x86)\Battle.net" &
+                install_battlenet
+            elif [ "$launcher_name" = "Amazon Games" ]; then
+                "$STEAM_RUNTIME" "$proton_dir/proton" run "$amazon_file" &
+                install_amazon
+            elif [ "$launcher_name" = "Humble Games Collection" ]; then
+                "$STEAM_RUNTIME" "$proton_dir/proton" run "$humblegames_file" /S /D="C:\Program Files\Humble App"
+                wait
+                install_humblegames
+            elif [ "$launcher_name" = "Rockstar Games Launcher" ]; then
+                install_rockstar
+            else
+                "$STEAM_RUNTIME" "$proton_dir/proton" run ${run_command} &
+            fi
+        else
+            "$STEAM_RUNTIME" "$proton_dir/proton" run ${run_command}
+        fi
+
+
+        # Execute the post-installation command, if provided
+        if [ -n "$post_install_command" ]; then
+            echo "Executing post-install command for ${launcher_name}"
+            eval "$post_install_command"
+        fi
+
+        # Wait for the installation process to complete
+        wait
+    fi
+}
+
+# Install Epic Games Launcher
+install_launcher "Epic Games" "EpicGamesLauncher" "$msi_file" "$msi_url" "MsiExec.exe /i "$msi_file" -opengl /qn" "30" "" ""
+
+# Install GOG Galaxy
+install_launcher "GOG Galaxy" "GogGalaxyLauncher" "$exe_file" "$exe_url" "$exe_file" "40" "" "" true
+
+# Install Ubisoft Connect
+install_launcher "Ubisoft Connect" "UplayLauncher" "$ubi_file" "$ubi_url" "$ubi_file /S" "50" "" ""
+
+# Install Battle.net
+install_launcher "Battle.net" "Battle.netLauncher" "$battle_file" "$battle_url" "" "70" "" "" true
+
+#Install Amazon Games
+install_launcher "Amazon Games" "AmazonGamesLauncher" "$amazon_file" "$amazon_url" "" "80" "" "" true
+
+#Install EA App
+install_launcher "EA App" "TheEAappLauncher" "$eaapp_file" "$eaapp_url" "$eaapp_file /quiet" "88" "" "install_eaapp" true
+
+# Install itch.io
+install_launcher "itch.io" "itchioLauncher" "$itchio_file" "$itchio_url" "$itchio_file --silent" "89" "" "install_itchio" true
+
+# Install Legacy Games
+install_launcher "Legacy Games" "LegacyGamesLauncher" "$legacygames_file" "$legacygames_url" "$legacygames_file /S" "90" "" ""
+
+# Install Humble Games
+install_launcher "Humble Games Collection" "HumbleGamesLauncher" "$humblegames_file" "$humblegames_url" "" "91" "" "" true
+
+# Install IndieGala
+install_launcher "IndieGala" "IndieGalaLauncher" "$indiegala_file" "$indiegala_url" "$indiegala_file /S" "92" "" ""
+
+# Install Rockstar Games Launcher
+install_launcher "Rockstar Games Launcher" "RockstarGamesLauncher" "$rockstar_file" "$rockstar_url" "" "93" "" "" true
+
+# Install Glyph Launcher
+install_launcher "Glyph Launcher" "GlyphLauncher" "$glyph_file" "$glyph_url" "$glyph_file" "94" "" ""
+
+# Install Playstation Plus Launcher
+install_launcher "Playstation Plus" "PlaystationPlusLauncher" "$psplus_file" "$psplus_url" "$psplus_file /q" "96" "" ""
+
+# Install VK Play
+install_launcher "VK Play" "VKPlayLauncher" "$vkplay_file" "$vkplay_url" "$vkplay_file" "98" "" "install_vkplay" true
+#End of Launcher Installations
+
+
 
 wait
 echo "99"
@@ -1889,6 +1473,9 @@ check_and_write() {
     fi
 }
 
+
+
+
 # Env_vars Configuration Paths
 check_and_write "epic" "$epic_games_launcher_path1" "$epic_games_launcher_path2" "NonSteamLaunchers" "EpicGamesLauncher" "-opengl" "epic_games_launcher"
 check_and_write "gog" "$gog_galaxy_path1" "$gog_galaxy_path2" "NonSteamLaunchers" "GogGalaxyLauncher" "" "gog_galaxy_launcher"
@@ -1906,6 +1493,10 @@ check_and_write "psplus" "$psplus_path1" "$psplus_path2" "NonSteamLaunchers" "Pl
 check_and_write "vkplay" "$vkplay_path1" "$vkplay_path2" "NonSteamLaunchers" "VKPlayLauncher" "" "vkplay_launcher"
 # End of writing to env_vars
 
+# Set the env_vars variable
+if [ "$use_separate_appids" != true ]; then
+    echo "export separate_appids=$use_separate_appids" >> ${logged_in_home}/.config/systemd/user/env_vars
+fi
 
 
 
@@ -1951,7 +1542,6 @@ if [[ $options == *"RemotePlayWhatever"* ]]; then
     wait
     echo "added RemotePlayWhatever to steamos"
 fi
-
 
 
 
@@ -2023,6 +1613,7 @@ if [[ $options == *"Fortnite"* ]]; then
     fortnitechromelaunchoptions="run --branch=stable --arch=x86_64 --command=/app/bin/chrome --file-forwarding com.google.Chrome @@u @@ --window-size=1280,800 --force-device-scale-factor=1.00 --device-scale-factor=1.00 --kiosk https://www.xbox.com/en-US/play/games/fortnite/BT5P2X999VH2/ --chrome-kiosk-type=fullscreen --no-first-run --enable-features=OverlayScrollbar"
     echo "export fortnitechromelaunchoptions=$fortnitechromelaunchoptions" >> ${logged_in_home}/.config/systemd/user/env_vars
 fi
+
 
 
 # Check if any custom websites were provided
@@ -2161,6 +1752,7 @@ else
 fi
 
 
+
 # Pre check for updating the config file
 
 # Set the default Steam directory
@@ -2193,8 +1785,6 @@ echo "export chrome_startdir=$chrome_startdir" >> ${logged_in_home}/.config/syst
 
 
 
-
-
 # Check if either directory does not exist
 if [ "${deckyplugin}" = false ]; then
     # Detach script from Steam process
@@ -2210,29 +1800,27 @@ if [ "${deckyplugin}" = false ]; then
 
 	#Setup NSLGameScanner.service
 	python_script_path="${logged_in_home}/.config/systemd/user/NSLGameScanner.py"
-	
+
 	# Define your GitHub link
 	github_link="https://raw.githubusercontent.com/moraroy/NonSteamLaunchers-On-Steam-Deck/main/NSLGameScanner.py"
-	
+
 	# Check if the service is already running
 	service_status=$(systemctl --user is-active nslgamescanner.service)
-	
+
 	if [ "$service_status" = "active" ] || [ "$service_status" = "activating" ]
 	then
 	    echo "Service is already running or activating. Stopping the service..."
 	    systemctl --user stop nslgamescanner.service
 	fi
-	
+
 	echo "Updating Python script from GitHub..."
-	
+
 	curl -o $python_script_path $github_link
-	
+
 	echo "Starting the service..."
-	
+
 	python3 $python_script_path
 fi
-
-
 
 
 
