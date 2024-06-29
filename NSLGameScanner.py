@@ -591,6 +591,7 @@ folder_names = {
     'VK Play': 'VKPlayLauncher',
 }
 
+
 # Iterate over each launcher in the folder_names dictionary
 for launcher_name, folder in folder_names.items():
     # Define the current path of the folder
@@ -612,8 +613,13 @@ for launcher_name, folder in folder_names.items():
 
             # Check if the new path already exists
             if os.path.exists(new_path):
-                print(f'{new_path} already exists. Skipping renaming and symlinking.')
-            else:
+                # Check if the directory is empty
+                if not os.listdir(new_path):
+                    print(f'{new_path} is empty. Deleting directory.')
+                    os.rmdir(new_path)
+                else:
+                    print(f'{new_path} already exists and is not empty. Skipping renaming and symlinking.')
+                    continue  # skip to the next iteration
                 # Rename the folder
                 os.rename(current_path, new_path)
                 print(f"Renamed {current_path} to {new_path}")
