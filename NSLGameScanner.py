@@ -702,19 +702,13 @@ if os.path.exists(non_steam_launchers_path):
 
 
 
-#Print if any shorcuts exist
-if 'shortcuts' in shortcuts:
-    print("Existing Shortcuts:")
-    for shortcut in shortcuts['shortcuts'].values():
-        # Check if 'appname' or 'AppName' is not in shortcut
-        if shortcut.get('appname') is None and shortcut.get('AppName') is None:
-            continue  # Skip this iteration if no shortcut key
-        elif shortcut.get('appname') is None:
-            print(f"AppID for {shortcut.get('AppName')}: {shortcut.get('appid')}")
-        else:
-            print(f"AppID for {shortcut.get('appname')}: {shortcut.get('appid')}")
-else:
-    print("No shortcuts found.")
+# Print the existing shortcuts
+print("Existing Shortcuts:")
+for shortcut in shortcuts['shortcuts'].values():
+    if shortcut.get('appname') is None:
+        print(f"AppID for {shortcut.get('AppName')}: {shortcut.get('appid')}")
+    else:
+        print(f"AppID for {shortcut.get('appname')}: {shortcut.get('appid')}")
 
 
 
