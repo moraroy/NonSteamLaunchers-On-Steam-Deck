@@ -386,15 +386,6 @@ print(sys.path)
 # Create an empty dictionary to store the app IDs
 app_ids = {}
 
-# Get the highest existing key
-if shortcuts['shortcuts']:
-    highest_key = max(int(key) for key in shortcuts['shortcuts'].keys())
-else:
-    highest_key = -1
-
-# Start the counter from the next available number
-counter = highest_key + 1
-
 def create_new_entry(shortcutdirectory, appname, launchoptions, startingdir):
     global new_shortcuts_added
     global shortcuts_updated
@@ -404,7 +395,6 @@ def create_new_entry(shortcutdirectory, appname, launchoptions, startingdir):
     global gridp64
     global logo64
     global hero64
-    global counter  # Add this line to access the counter variable
 
     # Check if the launcher is installed
     if not shortcutdirectory or not appname or not launchoptions or not startingdir:
@@ -465,14 +455,14 @@ def create_new_entry(shortcutdirectory, appname, launchoptions, startingdir):
         'Logo': logo64,
     }
     # Add the new entry to the shortcuts dictionary and add proton
-    # Use the counter for the key
-    shortcuts['shortcuts'][str(counter)] = new_entry  # Use the counter as the key
+    # Use the length of the shortcuts dictionary for the key
+    key = str(len(shortcuts['shortcuts']))
+    shortcuts['shortcuts'][key] = new_entry
     decky_shortcuts[appname] = decky_entry
     print(f"Added new entry for {appname} to shortcuts.")
     new_shortcuts_added = True
     created_shortcuts.append(appname)
 
-    counter += 1  # Increment the counter after adding the new entry
 
 
 
