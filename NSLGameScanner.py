@@ -613,29 +613,24 @@ for launcher_name, folder in folder_names.items():
 
             # Check if the new path already exists
             if os.path.exists(new_path):
-                # Check if the directory is empty
-                if not os.listdir(new_path):
-                    print(f'{new_path} is empty. Deleting directory.')
-                    os.rmdir(new_path)
-                else:
-                    print(f'{new_path} already exists and is not empty. Skipping renaming and symlinking.')
-                    continue  # skip to the next iteration
+                print(f'{new_path} already exists. Skipping renaming and symlinking.')
+            else:
+                # Rename the folder
+                os.rename(current_path, new_path)
+                print(f"Renamed {current_path} to {new_path}")
 
-            # Rename the folder
-            os.rename(current_path, new_path)
-            print(f"Renamed {current_path} to {new_path}")
+                # Define the path of the symbolic link
+                symlink_path = os.path.join(compatdata_dir, folder)
+                print(f"Symlink path for {launcher_name}: {symlink_path}")
 
-            # Define the path of the symbolic link
-            symlink_path = os.path.join(compatdata_dir, folder)
-            print(f"Symlink path for {launcher_name}: {symlink_path}")
-
-            # Create a symbolic link to the renamed folder
-            os.symlink(new_path, symlink_path)
-            print(f"Created symlink at {symlink_path} to {new_path}")
+                # Create a symbolic link to the renamed folder
+                os.symlink(new_path, symlink_path)
+                print(f"Created symlink at {symlink_path} to {new_path}")
         else:
             print(f'App ID for {launcher_name} is not available yet.')
     else:
         print(f'{launcher_name}: {folder} does not exist')
+
 
 
 
