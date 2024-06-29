@@ -41,11 +41,21 @@ for line in lines:
     name, value = line.strip().split('=', 1)
     os.environ[name] = value
 
+# Store the value of separate_appids before deleting it
+separate_appids = None
+
 # Delete env_vars entries for Chrome shortcuts so that they're only added once
 with open(env_vars_path, 'w') as f:
     for line in lines:
+        if 'export separate_appids=false' in line:
+            separate_appids = line.split('=')[1].strip()
         if line.find('chromelaunchoptions') == -1 and line.find('websites_str') == -1:
             f.write(line)
+
+
+
+
+
 
 # Variables from NonSteamLaunchers.sh
 steamid3 = os.environ['steamid3']
@@ -60,7 +70,7 @@ gog_galaxy_launcher = os.environ.get('gog_galaxy_launcher', '')
 bnet_launcher = os.environ.get('bnet_launcher', '')
 amazon_launcher = os.environ.get('amazon_launcher', '')
 itchio_launcher = os.environ.get('itchio_launcher', '')
-
+legacy_launcher = os.environ.get('legacy_launcher', '')
 
 
 #Variables of the Launchers
@@ -210,6 +220,8 @@ if os.path.exists(shortcuts_file):
 else:
     print("The shortcuts.vdf file does not exist.")
     sys.exit(1)
+
+
 
 
 # Open the config.vdf file
@@ -452,7 +464,6 @@ def create_new_entry(shortcutdirectory, appname, launchoptions, startingdir):
         'Hero': hero64,
         'Logo': logo64,
     }
-
     # Add the new entry to the shortcuts dictionary and add proton
     # Use the counter for the key
     shortcuts['shortcuts'][str(counter)] = new_entry  # Use the counter as the key
@@ -533,6 +544,28 @@ for custom_website in custom_websites:
 #End of Creating Launcher Shortcuts
 
 
+#Custom Shortcut for NSL
+# Define the parameters for the new shortcut
+nslshortcutdirectory = f"\"{logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/\""
+nslappname = "NonSteamLaunchers"
+nsllaunchoptions = f"STEAM_COMPAT_DATA_PATH=\"{logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/\" %command%"
+nslstartingdir = f"\"{logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/\""
+print(f"nslshortcutdirectory: {nslshortcutdirectory}")  # Debug print
+print(f"nslappname: {nslappname}")  # Debug print
+print(f"nsllaunchoptions: {nsllaunchoptions}")  # Debug print
+
+
+
+# Check if separate_appids is set to 'false'
+if separate_appids == 'false':
+    print("separate_appids is set to 'false'. Creating new shortcut...")  # Debug print
+    # Call the function to create the new shortcut and store the returned appid
+    appid = create_new_entry(nslshortcutdirectory, nslappname, nsllaunchoptions, nslstartingdir)
+    app_ids[nslappname] = appid
+    print(f"appid: {appid}")  # Debug print
+else:
+    print("separate_appids is not set to 'false'. Skipping shortcut creation.")  # Debug print
+
 
 
 
@@ -608,13 +641,15 @@ for launcher_name, folder in folder_names.items():
         print(f'{launcher_name}: {folder} does not exist')
 
 
+
+# Define the appid for the custom shortcut
+custom_app_id = 4206469918
+print(f"App ID for the custom shortcut: {custom_app_id}")
+
 # Check if the NonSteamLaunchers folder exists
 non_steam_launchers_path = os.path.join(compatdata_dir, 'NonSteamLaunchers')
-if app_ids and os.path.exists(non_steam_launchers_path):
+if os.path.exists(non_steam_launchers_path):
     print("NonSteamLaunchers already exists at the expected path.")
-    # Get the first app ID from the app_ids list
-    first_app_id = next(iter(app_ids.values()))
-    print(f"First app ID from app_ids: {first_app_id}")
 
     # Define the current path of the NonSteamLaunchers folder
     current_path = os.path.join(compatdata_dir, 'NonSteamLaunchers')
@@ -624,17 +659,23 @@ if app_ids and os.path.exists(non_steam_launchers_path):
     if os.path.islink(current_path):
         print('NonSteamLaunchers is already a symbolic link')
         # Check if NonSteamLaunchers is a symlink to an appid folder
-        if os.readlink(current_path) == os.path.join(compatdata_dir, str(first_app_id)):
-            print('NonSteamLaunchers is already correctly symlinked')
-        else:
+        if os.readlink(current_path) != os.path.join(compatdata_dir, str(custom_app_id)):
             print('NonSteamLaunchers is symlinked to a different folder')
+            # Remove the existing symbolic link
+            os.unlink(current_path)
+            print(f'Removed existing symlink at {current_path}')
+            # Create a symbolic link to the correct appid folder
+            os.symlink(os.path.join(compatdata_dir, str(custom_app_id)), current_path)
+            print(f'Created new symlink at {current_path} to {os.path.join(compatdata_dir, str(custom_app_id))}')
+        else:
+            print('NonSteamLaunchers is already correctly symlinked')
     else:
         print("NonSteamLaunchers is not a symbolic link.")
         # Check if the current path exists
         if os.path.exists(current_path):
             print("NonSteamLaunchers exists at the current path.")
             # Define the new path of the NonSteamLaunchers folder
-            new_path = os.path.join(compatdata_dir, str(first_app_id))
+            new_path = os.path.join(compatdata_dir, str(custom_app_id))
             print(f"New path for NonSteamLaunchers: {new_path}")
 
             # Check if the new path already exists
@@ -656,7 +697,6 @@ if app_ids and os.path.exists(non_steam_launchers_path):
 
 
 #End of old refactored Code
-
 
 
 
@@ -1167,9 +1207,58 @@ for game in games:
     launchoptions = f"STEAM_COMPAT_DATA_PATH=\"{logged_in_home}/.local/share/Steam/steamapps/compatdata/{itchio_launcher}/\" %command%"
     create_new_entry(exe_path, game_title, launchoptions, start_dir)
 
-
-
 #End of Itchio Scanner
+
+
+#Legacy Games Scanner
+legacy_dir = f"{logged_in_home}/.local/share/Steam/steamapps/compatdata/{legacy_launcher}/pfx/drive_c/Program Files/Legacy Games/"
+user_reg_path = f"{logged_in_home}/.local/share/Steam/steamapps/compatdata/{legacy_launcher}/pfx/user.reg"
+
+if not os.path.exists(legacy_dir) or not os.path.exists(user_reg_path):
+    print("Path not found. Skipping Legacy Games Scanner.")
+else:
+    print("Directory and user.reg file found.")
+    with open(user_reg_path, 'r') as file:
+        user_reg = file.read()
+
+    for game_dir in os.listdir(legacy_dir):
+        if game_dir == "Legacy Games Launcher":
+            continue
+
+        print(f"Processing game directory: {game_dir}")
+
+        if game_dir == "100 Doors Escape from School":
+            app_info_path = f"{legacy_dir}/100 Doors Escape from School/100 Doors Escape From School_Data/app.info"
+            exe_path = f"{legacy_dir}/100 Doors Escape from School/100 Doors Escape From School.exe"
+        else:
+            app_info_path = os.path.join(legacy_dir, game_dir, game_dir.replace(" ", "") + "_Data", "app.info")
+            exe_path = os.path.join(legacy_dir, game_dir, game_dir.replace(" ", "") + ".exe")
+
+        if os.path.exists(app_info_path):
+            print("app.info file found.")
+            with open(app_info_path, 'r') as file:
+                lines = file.read().split('\n')
+                game_name = lines[1].strip()
+                print(f"Game Name: {game_name}")
+        else:
+            print("No app.info file found.")
+
+        if os.path.exists(exe_path):
+            game_exe_reg = re.search(r'\[Software\\\\Legacy Games\\\\' + re.escape(game_dir) + r'\].*?"GameExe"="([^"]*)"', user_reg, re.DOTALL | re.IGNORECASE)
+            if game_exe_reg and game_exe_reg.group(1).lower() == os.path.basename(exe_path).lower():
+                print(f"GameExe found in user.reg: {game_exe_reg.group(1)}")
+                start_dir = f"{legacy_dir}{game_dir}"
+                launch_options = f"STEAM_COMPAT_DATA_PATH=\"{logged_in_home}/.local/share/Steam/steamapps/compatdata/{legacy_launcher}\" %command%"
+                create_new_entry(f'"{exe_path}"', game_name, launch_options, f'"{start_dir}"')
+            else:
+                print(f"No matching .exe file found for game: {game_dir}")
+        else:
+            print(f"No .exe file found for game: {game_dir}")
+
+#End of the Legacy Games Scanner
+
+
+
 
 
 
