@@ -1054,21 +1054,23 @@ function install_gog {
     echo "45"
     echo "# Downloading & Installing Gog Galaxy...Please wait..."
 
-    # Define the base directory path
-    base_dir_path="${logged_in_home}/.local/share/Steam/steamapps/compatdata/$appid/pfx/drive_c/users/steamuser/Temp"
-
-    # Wait for the GalaxyInstaller_XXXXX directory to be created by the Galaxy process
-    galaxy_installer_folder=""
-    while [ -z "$galaxy_installer_folder" ]; do
-        galaxy_installer_folder=$(find "$base_dir_path" -maxdepth 1 -type d -name "GalaxyInstaller_*" | head -n1)
+    # Cancel & Exit the GOG Galaxy Setup Wizard
+    end=$((SECONDS+60))  # Timeout after 60 seconds
+    while true; do
+        if pgrep -f "GalaxySetup.tmp" > /dev/null; then
+            pkill -f "GalaxySetup.tmp"
+            break
+        fi
+        if [ $SECONDS -gt $end ]; then
+            echo "Timeout while trying to kill GalaxySetup.tmp"
+            break
+        fi
         sleep 1
     done
 
-    # Now that the directory exists, terminate the Galaxy process
-    terminate_processes "GalaxySetup.tmp"
 
     # Navigate to %LocalAppData%\Temp
-    cd "$base_dir_path"
+    cd "${logged_in_home}/.local/share/Steam/steamapps/compatdata/$appid/pfx/drive_c/users/steamuser/Temp"
 
     # Find the GalaxyInstaller_XXXXX folder and copy it to C:\Downloads
     galaxy_installer_folder=$(find . -maxdepth 1 -type d -name "GalaxyInstaller_*" | head -n1)
