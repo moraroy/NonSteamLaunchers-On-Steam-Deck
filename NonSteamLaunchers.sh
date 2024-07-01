@@ -90,7 +90,7 @@ if [ "${deckyplugin}" = false ]; then
 	#Download Modules
 	# Define the repository and the folders to clone
 	repo_url='https://github.com/moraroy/NonSteamLaunchers-On-Steam-Deck/archive/refs/heads/main.zip'
-	folders_to_clone=('requests' 'urllib3' 'steamgrid' 'vdf')
+	folders_to_clone=('requests' 'urllib3' 'steamgrid' 'vdf' 'charset_normalizer')
 
 	# Define the parent folder
 	logged_in_home=$(eval echo ~$user)
