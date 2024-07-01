@@ -24,7 +24,7 @@ Features  ✅
 
 - In case you didnt know, you can also choose to check mark "Separate App Id's" when installing a launcher, this will install all launchers in each of their own prefix. Automatically working with ProtonTricks!
 
-- Supports ChimerOS and Arch Linux as well as any KDE Environments.
+- Supports ChimeraOS and Arch Linux as well as any KDE Environments.
 
 <h1 align="center">
 Currently Working On 👷‍♂️
