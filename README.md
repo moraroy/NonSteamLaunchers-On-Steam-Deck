@@ -91,6 +91,8 @@ Finds Games Automatically
 - Itch.io 🎮
 - Legacy Games 🎮
 
+To stop the NSLGameScanner.service, open up NSL and hit "Stop NSLGameScanner" it will then ask you if you want to restart it, click no, and that's it.
+
 <h1 align="center">
 How to Install 🔧
 </h1>
