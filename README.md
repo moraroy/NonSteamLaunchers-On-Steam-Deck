@@ -30,7 +30,8 @@ Features  ✅
 Currently Working On 👷‍♂️
 </h1>
 
-* Decky Loader Plugin is available [here](https://github.com/moraroy/NonSteamLaunchersDecky) and [here]([https://github.com/moraroy/NonSteamLaunchersDecky](https://github.com/SteamDeckHomebrew/decky-plugin-database/pull/527))
+* Decky Loader Plugin is available [here](https://github.com/moraroy/NonSteamLaunchersDecky)
+* The pull request for Decky Loader [here]([https://github.com/moraroy/NonSteamLaunchersDecky](https://github.com/SteamDeckHomebrew/decky-plugin-database/pull/527))
 
 
 <p align="center">
