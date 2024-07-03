@@ -1117,7 +1117,7 @@ function install_humblegames {
     export STEAM_COMPAT_CLIENT_INSTALL_PATH=~/.local/share/Steam
     export STEAM_COMPAT_DATA_PATH=~/.steam/steam/steamapps/compatdata/$appid
     FIXED_SCHEME="\$(echo "\$1" | sed "s/?/\//")"
-    echo \$FIXED_SCHEME > /home/deck/.local/share/Steam/steamapps/compatdata/$appid/pfx/drive_c/.auth
+    echo \$FIXED_SCHEME > "${logged_in_home}/.local/share/Steam/steamapps/compatdata/$appid/pfx/drive_c/.auth
     "$STEAM_RUNTIME" "$proton_dir/proton" run ~/.local/share/Steam/steamapps/compatdata/$appid/pfx/start-humble.cmd
 EOF
         chmod +x "${logged_in_home}/.local/share/Steam/steamapps/compatdata/$appid/pfx/handle-humble-scheme"
@@ -1647,11 +1647,11 @@ export PYTHONPATH="${download_dir}/lib/python${python_version}/site-packages/:$P
 steam_dir="${logged_in_home}/.local/share/Steam"
 
 # Check if the loginusers.vdf file exists in either of the two directories
-if [[ -f "${logged_in_home}/.steam/root/config/loginusers.vdf" ]] || [[ -f "/home/deck/.local/share/Steam/config/loginusers.vdf" ]]; then
+if [[ -f "${logged_in_home}/.steam/root/config/loginusers.vdf" ]] || [[ -f "${logged_in_home}/.local/share/Steam/config/loginusers.vdf" ]]; then
     if [[ -f "${logged_in_home}/.steam/root/config/loginusers.vdf" ]]; then
         file_path="${logged_in_home}/.steam/root/config/loginusers.vdf"
     else
-        file_path="/home/deck/.local/share/Steam/config/loginusers.vdf"
+        file_path="${logged_in_home}/.local/share/Steam/config/loginusers.vdf"
     fi
 
     # Extract the block of text for the most recent user
