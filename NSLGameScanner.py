@@ -1166,7 +1166,7 @@ def parse_butler_db(content):
 def dbpath_to_game(paths):
     # Convert the Windows-style path from the database to a Unix-style path
     db_path = paths[0].replace("\\\\", "/").replace("C:", "")
-    linux_path = "/home/deck/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c" + db_path
+    linux_path = f"{logged_in_home}/.local/share/Steam/steamapps/compatdata/{itchio_launcher}/pfx/drive_c" + db_path
     receipt_path = os.path.join(linux_path, ".itch", "receipt.json.gz")
     if not os.path.exists(receipt_path):
         return None
