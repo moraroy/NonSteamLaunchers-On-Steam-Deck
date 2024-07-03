@@ -89,6 +89,7 @@ rockstarshortcutdirectory = os.environ.get('rockstarshortcutdirectory')
 glyphshortcutdirectory = os.environ.get('glyphshortcutdirectory')
 psplusshortcutdirectory = os.environ.get('psplusshortcutdirectory')
 vkplayshortcutdirectory = os.environ.get('vkplayshortcutdirectory')
+hoyoplayshortcutdirectory = os.environ.get('hoyoplayshortcutfirectory')
 #Streaming
 chromedirectory = os.environ.get('chromedirectory')
 websites_str = os.environ.get('custom_websites_str')
@@ -404,7 +405,7 @@ def create_new_entry(shortcutdirectory, appname, launchoptions, startingdir):
     signed_shortcut_id = get_steam_shortcut_id(exe_path, appname)
     unsigned_shortcut_id = get_unsigned_shortcut_id(signed_shortcut_id)
     # Only store the app ID for specific launchers
-    if appname in ['Epic Games', 'Gog Galaxy', 'Ubisoft Connect', 'Battle.net', 'EA App', 'Amazon Games', 'itch.io', 'Legacy Games', 'Humble Bundle', 'IndieGala Client', 'Rockstar Games Launcher', 'Glyph', 'Playstation Plus', 'VK Play']:
+    if appname in ['Epic Games', 'Gog Galaxy', 'Ubisoft Connect', 'Battle.net', 'EA App', 'Amazon Games', 'itch.io', 'Legacy Games', 'Humble Bundle', 'IndieGala Client', 'Rockstar Games Launcher', 'Glyph', 'Playstation Plus', 'VK Play', 'HoYoPlay']:
         app_ids[appname] = unsigned_shortcut_id
 
     # Check if the game already exists in the shortcuts
@@ -481,6 +482,7 @@ create_new_entry(os.environ.get('rockstarshortcutdirectory'), 'Rockstar Games La
 create_new_entry(os.environ.get('glyphshortcutdirectory'), 'Glyph', os.environ.get('glyphlaunchoptions'), os.environ.get('glyphstartingdir'))
 create_new_entry(os.environ.get('psplusshortcutdirectory'), 'Playstation Plus', os.environ.get('pspluslaunchoptions'), os.environ.get('psplusstartingdir'))
 create_new_entry(os.environ.get('vkplayshortcutdirectory'), 'VK Play', os.environ.get('vkplaylaunchoptions'), os.environ.get('vkplaystartingdir'))
+create_new_entry(os.environ.get('hoyoplayshortcutdirectory'), 'HoYoPlay', os.environ.get('hoyoplaylaunchoptions'), os.environ.get('hoyoplaystartingdir'))
 create_new_entry(os.environ.get('chromedirectory'), 'Xbox Game Pass', os.environ.get('xboxchromelaunchoptions'), os.environ.get('chrome_startdir'))
 create_new_entry(os.environ.get('chromedirectory'), 'GeForce Now', os.environ.get('geforcechromelaunchoptions'), os.environ.get('chrome_startdir'))
 create_new_entry(os.environ.get('chromedirectory'), 'Netflix', os.environ.get('netflixchromelaunchoptions'), os.environ.get('chrome_startdir'))
@@ -589,6 +591,7 @@ folder_names = {
     'Glyph': 'GlyphLauncher',
     'Playstation Plus': 'PlaystationPlusLauncher',
     'VK Play': 'VKPlayLauncher',
+    'HoYoPlay': 'HoYoPlayLauncher',
 }
 
 

@@ -1397,7 +1397,7 @@ install_launcher "Playstation Plus" "PlaystationPlusLauncher" "$psplus_file" "$p
 install_launcher "VK Play" "VKPlayLauncher" "$vkplay_file" "$vkplay_url" "$vkplay_file" "98" "" "install_vkplay" true
 
 # Install Hoyo Play
-install_launcher "HoYoPlay" "HoYoPlayLauncher" "$hoyoplay_file" "$hoyoplay_url" "$hoyoplay_file /S /s /q /quiet /silent" "99" "" ""
+install_launcher "HoYoPlay" "HoYoPlayLauncher" "$hoyoplay_file" "$hoyoplay_url" "$hoyoplay_file" "99" "" ""
 #End of Launcher Installations
 
 
