@@ -59,6 +59,7 @@ Supported Stores 🛍
 - Glyph ✔️
 - Playstation Plus ✔️
 - VK Play ✔️
+- HoYoPlay ✔️
 
 <h1 align="center">
 Supported Streaming Sites for games and as well as any website. 🌐
