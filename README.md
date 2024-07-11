@@ -16,7 +16,7 @@ Features  ✅
 
 - Automatic installation of the most popular launchers in your Steam Deck 🎮
 
-- Handle automatically the download and installation of your chosen launchers and the games, Artwork included! ⌚️ 
+- Handle automatically the download and installation of your chosen launchers and the games, artwork included! ⌚️ 
 
 - MicroSD Support 💾 This script supports moving the entire prefix to a microSD. The script will install launchers and games to your SD card, and the launchers in Steam will point to the SD card installation. This allows you to save internal storage space on your Steam Deck!
 
