@@ -26,6 +26,8 @@ Features  ✅
 
 - Supports ChimeraOS and Arch Linux as well as any KDE Environments such as this opensuse - tumbleweed - wayland
 
+- RemotePlayWhatver is also bundled with NSL to allow for local and co-op play between non steam games, this is created by m4Engi, here is the repo [here](https://github.com/m4dEngi/RemotePlayWhatever)
+
 <h1 align="center">
 Currently Working On 👷‍♂️
 </h1>
