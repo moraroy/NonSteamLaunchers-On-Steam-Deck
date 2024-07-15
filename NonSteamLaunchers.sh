@@ -1806,7 +1806,7 @@ echo "export chrome_startdir=$chrome_startdir" >> ${logged_in_home}/.config/syst
 # Check if either directory does not exist
 if [ "${deckyplugin}" = false ]; then
     # Detach script from Steam process
-    nohup sh -c 'sleep 10; /usr/bin/steam' &
+    nohup sh -c 'sleep 10; /usr/bin/steam %U' &
 
     # Close all instances of Steam
     steam_pid() { pgrep -x steam ; }
