@@ -387,14 +387,14 @@ print(sys.path)
 # Create an empty dictionary to store the app IDs
 app_ids = {}
 
-# Get the highest existing key
-if shortcuts['shortcuts']:
-    highest_key = max(int(key) for key in shortcuts['shortcuts'].keys())
-else:
-    highest_key = -1
-
-# Start the counter from the next available number
-counter = highest_key + 1
+def find_first_available_key(shortcuts):
+    # Start from 0
+    key = 0
+    # While the key exists in the shortcuts, increment the key
+    while str(key) in shortcuts:
+        key += 1
+    # Return the first available key
+    return key
 
 def create_new_entry(shortcutdirectory, appname, launchoptions, startingdir):
     global new_shortcuts_added
@@ -465,18 +465,13 @@ def create_new_entry(shortcutdirectory, appname, launchoptions, startingdir):
         'Hero': hero64,
         'Logo': logo64,
     }
-    # Add the new entry to the shortcuts dictionary and add proton
-    # Use the counter for the key
-    shortcuts['shortcuts'][str(counter)] = new_entry  # Use the counter as the key
-    decky_shortcuts[appname] = decky_entry
+    # Add the new entry to the shortcuts dictionary and add proton    # Find the first available key
+    key = find_first_available_key(shortcuts['shortcuts'])
+    # Use the key for the new entry
+    shortcuts['shortcuts'][str(key)] = new_entry
     print(f"Added new entry for {appname} to shortcuts.")
     new_shortcuts_added = True
     created_shortcuts.append(appname)
-
-    counter += 1  # Increment the counter after adding the new entry
-
-
-
 
 
 create_new_entry(os.environ.get('epicshortcutdirectory'), 'Epic Games', os.environ.get('epiclaunchoptions'), os.environ.get('epicstartingdir'))
