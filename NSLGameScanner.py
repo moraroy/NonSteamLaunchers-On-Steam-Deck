@@ -1207,12 +1207,11 @@ for game in games:
 
 #Legacy Games Scanner
 legacy_dir = f"{logged_in_home}/.local/share/Steam/steamapps/compatdata/{legacy_launcher}/pfx/drive_c/Program Files/Legacy Games/"
-user_reg_path = f"{logged_in_home}/.local/share/Steam/steamapps/compatdata/{legacy_launcher}/pfx/user.reg"
 
-if not os.path.exists(legacy_dir) or not os.path.exists(user_reg_path):
-    print("Path not found. Skipping Legacy Games Scanner.")
+if not os.path.exists(legacy_dir):
+    print("Legacy directory not found. Skipping creation.")
 else:
-    print("Directory and user.reg file found.")
+    user_reg_path = f"{logged_in_home}/.local/share/Steam/steamapps/compatdata/{legacy_launcher}/pfx/user.reg"
     with open(user_reg_path, 'r') as file:
         user_reg = file.read()
 
