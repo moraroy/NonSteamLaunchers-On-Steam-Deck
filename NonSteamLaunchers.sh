@@ -989,7 +989,7 @@ if [[ " ${args[@]} " =~ " Stop NSLGameScanner " ]] || [[ $options == "Stop NSLGa
     else
         # User does not want to run NSLGameScanner again
         stop_service
-        exit 1
+        exit 0
     fi
 fi
 
