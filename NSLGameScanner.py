@@ -387,14 +387,11 @@ print(sys.path)
 # Create an empty dictionary to store the app IDs
 app_ids = {}
 
-# Get the highest existing key
-if shortcuts['shortcuts']:
-    highest_key = max(int(key) for key in shortcuts['shortcuts'].keys())
-else:
-    highest_key = -1
-
-# Start the counter from the next available number
-counter = highest_key + 1
+def get_next_available_key(shortcuts):
+    key = 0
+    while str(key) in shortcuts['shortcuts']:
+        key += 1
+    return str(key)
 
 def create_new_entry(shortcutdirectory, appname, launchoptions, startingdir):
     global new_shortcuts_added
@@ -466,14 +463,12 @@ def create_new_entry(shortcutdirectory, appname, launchoptions, startingdir):
         'Logo': logo64,
     }
     # Add the new entry to the shortcuts dictionary and add proton
-    # Use the counter for the key
-    shortcuts['shortcuts'][str(counter)] = new_entry  # Use the counter as the key
-    decky_shortcuts[appname] = decky_entry
+    key = get_next_available_key(shortcuts)
+    shortcuts['shortcuts'][key] = new_entry
     print(f"Added new entry for {appname} to shortcuts.")
     new_shortcuts_added = True
     created_shortcuts.append(appname)
-
-    counter += 1  # Increment the counter after adding the new entry
+    add_compat_tool(unsigned_shortcut_id, launchoptions)
 
 
 
@@ -1276,10 +1271,6 @@ if new_shortcuts_added or shortcuts_updated:
             file.write(vdf.binary_dumps(shortcuts))
     except IOError as e:
         print(f"Error writing to shortcuts.vdf: {e}")
-
-    # Reset the flags
-    new_shortcuts_added = False
-    shortcuts_updated = False
 
     # Print the created shortcuts
     if created_shortcuts:
