@@ -419,7 +419,7 @@ def create_new_entry(shortcutdirectory, appname, launchoptions, startingdir):
         'LastPlayTime': 0,
         'FlatpakAppID': "",
         'tags': {
-            '0': 'NonSteamLaunchers'
+            '0': ''
         }
     }
     decky_entry = {
