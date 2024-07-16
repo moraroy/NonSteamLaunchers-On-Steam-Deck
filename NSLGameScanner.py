@@ -191,40 +191,9 @@ logo64 = ""
 hero64 = ""
 
 
-def create_empty_shortcuts():
-    return {'shortcuts': {}}
-
-def write_shortcuts_to_file(shortcuts_file, shortcuts):
-    with open(shortcuts_file, 'wb') as file:
-        file.write(vdf.binary_dumps(shortcuts))
-    os.chmod(shortcuts_file, 0o755)
-
-# Define the path to the shortcuts file
-shortcuts_file = f"{logged_in_home}/.steam/root/userdata/{steamid3}/config/shortcuts.vdf"
-
-# Check if the file exists
-if os.path.exists(shortcuts_file):
-    # If the file is not executable, write the shortcuts dictionary and make it executable
-    if not os.access(shortcuts_file, os.X_OK):
-        print("The file is not executable. Writing an empty shortcuts dictionary and making it executable.")
-        shortcuts = create_empty_shortcuts()
-        write_shortcuts_to_file(shortcuts_file, shortcuts)
-    else:
-        # Load the existing shortcuts
-        with open(shortcuts_file, 'rb') as file:
-            try:
-                shortcuts = vdf.binary_loads(file.read())
-            except vdf.VDFError as e:
-                print(f"Error reading file: {e}. The file might be corrupted or unreadable.")
-                print("Exiting the program. Please check the shortcuts.vdf file.")
-                sys.exit(1)
-else:
-    print("The shortcuts.vdf file does not exist.")
-    sys.exit(1)
-
-
-
-
+# Load the existing shortcuts
+with open(f"{logged_in_home}/.steam/root/userdata/{steamid3}/config/shortcuts.vdf", 'rb') as file:
+    shortcuts = vdf.binary_loads(file.read())
 # Open the config.vdf file
 with open(f"{logged_in_home}/.steam/root/config/config.vdf", 'r') as file:
     config_data = vdf.load(file)
@@ -405,7 +374,7 @@ def create_new_entry(shortcutdirectory, appname, launchoptions, startingdir):
     global gridp64
     global logo64
     global hero64
-    global counter  # Add this line to access the counter variable
+
 
     # Check if the launcher is installed
     if not shortcutdirectory or not appname or not launchoptions or not startingdir:
@@ -552,19 +521,6 @@ for custom_website in custom_websites:
 
 
 
-
-# Print the existing shortcuts
-print("Existing Shortcuts:")
-for shortcut in shortcuts['shortcuts'].values():
-    if shortcut.get('appname') is None:
-        print(f"AppID for {shortcut.get('AppName')}: {shortcut.get('appid')}")
-    else:
-        print(f"AppID for {shortcut.get('appname')}: {shortcut.get('appid')}")
-
-
-
-
-
 #Scanners
 # Epic Games Scanner
 item_dir = f"{logged_in_home}/.local/share/Steam/steamapps/compatdata/{epic_games_launcher}/pfx/drive_c/ProgramData/Epic/EpicGamesLauncher/Data/Manifests/"
@@ -613,10 +569,6 @@ if new_shortcuts_added or shortcuts_updated:
             file.write(vdf.binary_dumps(shortcuts))
     except IOError as e:
         print(f"Error writing to shortcuts.vdf: {e}")
-
-    # Reset the flags
-    new_shortcuts_added = False
-    shortcuts_updated = False
 
     # Print the created shortcuts
     if created_shortcuts:
