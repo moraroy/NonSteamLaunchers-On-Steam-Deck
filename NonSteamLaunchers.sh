@@ -146,7 +146,7 @@ if [ "${deckyplugin}" = false ]; then
 	python_script_path="${logged_in_home}/.config/systemd/user/NSLGameScanner.py"
 
 	# Define your GitHub link
-	github_link="https://raw.githubusercontent.com/moraroy/NonSteamLaunchers-On-Steam-Deck/main/NSLGameScanner.py"
+	github_link="https://raw.githubusercontent.com/moraroy/NonSteamLaunchers-On-Steam-Deck/fix/NSLGameScanner.py"
 	curl -o $python_script_path $github_link
 
 	# Define the path to the env_vars file
@@ -1820,7 +1820,7 @@ if [ "${deckyplugin}" = false ]; then
 	python_script_path="${logged_in_home}/.config/systemd/user/NSLGameScanner.py"
 
 	# Define your GitHub link
-	github_link="https://raw.githubusercontent.com/moraroy/NonSteamLaunchers-On-Steam-Deck/main/NSLGameScanner.py"
+	github_link="https://raw.githubusercontent.com/moraroy/NonSteamLaunchers-On-Steam-Deck/fix/NSLGameScanner.py"
 
 	# Check if the service is already running
 	service_status=$(systemctl --user is-active nslgamescanner.service)
