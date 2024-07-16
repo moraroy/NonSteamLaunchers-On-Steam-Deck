@@ -1277,6 +1277,10 @@ if new_shortcuts_added or shortcuts_updated:
     except IOError as e:
         print(f"Error writing to shortcuts.vdf: {e}")
 
+    # Reset the flags
+    new_shortcuts_added = False
+    shortcuts_updated = False
+
     # Print the created shortcuts
     if created_shortcuts:
         print("Created Shortcuts:")
