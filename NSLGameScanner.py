@@ -352,30 +352,14 @@ def check_if_shortcut_exists(shortcut_id, display_name, exe_path, start_dir, lau
 sys.path.insert(0, os.path.expanduser(f"{logged_in_home}/Downloads/NonSteamLaunchersInstallation/lib/python{python_version}/site-packages"))
 print(sys.path)
 
-
 # Create an empty dictionary to store the app IDs
 app_ids = {}
 
-def find_first_available_key(shortcuts):
-    # Start from 0
-    key = 0
-    # While the key exists in the shortcuts, increment the key
-    while str(key) in shortcuts:
-        key += 1
-    # Return the first available key
-    return key
-
+#Create Launcher Shortcuts
 def create_new_entry(shortcutdirectory, appname, launchoptions, startingdir):
     global new_shortcuts_added
     global shortcuts_updated
     global created_shortcuts
-    global decky_shortcuts
-    global grid64
-    global gridp64
-    global logo64
-    global hero64
-
-
     # Check if the launcher is installed
     if not shortcutdirectory or not appname or not launchoptions or not startingdir:
         print(f"{appname} is not installed. Skipping.")
@@ -384,63 +368,35 @@ def create_new_entry(shortcutdirectory, appname, launchoptions, startingdir):
     signed_shortcut_id = get_steam_shortcut_id(exe_path, appname)
     unsigned_shortcut_id = get_unsigned_shortcut_id(signed_shortcut_id)
     # Only store the app ID for specific launchers
-    if appname in ['Epic Games', 'Gog Galaxy', 'Ubisoft Connect', 'Battle.net', 'EA App', 'Amazon Games', 'itch.io', 'Legacy Games', 'Humble Bundle', 'IndieGala Client', 'Rockstar Games Launcher', 'Glyph', 'Playstation Plus', 'VK Play', 'HoYoPlay']:
+    if appname in ['Epic Games', 'Gog Galaxy', 'Ubisoft Connect', 'Battle.net', 'EA App', 'Amazon Games', 'itch.io', 'Legacy Games', 'Humble Bundle', 'IndieGala Client', 'Rockstar Games Launcher', 'Glyph', 'Minecraft: Java Edition', 'Playstation Plus', 'VK Play']:
         app_ids[appname] = unsigned_shortcut_id
-
     # Check if the game already exists in the shortcuts
     if check_if_shortcut_exists(signed_shortcut_id, appname, exe_path, startingdir, launchoptions):
         # Check if proton needs applying or updating
         if add_compat_tool(unsigned_shortcut_id, launchoptions):
             shortcuts_updated = True
         return
-
     #Get artwork
     game_id = get_game_id(appname)
     if game_id is not None:
         get_sgdb_art(game_id, unsigned_shortcut_id)
 
     # Create a new entry for the Steam shortcut
-    compatTool= add_compat_tool(unsigned_shortcut_id, launchoptions)
     new_entry = {
         'appid': str(signed_shortcut_id),
         'appname': appname,
         'exe': exe_path,
         'StartDir': startingdir,
         'icon': f"{logged_in_home}/.steam/root/userdata/{steamid3}/config/grid/{get_file_name('icons', unsigned_shortcut_id)}",
-        'ShortcutPath': "",
         'LaunchOptions': launchoptions,
-        'IsHidden': 0,
-        'AllowDesktopConfig': 1,
-        'AllowOverlay': 1,
-        'OpenVR': 0,
-        'Devkit': 0,
-        'DevkitGameID': "",
-        'DevkitOverrideAppID': 0,
-        'LastPlayTime': 0,
-        'FlatpakAppID': "",
-        'tags': {
-            '0': ''
-        }
     }
-    decky_entry = {
-        'appname': appname,
-        'exe': exe_path,
-        'StartDir': startingdir,
-        'icon': f"{logged_in_home}/.steam/root/userdata/{steamid3}/config/grid/{get_file_name('icons', unsigned_shortcut_id)}",
-        'LaunchOptions': launchoptions,
-        'CompatTool': compatTool,
-        'WideGrid': grid64,
-        'Grid': gridp64,
-        'Hero': hero64,
-        'Logo': logo64,
-    }
-    # Add the new entry to the shortcuts dictionary and add proton    # Find the first available key
-    key = find_first_available_key(shortcuts['shortcuts'])
-    # Use the key for the new entry
-    shortcuts['shortcuts'][str(key)] = new_entry
+    # Add the new entry to the shortcuts dictionary and add proton
+    shortcuts['shortcuts'][str(signed_shortcut_id)] = new_entry
     print(f"Added new entry for {appname} to shortcuts.")
     new_shortcuts_added = True
     created_shortcuts.append(appname)
+    add_compat_tool(unsigned_shortcut_id, launchoptions)
+
 
 
 create_new_entry(os.environ.get('epicshortcutdirectory'), 'Epic Games', os.environ.get('epiclaunchoptions'), os.environ.get('epicstartingdir'))
