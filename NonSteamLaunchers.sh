@@ -985,7 +985,7 @@ if [[ " ${args[@]} " =~ " Stop NSLGameScanner " ]] || [[ $options == "Stop NSLGa
         python3 $python_script_path
     else
         # User does not want to run NSLGameScanner again
-        exit 1
+        exit 0
     fi
 fi
 
