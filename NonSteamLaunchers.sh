@@ -951,12 +951,7 @@ else
 
 fi
 
-# Get the command line arguments
-args=("$@")
-
-# Check if the Stop NSLGameScanner option was passed as a command line argument or clicked in the GUI
-if [[ " ${args[@]} " =~ " Stop NSLGameScanner " ]] || [[ $options == "Stop NSLGameScanner" ]]; then
-
+function stop_service {
     # Stop the service
     systemctl --user stop nslgamescanner.service
 
@@ -971,6 +966,14 @@ if [[ " ${args[@]} " =~ " Stop NSLGameScanner " ]] || [[ $options == "Stop NSLGa
 
     # Reload the systemd user instance
     systemctl --user daemon-reload
+}
+
+# Get the command line arguments
+args=("$@")
+
+# Check if the Stop NSLGameScanner option was passed as a command line argument or clicked in the GUI
+if [[ " ${args[@]} " =~ " Stop NSLGameScanner " ]] || [[ $options == "Stop NSLGameScanner" ]]; then
+    stop_service
 
     # If command line arguments were provided, exit the script
     if [ ${#args[@]} -ne 0 ]; then
@@ -985,9 +988,11 @@ if [[ " ${args[@]} " =~ " Stop NSLGameScanner " ]] || [[ $options == "Stop NSLGa
         python3 $python_script_path
     else
         # User does not want to run NSLGameScanner again
+        stop_service
         exit 1
     fi
 fi
+
 
 
 # TODO: probably better to break this subshell into a function that can then be redirected to zenity
