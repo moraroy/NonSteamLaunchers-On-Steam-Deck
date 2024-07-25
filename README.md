@@ -8,7 +8,7 @@ NonSteamLaunchers 🚀
 </h1>
 
 This script installs the latest GE-Proton, installs NonSteamLaunchers under one unique Proton prefix folder in your compatdata folder path called "NonSteamLaunchers" and adds them to your Steam Library. It will also add the games automatically on every steam restart.
-So you can use them on Desktop or in Game Mode.
+So you can use them on Desktop or in Game Mode. Local Saves and Cloud saves are supported, as well as multiplayer/online support(because youre using the launchers). Obviously, certain anticheat games will not work on linux enviroments; this is on a game to game basis.
 
 <h1 align="center">
 Features  ✅
