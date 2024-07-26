@@ -8,7 +8,8 @@ NonSteamLaunchers 🚀
 </h1>
 
 This script installs the latest GE-Proton, installs NonSteamLaunchers under one unique Proton prefix folder in your compatdata folder path called "NonSteamLaunchers" and adds them to your Steam Library. It will also add the games automatically on every steam restart.
-So you can use them on Desktop or in Game Mode. Local Saves and Cloud saves are supported, as well as multiplayer/online support(because youre using the launchers). Obviously, certain anticheat games will not work on linux enviroments; this is on a game to game basis.
+So you can use them on Desktop or in Game Mode. 
+Local Saves and Cloud saves are supported, as well as multiplayer/online support(because youre using the launchers). Obviously, certain anticheat games will not work on linux enviroments; this is on a game to game basis.
 
 <h1 align="center">
 Features  ✅
@@ -23,6 +24,8 @@ Features  ✅
 - ProtonTricks is comptable with NonSteamLaunchers default installation (one prefix). This will add a NonSteamLaunchers shorcut in your library...this shortcut doesnt do anything. All you have to do is simply "Hide this Game" in your Library. Right click its properties and choose "Manage" and "Hide this Game". You never have to worry about it again! If you were to open up ProtonTricks to fix any game or launcher it is now accessible! 
 
 - In case you didnt know, you can also choose to check mark "Separate App Id's" when installing a launcher, this will install all launchers in each of their own prefix. Automatically working with ProtonTricks!
+
+- Command Line Ready, you can call it from online, heres an example of installing a launcher ``` /bin/bash -c 'curl -Ls https://raw.githubusercontent.com/moraroy/NonSteamLaunchers-On-Steam-Deck/main/NonSteamLaunchers.sh | nohup /bin/bash -s -- "Epic Games"' ```
 
 - Supports ChimeraOS and Arch Linux as well as any KDE Environments such as this opensuse - tumbleweed - wayland
 
@@ -120,6 +123,30 @@ How to Uninstall 🗑
 
 + Just run the script, and hit "Uninstall". This will uninstall the launcher and its games. Alternatively, if you want to totally wipe everything from NonSteamLaunchers, click "Start Fresh".
 + That's it.
+
+<h1 align="center">
+Command Lines 
+</h1>
+The NSL script can be called from online via bash, heres an example of it installing a launcher
+
+```/bin/bash -c 'curl -Ls https://raw.githubusercontent.com/moraroy/NonSteamLaunchers-On-Steam-Deck/main/NonSteamLaunchers.sh | nohup /bin/bash -s -- "Epic Games"'```
+
+
+- All launchers can be installed by calling their name like this  ```"Epic Games"``` ```"Ubisoft Connect"``` etc.
+- All launchers can be uninstalled by calling their name like this ```"Uninstall Epic Games"``` ```"Uninstall Ubisoft Connect"``` etc.
+- Here is the list of commands that can also be called
+  
+- ```"Start Fresh"``` ```"Update Proton-GE"``` ```"Stop NSLGameScanner"``` ```"Move to SD Card"```
+
+- The "Move to SD Card" function can only be called in this format
+  
+```/bin/bash -c 'curl -Ls https://raw.githubusercontent.com/moraroy/NonSteamLaunchers-On-Steam-Deck/main/NonSteamLaunchers.sh | nohup /bin/bash -s -- "Move to SD Card" "EpicGamesLauncher"```
+
+- The format of "EpicGamesLauncher" comes from the user choosing to either "Separate App ID's" or use the default installation prefix "NonSteamLaunchers" in the compatdata folder. This would be named differently for each launcher. Otherwise the command line would then be 
+
+```/bin/bash -c 'curl -Ls https://raw.githubusercontent.com/moraroy/NonSteamLaunchers-On-Steam-Deck/main/NonSteamLaunchers.sh | nohup /bin/bash -s -- "Move to SD Card" "NonSteamLaunchers"```
+
+
 
 
 <h1 align="center">
