@@ -125,7 +125,7 @@ How to Uninstall 🗑
 + That's it.
 
 <h1 align="center">
-Command Lines 
+Command Lines 🫡
 </h1>
 The NSL script can be called from online via bash, heres an example of it installing a launcher
 
