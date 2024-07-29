@@ -25,8 +25,17 @@ download_dir="${logged_in_home}/Downloads/NonSteamLaunchersInstallation"
 
 
 
-# Create a log file in the same directory as the desktop file/.sh file
-exec >> "${logged_in_home}/Downloads/NonSteamLaunchers-install.log" 2>&1
+# Define the log file path
+log_file="${logged_in_home}/Downloads/NonSteamLaunchers-install.log"
+
+# Check if the log file exists and delete it
+if [ -f "$log_file" ]; then
+    rm "$log_file"
+fi
+
+# Create a new log file
+exec >> "$log_file" 2>&1
+
 
 # Version number (major.minor)
 version=v3.9.1
