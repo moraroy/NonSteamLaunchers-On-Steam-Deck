@@ -14,7 +14,7 @@ dbus_address=$(grep -z DBUS_SESSION_BUS_ADDRESS /proc/$(pgrep -u $LOGNAME gnome-
 export DBUS_SESSION_BUS_ADDRESS=$dbus_address
 
 # $UID
-# logged_in_uid=$(id -u "${logged_in_user}")
+logged_in_uid=$(id -u "${logged_in_user}")
 
 # $HOME
 logged_in_home=$(eval echo "~${logged_in_user}")
