@@ -141,6 +141,30 @@ if [ "${deckyplugin}" = false ]; then
 	#End of Download Modules
 
 
+	#Service File rough update
+	rm -rf ${logged_in_home}/.config/systemd/user/NSLGameScanner.py
+
+	# Delete the service file
+	rm -rf ${logged_in_home}/.config/systemd/user/nslgamescanner.service
+
+	# Remove the symlink
+	unlink ${logged_in_home}/.config/systemd/user/default.target.wants/nslgamescanner.service
+
+	# Reload the systemd user instance
+	systemctl --user daemon-reload
+
+	# Define your Python script path
+	python_script_path="${logged_in_home}/.config/systemd/user/NSLGameScanner.py"
+
+	# Define your GitHub link
+	github_link="https://raw.githubusercontent.com/moraroy/NonSteamLaunchers-On-Steam-Deck/main/NSLGameScanner.py"
+	curl -o $python_script_path $github_link
+
+	# Define the path to the env_vars file
+	env_vars="${logged_in_home}/.config/systemd/user/env_vars"
+	#End of Rough Update of the .py
+
+
 
 
 	if [ -f "$env_vars" ]; then
@@ -149,6 +173,37 @@ if [ "${deckyplugin}" = false ]; then
 	else
 	    echo "env_vars file not found. Not Running the .py file."
 	    live="and is not LIVE."
+	fi
+
+
+
+	# Check if "Decky Plugin" is one of the arguments
+	decky_plugin=false
+	for arg in "${args[@]}"; do
+	  if [ "$arg" = "Decky Plugin" ]; then
+	    decky_plugin=true
+	    break
+	  fi
+	done
+
+	# If the Decky Plugin argument is set, check if the env_vars file exists
+	if [ "$decky_plugin" = true ]; then
+	    if [ -f "$env_vars" ]; then
+	        # If the env_vars file exists, run the .py file and continue with the script
+	        echo "Decky Plugin argument set and env_vars file found. Running the .py file..."
+	        python3 $python_script_path
+	        echo "Python script ran. Continuing with the script..."
+	    else
+	        # If the env_vars file does not exist, exit the script
+	        echo "Decky Plugin argument set but env_vars file not found. Exiting the script."
+	        exit 0
+	    fi
+	else
+	    # If the Decky Plugin argument is not set, continue with the script
+	    echo "Decky Plugin argument not set. Continuing with the script..."
+	    python3 $python_script_path
+	    echo "env_vars file found. Running the .py file."
+	    live="and is LIVE."
 	fi
 fi
 
