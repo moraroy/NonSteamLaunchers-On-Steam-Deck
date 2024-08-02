@@ -65,6 +65,7 @@ Supported Stores 🛍
 - Playstation Plus ✔️
 - VK Play ✔️
 - HoYoPlay ✔️
+- Nexon Launcher ✔️
 
 <h1 align="center">
 Supported Streaming Sites for games and as well as any website. 🌐
