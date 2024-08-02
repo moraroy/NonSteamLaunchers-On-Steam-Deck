@@ -15,14 +15,6 @@ from urllib.request import urlretrieve
 from base64 import b64encode
 import xml.etree.ElementTree as ET
 
-
-# Check the value of the DBUS_SESSION_BUS_ADDRESS environment variable
-dbus_address = os.environ.get('DBUS_SESSION_BUS_ADDRESS')
-if not dbus_address or not dbus_address.startswith('unix:path='):
-    # Set the value of the DBUS_SESSION_BUS_ADDRESS environment variable
-    dbus_address = f'unix:path=/run/user/{os.getuid()}/bus'
-    os.environ['DBUS_SESSION_BUS_ADDRESS'] = dbus_address
-
 # Path to the env_vars file
 env_vars_path = f"{os.environ['HOME']}/.config/systemd/user/env_vars"
 
