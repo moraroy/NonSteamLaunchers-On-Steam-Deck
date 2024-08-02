@@ -90,6 +90,8 @@ glyphshortcutdirectory = os.environ.get('glyphshortcutdirectory')
 psplusshortcutdirectory = os.environ.get('psplusshortcutdirectory')
 vkplayshortcutdirectory = os.environ.get('vkplayshortcutdirectory')
 hoyoplayshortcutdirectory = os.environ.get('hoyoplayshortcutfirectory')
+nexonshortcutdirectory = os.environ.get('nexonshortcutdirectory')
+repaireaappshortcutdirectory = os.environ.get('repaireaappshortcutdirectory')
 #Streaming
 chromedirectory = os.environ.get('chromedirectory')
 websites_str = os.environ.get('custom_websites_str')
@@ -158,7 +160,6 @@ else:
 
 
 
-
 #Code
 def get_steam_shortcut_id(exe_path, display_name):
     unique_id = "".join([exe_path, display_name])
@@ -176,8 +177,8 @@ def get_unsigned_shortcut_id(signed_shortcut_id):
 api_cache = {}
 
 #API KEYS FOR NONSTEAMLAUNCHER USE ONLY
-sgdb = SteamGridDB('36e4bedbfdda27f42f9ef4a44f80955c')
-api_key = '36e4bedbfdda27f42f9ef4a44f80955c'
+sgdb = SteamGridDB('e3bf9f166d7a80ae260387f90e36d10e')
+api_key = 'e3bf9f166d7a80ae260387f90e36d10e'
 
 #GLOBAL VARS
 created_shortcuts = []
@@ -272,23 +273,28 @@ def download_artwork(game_id, api_key, art_type, shortcut_id, dimensions=None):
     if cache_key in api_cache:
         data = api_cache[cache_key]
     else:
-        # If the result is not in the cache, make the API call
-        print(f"Game ID: {game_id}, API Key: {api_key}")
-        url = f"https://www.steamgriddb.com/api/v2/{art_type}/game/{game_id}"
-        if dimensions:
-            url += f"?dimensions={dimensions}"
-        headers = {'Authorization': f'Bearer {api_key}'}
-        print(f"Sending request to: {url}")  # Added print statement
-        response = requests.get(url, headers=headers)
-        if response.status_code == 200:
+        try:
+            # If the result is not in the cache, make the API call
+            print(f"Game ID: {game_id}, API Key: {api_key}")
+            url = f"https://www.steamgriddb.com/api/v2/{art_type}/game/{game_id}"
+            if dimensions:
+                url += f"?dimensions={dimensions}"
+            headers = {'Authorization': f'Bearer {api_key}'}
+            print(f"Sending request to: {url}")  # Added print statement
+            response = requests.get(url, headers=headers)
+            response.raise_for_status()
             data = response.json()
             # Store the result in the cache
             api_cache[cache_key] = data
-        else:
-            print(f"Error making API call: {response.status_code}")
-            # Store the failed status in the cache
+        except Exception as e:  # Catching a general exception
+            print(f"Error making API call: {e}")
             api_cache[cache_key] = None
             return
+
+    # Ensure data is not None before proceeding
+    if data is None:
+        print(f"No data available for {game_id}. Skipping download.")
+        return
 
     # Continue with the rest of your function using `data`
     for artwork in data['data']:
@@ -307,19 +313,27 @@ def download_artwork(game_id, api_key, art_type, shortcut_id, dimensions=None):
                 download_artwork(game_id, api_key, 'icons_ico', shortcut_id)
 
 
+
+
 def get_game_id(game_name):
     print(f"Searching for game ID for: {game_name}")
-    games = sgdb.search_game(game_name)
-    for game in games:
-        if game.name == game_name:  # Case-sensitive comparison
-            print(f"Found game ID: {game.id}")
-            return game.id
-    # Fallback: return the ID of the first game in the search results
-    if games:
-        print(f"No exact match found. Using game ID of the first result: {games[0].name}: {games[0].id}")
-        return games[0].id
-    print("No game ID found")
-    return "default_game_id"  # Return a default value when no games are found
+    try:
+        games = sgdb.search_game(game_name)
+        for game in games:
+            if game.name == game_name:  # Case-sensitive comparison
+                print(f"Found game ID: {game.id}")
+                return game.id
+        # Fallback: return the ID of the first game in the search results
+        if games:
+            print(f"No exact match found. Using game ID of the first result: {games[0].name}: {games[0].id}")
+            return games[0].id
+        print("No game ID found")
+        return "default_game_id"  # Return a default value when no games are found
+    except Exception as e:  # Catching a general exception
+        print(f"Error searching for game ID: {e}")
+        return "default_game_id"  # Return a default value in case of an error
+
+
 
 def get_file_name(art_type, shortcut_id, dimensions=None):
     singular_art_type = art_type.rstrip('s')
@@ -345,6 +359,7 @@ def is_match(name1, name2):
         return name1.lower() in name2.lower() or name2.lower() in name1.lower()
     else:
         return False
+
 
 # Add or update the proton compatibility settings
 def add_compat_tool(app_id, launchoptions):
@@ -412,7 +427,7 @@ def create_new_entry(shortcutdirectory, appname, launchoptions, startingdir):
     signed_shortcut_id = get_steam_shortcut_id(exe_path, appname)
     unsigned_shortcut_id = get_unsigned_shortcut_id(signed_shortcut_id)
     # Only store the app ID for specific launchers
-    if appname in ['Epic Games', 'Gog Galaxy', 'Ubisoft Connect', 'Battle.net', 'EA App', 'Amazon Games', 'itch.io', 'Legacy Games', 'Humble Bundle', 'IndieGala Client', 'Rockstar Games Launcher', 'Glyph', 'Playstation Plus', 'VK Play', 'HoYoPlay']:
+    if appname in ['Epic Games', 'Gog Galaxy', 'Ubisoft Connect', 'Battle.net', 'EA App', 'Amazon Games', 'itch.io', 'Legacy Games', 'Humble Bundle', 'IndieGala Client', 'Rockstar Games Launcher', 'Glyph', 'Playstation Plus', 'VK Play', 'HoYoPlay', 'Nexon Launcher']:
         app_ids[appname] = unsigned_shortcut_id
 
     # Check if the game already exists in the shortcuts
@@ -489,6 +504,8 @@ create_new_entry(os.environ.get('glyphshortcutdirectory'), 'Glyph', os.environ.g
 create_new_entry(os.environ.get('psplusshortcutdirectory'), 'Playstation Plus', os.environ.get('pspluslaunchoptions'), os.environ.get('psplusstartingdir'))
 create_new_entry(os.environ.get('vkplayshortcutdirectory'), 'VK Play', os.environ.get('vkplaylaunchoptions'), os.environ.get('vkplaystartingdir'))
 create_new_entry(os.environ.get('hoyoplayshortcutdirectory'), 'HoYoPlay', os.environ.get('hoyoplaylaunchoptions'), os.environ.get('hoyoplaystartingdir'))
+create_new_entry(os.environ.get('nexonshortcutdirectory'), 'Nexon Launcher', os.environ.get('nexonlaunchoptions'), os.environ.get('nexonstartingdir'))
+create_new_entry(os.environ.get('repaireaappshortcutdirectory'), 'Repair EA App', os.environ.get('repaireaapplaunchoptions'), os.environ.get('repaireaappstartingdir'))
 create_new_entry(os.environ.get('chromedirectory'), 'Xbox Game Pass', os.environ.get('xboxchromelaunchoptions'), os.environ.get('chrome_startdir'))
 create_new_entry(os.environ.get('chromedirectory'), 'GeForce Now', os.environ.get('geforcechromelaunchoptions'), os.environ.get('chrome_startdir'))
 create_new_entry(os.environ.get('chromedirectory'), 'Netflix', os.environ.get('netflixchromelaunchoptions'), os.environ.get('chrome_startdir'))
@@ -498,7 +515,6 @@ create_new_entry(os.environ.get('chromedirectory'), 'Amazon Prime Video', os.env
 create_new_entry(os.environ.get('chromedirectory'), 'Youtube', os.environ.get('youtubechromelaunchoptions'), os.environ.get('chrome_startdir'))
 create_new_entry(os.environ.get('chromedirectory'), 'Amazon Luna', os.environ.get('lunachromelaunchoptions'), os.environ.get('chrome_startdir'))
 create_new_entry(os.environ.get('chromedirectory'), 'Twitch', os.environ.get('twitchchromelaunchoptions'), os.environ.get('chrome_startdir'))
-create_new_entry(os.environ.get('chromedirectory'), 'movie-web', os.environ.get('moviewebchromelaunchoptions'), os.environ.get('chrome_startdir'))
 create_new_entry(os.environ.get('chromedirectory'), 'Fortnite', os.environ.get('fortnitechromelaunchoptions'), os.environ.get('chrome_startdir'))
 
 
@@ -598,6 +614,7 @@ folder_names = {
     'Playstation Plus': 'PlaystationPlusLauncher',
     'VK Play': 'VKPlayLauncher',
     'HoYoPlay': 'HoYoPlayLauncher',
+    'Nexon Launcher': 'NexonLauncher',
 }
 
 
@@ -1311,4 +1328,3 @@ if new_shortcuts_added or shortcuts_updated:
         print(f"Error writing to output file: {e}")
 
 print("All finished!")
-
