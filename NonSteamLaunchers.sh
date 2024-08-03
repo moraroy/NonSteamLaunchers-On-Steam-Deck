@@ -797,8 +797,8 @@ fi
 if [[ $uninstall_options == *"Uninstall GOG Galaxy"* ]]; then
     if [[ -d "${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/Program Files (x86)/GOG Galaxy" ]]; then
         handle_uninstall_gog "NonSteamLaunchers"
-    elif [[ -d "${logged_in_home}/.local/share/Steam/steamapps/compatdata/TheGOGGalaxyLauncher/pfx/drive_c/Program Files (x86)/GOG Galaxy" ]]; then
-        handle_uninstall_gog "TheGOGGalaxyLauncher"
+    elif [[ -d "${logged_in_home}/.local/share/Steam/steamapps/compatdata/GogGalaxyLauncher/pfx/drive_c/Program Files (x86)/GOG Galaxy" ]]; then
+        handle_uninstall_gog "GogGalaxyLauncher"
     fi
 fi
 
@@ -852,15 +852,15 @@ process_uninstall_options() {
     if [[ -n $uninstall_options ]]; then
         # Call uninstall_launcher for each launcher
         # Add more launchers as needed
-        if [[ $uninstall_options == *"Uninstall Gog Galaxy"* ]]; then
+        if [[ $uninstall_options == *"Uninstall GOG Galaxy"* ]]; then
             if [[ -d "${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/Program Files (x86)/GOG Galaxy" ]]; then
                 handle_uninstall_gog "NonSteamLaunchers"
                 wait
-                uninstall_launcher "$uninstall_options" "Gog Galaxy" "$gog_galaxy_path1" "$gog_galaxy_path2" "" "" "gog"
+                uninstall_launcher "$uninstall_options" "GOG Galaxy" "$gog_galaxy_path1" "$gog_galaxy_path2" "" "" "gog"
             elif [[ -d "${logged_in_home}/.local/share/Steam/steamapps/compatdata/GogGalaxyLauncher/pfx/drive_c/Program Files (x86)/GOG Galaxy" ]]; then
                 handle_uninstall_gog "GogGalaxyLauncher"
                 wait
-                uninstall_launcher "$uninstall_options" "Gog Galaxy" "$gog_galaxy_path1" "$gog_galaxy_path2" "" "" "gog"
+                uninstall_launcher "$uninstall_options" "GOG Galaxy" "$gog_galaxy_path1" "$gog_galaxy_path2" "" "" "gog"
             fi
         fi
         if [[ $uninstall_options == *"Uninstall EA App"* ]]; then
