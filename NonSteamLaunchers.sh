@@ -6,12 +6,15 @@ set -o pipefail     # capture error from pipes
 
 # ENVIRONMENT VARIABLES
 # $USER
-[[ -n $(logname >/dev/null 2>&1) ]] && logged_in_user=$(logname) || logged_in_user=$(whoami)
+logged_in_user=$(logname 2>/dev/null || whoami)
 
-#DBUS
+# DBUS
 # Add the DBUS_SESSION_BUS_ADDRESS environment variable
-dbus_address=$(grep -z DBUS_SESSION_BUS_ADDRESS /proc/$(pgrep -u $LOGNAME gnome-session)/environ | cut -d= -f2-)
-export DBUS_SESSION_BUS_ADDRESS=$dbus_address
+if [[ -z "$DBUS_SESSION_BUS_ADDRESS" ]]; then
+  eval $(dbus-launch --sh-syntax)
+  export DBUS_SESSION_BUS_ADDRESS
+fi
+
 export LD_LIBRARY_PATH=$(pwd)
 
 # $UID
@@ -20,22 +23,23 @@ logged_in_uid=$(id -u "${logged_in_user}")
 # $HOME
 logged_in_home=$(eval echo "~${logged_in_user}")
 
-# TODO: `/tmp` or `mktemp -d` might be a better option (see: EOF)
-# $PWD (working directory)
-download_dir="${logged_in_home}/Downloads/NonSteamLaunchersInstallation"
+# Debugging: Check the value of the DBUS_SESSION_BUS_ADDRESS environment variable
+zenity --info --text="DBus session address: $DBUS_SESSION_BUS_ADDRESS" --no-session-bus
 
 
 
-# Define the log file path
-log_file="${logged_in_home}/Downloads/NonSteamLaunchers-install.log"
 
-# Check if the log file exists and delete it
-if [ -f "$log_file" ]; then
-    rm "$log_file"
+#Log
+download_dir=/home/deck/Downloads/NonSteamLaunchersInstallation
+log_file=/home/deck/Downloads/NonSteamLaunchers-install.log
+
+# Remove existing log file if it exists
+if [[ -f $log_file ]]; then
+  rm $log_file
 fi
 
-# Create a new log file
-exec >> "$log_file" 2>&1
+# Redirect all output to the log file
+exec > >(tee -a $log_file) 2>&1
 
 
 # Version number (major.minor)
@@ -757,7 +761,6 @@ handle_uninstall_common() {
     # Run the uninstaller using Proton with the specified options
     echo "Running uninstaller using Proton with the specified options"
     "$STEAM_RUNTIME" "$proton_dir/proton" run "$uninstaller_path" $uninstaller_options
-    wait
 
     # Display Zenity window
     zenity --info --text="$app_name has been uninstalled." --width=200 --height=150 &
@@ -855,23 +858,19 @@ process_uninstall_options() {
         if [[ $uninstall_options == *"Uninstall GOG Galaxy"* ]]; then
             if [[ -d "${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/Program Files (x86)/GOG Galaxy" ]]; then
                 handle_uninstall_gog "NonSteamLaunchers"
-                wait
                 uninstall_launcher "$uninstall_options" "GOG Galaxy" "$gog_galaxy_path1" "$gog_galaxy_path2" "" "" "gog"
             elif [[ -d "${logged_in_home}/.local/share/Steam/steamapps/compatdata/GogGalaxyLauncher/pfx/drive_c/Program Files (x86)/GOG Galaxy" ]]; then
                 handle_uninstall_gog "GogGalaxyLauncher"
-                wait
                 uninstall_launcher "$uninstall_options" "GOG Galaxy" "$gog_galaxy_path1" "$gog_galaxy_path2" "" "" "gog"
             fi
         fi
         if [[ $uninstall_options == *"Uninstall EA App"* ]]; then
             if [[ -d "${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/Program Files/Electronic Arts" ]]; then
                 handle_uninstall_ea "NonSteamLaunchers"
-                wait
                 uninstall_launcher "$uninstall_options" "EA App" "$eaapp_path1" "$eaapp_path2" "${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/users/steamuser/Downloads/EAappInstaller.exe" "${logged_in_home}/.local/share/Steam/steamapps/compatdata/TheEAappLauncher/pfx/drive_c/users/steamuser/Downloads/EAappInstaller.exe" "eaapp" "ea_app"
                 sed -i '/repaireaapp/d' "${logged_in_home}/.config/systemd/user/env_vars"
             elif [[ -d "${logged_in_home}/.local/share/Steam/steamapps/compatdata/TheEAappLauncher/pfx/drive_c/Program Files/Electronic Arts" ]]; then
                 handle_uninstall_ea "TheEAappLauncher"
-                wait
                 uninstall_launcher "$uninstall_options" "EA App" "$eaapp_path1" "$eaapp_path2" "${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/users/steamuser/Downloads/EAappInstaller.exe" "${logged_in_home}/.local/share/Steam/steamapps/compatdata/TheEAappLauncher/pfx/drive_c/users/steamuser/Downloads/EAappInstaller.exe" "eaapp" "ea_app"
                 sed -i '/repaireaapp/d' "${logged_in_home}/.config/systemd/user/env_vars"
             fi
@@ -879,11 +878,9 @@ process_uninstall_options() {
         if [[ $uninstall_options == *"Uninstall Legacy Games"* ]]; then
             if [[ -d "${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/Program Files/Legacy Games" ]]; then
                 handle_uninstall_legacy "NonSteamLaunchers"
-                wait
                 uninstall_launcher "$uninstall_options" "Legacy Games" "$legacygames_path1" "$legacygames_path2" "" "" "legacy"
             elif [[ -d "${logged_in_home}/.local/share/Steam/steamapps/compatdata/LegacyGamesLauncher/pfx/drive_c/Program Files/Legacy Games" ]]; then
                 handle_uninstall_legacy "LegacyGamesLauncher"
-                wait
                 uninstall_launcher "$uninstall_options" "Legacy Games" "$legacygames_path1" "$legacygames_path2" "" "" "legacy"
             fi
         fi
@@ -940,7 +937,7 @@ else
             --column="Select" --column="This will delete the launcher and all of its games and files." \
             --width=508 --height=507 \
             FALSE "Epic Games" \
-            FALSE "Gog Galaxy" \
+            FALSE "GOG Galaxy" \
             FALSE "Uplay" \
             FALSE "Battle.net" \
             FALSE "EA App" \
@@ -1177,9 +1174,6 @@ function install_gog {
     # Run GalaxySetup.exe with the /VERYSILENT and /NORESTART options
     echo "Running GalaxySetup.exe with the /VERYSILENT and /NORESTART options"
     "$STEAM_RUNTIME" "$proton_dir/proton" run GalaxySetup.exe /VERYSILENT /NORESTART
-
-    # Wait for the EXE file to finish running
-    wait
 }
 
 
@@ -1536,8 +1530,7 @@ if [[ $options == *"Netflix"* ]] || [[ $options == *"Fortnite"* ]] || [[ $option
 fi
 
 
-# wait for Google Chrome to finish
-wait
+
 
 
     echo "100"
@@ -1547,8 +1540,6 @@ zenity --progress \
   --title="Update Status" \
   --text="Starting update...please wait..." --width=450 --height=350\
   --percentage=0 --auto-close
-
-wait
 
 
 # Write to env_vars
