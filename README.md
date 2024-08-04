@@ -82,7 +82,6 @@ Supported Streaming Sites for games and as well as any website. 🌐
 - Hulu ✔️
 - Youtube ✔️
 - Twitch ✔️
-- movie-web ✔️
 
 <h1 align="left">
 Finds Games Automatically
