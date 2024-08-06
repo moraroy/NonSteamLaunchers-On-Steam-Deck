@@ -30,8 +30,8 @@ zenity --info --text="DBus session address: $DBUS_SESSION_BUS_ADDRESS" --no-sess
 
 
 #Log
-download_dir=/home/deck/Downloads/NonSteamLaunchersInstallation
-log_file=/home/deck/Downloads/NonSteamLaunchers-install.log
+download_dir=$(eval echo ~$user)/Downloads/NonSteamLaunchersInstallation
+log_file=$(eval echo ~$user)/Downloads/NonSteamLaunchers-install.log
 
 # Remove existing log file if it exists
 if [[ -f $log_file ]]; then
