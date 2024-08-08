@@ -176,8 +176,7 @@ def get_unsigned_shortcut_id(signed_shortcut_id):
 api_cache = {}
 
 #API KEYS FOR NONSTEAMLAUNCHER USE ONLY
-sgdb = SteamGridDB('e3bf9f166d7a80ae260387f90e36d10e')
-api_key = 'e3bf9f166d7a80ae260387f90e36d10e'
+BASE_URL = 'https://myproxycache-203e9b0bbe5b.herokuapp.com/api'
 
 #GLOBAL VARS
 created_shortcuts = []
@@ -236,23 +235,22 @@ def get_sgdb_art(game_id, app_id):
     global logo64
     global hero64
     print(f"Downloading icons artwork...")
-    download_artwork(game_id, api_key, "icons", app_id)
+    download_artwork(game_id, "icons", app_id)
     print(f"Downloading logos artwork...")
-    logo64 = download_artwork(game_id, api_key, "logos", app_id)
+    logo64 = download_artwork(game_id, "logos", app_id)
     print(f"Downloading heroes artwork...")
-    hero64 = download_artwork(game_id, api_key, "heroes", app_id)
+    hero64 = download_artwork(game_id, "heroes", app_id)
     print("Downloading grids artwork of size 600x900...")
-    gridp64 = download_artwork(game_id, api_key, "grids", app_id, "600x900")
+    gridp64 = download_artwork(game_id, "grids", app_id, "600x900")
     print("Downloading grids artwork of size 920x430...")
-    grid64 =download_artwork(game_id, api_key, "grids", app_id, "920x430")
+    grid64 = download_artwork(game_id, "grids", app_id, "920x430")
 
+def download_artwork(game_id, art_type, shortcut_id, dimensions=None):
+    if game_id is None:
+        print("Invalid game ID. Skipping download.")
+        return
 
-
-def download_artwork(game_id, api_key, art_type, shortcut_id, dimensions=None):
-    # Create a cache key based on the function's arguments
     cache_key = (game_id, art_type, dimensions)
-
-    # Check if the artwork already exists
     if dimensions is not None:
         filename = get_file_name(art_type, shortcut_id, dimensions)
     else:
@@ -268,37 +266,32 @@ def download_artwork(game_id, api_key, art_type, shortcut_id, dimensions=None):
         with open(file_path, 'rb') as image_file:
             return b64encode(image_file.read()).decode('utf-8')
 
-    # If the result is in the cache, use it
     if cache_key in api_cache:
         data = api_cache[cache_key]
     else:
         try:
-            # If the result is not in the cache, make the API call
-            print(f"Game ID: {game_id}, API Key: {api_key}")
-            url = f"https://www.steamgriddb.com/api/v2/{art_type}/game/{game_id}"
+            print(f"Game ID: {game_id}")
+            url = f"{BASE_URL}/{art_type}/game/{game_id}"
             if dimensions:
                 url += f"?dimensions={dimensions}"
-            headers = {'Authorization': f'Bearer {api_key}'}
-            print(f"Sending request to: {url}")  # Added print statement
-            response = requests.get(url, headers=headers)
+            print(f"Request URL: {url}")
+            response = requests.get(url)
             response.raise_for_status()
             data = response.json()
-            # Store the result in the cache
+            print(f"Response data: {data}")
             api_cache[cache_key] = data
-        except Exception as e:  # Catching a general exception
+        except Exception as e:
             print(f"Error making API call: {e}")
             api_cache[cache_key] = None
             return
 
-    # Ensure data is not None before proceeding
     if data is None:
         print(f"No data available for {game_id}. Skipping download.")
         return
 
-    # Continue with the rest of your function using `data`
     for artwork in data['data']:
         image_url = artwork['thumb']
-        print(f"Downloading image from: {image_url}")  # Added print statement
+        print(f"Downloading image from: {image_url}")
         try:
             response = requests.get(image_url, stream=True)
             response.raise_for_status()
@@ -309,29 +302,49 @@ def download_artwork(game_id, api_key, art_type, shortcut_id, dimensions=None):
         except requests.exceptions.RequestException as e:
             print(f"Error downloading image: {e}")
             if art_type == 'icons':
-                download_artwork(game_id, api_key, 'icons_ico', shortcut_id)
+                download_artwork(game_id, 'icons_ico', shortcut_id)
 
 
+    if data is None:
+        print(f"No data available for {game_id}. Skipping download.")
+        return
+
+    for artwork in data['data']:
+        image_url = artwork['thumb']
+        print(f"Downloading image from: {image_url}")
+        try:
+            response = requests.get(image_url, stream=True)
+            response.raise_for_status()
+            if response.status_code == 200:
+                with open(file_path, 'wb') as file:
+                    file.write(response.content)
+                return b64encode(response.content).decode('utf-8')
+        except requests.exceptions.RequestException as e:
+            print(f"Error downloading image: {e}")
+            if art_type == 'icons':
+                download_artwork(game_id, 'icons_ico', shortcut_id)
 
 
 def get_game_id(game_name):
     print(f"Searching for game ID for: {game_name}")
     try:
-        games = sgdb.search_game(game_name)
-        for game in games:
-            if game.name == game_name:  # Case-sensitive comparison
-                print(f"Found game ID: {game.id}")
-                return game.id
-        # Fallback: return the ID of the first game in the search results
-        if games:
-            print(f"No exact match found. Using game ID of the first result: {games[0].name}: {games[0].id}")
-            return games[0].id
-        print("No game ID found")
-        return "default_game_id"  # Return a default value when no games are found
-    except Exception as e:  # Catching a general exception
+        encoded_game_name = quote(game_name)
+        url = f"{BASE_URL}/search/{encoded_game_name}"
+        print(f"Encoded game name: {encoded_game_name}")
+        print(f"Request URL: {url}")
+        response = requests.get(url)
+        response.raise_for_status()
+        data = response.json()
+        print(f"Response data: {data}")
+        if data['data']:
+            game_id = data['data'][0]['id']
+            print(f"Found game ID: {game_id}")
+            return game_id
+        print(f"No game ID found for game name: {game_name}")
+        return None
+    except Exception as e:
         print(f"Error searching for game ID: {e}")
-        return "default_game_id"  # Return a default value in case of an error
-
+        return None
 
 
 def get_file_name(art_type, shortcut_id, dimensions=None):
