@@ -12,6 +12,7 @@ import subprocess
 import sqlite3
 from urllib.request import urlopen
 from urllib.request import urlretrieve
+from urllib.parse import quote
 from base64 import b64encode
 import xml.etree.ElementTree as ET
 
