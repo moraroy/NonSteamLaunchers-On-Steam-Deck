@@ -450,10 +450,13 @@ def create_new_entry(shortcutdirectory, appname, launchoptions, startingdir):
             shortcuts_updated = True
         return
 
-    #Get artwork
-    game_id = get_game_id(appname)
-    if game_id is not None:
-        get_sgdb_art(game_id, unsigned_shortcut_id)
+    # Skip artwork download for specific shortcuts
+    if appname not in ['NonSteamLaunchers', 'Repair EA App']:
+        # Get artwork
+        game_id = get_game_id(appname)
+        if game_id is not None:
+            get_sgdb_art(game_id, unsigned_shortcut_id)
+
 
     # Create a new entry for the Steam shortcut
     compatTool= add_compat_tool(unsigned_shortcut_id, launchoptions)
