@@ -1189,20 +1189,25 @@ def get_itch_games(itch_db_location):
     return games
 
 def parse_butler_db(content):
-    print("Finding matches in the database content...")
+    decky_plugin.logger.info("Finding matches in the database content...")
     pattern = rb'\{"basePath":"(.*?)","totalSize".*?"candidates":\[(.*?)\]\}'
     matches = re.findall(pattern, content)
-    print(f"Found {len(matches)} matches.")
+    decky_plugin.logger.info(f"Found {len(matches)} matches.")
 
-    print("Converting matches to database paths...")
+    decky_plugin.logger.info("Converting matches to database paths...")
     db_paths = []
     for match in matches:
         base_path = match[0].decode(errors='ignore')
         candidates_json = b'[' + match[1] + b']'
-        candidates = json.loads(candidates_json.decode(errors='ignore'))
-        paths = [candidate['path'] for candidate in candidates]
-        db_paths.append((base_path, paths))
-    print(f"Converted {len(matches)} matches to {len(db_paths)} database paths.")
+        decky_plugin.logger.info(f"Candidates JSON: {candidates_json}")
+        try:
+            candidates = json.loads(candidates_json.decode(errors='ignore'))
+            paths = [candidate['path'] for candidate in candidates]
+            db_paths.append((base_path, paths))
+        except json.JSONDecodeError as e:
+            decky_plugin.logger.error(f"JSON decoding error: {e}. Skipping this entry and continuing...")
+            continue
+    decky_plugin.logger.info(f"Converted {len(matches)} matches to {len(db_paths)} database paths.")
     return db_paths
 
 def dbpath_to_game(paths):
