@@ -1219,7 +1219,7 @@ function install_humblegames {
     export STEAM_COMPAT_CLIENT_INSTALL_PATH=~/.local/share/Steam
     export STEAM_COMPAT_DATA_PATH=~/.steam/steam/steamapps/compatdata/$appid
     FIXED_SCHEME="\$(echo "\$1" | sed "s/?/\//")"
-    echo \$FIXED_SCHEME > "${logged_in_home}/.local/share/Steam/steamapps/compatdata/$appid/pfx/drive_c/.auth
+    echo \$FIXED_SCHEME > "${logged_in_home}/.local/share/Steam/steamapps/compatdata/$appid/pfx/drive_c/.auth"
     "$STEAM_RUNTIME" "$proton_dir/proton" run ~/.local/share/Steam/steamapps/compatdata/$appid/pfx/start-humble.cmd
 EOF
         chmod +x "${logged_in_home}/.local/share/Steam/steamapps/compatdata/$appid/pfx/handle-humble-scheme"
