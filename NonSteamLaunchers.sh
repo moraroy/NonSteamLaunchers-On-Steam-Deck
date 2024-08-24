@@ -462,7 +462,7 @@ fi
 # Check if no options were selected and no custom website was provided
 if [ -z "$options" ] && [ -z "$custom_websites" ]; then
     # No options were selected and no custom website was provided
-    zenity --error --text="No options were selected and no custom website was provided. The script will now exit." --width=200 --height=150
+    zenity --error --text="No options were selected and no custom website was provided. The script will now exit." --width=200 --height=150 --timeout=5
     exit 1
 fi
 
@@ -820,6 +820,22 @@ if [[ $uninstall_options == *"Uninstall Legacy Games Launcher"* ]]; then
     fi
 fi
 
+# Function to handle PlayStation Plus uninstallation
+handle_uninstall_psplus() {
+    psplus_uninstaller="MsiExec.exe"
+    psplus_uninstaller_options="/X{3DE02040-3CB7-4D4A-950E-773F04FC4DE8} /quiet"
+    handle_uninstall_common "$1" "$psplus_uninstaller" "$psplus_uninstaller_options" "PlayStation Plus"
+}
+
+# Uninstall PlayStation Plus
+if [[ $uninstall_options == *"Uninstall PlayStation Plus"* ]]; then
+    if [[ -d "${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/Program Files (x86)/PlayStationPlus" ]]; then
+        handle_uninstall_psplus "NonSteamLaunchers"
+    elif [[ -d "${logged_in_home}/.local/share/Steam/steamapps/compatdata/PlaystationPlusLauncher/pfx/drive_c/Program Files (x86)/PlayStationPlus" ]]; then
+        handle_uninstall_psplus "PlaystationPlusLauncher"
+    fi
+fi
+
 
 uninstall_launcher() {
     local uninstall_options=$1
@@ -884,6 +900,15 @@ process_uninstall_options() {
                 uninstall_launcher "$uninstall_options" "Legacy Games" "$legacygames_path1" "$legacygames_path2" "" "" "legacy"
             fi
         fi
+        if [[ $uninstall_options == *"Uninstall Playstation Plus"* ]]; then
+            if [[ -d "${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/Program Files (x86)/PlayStationPlus" ]]; then
+                handle_uninstall_psplus "NonSteamLaunchers"
+                uninstall_launcher "$uninstall_options" "Playstation Plus" "$psplus_path1" "$psplus_path2" "" "" "psplus"
+            elif [[ -d "${logged_in_home}/.local/share/Steam/steamapps/compatdata/PlaystationPlusLauncher" ]]; then
+                handle_uninstall_psplus "PlaystationPlusLauncher"
+                uninstall_launcher "$uninstall_options" "Playstation Plus" "$psplus_path1" "$psplus_path2" "" "" "psplus"
+            fi
+        fi
         uninstall_launcher "$uninstall_options" "Uplay" "$uplay_path1" "$uplay_path2" "${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/Program Files (x86)/Ubisoft" "${logged_in_home}/.local/share/Steam/steamapps/compatdata/UplayLauncher" "uplay" "ubisoft"
         uninstall_launcher "$uninstall_options" "Battle.net" "$battlenet_path1" "$battlenet_path2" "${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/Program Files (x86)/Battle.net" "${logged_in_home}/.local/share/Steam/steamapps/compatdata/Battle.netLauncher" "battle" "bnet"
         uninstall_launcher "$uninstall_options" "Epic Games" "$epic_games_launcher_path1" "$epic_games_launcher_path2" "${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/Program Files (x86)/Epic Games" "${logged_in_home}/.local/share/Steam/steamapps/compatdata/EpicGamesLauncher" "epic"
@@ -893,7 +918,6 @@ process_uninstall_options() {
         uninstall_launcher "$uninstall_options" "IndieGala" "$indiegala_path1" "$indiegala_path2" "${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/Program Files/IGClient" "${logged_in_home}/.local/share/Steam/steamapps/compatdata/IndieGalaLauncher" "indie"
         uninstall_launcher "$uninstall_options" "Rockstar Games Launcher" "$rockstar_path1" "$rockstar_path2" "${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/Program Files/Rockstar Games" "${logged_in_home}/.local/share/Steam/steamapps/compatdata/RockstarGamesLauncher" "rockstar"
         uninstall_launcher "$uninstall_options" "Glyph Launcher" "$glyph_path1" "$glyph_path2" "${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/Program Files (x86)/Glyph" "${logged_in_home}/.local/share/Steam/steamapps/compatdata/GlyphLauncher" "glyph"
-        uninstall_launcher "$uninstall_options" "Playstation Plus" "$psplus_path1" "$psplus_path2" "${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/Program Files (x86)/PlayStationPlus" "${logged_in_home}/.local/share/Steam/steamapps/compatdata/PlaystationPlusLauncher" "psplus"
         uninstall_launcher "$uninstall_options" "VK Play" "$vkplay_path1" "$vkplay_path2" "${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/users/steamuser/AppData/Local/GameCenter" "${logged_in_home}/.local/share/Steam/steamapps/compatdata/VKPlayLauncher" "vkplay"
         uninstall_launcher "$uninstall_options" "HoYoPlay" "$hoyoplay_path1" "$hoyoplay_path2" "${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/Program Files/HoYoPlay" "${logged_in_home}/.local/share/Steam/steamapps/compatdata/HoYoPlayLauncher" "hoyoplay"
         uninstall_launcher "$uninstall_options" "Nexon Launcher" "$nexon_path1" "$nexon_path2" "${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/Program Files (x86)/Nexon" "${logged_in_home}/.local/share/Steam/steamapps/compatdata/NexonLauncher" "nexon"
