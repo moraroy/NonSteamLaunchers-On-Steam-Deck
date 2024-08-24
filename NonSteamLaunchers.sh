@@ -986,7 +986,7 @@ else
             FALSE "VK Play" \
             FALSE "HoYoPlay" \
             FALSE "Nexon Launcher" \
-            FALSE "RemotePlayWhatever"
+            FALSE "RemotePlayWhatever" \
         )
         # Convert the returned string to an array
         IFS='|' read -r -a uninstall_options_array <<< "$uninstall_options"
