@@ -837,6 +837,7 @@ if [[ $uninstall_options == *"Uninstall PlayStation Plus"* ]]; then
 fi
 
 
+
 uninstall_launcher() {
     local uninstall_options=$1
     local launcher=$2
@@ -909,6 +910,15 @@ process_uninstall_options() {
                 uninstall_launcher "$uninstall_options" "Playstation Plus" "$psplus_path1" "$psplus_path2" "" "" "psplus"
             fi
         fi
+
+        if [[ $uninstall_options == *"Uninstall RemotePlayWhatever"* ]]; then
+            rm -rf "${logged_in_home}/.local/share/applications/RemotePlayWhatever"
+            rm -rf "${logged_in_home}/.local/share/applications/RemotePlayWhatever.desktop"
+
+            zenity --info --text="RemotePlayWhatever has been uninstalled." --width=200 --height=150 &
+            sleep 3
+            killall zenity
+        fi
         uninstall_launcher "$uninstall_options" "Uplay" "$uplay_path1" "$uplay_path2" "${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/Program Files (x86)/Ubisoft" "${logged_in_home}/.local/share/Steam/steamapps/compatdata/UplayLauncher" "uplay" "ubisoft"
         uninstall_launcher "$uninstall_options" "Battle.net" "$battlenet_path1" "$battlenet_path2" "${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/Program Files (x86)/Battle.net" "${logged_in_home}/.local/share/Steam/steamapps/compatdata/Battle.netLauncher" "battle" "bnet"
         uninstall_launcher "$uninstall_options" "Epic Games" "$epic_games_launcher_path1" "$epic_games_launcher_path2" "${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/Program Files (x86)/Epic Games" "${logged_in_home}/.local/share/Steam/steamapps/compatdata/EpicGamesLauncher" "epic"
@@ -976,6 +986,7 @@ else
             FALSE "VK Play" \
             FALSE "HoYoPlay" \
             FALSE "Nexon Launcher" \
+            FALSE "RemotePlayWhatever"
         )
         # Convert the returned string to an array
         IFS='|' read -r -a uninstall_options_array <<< "$uninstall_options"
@@ -1680,7 +1691,6 @@ if [[ $options == *"RemotePlayWhatever"* ]]; then
 
     steamos-add-to-steam "$DIRECTORY/RemotePlayWhatever.desktop"
     sleep 5
-    wait
     echo "added RemotePlayWhatever to steamos"
 fi
 
