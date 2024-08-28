@@ -1217,6 +1217,20 @@ function install_gog {
 # Battle.net specific installation steps
 function install_battlenet {
     terminate_processes "Battle.net.exe" #"BlizzardError.exe"
+    # First installation
+    echo "Starting first installation of Battle.net"
+    "$STEAM_RUNTIME" "$proton_dir/proton" run "$battle_file" Battle.net-Setup.exe --lang=enUS --installpath="C:\Program Files (x86)\Battle.net" &
+    first_install_pid=$!
+    # Wait for a short period before starting the second installation
+    sleep 10  # Adjust the sleep duration as needed
+    # Second installation
+    echo "Starting second installation of Battle.net"
+    "$STEAM_RUNTIME" "$proton_dir/proton" run "$battle_file" Battle.net-Setup.exe --lang=enUS --installpath="C:\Program Files (x86)\Battle.net" &
+    second_install_pid=$!
+    # Wait for both installations to complete
+    wait $first_install_pid
+    wait $second_install_pid
+    terminate_processes "Battle.net.exe" #"BlizzardError.exe"
 }
 
 # Amazon Games specific installation steps
