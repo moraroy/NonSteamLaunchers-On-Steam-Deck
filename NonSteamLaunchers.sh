@@ -1432,7 +1432,7 @@ function install_hoyo {
     echo "Running HYP.exe..."
     "$STEAM_RUNTIME" "$proton_dir/proton" run "${target_dir}/HYP.exe" || { echo "Failed to run HYP.exe"; return 1; } &
     sleep 5  # Wait for 5 seconds before terminating HYP.exe
-    terminate_processes "HYP.exe" "HYPHelper"
+    terminate_processes "HYP.exe"
 
     echo "Removing installer file..."
     rm -f "${hoyo_dir}/HoYoPlay_install_ua_f368eee6d08d.exe" || { echo "Failed to remove installer file"; return 1; }
