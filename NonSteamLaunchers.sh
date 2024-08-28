@@ -1401,6 +1401,46 @@ function install_nexon {
 }
 
 
+# HoYo specific installation steps
+function install_hoyo {
+    hoyo_dir="${logged_in_home}/.local/share/Steam/steamapps/compatdata/${appid}/pfx/drive_c/Program Files/HoYoPlay"
+    installer_file="${logged_in_home}/Downloads/NonSteamLaunchersInstallation/HoYoPlay_install_ua_f368eee6d08d.exe"
+    target_dir="${hoyo_dir}/1.0.5.88"
+
+    echo "Creating directory for HoYoPlay..."
+    mkdir -p "${hoyo_dir}" || { echo "Failed to create directory"; return 1; }
+
+    echo "Copying installer to the target directory..."
+    cp "${installer_file}" "${hoyo_dir}" || { echo "Failed to copy installer"; return 1; }
+
+    echo "Changing directory to the target directory..."
+    cd "${hoyo_dir}" || { echo "Failed to change directory"; return 1; }
+
+    echo "Running 7z extraction..."
+    output=$(7z x "HoYoPlay_install_ua_f368eee6d08d.exe" -o"${hoyo_dir}" -aoa)
+    if [ $? -ne 0 ]; then
+        echo "Extraction failed"
+        echo "7z output: $output"
+        return 1
+    fi
+
+    echo "Extraction completed successfully"
+
+    echo "Copying launcher.exe to the HoYoPlay directory..."
+    cp "${target_dir}/launcher.exe" "${hoyo_dir}/launcher.exe" || { echo "Failed to copy launcher.exe"; return 1; }
+
+    echo "Running HYP.exe..."
+    "$STEAM_RUNTIME" "$proton_dir/proton" run "${target_dir}/HYP.exe" || { echo "Failed to run HYP.exe"; return 1; } &
+    sleep 5  # Wait for 5 seconds before terminating HYP.exe
+    terminate_processes "HYP.exe" "HYPHelper"
+
+    echo "Removing installer file..."
+    rm -f "${hoyo_dir}/HoYoPlay_install_ua_f368eee6d08d.exe" || { echo "Failed to remove installer file"; return 1; }
+
+    echo "HoYoPlay installation steps completed successfully"
+}
+
+
 #Launcher Installs
 function install_launcher {
     launcher_name=$1
@@ -1534,7 +1574,7 @@ install_launcher "Playstation Plus" "PlaystationPlusLauncher" "$psplus_file" "$p
 install_launcher "VK Play" "VKPlayLauncher" "$vkplay_file" "$vkplay_url" "$vkplay_file" "98" "" "install_vkplay" true
 
 # Install Hoyo Play
-install_launcher "HoYoPlay" "HoYoPlayLauncher" "$hoyoplay_file" "$hoyoplay_url" "$hoyoplay_file" "99" "" ""
+install_launcher "HoYoPlay" "HoYoPlayLauncher" "$hoyoplay_file" "$hoyoplay_url" "" "99" "" "install_hoyo" true
 
 # Install Nexon Launcher
 install_launcher "Nexon Launcher" "NexonLauncher" "$nexon_file" "$nexon_url" "$nexon_file" "99" "" "install_nexon" true
