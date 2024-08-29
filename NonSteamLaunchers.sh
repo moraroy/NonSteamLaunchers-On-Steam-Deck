@@ -722,8 +722,8 @@ vkplay_url=https://static.gc.vkplay.ru/VKPlayLoader.exe
 # Set the path to save the VK Play Launcher to
 vkplay_file=${logged_in_home}/Downloads/NonSteamLaunchersInstallation/VKPlayLoader.exe
 
-# Set the URL to download the Hoyo Play Launcher file from
-hoyoplay_url="https://download-porter.hoyoverse.com/download-porter/2024/06/07/hyp_global_setup_1.0.5.exe?trace_key=HoYoPlay_install_ua_f368eee6d08d"
+# Set the URL to download the Hoyo Play Play Launcher file from
+hoyoplay_url="https://download-porter.hoyoverse.com/download-porter/2024/06/07/hyp_global_setup_1.0.5.exe"
 
 # Set the path to save the Hoyo Play Launcher to
 hoyoplay_file="${logged_in_home}/Downloads/NonSteamLaunchersInstallation/HoYoPlay_install.exe"
