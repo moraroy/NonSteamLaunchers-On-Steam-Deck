@@ -722,11 +722,11 @@ vkplay_url=https://static.gc.vkplay.ru/VKPlayLoader.exe
 # Set the path to save the VK Play Launcher to
 vkplay_file=${logged_in_home}/Downloads/NonSteamLaunchersInstallation/VKPlayLoader.exe
 
-# Set the URL to download the VK Play Launcher file from
-hoyoplay_url="https://download-porter.hoyoverse.com/download-porter/2024/06/07/hyp_global_setup_1.0.5.exe?trace_key=HoYoPlay_install_ua_109daee2060b"
+# Set the URL to download the Hoyo Play Launcher file from
+hoyoplay_url="https://download-porter.hoyoverse.com/download-porter/2024/06/07/hyp_global_setup_1.0.5.exe?trace_key=HoYoPlay_install_ua_f368eee6d08d"
 
 # Set the path to save the Hoyo Play Launcher to
-hoyoplay_file=${logged_in_home}/Downloads/NonSteamLaunchersInstallation/HoYoPlay_install_ua_109daee2060b.exe.exe
+hoyoplay_file="${logged_in_home}/Downloads/NonSteamLaunchersInstallation/HoYoPlay_install.exe"
 
 # Set the URL to download the Nexon Launcher file from
 nexon_url="https://download.nxfs.nexon.com/download-launcher?file=NexonLauncherSetup.exe&client-id=959013368.1720525616"
@@ -1404,7 +1404,7 @@ function install_nexon {
 # HoYo specific installation steps
 function install_hoyo {
     hoyo_dir="${logged_in_home}/.local/share/Steam/steamapps/compatdata/${appid}/pfx/drive_c/Program Files/HoYoPlay"
-    installer_file="${logged_in_home}/Downloads/NonSteamLaunchersInstallation/HoYoPlay_install_ua_f368eee6d08d.exe"
+    installer_file="${logged_in_home}/Downloads/NonSteamLaunchersInstallation/HoYoPlay_install.exe"
     target_dir="${hoyo_dir}/1.0.5.88"
 
     echo "Creating directory for HoYoPlay..."
@@ -1417,7 +1417,7 @@ function install_hoyo {
     cd "${hoyo_dir}" || { echo "Failed to change directory"; return 1; }
 
     echo "Running 7z extraction..."
-    output=$(7z x "HoYoPlay_install_ua_f368eee6d08d.exe" -o"${hoyo_dir}" -aoa)
+    output=$(7z x "HoYoPlay_install.exe" -o"${hoyo_dir}" -aoa)
     if [ $? -ne 0 ]; then
         echo "Extraction failed"
         echo "7z output: $output"
@@ -1435,10 +1435,11 @@ function install_hoyo {
     terminate_processes "HYP.exe"
 
     echo "Removing installer file..."
-    rm -f "${hoyo_dir}/HoYoPlay_install_ua_f368eee6d08d.exe" || { echo "Failed to remove installer file"; return 1; }
+    rm -f "${hoyo_dir}/HoYoPlay_install.exe" || { echo "Failed to remove installer file"; return 1; }
 
     echo "HoYoPlay installation steps completed successfully"
 }
+
 
 
 #Launcher Installs
