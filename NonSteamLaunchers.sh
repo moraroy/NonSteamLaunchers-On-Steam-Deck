@@ -1178,7 +1178,7 @@ function install_gog {
     echo "# Downloading & Installing Gog Galaxy...Please wait..."
 
     # Cancel & Exit the GOG Galaxy Setup Wizard
-    end=$((SECONDS+60))  # Timeout after 60 seconds
+    end=$((SECONDS+90))  # Timeout after 90 seconds
     while true; do
         if pgrep -f "GalaxySetup.tmp" > /dev/null; then
             pkill -f "GalaxySetup.tmp"
