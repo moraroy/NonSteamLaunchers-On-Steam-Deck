@@ -1146,7 +1146,7 @@ export STEAM_COMPAT_DATA_PATH="${logged_in_home}/.local/share/Steam/steamapps/co
 
 if [[ $options == *"NSLGameSaves"* ]]; then
     echo "Running restore..."
-    nohup flatpak run com.github.mtkennerly.ludusavi restore --force > /dev/null 2>&1 &
+    nohup flatpak run com.github.mtkennerly.ludusavi --config "${logged_in_home}/.var/app/com.github.mtkennerly.ludusavi/config/ludusavi/NSLconfig/" restore --force > /dev/null 2>&1 &
     wait $!
     echo "Restore completed"
     zenity --info --text="Restore was successful" --timeout=5
@@ -1652,26 +1652,40 @@ fi
 
 rclone_zip_url="https://downloads.rclone.org/rclone-current-linux-amd64.zip"
 rclone_zip_file="${logged_in_home}/Downloads/NonSteamLaunchersInstallation/rclone-current-linux-amd64.zip"
-rclone_extract_dir="${logged_in_home}/Downloads/NonSteamLaunchersInstallation/rclone-v1.67.0-linux-amd64"
-rclone_bin="${rclone_extract_dir}/rclone"
+rclone_base_dir="${logged_in_home}/Downloads/NonSteamLaunchersInstallation"
 
 # Download and extract rclone
-if [ -d "${logged_in_home}/Downloads/NonSteamLaunchersInstallation" ]; then
+if [ -d "$rclone_base_dir" ]; then
     echo "Downloading rclone..."
     wget -O "$rclone_zip_file" "$rclone_zip_url"
     echo "Extracting rclone..."
-    unzip -o "$rclone_zip_file" -d "${logged_in_home}/Downloads/NonSteamLaunchersInstallation"
+    unzip -o "$rclone_zip_file" -d "$rclone_base_dir"
     echo "rclone downloaded and extracted"
 else
     echo "Download directory does not exist. Exiting script."
     exit 1
 fi
 
+# Find the extracted rclone directory dynamically
+rclone_extract_dir=$(find "$rclone_base_dir" -maxdepth 1 -type d -name "rclone-v*-linux-amd64" | head -n 1)
+rclone_bin="${rclone_extract_dir}/rclone"
+
+# Move rclone to the NSLconfig directory
+if [ -f "$rclone_bin" ]; then
+    mv "$rclone_bin" "$nsl_config_dir"
+    rclone_path="${nsl_config_dir}/rclone"
+    echo "rclone moved to $nsl_config_dir"
+else
+    echo "rclone binary not found. Exiting script."
+    exit 1
+fi
+
+
 # Setting up Backup Saves through Ludusavi
 
 # Define the directory and file path
 config_dir="${logged_in_home}/.var/app/com.github.mtkennerly.ludusavi/config/ludusavi"
-config_file="$config_dir/config.yaml"
+nsl_config_dir="$config_dir/NSLconfig"
 backup_dir="$config_dir/config_backups"
 timestamp=$(date +%m-%d-%Y_%H:%M:%S)
 backup_config_file="$backup_dir/config.yaml.bak_$timestamp"
@@ -1680,20 +1694,20 @@ backup_config_file="$backup_dir/config.yaml.bak_$timestamp"
 mkdir -p "$backup_dir"
 
 # Backup existing config.yaml if it exists
-if [ -f "$config_file" ]; then
-    cp "$config_file" "$backup_config_file"
+if [ -f "$config_dir/config.yaml" ]; then
+    cp "$config_dir/config.yaml" "$backup_config_file"
     echo "Existing config.yaml backed up to $backup_config_file"
 fi
 
-# Create the directory if it doesn't exist
-mkdir -p "$config_dir"
+# Create the NSLconfig directory if it doesn't exist
+mkdir -p "$nsl_config_dir"
 
-# Move rclone to the config directory
-mv "$rclone_bin" "$config_dir"
-rclone_path="${config_dir}/rclone"
+# Move rclone to the NSLconfig directory
+mv "$rclone_bin" "$nsl_config_dir"
+rclone_path="${nsl_config_dir}/rclone"
 
-# Write the configuration to the file
-cat <<EOL > "$config_file"
+# Write the configuration to the NSLconfig file
+cat <<EOL > "$nsl_config_dir/config.yaml"
 ---
 runtime:
   threads: ~
@@ -1795,19 +1809,12 @@ apps:
 customGames: []
 EOL
 
-echo "Configuration file created at $config_file"
-# Update the manifest
-echo "Updating manifest..."
-flatpak run com.github.mtkennerly.ludusavi manifest update
-echo "Manifest update completed"
-
 # Run Once
 echo "Running backup..."
-nohup flatpak run com.github.mtkennerly.ludusavi backup --force > /dev/null 2>&1 &
+nohup flatpak run com.github.mtkennerly.ludusavi --config "$nsl_config_dir" backup --force > /dev/null 2>&1 &
 wait $!
 echo "Backup completed"
 # End of Ludusavi configuration
-
 
 
     echo "100"
