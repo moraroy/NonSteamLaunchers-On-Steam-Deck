@@ -1190,7 +1190,6 @@ function install_gog {
     end=$((SECONDS+180))  # Timeout after 180 seconds
     while true; do
         if pgrep -f "GalaxySetup.tmp" > /dev/null; then
-            sleep 2  # Wait for 2 seconds before killing the process
             pkill -f "GalaxySetup.tmp"
             break
         fi
