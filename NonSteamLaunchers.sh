@@ -1187,9 +1187,10 @@ function install_gog {
     echo "# Downloading & Installing Gog Galaxy...Please wait..."
 
     # Cancel & Exit the GOG Galaxy Setup Wizard
-    end=$((SECONDS+90))  # Timeout after 90 seconds
+    end=$((SECONDS+180))  # Timeout after 180 seconds
     while true; do
         if pgrep -f "GalaxySetup.tmp" > /dev/null; then
+            sleep 2  # Wait for 2 seconds before killing the process
             pkill -f "GalaxySetup.tmp"
             break
         fi
@@ -1201,7 +1202,13 @@ function install_gog {
     done
 
     # Navigate to %LocalAppData%\Temp
-    cd "${logged_in_home}/.local/share/Steam/steamapps/compatdata/$appid/pfx/drive_c/users/steamuser/Temp"
+    temp_dir="${logged_in_home}/.local/share/Steam/steamapps/compatdata/$appid/pfx/drive_c/users/steamuser/AppData/Local/Temp"
+    if [ -d "$temp_dir" ]; then
+        cd "$temp_dir"
+    else
+        echo "Temp directory does not exist: $temp_dir"
+        return 1
+    fi
 
     # Find the GalaxyInstaller_XXXXX folder and copy it to C:\Downloads
     for dir in GalaxyInstaller_*; do
@@ -1210,10 +1217,16 @@ function install_gog {
             break
         fi
     done
-    cp -r "$galaxy_installer_folder" ${logged_in_home}/Downloads/NonSteamLaunchersInstallation/
+
+    if [ -n "$galaxy_installer_folder" ]; then
+        cp -r "$galaxy_installer_folder" "${logged_in_home}/Downloads/NonSteamLaunchersInstallation/"
+    else
+        echo "Galaxy installer folder not found"
+        return 1
+    fi
 
     # Navigate to the C:\Downloads\GalaxyInstaller_XXXXX folder
-    cd ${logged_in_home}/Downloads/NonSteamLaunchersInstallation/"$(basename $galaxy_installer_folder)"
+    cd "${logged_in_home}/Downloads/NonSteamLaunchersInstallation/$(basename "$galaxy_installer_folder")"
 
     # Run GalaxySetup.exe with the /VERYSILENT and /NORESTART options
     echo "Running GalaxySetup.exe with the /VERYSILENT and /NORESTART options"
