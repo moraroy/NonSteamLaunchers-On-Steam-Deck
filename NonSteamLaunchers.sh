@@ -43,7 +43,7 @@ exec > >(tee -a $log_file) 2>&1
 
 
 # Version number (major.minor)
-version=v3.9.4
+version=v3.9.5
 
 # TODO: tighten logic to check whether major/minor version is up-to-date via `-eq`, `-lt`, or `-gt` operators
 # Check repo releases via GitHub API then display current stable version
@@ -389,7 +389,7 @@ separate_app_ids=false
 # Check if any command line arguments were provided
 if [ ${#args[@]} -eq 0 ]; then
     # No command line arguments were provided, so display the main zenity window
-    selected_launchers=$(zenity --list --text="Which launchers do you want to download and install?" --checklist --column="$version" --column="Default = one App ID Installation, One Prefix, NonSteamLaunchers - updated the NSLGameScanner.py $live" FALSE "SEPARATE APP IDS - CHECK THIS TO SEPARATE YOUR PREFIX" $epic_games_value "$epic_games_text" $gog_galaxy_value "$gog_galaxy_text" $uplay_value "$uplay_text" $battlenet_value "$battlenet_text" $amazongames_value "$amazongames_text" $eaapp_value "$eaapp_text" $legacygames_value "$legacygames_text" $itchio_value "$itchio_text" $humblegames_value "$humblegames_text" $indiegala_value "$indiegala_text" $rockstar_value "$rockstar_text" $glyph_value "$glyph_text" $psplus_value "$psplus_text" $vkplay_value "$vkplay_text" $hoyoplay_value "$hoyoplay_text" $nexon_value "$nexon_text" FALSE "RemotePlayWhatever" FALSE "Fortnite" FALSE "Xbox Game Pass" FALSE "GeForce Now" FALSE "Amazon Luna" FALSE "Netflix" FALSE "Hulu" FALSE "Disney+" FALSE "Amazon Prime Video" FALSE "Youtube" FALSE "Twitch" --width=800 --height=740 --extra-button="Uninstall" --extra-button="Stop NSLGameScanner" --extra-button="Start Fresh" --extra-button="Move to SD Card" --extra-button="Update Proton-GE")
+    selected_launchers=$(zenity --list --text="Which launchers do you want to download and install?" --checklist --column="$version" --column="Default = one App ID Installation, One Prefix, NonSteamLaunchers - updated the NSLGameScanner.py $live" FALSE "SEPARATE APP IDS - CHECK THIS TO SEPARATE YOUR PREFIX" $epic_games_value "$epic_games_text" $gog_galaxy_value "$gog_galaxy_text" $uplay_value "$uplay_text" $battlenet_value "$battlenet_text" $amazongames_value "$amazongames_text" $eaapp_value "$eaapp_text" $legacygames_value "$legacygames_text" $itchio_value "$itchio_text" $humblegames_value "$humblegames_text" $indiegala_value "$indiegala_text" $rockstar_value "$rockstar_text" $glyph_value "$glyph_text" $psplus_value "$psplus_text" $vkplay_value "$vkplay_text" $hoyoplay_value "$hoyoplay_text" $nexon_value "$nexon_text" FALSE "RemotePlayWhatever" FALSE "Fortnite" FALSE "Xbox Game Pass" FALSE "GeForce Now" FALSE "Amazon Luna" FALSE "Netflix" FALSE "Hulu" FALSE "Disney+" FALSE "Amazon Prime Video" FALSE "Youtube" FALSE "Twitch" FALSE "WebRcade" FALSE "WebRcade Editor" --width=800 --height=740 --extra-button="Uninstall" --extra-button="Stop NSLGameScanner" --extra-button="Start Fresh" --extra-button="Move to SD Card" --extra-button="Update Proton-GE")
 
     # Check if the user clicked the 'Cancel' button or selected one of the extra buttons
     if [ $? -eq 1 ] || [[ $selected_launchers == "Start Fresh" ]] || [[ $selected_launchers == "Move to SD Card" ]] || [[ $selected_launchers == "Uninstall" ]]; then
@@ -2043,13 +2043,17 @@ if [[ $options == *"Twitch"* ]]; then
 fi
 
 
-if [[ $options == *"Fortnite"* ]]; then
-    # User selected Fortnite
-    fortnitechromelaunchoptions="run --branch=stable --arch=x86_64 --command=/app/bin/chrome --file-forwarding com.google.Chrome @@u @@ --window-size=1280,800 --force-device-scale-factor=1.00 --device-scale-factor=1.00 --kiosk https://www.xbox.com/en-US/play/games/fortnite/BT5P2X999VH2/ --chrome-kiosk-type=fullscreen --no-first-run --enable-features=OverlayScrollbar"
-    echo "export fortnitechromelaunchoptions=$fortnitechromelaunchoptions" >> ${logged_in_home}/.config/systemd/user/env_vars
+if [[ $options == *"WebRcade"* ]]; then
+    # User selected Webrcade
+    webrcadechromelaunchoptions="run --branch=stable --arch=x86_64 --command=/app/bin/chrome --file-forwarding com.google.Chrome @@u @@ --window-size=1280,800 --force-device-scale-factor=1.00 --device-scale-factor=1.00 --kiosk https://play.webrcade.com/ --chrome-kiosk-type=fullscreen --no-first-run --enable-features=OverlayScrollbar"
+    echo "export webrcadechromelaunchoptions=$webrcadechromelaunchoptions" >> ${logged_in_home}/.config/systemd/user/env_vars
 fi
 
-
+if [[ $options == *"WebRcade Editor"* ]]; then
+    # User selected Webrcade Editor
+    webrcadeeditchromelaunchoptions="run --branch=stable --arch=x86_64 --command=/app/bin/chrome --file-forwarding com.google.Chrome @@u @@ --window-size=1280,800 --force-device-scale-factor=1.00 --device-scale-factor=1.00 --kiosk https://editor.webrcade.com/ --chrome-kiosk-type=fullscreen --no-first-run --enable-features=OverlayScrollbar"
+    echo "export webrcadeeditchromelaunchoptions=$webrcadeeditchromelaunchoptions" >> ${logged_in_home}/.config/systemd/user/env_vars
+fi
 
 # Check if any custom websites were provided
 if [ ${#custom_websites[@]} -gt 0 ]; then
