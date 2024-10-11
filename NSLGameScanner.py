@@ -532,8 +532,8 @@ create_new_entry(os.environ.get('chromedirectory'), 'Youtube', os.environ.get('y
 create_new_entry(os.environ.get('chromedirectory'), 'Amazon Luna', os.environ.get('lunachromelaunchoptions'), os.environ.get('chrome_startdir'))
 create_new_entry(os.environ.get('chromedirectory'), 'Twitch', os.environ.get('twitchchromelaunchoptions'), os.environ.get('chrome_startdir'))
 create_new_entry(os.environ.get('chromedirectory'), 'Fortnite', os.environ.get('fortnitechromelaunchoptions'), os.environ.get('chrome_startdir'))
-create_new_entry(os.environ.get('chromedirectory'), 'WebRcade', os.environ.get('fortnitechromelaunchoptions'), os.environ.get('chrome_startdir'))
-create_new_entry(os.environ.get('chromedirectory'), 'WebRcade Editor', os.environ.get('fortnitechromelaunchoptions'), os.environ.get('chrome_startdir'))
+create_new_entry(os.environ.get('chromedirectory'), 'WebRcade', os.environ.get('webrcadechromelaunchoptions'), os.environ.get('chrome_startdir'))
+create_new_entry(os.environ.get('chromedirectory'), 'WebRcade Editor', os.environ.get('webrcadeeditchromelaunchoptions'), os.environ.get('chrome_startdir'))
 
 # Iterate over each custom website
 for custom_website in custom_websites:
