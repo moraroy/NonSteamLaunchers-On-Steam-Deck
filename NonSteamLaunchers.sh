@@ -2268,6 +2268,8 @@ if [ "${deckyplugin}" = false ]; then
 fi
 
 
+#!/bin/bash
+
 sleep 15
 
 # Function to switch to Game Mode
@@ -2313,15 +2315,15 @@ set +x
 if $DECKY_LOADER_EXISTS && $NSL_PLUGIN_EXISTS; then
   show_message "Decky Loader and NSL Plugin are both already installed! Checking for updates and then entering Gaming Mode..."
   cd "$LOCAL_DIR"
-  sudo mkdir -p "${logged_in_home}/homebrew/plugins/NonSteamLaunchersDecky"
   curl -L "$REPO_URL" -o /tmp/NonSteamLaunchersDecky.zip
-  sudo unzip -o /tmp/NonSteamLaunchersDecky.zip -d "${logged_in_home}/homebrew/plugins/NonSteamLaunchersDecky"
-  sudo cp -r "${logged_in_home}/homebrew/plugins/NonSteamLaunchersDecky/NonSteamLaunchersDecky-test/"* "$LOCAL_DIR"
-  sudo rm -rf "${logged_in_home}/homebrew/plugins/NonSteamLaunchersDecky"
+  sudo unzip -o /tmp/NonSteamLaunchersDecky.zip -d /tmp/
+  sudo cp -r /tmp/NonSteamLaunchersDecky-test/* "$LOCAL_DIR"
+  sudo rm -rf /tmp/NonSteamLaunchersDecky*
   switch_to_game_mode
   exit 0
 elif $DECKY_LOADER_EXISTS && ! $NSL_PLUGIN_EXISTS; then
-  USER_INPUT=$(zenity --forms --title="Authentication Required" --text="Decky Loader detected! But no NSL plugin :( Would you like to inject the plugin and switch to Game Mode?" --separator="|" --add-password="Password")
+  show_message "Decky Loader detected! But no NSL plugin :( Asking for password..."
+  USER_INPUT=$(zenity --forms --title="Authentication Required" --text="Decky Loader detected! But no NSL plugin. Would you like to inject the plugin and switch to Game Mode?" --separator="|" --add-password="Password")
 else
   zenity --error --text="Decky Loader not detected. Please download and install it from their website first and re-run this script to get the NSL Plugin."
   rm -rf "$download_dir"
@@ -2342,12 +2344,14 @@ echo "$USER_PASSWORD" | sudo -S chown -R $USER:$USER "$LOCAL_DIR"
 
 echo "Downloading and extracting the repository..."
 curl -L "$REPO_URL" -o /tmp/NonSteamLaunchersDecky.zip
-echo "$USER_PASSWORD" | sudo -S unzip -o /tmp/NonSteamLaunchersDecky.zip -d "${logged_in_home}/homebrew/plugins/NonSteamLaunchersDecky"
-echo "$USER_PASSWORD" | sudo -S cp -r "${logged_in_home}/homebrew/plugins/NonSteamLaunchersDecky/NonSteamLaunchersDecky-test/"* "$LOCAL_DIR"
-echo "$USER_PASSWORD" | sudo -S rm -rf "${logged_in_home}/homebrew/plugins/NonSteamLaunchersDecky"
+echo "$USER_PASSWORD" | sudo -S unzip -o /tmp/NonSteamLaunchersDecky.zip -d /tmp/
+echo "$USER_PASSWORD" | sudo -S cp -r /tmp/NonSteamLaunchersDecky-test/* "$LOCAL_DIR"
+echo "$USER_PASSWORD" | sudo -S rm -rf /tmp/NonSteamLaunchersDecky*
 
 set -x
 cd "$LOCAL_DIR"
+
+
 
 show_message "Plugin installed. Switching to Game Mode..."
 switch_to_game_mode
