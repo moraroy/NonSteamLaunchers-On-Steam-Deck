@@ -2316,6 +2316,7 @@ if $DECKY_LOADER_EXISTS && $NSL_PLUGIN_EXISTS; then
   switch_to_game_mode
   exit 0
 elif $DECKY_LOADER_EXISTS && ! $NSL_PLUGIN_EXISTS; then
+  show_message "Please enter your password for authentication..."
   USER_INPUT=$(zenity --forms --title="Authentication Required" --text="Decky Loader detected! But no NSL plugin :( Would you like to inject the plugin and switch to Game Mode?" --separator="|" --add-password="Password")
 else
   zenity --error --text="Decky Loader not detected. Please download and install it from their website first and re-run this script to get the NSL Plugin."
@@ -2346,10 +2347,14 @@ git clone "$REPO_URL" "$LOCAL_DIR"
 cd "$LOCAL_DIR"
 git checkout "$BRANCH_NAME"
 
-show_message "Plugin installed. Switching to Game Mode..."
+echo "Restarting the plugin loader service..."
+sudo systemctl restart plugin_loader.service
+
+show_message "Plugin installed and loader restarted. Switching to Game Mode..."
 
 # Switch to Game Mode after completion
 switch_to_game_mode
+
 
 
 
