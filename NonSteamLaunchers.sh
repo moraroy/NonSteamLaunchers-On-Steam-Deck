@@ -2286,12 +2286,18 @@ show_message() {
 
 # Set the remote repository URL
 REPO_URL="https://github.com/moraroy/NonSteamLaunchersDecky/"
+
 # Set the local directory path
 LOCAL_DIR="${logged_in_home}/homebrew/plugins/NonSteamLaunchers"
+
 # Set the name of the branch you want to reset
 BRANCH_NAME="test"
+
 # Ensure the base directory exists and has the correct permissions
 BASE_DIR="${logged_in_home}/homebrew/plugins"
+sudo mkdir -p $BASE_DIR
+sudo chmod -R u+rw $BASE_DIR
+sudo chown -R $USER:$USER $BASE_DIR
 
 # Check if the Decky Loader and NSL Plugin exist
 DECKY_LOADER_EXISTS=false
@@ -2333,23 +2339,45 @@ if [ -z "$USER_PASSWORD" ]; then
   exit 1
 fi
 
+# Arrays to store original permissions and ownership
+declare -a PERMISSIONS
+declare -a OWNERSHIP
+declare -a DIRECTORIES
+
+# Save current permissions and ownership for homebrew directory and its subdirectories
+while IFS= read -r line; do
+  PERMISSIONS+=("$(stat -c "%a" "$line")")
+  OWNERSHIP+=("$(stat -c "%U:%G" "$line")")
+  DIRECTORIES+=("$line")
+done < <(find "${logged_in_home}/homebrew" -type d)
+
+# Change permissions for the homebrew directory and its subdirectories
+sudo chmod -R u+rw "${logged_in_home}/homebrew/"
+sudo chown -R $USER:$USER "${logged_in_home}/homebrew/"
+
 # New method to install the plugin
-show_message "Creating base directory and setting permissions..."
-chmod -R +w "$LOCAL_DIR"
 mkdir -p "$LOCAL_DIR"
+sudo chmod -R u+rw "$LOCAL_DIR"
+sudo chown -R $USER:$USER "$LOCAL_DIR"
 
 # Clone the repository directly
-echo "Cloning the repository..."
 git clone "$REPO_URL" "$LOCAL_DIR"
 
 # Ensure we're on the correct branch
 cd "$LOCAL_DIR"
 git checkout "$BRANCH_NAME"
 
+# Restore original permissions and ownership for homebrew directory and its subdirectories
+for i in "${!DIRECTORIES[@]}"; do
+  sudo chmod "${PERMISSIONS[$i]}" "${DIRECTORIES[$i]}"
+  sudo chown "${OWNERSHIP[$i]}" "${DIRECTORIES[$i]}"
+done
+
 show_message "Plugin installed. Switching to Game Mode..."
 
 # Switch to Game Mode after completion
 switch_to_game_mode
+
 
 
 
