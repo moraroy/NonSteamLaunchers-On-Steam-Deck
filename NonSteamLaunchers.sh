@@ -43,7 +43,7 @@ exec > >(tee -a $log_file) 2>&1
 
 
 # Version number (major.minor)
-version=v3.9.5
+version=v3.9.6
 
 # TODO: tighten logic to check whether major/minor version is up-to-date via `-eq`, `-lt`, or `-gt` operators
 # Check repo releases via GitHub API then display current stable version
@@ -2083,6 +2083,8 @@ export PYTHONPATH="${download_dir}/lib/python${python_version}/site-packages/:$P
 # Set the default Steam directory
 steam_dir="${logged_in_home}/.local/share/Steam"
 
+set +x
+
 # Check if the loginusers.vdf file exists in either of the two directories
 if [[ -f "${logged_in_home}/.steam/root/config/loginusers.vdf" ]] || [[ -f "${logged_in_home}/.local/share/Steam/config/loginusers.vdf" ]]; then
     if [[ -f "${logged_in_home}/.steam/root/config/loginusers.vdf" ]]; then
@@ -2098,6 +2100,8 @@ if [[ -f "${logged_in_home}/.steam/root/config/loginusers.vdf" ]] || [[ -f "${lo
     max_timestamp=0
     current_user=""
     current_steamid=""
+
+
 
     # Process each user block
     # Set IFS to only look for Commas to avoid issues with Whitespace in older account names.
@@ -2126,11 +2130,11 @@ if [[ -f "${logged_in_home}/.steam/root/config/loginusers.vdf" ]] || [[ -f "${lo
 
     # Print the currently logged in user
     if [[ -n $current_user ]]; then
-        echo "Currently logged in user: $current_user"
         echo "SteamID: $current_steamid"
     else
         echo "No users found."
     fi
+
 
     # Convert steamid to steamid3
     steamid3=$((current_steamid - 76561197960265728))
@@ -2149,7 +2153,7 @@ else
 fi
 
 
-
+set -x
 
 
 # Check if userdata folder was found
@@ -2263,11 +2267,90 @@ if [ "${deckyplugin}" = false ]; then
 	python3 $python_script_path
 fi
 
+
 sleep 15
 
+# Function to switch to Game Mode
+switch_to_game_mode() {
+  echo "Switching to Game Mode..."
+  rm -rf "$download_dir"
+  rm -rf ${logged_in_home}/.config/systemd/user/nslgamescanner.service
+  unlink ${logged_in_home}/.config/systemd/user/default.target.wants/nslgamescanner.service
+  systemctl --user daemon-reload
+  qdbus org.kde.Shutdown /Shutdown org.kde.Shutdown.logout
+}
 
+# Function to display a Zenity message
+show_message() {
+  zenity --notification --text="$1" --timeout=1
+}
 
+# Set the remote repository URL
+REPO_URL="https://github.com/moraroy/NonSteamLaunchersDecky/archive/refs/heads/test.zip"
 
+# Set the local directory path
+LOCAL_DIR="${logged_in_home}/homebrew/plugins/NonSteamLaunchers"
+
+# Check if the Decky Loader and NSL Plugin exist
+DECKY_LOADER_EXISTS=false
+NSL_PLUGIN_EXISTS=false
+
+if [ -d "${logged_in_home}/homebrew/plugins" ]; then
+  DECKY_LOADER_EXISTS=true
+fi
+
+if [ -d "$LOCAL_DIR" ]; then
+  if [ -z "$(ls -A $LOCAL_DIR)" ]; then
+    sudo rm -rf "$LOCAL_DIR"
+    NSL_PLUGIN_EXISTS=false
+  else
+    NSL_PLUGIN_EXISTS=true
+  fi
+fi
+
+set +x
+
+if $DECKY_LOADER_EXISTS && $NSL_PLUGIN_EXISTS; then
+  show_message "Decky Loader and NSL Plugin are both already installed! Checking for updates and then entering Gaming Mode..."
+  cd "$LOCAL_DIR"
+  sudo mkdir -p "${logged_in_home}/homebrew/plugins/NonSteamLaunchersDecky"
+  curl -L "$REPO_URL" -o /tmp/NonSteamLaunchersDecky.zip
+  sudo unzip -o /tmp/NonSteamLaunchersDecky.zip -d "${logged_in_home}/homebrew/plugins/NonSteamLaunchersDecky"
+  sudo cp -r "${logged_in_home}/homebrew/plugins/NonSteamLaunchersDecky/NonSteamLaunchersDecky-test/"* "$LOCAL_DIR"
+  sudo rm -rf "${logged_in_home}/homebrew/plugins/NonSteamLaunchersDecky"
+  switch_to_game_mode
+  exit 0
+elif $DECKY_LOADER_EXISTS && ! $NSL_PLUGIN_EXISTS; then
+  USER_INPUT=$(zenity --forms --title="Authentication Required" --text="Decky Loader detected! But no NSL plugin :( Would you like to inject the plugin and switch to Game Mode?" --separator="|" --add-password="Password")
+else
+  zenity --error --text="Decky Loader not detected. Please download and install it from their website first and re-run this script to get the NSL Plugin."
+  rm -rf "$download_dir"
+  exit 1
+fi
+
+USER_PASSWORD=$(echo $USER_INPUT | cut -d'|' -f1)
+
+if [ -z "$USER_PASSWORD" ]; then
+  zenity --error --text="No password entered. Exiting."
+  exit 1
+fi
+
+show_message "Creating base directory and setting permissions..."
+echo "$USER_PASSWORD" | sudo -S mkdir -p "$LOCAL_DIR"
+echo "$USER_PASSWORD" | sudo -S chmod -R u+rw "$LOCAL_DIR"
+echo "$USER_PASSWORD" | sudo -S chown -R $USER:$USER "$LOCAL_DIR"
+
+echo "Downloading and extracting the repository..."
+curl -L "$REPO_URL" -o /tmp/NonSteamLaunchersDecky.zip
+echo "$USER_PASSWORD" | sudo -S unzip -o /tmp/NonSteamLaunchersDecky.zip -d "${logged_in_home}/homebrew/plugins/NonSteamLaunchersDecky"
+echo "$USER_PASSWORD" | sudo -S cp -r "${logged_in_home}/homebrew/plugins/NonSteamLaunchersDecky/NonSteamLaunchersDecky-test/"* "$LOCAL_DIR"
+echo "$USER_PASSWORD" | sudo -S rm -rf "${logged_in_home}/homebrew/plugins/NonSteamLaunchersDecky"
+
+set -x
+cd "$LOCAL_DIR"
+
+show_message "Plugin installed. Switching to Game Mode..."
+switch_to_game_mode
 
 
 
