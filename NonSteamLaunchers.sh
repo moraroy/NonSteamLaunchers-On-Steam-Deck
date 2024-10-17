@@ -2267,9 +2267,6 @@ if [ "${deckyplugin}" = false ]; then
 	python3 $python_script_path
 fi
 
-
-#!/bin/bash
-
 sleep 15
 
 # Function to switch to Game Mode
