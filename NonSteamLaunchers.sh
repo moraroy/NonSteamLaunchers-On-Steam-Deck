@@ -43,7 +43,7 @@ exec > >(tee -a $log_file) 2>&1
 
 
 # Version number (major.minor)
-version=v3.9.5
+version=v3.9.6
 
 # TODO: tighten logic to check whether major/minor version is up-to-date via `-eq`, `-lt`, or `-gt` operators
 # Check repo releases via GitHub API then display current stable version
@@ -2224,6 +2224,8 @@ echo "export chrome_startdir=$chrome_startdir" >> ${logged_in_home}/.config/syst
 
 
 
+
+
 # Check if either directory does not exist
 if [ "${deckyplugin}" = false ]; then
     # Detach script from Steam process
@@ -2261,11 +2263,108 @@ if [ "${deckyplugin}" = false ]; then
 	python3 $python_script_path
 fi
 
+sleep 15
+
+# Function to switch to Game Mode
+switch_to_game_mode() {
+  echo "Switching to Game Mode..."
+  # Delete NonSteamLaunchersInstallation subfolder in Downloads folder
+  rm -rf "$download_dir"
+  # Delete the service file
+  rm -rf ${logged_in_home}/.config/systemd/user/nslgamescanner.service
+  # Remove the symlink
+  unlink ${logged_in_home}/.config/systemd/user/default.target.wants/nslgamescanner.service
+  # Reload the systemd user instance
+  systemctl --user daemon-reload
+  qdbus org.kde.Shutdown /Shutdown org.kde.Shutdown.logout
+}
+
+# Function to display a Zenity message
+show_message() {
+  zenity --notification --text="$1" --timeout=1
+}
+
+# Set the remote repository URL
+REPO_URL="https://github.com/moraroy/NonSteamLaunchersDecky/"
+# Set the local directory path
+LOCAL_DIR="${logged_in_home}/homebrew/plugins/NonSteamLaunchers"
+# Set the name of the branch you want to reset
+BRANCH_NAME="test"
+# Ensure the base directory exists and has the correct permissions
+BASE_DIR="${logged_in_home}/homebrew/plugins"
+
+# Check if the Decky Loader and NSL Plugin exist
+DECKY_LOADER_EXISTS=false
+NSL_PLUGIN_EXISTS=false
+
+if [ -d "${logged_in_home}/homebrew/plugins" ]; then
+  DECKY_LOADER_EXISTS=true
+fi
+
+if [ -d "$LOCAL_DIR" ]; then
+  NSL_PLUGIN_EXISTS=true
+fi
+
+if $DECKY_LOADER_EXISTS && $NSL_PLUGIN_EXISTS; then
+  show_message "Decky Loader and NSL Plugin are both already installed! Checking for updates and then entering Gaming Mode..."
+  echo "Navigating to the plugin directory to check for updates..."
+  cd "$LOCAL_DIR"
+  echo "Fetching the latest changes..."
+  git fetch
+  echo "Resetting the plugin to the latest version..."
+  git reset --hard origin/$BRANCH_NAME
+  switch_to_game_mode
+  exit 0
+elif $DECKY_LOADER_EXISTS && ! $NSL_PLUGIN_EXISTS; then
+  USER_INPUT=$(zenity --forms --title="Authentication Required" --text="Decky Loader detected! But no NSL plugin :( Would you like to inject the plugin and switch to Game Mode?" --separator="|" --add-password="Password")
+else
+  zenity --error --text="Decky Loader not detected. Please download and install it from their website first and re-run this script to get the NSL Plugin."
+  # Delete NonSteamLaunchersInstallation subfolder in Downloads folder
+  rm -rf "$download_dir"
+  exit 1
+fi
+
+# Extract the password
+USER_PASSWORD=$(echo $USER_INPUT | cut -d'|' -f1)
+
+# Check if the user provided a password
+if [ -z "$USER_PASSWORD" ]; then
+  zenity --error --text="No password entered. Exiting."
+  exit 1
+fi
+
+# New method to install the plugin
+show_message "Creating base directory and setting permissions..."
+chmod -R +w "$LOCAL_DIR"
+mkdir -p "$LOCAL_DIR"
+
+# Clone the repository directly
+echo "Cloning the repository..."
+git clone "$REPO_URL" "$LOCAL_DIR"
+
+# Ensure we're on the correct branch
+cd "$LOCAL_DIR"
+git checkout "$BRANCH_NAME"
+
+show_message "Plugin installed. Switching to Game Mode..."
+
+# Switch to Game Mode after completion
+switch_to_game_mode
+
+
+
+
+
 
 
 # TODO: might be better to relocate temp files to `/tmp` or even use `mktemp -d` since `rm -rf` is potentially dangerous without the `-i` flag
+
 # Delete NonSteamLaunchersInstallation subfolder in Downloads folder
 rm -rf "$download_dir"
+
+
+
+
 
 echo "Script completed successfully."
 exit 0
