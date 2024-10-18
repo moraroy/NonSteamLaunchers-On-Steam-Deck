@@ -37,7 +37,10 @@ Features  ✅
 Currently Working On 👷‍♂️
 </h1>
 
-* Decky Loader Plugin is available [here](https://github.com/moraroy/NonSteamLaunchersDecky) and the pull request for it [here](https://github.com/SteamDeckHomebrew/decky-plugin-database/pull/677)
+* Decky Loader Plugin is available [here](https://github.com/moraroy/NonSteamLaunchersDecky) and the pull request for it [here](https://github.com/SteamDeckHomebrew/decky-plugin-database/pull/677) and can be installed with this big button
+
+ <p align="center">
+  <a name="download button" href="https://github.com/moraroy/NonSteamLaunchers-On-Steam-Deck/blob/main/NSLPlugin.desktop"><img src="https://user-images.githubusercontent.com/98482469/242361563-33f31d3d-9a69-4fca-a928-207a5d17a98f.png"  alt="Download NSL Decky Plugin" width="350px" style="padding-top: 15px;"></a>
 
 
 <p align="center">
@@ -102,7 +105,7 @@ Finds Games Automatically
 To stop the NSLGameScanner.service, open up NSL and hit "Stop NSLGameScanner" it will then ask you if you want to restart it, click no, and that's it.
 
 <h1 align="center">
-How to Install 🔧
+How to Install the Desktop Version 🔧
 </h1>
 
 <p align="center">
