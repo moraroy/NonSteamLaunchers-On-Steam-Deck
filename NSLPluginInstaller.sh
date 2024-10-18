@@ -46,7 +46,8 @@ fi
 set +x
 
 if $DECKY_LOADER_EXISTS; then
-  USER_INPUT=$(zenity --forms --title="Authentication Required" --text="Decky Loader detected! $(if $NSL_PLUGIN_EXISTS; then echo 'NSL Plugin also detected and will be updated to the latest version 🚀.'; else echo 'But no NSL plugin :(. Would you like to inject it and go to Game Mode.'; fi) Please enter your password to proceed:" --separator="|" --add-password="Password")
+  USER_INPUT=$(zenity --forms --title="Authentication Required" --text="Decky Loader detected! $(if $NSL_PLUGIN_EXISTS; then echo 'NSL Plugin also detected and will be updated to the latest version 🚀.'; else echo 'But no NSL plugin :(. Would you like to inject it and go to Game Mode?
+  '; fi) Please enter your password to proceed:" --separator="|" --add-password="Password")
 else
   zenity --error --text="Decky Loader not detected. Please download and install it from their website first and re-run this script to get the NSL Plugin."
   rm -rf "$download_dir"
