@@ -76,11 +76,6 @@ curl -L "$REPO_URL" -o /tmp/NonSteamLaunchersDecky.zip
 echo "$USER_PASSWORD" | sudo -S unzip -o /tmp/NonSteamLaunchersDecky.zip -d /tmp/
 echo "$USER_PASSWORD" | sudo -S cp -r /tmp/NonSteamLaunchersDecky-main/* "$LOCAL_DIR"
 
-# Create an empty folder called "defaults"
-echo "$USER_PASSWORD" | sudo -S mkdir -p "$LOCAL_DIR/defaults"
-
-# Copy NonSteamLaunchers.sh to defaults directory
-echo "$USER_PASSWORD" | sudo -S cp "$LOCAL_DIR/NonSteamLaunchers.sh" "$LOCAL_DIR/defaults/"
 
 echo "$USER_PASSWORD" | sudo -S rm -rf /tmp/NonSteamLaunchersDecky*
 
