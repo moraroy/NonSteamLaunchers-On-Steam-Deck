@@ -2269,6 +2269,7 @@ fi
 
 sleep 15
 
+
 # Function to switch to Game Mode
 switch_to_game_mode() {
   echo "Switching to Game Mode..."
@@ -2300,7 +2301,6 @@ fi
 
 if [ -d "$LOCAL_DIR" ]; then
   if [ -z "$(ls -A $LOCAL_DIR)" ]; then
-    sudo rm -rf "$LOCAL_DIR"
     NSL_PLUGIN_EXISTS=false
   else
     NSL_PLUGIN_EXISTS=true
@@ -2309,18 +2309,9 @@ fi
 
 set +x
 
-if $DECKY_LOADER_EXISTS && $NSL_PLUGIN_EXISTS; then
-  show_message "Decky Loader and NSL Plugin are both already installed! Checking for updates and then entering Gaming Mode..."
-  cd "$LOCAL_DIR"
-  curl -L "$REPO_URL" -o /tmp/NonSteamLaunchersDecky.zip
-  sudo unzip -o /tmp/NonSteamLaunchersDecky.zip -d /tmp/
-  sudo cp -r /tmp/NonSteamLaunchersDecky-test/* "$LOCAL_DIR"
-  sudo rm -rf /tmp/NonSteamLaunchersDecky*
-  switch_to_game_mode
-  exit 0
-elif $DECKY_LOADER_EXISTS && ! $NSL_PLUGIN_EXISTS; then
-  show_message "Decky Loader detected! But no NSL plugin :( Asking for password..."
-  USER_INPUT=$(zenity --forms --title="Authentication Required" --text="Decky Loader detected! But no NSL plugin. Would you like to inject the plugin and switch to Game Mode?" --separator="|" --add-password="Password")
+if $DECKY_LOADER_EXISTS; then
+  USER_INPUT=$(zenity --forms --title="Authentication Required" --text="Decky Loader detected! $(if $NSL_PLUGIN_EXISTS; then echo 'NSL Plugin also detected and will be updated to the latest version 🚀.'; else echo 'But no NSL plugin :(. Would you like to inject it and go to Game Mode?
+  '; fi) Please enter your password to proceed:" --separator="|" --add-password="Password")
 else
   zenity --error --text="Decky Loader not detected. Please download and install it from their website first and re-run this script to get the NSL Plugin."
   rm -rf "$download_dir"
@@ -2334,6 +2325,12 @@ if [ -z "$USER_PASSWORD" ]; then
   exit 1
 fi
 
+if $NSL_PLUGIN_EXISTS; then
+  show_message "NSL Plugin detected. Deleting and updating..."
+  echo "Plugin directory exists. Removing..."
+  echo "$USER_PASSWORD" | sudo -S rm -rf "$LOCAL_DIR"
+fi
+
 show_message "Creating base directory and setting permissions..."
 echo "$USER_PASSWORD" | sudo -S mkdir -p "$LOCAL_DIR"
 echo "$USER_PASSWORD" | sudo -S chmod -R u+rw "$LOCAL_DIR"
@@ -2343,15 +2340,16 @@ echo "Downloading and extracting the repository..."
 curl -L "$REPO_URL" -o /tmp/NonSteamLaunchersDecky.zip
 echo "$USER_PASSWORD" | sudo -S unzip -o /tmp/NonSteamLaunchersDecky.zip -d /tmp/
 echo "$USER_PASSWORD" | sudo -S cp -r /tmp/NonSteamLaunchersDecky-test/* "$LOCAL_DIR"
+
 echo "$USER_PASSWORD" | sudo -S rm -rf /tmp/NonSteamLaunchersDecky*
 
 set -x
 cd "$LOCAL_DIR"
 
-
-
 show_message "Plugin installed. Switching to Game Mode..."
 switch_to_game_mode
+
+sudo systemctl restart plugin_loader.service
 
 
 
