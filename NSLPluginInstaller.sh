@@ -46,18 +46,25 @@ fi
 set +x
 
 if $DECKY_LOADER_EXISTS; then
-  USER_INPUT=$(zenity --forms --title="Authentication Required" --text="Decky Loader detected! $(if $NSL_PLUGIN_EXISTS; then echo 'NSL Plugin also detected and will be updated to the latest version 🚀.'; else echo 'But no NSL plugin :(. Would you like to inject it and go to Game Mode?
-  '; fi) Please enter your password to proceed:" --separator="|" --add-password="Password")
+  while true; do
+    USER_INPUT=$(zenity --forms --title="Authentication Required" --text="Decky Loader detected! $(if $NSL_PLUGIN_EXISTS; then echo 'NSL Plugin also detected and will be updated to the latest version 🚀.'; else echo 'But no NSL plugin :(. Would you like to inject it and go to Game Mode?'; fi) Please enter your password to proceed:" --separator="|" --add-password="Password")
+    USER_PASSWORD=$(echo $USER_INPUT | cut -d'|' -f1)
+
+    if [ -z "$USER_PASSWORD" ]; then
+      zenity --error --text="No password entered. Exiting."
+      exit 1
+    fi
+
+    echo "$USER_PASSWORD" | sudo -S echo "Password accepted" 2>/dev/null
+    if [ $? -eq 0 ]; then
+      break
+    else
+      zenity --error --text="Incorrect password. Please try again."
+    fi
+  done
 else
   zenity --error --text="Decky Loader not detected. Please download and install it from their website first and re-run this script to get the NSL Plugin."
   rm -rf "$download_dir"
-  exit 1
-fi
-
-USER_PASSWORD=$(echo $USER_INPUT | cut -d'|' -f1)
-
-if [ -z "$USER_PASSWORD" ]; then
-  zenity --error --text="No password entered. Exiting."
   exit 1
 fi
 
@@ -76,7 +83,6 @@ echo "Downloading and extracting the repository..."
 curl -L "$REPO_URL" -o /tmp/NonSteamLaunchersDecky.zip
 echo "$USER_PASSWORD" | sudo -S unzip -o /tmp/NonSteamLaunchersDecky.zip -d /tmp/
 echo "$USER_PASSWORD" | sudo -S cp -r /tmp/NonSteamLaunchersDecky-main/* "$LOCAL_DIR"
-
 
 echo "$USER_PASSWORD" | sudo -S rm -rf /tmp/NonSteamLaunchersDecky*
 
