@@ -47,7 +47,7 @@ set +x
 
 if $DECKY_LOADER_EXISTS; then
   while true; do
-    USER_INPUT=$(zenity --forms --title="Authentication Required" --text="Decky Loader detected! $(if $NSL_PLUGIN_EXISTS; then echo 'NSL Plugin also detected and will be updated to the latest version 🚀.'; else echo 'But no NSL plugin :(. Would you like to inject it and go to Game Mode?'; fi) Please enter your password to proceed:" --separator="|" --add-password="Password")
+    USER_INPUT=$(zenity --forms --title="Authentication Required" --text="Decky Loader detected! $(if $NSL_PLUGIN_EXISTS; then echo 'NSL Plugin also detected and will be updated to the latest version 🚀.'; else echo 'But no NSL plugin :(. Would you like to inject it and go to Game Mode?'; fi) Please enter your sudo password to proceed:" --separator="|" --add-password="Password")
     USER_PASSWORD=$(echo $USER_INPUT | cut -d'|' -f1)
 
     if [ -z "$USER_PASSWORD" ]; then
