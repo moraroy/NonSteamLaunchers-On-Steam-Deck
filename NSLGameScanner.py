@@ -840,8 +840,6 @@ else:
 
 # EA App Game Scanner
 
-# EA App Game Scanner
-
 
 def get_ea_app_game_info(installed_games, game_directory_path):
     game_dict = {}
@@ -885,13 +883,12 @@ else:
 
 
 
-#Gog Galaxy Scanner
 # Gog Galaxy Scanner
 def getGogGameInfo(filePath):
     # Check if the file contains any GOG entries
     with open(filePath, 'r') as file:
         if "GOG.com" not in file.read():
-            decky_plugin.logger.info("No GOG entries found in the registry file. Skipping GOG Galaxy Games Scanner.")
+            print("No GOG entries found in the registry file. Skipping GOG Galaxy Games Scanner.")
             return {}
 
     # If GOG entries exist, parse the registry file
