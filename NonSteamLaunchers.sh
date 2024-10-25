@@ -1602,7 +1602,7 @@ install_launcher "HoYoPlay" "HoYoPlayLauncher" "$hoyoplay_file" "$hoyoplay_url" 
 install_launcher "Nexon Launcher" "NexonLauncher" "$nexon_file" "$nexon_url" "$nexon_file" "99" "" "install_nexon" true
 #End of Launcher Installations
 
-
+wait
 echo "99"
 echo "# Checking if Chrome is installed...please wait..."
 
