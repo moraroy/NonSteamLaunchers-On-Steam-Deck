@@ -51,7 +51,7 @@ if $DECKY_LOADER_EXISTS; then
     USER_PASSWORD=$(echo $USER_INPUT | cut -d'|' -f1)
 
     if [ -z "$USER_PASSWORD" ]; then
-      zenity --error --text="No password entered. Exiting."
+      zenity --error --text="No password entered. Exiting." --timeout=5
       exit 1
     fi
 
