@@ -377,6 +377,12 @@ function update_proton() {
 CheckInstallations
 CheckInstallationDirectory
 
+
+rm -rf ${logged_in_home}/.config/systemd/user/nslgamescanner.service
+unlink ${logged_in_home}/.config/systemd/user/default.target.wants/nslgamescanner.service
+systemctl --user daemon-reload
+
+
 # Get the command line arguments
 args=("$@")
 
@@ -390,6 +396,7 @@ separate_app_ids=false
 if [ ${#args[@]} -eq 0 ]; then
     # No command line arguments were provided, so display the main zenity window
     selected_launchers=$(zenity --list --text="Which launchers do you want to download and install?" --checklist --column="$version" --column="Default = one App ID Installation, One Prefix, NonSteamLaunchers - updated the NSLGameScanner.py $live" FALSE "SEPARATE APP IDS - CHECK THIS TO SEPARATE YOUR PREFIX" $epic_games_value "$epic_games_text" $gog_galaxy_value "$gog_galaxy_text" $uplay_value "$uplay_text" $battlenet_value "$battlenet_text" $amazongames_value "$amazongames_text" $eaapp_value "$eaapp_text" $legacygames_value "$legacygames_text" $itchio_value "$itchio_text" $humblegames_value "$humblegames_text" $indiegala_value "$indiegala_text" $rockstar_value "$rockstar_text" $glyph_value "$glyph_text" $psplus_value "$psplus_text" $vkplay_value "$vkplay_text" $hoyoplay_value "$hoyoplay_text" $nexon_value "$nexon_text" FALSE "RemotePlayWhatever" FALSE "Fortnite" FALSE "Xbox Game Pass" FALSE "GeForce Now" FALSE "Amazon Luna" FALSE "WebRcade" FALSE "WebRcade Editor" FALSE "Netflix" FALSE "Hulu" FALSE "Disney+" FALSE "Amazon Prime Video" FALSE "Youtube" FALSE "Twitch" FALSE "Apple TV+" FALSE "Crunchyroll" FALSE "Plex" --width=800 --height=740 --extra-button="Uninstall" --extra-button="Stop NSLGameScanner" --extra-button="Start Fresh" --extra-button="Move to SD Card" --extra-button="Update Proton-GE")
+
 
     # Check if the user clicked the 'Cancel' button or selected one of the extra buttons
     if [ $? -eq 1 ] || [[ $selected_launchers == "Start Fresh" ]] || [[ $selected_launchers == "Move to SD Card" ]] || [[ $selected_launchers == "Uninstall" ]]; then
@@ -435,6 +442,9 @@ else
         separate_app_ids=false
     fi
 fi
+
+
+
 
 # TODO: SC2145
 # Print the selected launchers and custom websites
@@ -734,6 +744,7 @@ nexon_url="https://download.nxfs.nexon.com/download-launcher?file=NexonLauncherS
 # Set the path to save the Nexon Launcher to
 nexon_file=${logged_in_home}/Downloads/NonSteamLaunchersInstallation/NexonLauncherSetup.exe
 #End of Downloads INFO
+
 
 
 
@@ -1602,6 +1613,9 @@ install_launcher "HoYoPlay" "HoYoPlayLauncher" "$hoyoplay_file" "$hoyoplay_url" 
 install_launcher "Nexon Launcher" "NexonLauncher" "$nexon_file" "$nexon_url" "$nexon_file" "99" "" "install_nexon" true
 #End of Launcher Installations
 
+
+
+
 wait
 echo "99"
 echo "# Checking if Chrome is installed...please wait..."
@@ -1858,6 +1872,7 @@ echo "Backup completed"
 # End of Ludusavi configuration
 
 
+
     echo "100"
     echo "# Installation Complete - Steam will now restart. Your launchers will be in your library!...Food for thought...do Jedis use Force Compatability?"
 ) |
@@ -1985,7 +2000,6 @@ if [[ $options == *"RemotePlayWhatever"* ]]; then
 fi
 
 
-
 # Set Chrome options based on user's selection
 
 if [[ $options == *"Xbox Game Pass"* ]]; then
@@ -2032,7 +2046,7 @@ fi
 
 if [[ $options == *"Amazon Luna"* ]]; then
     # User selected Amazon Luna
-    lunachromelaunchoptions="run --branch=stable --arch=x86_64 --command=/app/bin/chrome --file-forwarding com.google.Chrome @@u @@ --window-size=1280,800 --force-device-scale-factor=1.00 --device-scale-factor=1.00 --start-fullscreen https://luna.amazon.com/ --no-first-run --enable-features=OverlayScrollbar"
+    lunachromelaunchoptions="run --branch=stable --arch=x86_64 --command=/app/bin/chrome --file-forwarding com.google.Chrome @@u @@ --window-size=1280,800 --force-device-scale-factor=1.00 --device-scale-factor=1.00 --start-fullscreen https://luna.amazon.com --no-first-run --enable-features=OverlayScrollbar"
     echo "export lunachromelaunchoptions=$lunachromelaunchoptions" >> ${logged_in_home}/.config/systemd/user/env_vars
 fi
 
@@ -2045,25 +2059,25 @@ fi
 
 if [[ $options == *"Fortnite"* ]]; then
     # User selected Fortnite
-    fortnitechromelaunchoptions="run --branch=stable --arch=x86_64 --command=/app/bin/chrome --file-forwarding com.google.Chrome @@u @@ --window-size=1280,800 --force-device-scale-factor=1.00 --device-scale-factor=1.00 --start-fullscreen https://www.xbox.com/en-US/play/games/fortnite/BT5P2X999VH2/ --no-first-run --enable-features=OverlayScrollbar"
+    fortnitechromelaunchoptions="run --branch=stable --arch=x86_64 --command=/app/bin/chrome --file-forwarding com.google.Chrome @@u @@ --window-size=1280,800 --force-device-scale-factor=1.00 --device-scale-factor=1.00 --start-fullscreen https://www.xbox.com/en-US/play/games/fortnite/BT5P2X999VH2 --no-first-run --enable-features=OverlayScrollbar"
     echo "export fortnitechromelaunchoptions=$fortnitechromelaunchoptions" >> ${logged_in_home}/.config/systemd/user/env_vars
 fi
 
 if [[ $options == *"WebRcade"* ]]; then
     # User selected Webrcade
-    webrcadechromelaunchoptions="run --branch=stable --arch=x86_64 --command=/app/bin/chrome --file-forwarding com.google.Chrome @@u @@ --window-size=1280,800 --force-device-scale-factor=1.00 --device-scale-factor=1.00 --start-fullscreen https://play.webrcade.com/ --no-first-run --enable-features=OverlayScrollbar"
+    webrcadechromelaunchoptions="run --branch=stable --arch=x86_64 --command=/app/bin/chrome --file-forwarding com.google.Chrome @@u @@ --window-size=1280,800 --force-device-scale-factor=1.00 --device-scale-factor=1.00 --start-fullscreen https://play.webrcade.com --no-first-run --enable-features=OverlayScrollbar"
     echo "export webrcadechromelaunchoptions=$webrcadechromelaunchoptions" >> ${logged_in_home}/.config/systemd/user/env_vars
 fi
 
 if [[ $options == *"WebRcade Editor"* ]]; then
     # User selected Webrcade Editor
-    webrcadeeditchromelaunchoptions="run --branch=stable --arch=x86_64 --command=/app/bin/chrome --file-forwarding com.google.Chrome @@u @@ --window-size=1280,800 --force-device-scale-factor=1.00 --device-scale-factor=1.00 --start-fullscreen https://editor.webrcade.com/ --no-first-run --enable-features=OverlayScrollbar"
+    webrcadeeditchromelaunchoptions="run --branch=stable --arch=x86_64 --command=/app/bin/chrome --file-forwarding com.google.Chrome @@u @@ --window-size=1280,800 --force-device-scale-factor=1.00 --device-scale-factor=1.00 --start-fullscreen https://editor.webrcade.com --no-first-run --enable-features=OverlayScrollbar"
     echo "export webrcadeeditchromelaunchoptions=$webrcadeeditchromelaunchoptions" >> ${logged_in_home}/.config/systemd/user/env_vars
 fi
 
 if [[ $options == *"Plex"* ]]; then
     # User selected Webrcade
-    plexchromelaunchoptions="run --branch=stable --arch=x86_64 --command=/app/bin/chrome --file-forwarding com.google.Chrome @@u @@ --window-size=1280,800 --force-device-scale-factor=1.00 --device-scale-factor=1.00 --start-fullscreen https://www.plex.tv/ --no-first-run --enable-features=OverlayScrollbar"
+    plexchromelaunchoptions="run --branch=stable --arch=x86_64 --command=/app/bin/chrome --file-forwarding com.google.Chrome @@u @@ --window-size=1280,800 --force-device-scale-factor=1.00 --device-scale-factor=1.00 --start-fullscreen https://www.plex.tv --no-first-run --enable-features=OverlayScrollbar"
     echo "export plexchromelaunchoptions=$plexchromelaunchoptions" >> ${logged_in_home}/.config/systemd/user/env_vars
 fi
 
@@ -2075,10 +2089,9 @@ fi
 
 if [[ $options == *"Apple TV+"* ]]; then
     # User selected Webrcade
-    applechromelaunchoptions="run --branch=stable --arch=x86_64 --command=/app/bin/chrome --file-forwarding com.google.Chrome @@u @@ --window-size=1280,800 --force-device-scale-factor=1.00 --device-scale-factor=1.00 --start-fullscreen https://tv.apple.com/ --no-first-run --enable-features=OverlayScrollbar"
+    applechromelaunchoptions="run --branch=stable --arch=x86_64 --command=/app/bin/chrome --file-forwarding com.google.Chrome @@u @@ --window-size=1280,800 --force-device-scale-factor=1.00 --device-scale-factor=1.00 --start-fullscreen https://tv.apple.com --no-first-run --enable-features=OverlayScrollbar"
     echo "export applechromelaunchoptions=$applechromelaunchoptions" >> ${logged_in_home}/.config/systemd/user/env_vars
 fi
-
 
 # Check if any custom websites were provided
 if [ ${#custom_websites[@]} -gt 0 ]; then
@@ -2088,6 +2101,8 @@ if [ ${#custom_websites[@]} -gt 0 ]; then
     custom_websites_str=$(IFS=", "; echo "${custom_websites[*]}")
     echo "export custom_websites_str=$custom_websites_str" >> ${logged_in_home}/.config/systemd/user/env_vars
 fi
+
+
 
 # Create the download directory if it doesn't exist
 mkdir -p "$download_dir"
@@ -2254,9 +2269,35 @@ echo "export chrome_startdir=$chrome_startdir" >> ${logged_in_home}/.config/syst
 
 
 
-
 # Check if either directory does not exist
 if [ "${deckyplugin}" = false ]; then
+    # Function to display a Zenity message
+    show_message() {
+        zenity --notification --text="$1" --timeout=1
+    }
+
+    show_message "Activating Scanner..."
+
+    # Setup NSLGameScanner.service
+    python_script_path="${logged_in_home}/.config/systemd/user/NSLGameScanner.py"
+    # Define your GitHub link
+    github_link="https://raw.githubusercontent.com/moraroy/NonSteamLaunchers-On-Steam-Deck/main/NSLGameScanner.py"
+
+    # Check if the service is already running
+    service_status=$(systemctl --user is-active nslgamescanner.service)
+    if [ "$service_status" = "active" ] || [ "$service_status" = "activating" ]; then
+        echo "Service is already running or activating. Stopping the service..."
+        systemctl --user stop nslgamescanner.service
+    fi
+
+    echo "Updating Python script from GitHub..."
+    curl -o $python_script_path $github_link
+
+    echo "Starting the service..."
+    python3 $python_script_path
+
+    show_message "Restarting Steam..."
+
     # Detach script from Steam process
     nohup sh -c 'sleep 10; /usr/bin/steam %U' &
 
@@ -2266,33 +2307,13 @@ if [ "${deckyplugin}" = false ]; then
     [[ -n "$steam_running" ]] && killall steam
 
     # Wait for the steam process to exit
-    while steam_pid > /dev/null; do sleep 5; done
-
-	#Setup NSLGameScanner.service
-	python_script_path="${logged_in_home}/.config/systemd/user/NSLGameScanner.py"
-
-	# Define your GitHub link
-	github_link="https://raw.githubusercontent.com/moraroy/NonSteamLaunchers-On-Steam-Deck/main/NSLGameScanner.py"
-
-	# Check if the service is already running
-	service_status=$(systemctl --user is-active nslgamescanner.service)
-
-	if [ "$service_status" = "active" ] || [ "$service_status" = "activating" ]
-	then
-	    echo "Service is already running or activating. Stopping the service..."
-	    systemctl --user stop nslgamescanner.service
-	fi
-
-	echo "Updating Python script from GitHub..."
-
-	curl -o $python_script_path $github_link
-
-	echo "Starting the service..."
-
-	python3 $python_script_path
+    while steam_pid > /dev/null; do
+        sleep 5
+    done
 fi
 
-sleep 15
+show_message "Waiting to detect plugin..."
+sleep 20
 
 # Function to switch to Game Mode
 switch_to_game_mode() {
@@ -2306,8 +2327,10 @@ switch_to_game_mode() {
 
 # Function to display a Zenity message
 show_message() {
-  zenity --notification --text="$1" --timeout=1
+    zenity --notification --text="$1" --timeout=1
 }
+
+
 
 # Set the remote repository URL
 REPO_URL="https://github.com/moraroy/NonSteamLaunchersDecky/archive/refs/heads/test.zip"
@@ -2333,13 +2356,15 @@ fi
 
 set +x
 
+show_message "Detected enviroment..."
+
 if $DECKY_LOADER_EXISTS; then
   while true; do
     USER_INPUT=$(zenity --forms --title="Authentication Required" --text="Decky Loader detected! $(if $NSL_PLUGIN_EXISTS; then echo 'NSL Plugin also detected and will be updated to the latest version 🚀.'; else echo 'But no NSL plugin :(. Would you like to inject it and go to Game Mode?'; fi) Please enter your sudo password to proceed:" --separator="|" --add-password="Password")
     USER_PASSWORD=$(echo $USER_INPUT | cut -d'|' -f1)
 
     if [ -z "$USER_PASSWORD" ]; then
-      zenity --error --text="No password entered. Exiting."
+      zenity --error --text="No password entered. Exiting." --timeout 5
       exit 1
     fi
 
