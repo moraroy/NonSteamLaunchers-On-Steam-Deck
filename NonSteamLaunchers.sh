@@ -1603,13 +1603,12 @@ install_launcher "Nexon Launcher" "NexonLauncher" "$nexon_file" "$nexon_url" "$n
 #End of Launcher Installations
 
 
-
-wait
 echo "99"
 echo "# Checking if Chrome is installed...please wait..."
 
 # Check if user selected any of the options
 if [[ $options == *"Apple TV+"* ]] || [[ $options == *"Plex"* ]] || [[ $options == *"Crunchyroll"* ]] || [[ $options == *"WebRcade"* ]] || [[ $options == *"WebRcade Editor"* ]] || [[ $options == *"Netflix"* ]] || [[ $options == *"Fortnite"* ]] || [[ $options == *"Xbox Game Pass"* ]] || [[ $options == *"Geforce Now"* ]] || [[ $options == *"Amazon Luna"* ]] || [[ $options == *"Hulu"* ]] || [[ $options == *"Disney+"* ]] || [[ $options == *"Amazon Prime Video"* ]] || [[ $options == *"Youtube"* ]] || [[ $options == *"Twitch"* ]]; then
+
     # User selected one of the options
     echo "User selected one of the options"
 
@@ -1633,6 +1632,7 @@ if [[ $options == *"Apple TV+"* ]] || [[ $options == *"Plex"* ]] || [[ $options 
         flatpak --user override --filesystem=/run/udev:ro com.google.Chrome
     fi
 fi
+
 
 echo "99.1"
 echo "# Checking if Ludusavi is installed...please wait..."
@@ -2063,19 +2063,19 @@ fi
 
 if [[ $options == *"Plex"* ]]; then
     # User selected Webrcade
-    webrcadechromelaunchoptions="run --branch=stable --arch=x86_64 --command=/app/bin/chrome --file-forwarding com.google.Chrome @@u @@ --window-size=1280,800 --force-device-scale-factor=1.00 --device-scale-factor=1.00 --start-fullscreen https://www.plex.tv/ --no-first-run --enable-features=OverlayScrollbar"
+    plexchromelaunchoptions="run --branch=stable --arch=x86_64 --command=/app/bin/chrome --file-forwarding com.google.Chrome @@u @@ --window-size=1280,800 --force-device-scale-factor=1.00 --device-scale-factor=1.00 --start-fullscreen https://www.plex.tv/ --no-first-run --enable-features=OverlayScrollbar"
     echo "export plexchromelaunchoptions=$plexchromelaunchoptions" >> ${logged_in_home}/.config/systemd/user/env_vars
 fi
 
 if [[ $options == *"Crunchyroll"* ]]; then
     # User selected Webrcade
-    webrcadechromelaunchoptions="run --branch=stable --arch=x86_64 --command=/app/bin/chrome --file-forwarding com.google.Chrome @@u @@ --window-size=1280,800 --force-device-scale-factor=1.00 --device-scale-factor=1.00 --start-fullscreen https://www.crunchyroll.com --no-first-run --enable-features=OverlayScrollbar"
+    crunchychromelaunchoptions="run --branch=stable --arch=x86_64 --command=/app/bin/chrome --file-forwarding com.google.Chrome @@u @@ --window-size=1280,800 --force-device-scale-factor=1.00 --device-scale-factor=1.00 --start-fullscreen https://www.crunchyroll.com --no-first-run --enable-features=OverlayScrollbar"
     echo "export crunchychromelaunchoptions=$crunchychromelaunchoptions" >> ${logged_in_home}/.config/systemd/user/env_vars
 fi
 
 if [[ $options == *"Apple TV+"* ]]; then
     # User selected Webrcade
-    webrcadechromelaunchoptions="run --branch=stable --arch=x86_64 --command=/app/bin/chrome --file-forwarding com.google.Chrome @@u @@ --window-size=1280,800 --force-device-scale-factor=1.00 --device-scale-factor=1.00 --start-fullscreen https://tv.apple.com/ --no-first-run --enable-features=OverlayScrollbar"
+    applechromelaunchoptions="run --branch=stable --arch=x86_64 --command=/app/bin/chrome --file-forwarding com.google.Chrome @@u @@ --window-size=1280,800 --force-device-scale-factor=1.00 --device-scale-factor=1.00 --start-fullscreen https://tv.apple.com/ --no-first-run --enable-features=OverlayScrollbar"
     echo "export applechromelaunchoptions=$applechromelaunchoptions" >> ${logged_in_home}/.config/systemd/user/env_vars
 fi
 
