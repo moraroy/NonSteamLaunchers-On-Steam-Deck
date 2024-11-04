@@ -937,6 +937,24 @@ def getGogGameInfo(filePath):
 
 
 
+def adjust_dosbox_launch_options(launch_command, game_id):
+    print(f"Adjusting launch options for command: {launch_command}")
+    if "dosbox.exe" in launch_command.lower():
+        try:
+            # Find the part of the command with DOSBox.exe and its arguments
+            exe_part, args_part = launch_command.split("DOSBox.exe", 1)
+            exe_path = exe_part.strip() + "DOSBox.exe"
+            args = args_part.strip()
+
+            # Form the launch options string
+            launch_options = f'STEAM_COMPAT_DATA_PATH="{logged_in_home}/.local/share/Steam/steamapps/compatdata/{gog_galaxy_launcher}/" %command% /command=runGame /gameId={game_id} /path="{exe_path}" "{args}"'
+            return launch_options
+        except ValueError as e:
+            print(f"Error adjusting launch options: {e}")
+            return launch_command
+    else:
+        # For non-DOSBox games, return the original launch command
+        return f'STEAM_COMPAT_DATA_PATH="{logged_in_home}/.local/share/Steam/steamapps/compatdata/{gog_galaxy_launcher}/" %command% /command=runGame /gameId={game_id} /path="{launch_command}"'
 
 # Define your paths
 gog_games_directory = f"{logged_in_home}/.local/share/Steam/steamapps/compatdata/{gog_galaxy_launcher}/pfx/drive_c/Program Files (x86)/GOG Galaxy/Games"
@@ -951,11 +969,14 @@ else:
 
     for game, game_info in game_dict.items():
         if game_info['id']:
-            # Strip leading and trailing spaces from the exe path
-            exe_path = game_info['exe'].strip()
-            launch_options = f"STEAM_COMPAT_DATA_PATH=\"{logged_in_home}/.local/share/Steam/steamapps/compatdata/{gog_galaxy_launcher}/\" %command% /command=runGame /gameId={game_info['id']} /path=\"{exe_path}\""
+            # Adjust the launch options for DOSBox games
+            launch_options = adjust_dosbox_launch_options(game_info['exe'], game_info['id'])
+
+            # Format the paths correctly
             exe_path = f"\"{logged_in_home}/.local/share/Steam/steamapps/compatdata/{gog_galaxy_launcher}/pfx/drive_c/Program Files (x86)/GOG Galaxy/GalaxyClient.exe\""
             start_dir = f"\"{logged_in_home}/.local/share/Steam/steamapps/compatdata/{gog_galaxy_launcher}/pfx/drive_c/Program Files (x86)/GOG Galaxy/\""
+
+            # Create the new entry
             create_new_entry(exe_path, game, launch_options, start_dir)
 
 # End of Gog Galaxy Scanner
