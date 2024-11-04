@@ -318,27 +318,46 @@ get_sd_path() {
 # Function For Updating Proton-GE
 function download_ge_proton() {
     echo "Downloading GE-Proton using the GitHub API"
-    cd "${logged_in_home}/Downloads/NonSteamLaunchersInstallation"
-    curl --retry 5 --retry-delay 0 --retry-max-time 60 -sLOJ "$(curl -s https://api.github.com/repos/GloriousEggroll/proton-ge-custom/releases/latest | grep browser_download_url | cut -d\" -f4 | grep .tar.gz)"
-    if [ $? -ne 0 ]; then
-        echo "Curl failed. Exiting."
+    cd "${logged_in_home}/Downloads/NonSteamLaunchersInstallation" || { echo "Failed to change directory. Exiting."; exit 1; }
+
+    # Download tarball
+    tarball_url=$(curl -s https://api.github.com/repos/GloriousEggroll/proton-ge-custom/releases/latest | grep browser_download_url | cut -d\" -f4 | grep .tar.gz)
+    if [ -z "$tarball_url" ]; then
+        echo "Failed to get tarball URL. Exiting."
         exit 1
     fi
-    curl --retry 5 --retry-delay 0 --retry-max-time 60 -sLOJ "$(curl -s https://api.github.com/repos/GloriousEggroll/proton-ge-custom/releases/latest | grep browser_download_url | cut -d\" -f4 | grep .sha512sum)"
+    curl --retry 5 --retry-delay 0 --retry-max-time 60 -sLOJ "$tarball_url"
     if [ $? -ne 0 ]; then
-        echo "Curl failed. Exiting."
+        echo "Curl failed to download tarball. Exiting."
         exit 1
     fi
+
+    # Download checksum
+    checksum_url=$(curl -s https://api.github.com/repos/GloriousEggroll/proton-ge-custom/releases/latest | grep browser_download_url | cut -d\" -f4 | grep .sha512sum)
+    if [ -z "$checksum_url" ]; then
+        echo "Failed to get checksum URL. Exiting."
+        exit 1
+    fi
+    curl --retry 5 --retry-delay 0 --retry-max-time 60 -sLOJ "$checksum_url"
+    if [ $? -ne 0 ]; then
+        echo "Curl failed to download checksum. Exiting."
+        exit 1
+    fi
+
+    # Verify checksum
     sha512sum -c ./*.sha512sum
     if [ $? -ne 0 ]; then
         echo "Checksum verification failed. Exiting."
         exit 1
     fi
+
+    # Extract tarball
     tar -xf GE-Proton*.tar.gz -C "${logged_in_home}/.steam/root/compatibilitytools.d/"
     if [ $? -ne 0 ]; then
         echo "Tar extraction failed. Exiting."
         exit 1
     fi
+
     proton_dir=$(find "${logged_in_home}/.steam/root/compatibilitytools.d" -maxdepth 1 -type d -name "GE-Proton*" | sort -V | tail -n1)
     echo "All done :)"
 }
@@ -347,13 +366,13 @@ function update_proton() {
     echo "0"
     echo "# Detecting, Updating and Installing GE-Proton...please wait..."
 
-    # check to make sure compatabilitytools.d exists and makes it if it doesnt
+    # Check if compatibilitytools.d exists and create it if it doesn't
     if [ ! -d "${logged_in_home}/.steam/root/compatibilitytools.d" ]; then
-        mkdir -p "${logged_in_home}/.steam/root/compatibilitytools.d"
+        mkdir -p "${logged_in_home}/.steam/root/compatibilitytools.d" || { echo "Failed to create directory. Exiting."; exit 1; }
     fi
 
     # Create NonSteamLaunchersInstallation subfolder in Downloads folder
-    mkdir -p "${logged_in_home}/Downloads/NonSteamLaunchersInstallation"
+    mkdir -p "${logged_in_home}/Downloads/NonSteamLaunchersInstallation" || { echo "Failed to create directory. Exiting."; exit 1; }
 
     # Set the path to the Proton directory
     proton_dir=$(find "${logged_in_home}/.steam/root/compatibilitytools.d" -maxdepth 1 -type d -name "GE-Proton*" | sort -V | tail -n1)
@@ -363,13 +382,74 @@ function update_proton() {
         download_ge_proton
     else
         # Check if installed version is the latest version
-        installed_version=$(basename $proton_dir | sed 's/GE-Proton-//')
+        installed_version=$(basename "$proton_dir" | sed 's/GE-Proton-//')
         latest_version=$(curl -s https://api.github.com/repos/GloriousEggroll/proton-ge-custom/releases/latest | grep tag_name | cut -d '"' -f 4)
         if [ "$installed_version" != "$latest_version" ]; then
             download_ge_proton
         fi
     fi
 }
+
+# Function For Updating UMU Launcher
+function download_umu_launcher() {
+    echo "Downloading UMU Launcher using the GitHub API"
+    cd "${logged_in_home}/Downloads/NonSteamLaunchersInstallation" || { echo "Failed to change directory. Exiting."; exit 1; }
+
+    # Download zip file
+    zip_url=$(curl -s https://api.github.com/repos/Open-Wine-Components/umu-launcher/releases/latest | grep browser_download_url | cut -d\" -f4 | grep Zipapp.zip)
+    if [ -z "$zip_url" ]; then
+        echo "Failed to get zip URL. Exiting."
+        exit 1
+    fi
+    curl --retry 5 --retry-delay 0 --retry-max-time 60 -sLOJ "$zip_url"
+    if [ $? -ne 0 ]; then
+        echo "Curl failed to download zip file. Exiting."
+        exit 1
+    fi
+
+    # Ensure the bin directory exists
+    if [ ! -d "${logged_in_home}/bin" ]; then
+        mkdir -p "${logged_in_home}/bin" || { echo "Failed to create bin directory. Exiting."; exit 1; }
+    fi
+
+    # Extract zip file
+    unzip -o Zipapp.zip -d "${logged_in_home}/bin/"
+    if [ $? -ne 0 ]; then
+        echo "Zip extraction failed. Exiting."
+        exit 1
+    fi
+
+    # Make all extracted files executable
+    find "${logged_in_home}/bin/" -type f -exec chmod +x {} \;
+
+    echo "UMU Launcher update completed :)"
+}
+
+
+
+function update_umu_launcher() {
+    echo "0"
+    echo "# Detecting, Updating and Installing UMU Launcher...please wait..."
+
+    # Create NonSteamLaunchersInstallation subfolder in Downloads folder
+    mkdir -p "${logged_in_home}/Downloads/NonSteamLaunchersInstallation" || { echo "Failed to create directory. Exiting."; exit 1; }
+
+    # Set the path to the UMU Launcher directory
+    umu_dir="${logged_in_home}/bin/umu-launcher"
+
+    # Check if UMU Launcher is installed
+    if [ ! -d "$umu_dir" ]; then
+        download_umu_launcher
+    else
+        # Check if installed version is the latest version
+        installed_version=$(cat "$umu_dir/version.txt")
+        latest_version=$(curl -s https://api.github.com/repos/Open-Wine-Components/umu-launcher/releases/latest | grep tag_name | cut -d '"' -f 4)
+        if [ "$installed_version" != "$latest_version" ]; then
+            download_umu_launcher
+        fi
+    fi
+}
+
 
 
 
@@ -1117,14 +1197,18 @@ fi
 # Massive subshell pipes into `zenity --progress` around L2320 for GUI rendering
 (
 
+
 #Update Proton GE
 # Call the function directly
 update_proton
+update_umu_launcher
 
 # Also call the function when the button is pressed
 if [[ $options == *"Update Proton-GE"* ]]; then
     update_proton
+    update_umu_launcher
 fi
+
 
 
 echo "20"
@@ -2333,7 +2417,7 @@ show_message() {
 
 
 # Set the remote repository URL
-REPO_URL="https://github.com/moraroy/NonSteamLaunchersDecky/archive/refs/heads/test.zip"
+REPO_URL="https://github.com/moraroy/NonSteamLaunchersDecky/archive/refs/heads/main.zip"
 
 # Set the local directory path
 LOCAL_DIR="${logged_in_home}/homebrew/plugins/NonSteamLaunchers"
@@ -2387,6 +2471,8 @@ if $NSL_PLUGIN_EXISTS; then
   echo "$USER_PASSWORD" | sudo -S rm -rf "$LOCAL_DIR"
 fi
 
+sudo systemctl stop plugin_loader.service
+
 show_message "Creating base directory and setting permissions..."
 echo "$USER_PASSWORD" | sudo -S mkdir -p "$LOCAL_DIR"
 echo "$USER_PASSWORD" | sudo -S chmod -R u+rw "$LOCAL_DIR"
@@ -2395,7 +2481,7 @@ echo "$USER_PASSWORD" | sudo -S chown -R $USER:$USER "$LOCAL_DIR"
 echo "Downloading and extracting the repository..."
 curl -L "$REPO_URL" -o /tmp/NonSteamLaunchersDecky.zip
 echo "$USER_PASSWORD" | sudo -S unzip -o /tmp/NonSteamLaunchersDecky.zip -d /tmp/
-echo "$USER_PASSWORD" | sudo -S cp -r /tmp/NonSteamLaunchersDecky-test/* "$LOCAL_DIR"
+echo "$USER_PASSWORD" | sudo -S cp -r /tmp/NonSteamLaunchersDecky-main/* "$LOCAL_DIR"
 
 echo "$USER_PASSWORD" | sudo -S rm -rf /tmp/NonSteamLaunchersDecky*
 
