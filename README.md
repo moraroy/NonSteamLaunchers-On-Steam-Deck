@@ -33,7 +33,7 @@ Features  ✅
 
 - Ludusavi is also pre-installed and setup for NSL for your games save backups. Not all games will work with this yet so bare this in mind when deleted or uninstalling games that are arent backed up yet, here is the repo [here](https://github.com/mtkennerly/ludusavi)
 
--UMU Launcher is automatically used and is processed for each game and Launcher. Proton GE will be used where necessary.
+- UMU Launcher is automatically used and is processed for each game and Launcher. Proton GE will be used where necessary.
 
 
 <h1 align="center">
