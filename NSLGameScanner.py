@@ -1189,7 +1189,7 @@ itch_db_location = f"{logged_in_home}/.local/share/Steam/steamapps/compatdata/{i
 
 # Check if the database path exists
 if not os.path.exists(itch_db_location):
-    decky_plugin.logger.info(f"Path not found: {itch_db_location}. Aborting Itch.io scan...")
+    print(f"Path not found: {itch_db_location}. Aborting Itch.io scan...")
 else:
     # Connect to the SQLite database
     conn = sqlite3.connect(itch_db_location)
@@ -1214,15 +1214,14 @@ else:
         game_id = cave[1]
         if game_id in games_dict:
             game_info = games_dict[game_id]
-            cave_info = json.loads(cave[11])  # Assuming 'cave[11]' contains a JSON object
-
+            cave_info = json.loads(cave[11])
             base_path = cave_info['basePath']
             candidates = cave_info['candidates']
             executable_path = candidates[0]['path']
 
             # Skip games with an executable that ends with '.html' (browser games)
             if executable_path.endswith('.html'):
-                decky_plugin.logger.info(f"Skipping browser game: {game_info[2]}")
+                print(f"Skipping browser game: {game_info[2]}")
                 continue
 
             # Extract the game title
