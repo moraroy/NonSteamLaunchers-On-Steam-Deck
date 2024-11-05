@@ -27,7 +27,7 @@ Features  ✅
 
 - Command Line Ready, you can call it from online, heres an example of installing a launcher ``` /bin/bash -c 'curl -Ls https://raw.githubusercontent.com/moraroy/NonSteamLaunchers-On-Steam-Deck/main/NonSteamLaunchers.sh | nohup /bin/bash -s -- "Epic Games"' ```
 
-- NSL can in fact be installed on many linux distros, feel free to try, here are some examples of some... ChimeraOS, Nobara and Arch Linux as well as any KDE Environments such as this opensuse - tumbleweed - wayland , if for any reason you find that NonSteamLaunchers installs perfectly or not, let me know!
+- NSL can in fact be installed on many linux distros, feel free to try, here are some examples of some... Ubuntu LTS, ChimeraOS, Nobara and Arch Linux as well as any KDE Environments such as this opensuse - tumbleweed - wayland , if for any reason you find that NonSteamLaunchers installs perfectly or not, let me know!
 
 - RemotePlayWhatever is also bundled with NSL to allow for local and co-op play between non steam games, this is created by m4Engi, here is the repo [here](https://github.com/m4dEngi/RemotePlayWhatever)
 
