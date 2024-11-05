@@ -1183,6 +1183,7 @@ if amazon_games:
 
 
 #Itchio Scanner
+
 def get_itch_games(itch_db_location):
     print(f"Checking if {itch_db_location} exists...")
     if not os.path.exists(itch_db_location):
@@ -1190,64 +1191,69 @@ def get_itch_games(itch_db_location):
         return []
 
     print("Opening and reading the database file...")
-    with open(itch_db_location, 'rb') as f:
-        shortcut_bytes = f.read()
+    conn = sqlite3.connect(itch_db_location)
+    cursor = conn.cursor()
 
-    print("Parsing the database file...")
-    paths = parse_butler_db(shortcut_bytes)
+    # Parse the 'caves' table
+    cursor.execute("SELECT * FROM caves;")
+    caves = cursor.fetchall()
 
-    print("Converting paths to games...")
-    games = [dbpath_to_game(path) for path in paths if dbpath_to_game(path) is not None]
+    # Parse the 'games' table
+    cursor.execute("SELECT * FROM games;")
+    games = cursor.fetchall()
+
+    # Create a dictionary to store game information by game_id
+    games_dict = {game[0]: game for game in games}
+
+    print("Matching games between 'caves' and 'games' tables...")
+    games_list = []
+    for cave in caves:
+        game_id = cave[1]
+        if game_id in games_dict:
+            game_info = games_dict[game_id]
+            base_path = json.loads(cave[11])['basePath']
+            candidates = json.loads(cave[11])['candidates']
+            executable_path = candidates[0]['path']
+
+            # Skip browser games (HTML files)
+            if executable_path.endswith('.html'):
+                print(f"Skipping browser game: {game_info[2]}")
+                continue
+
+            game_title = game_info[2]
+            games_list.append((base_path, executable_path, game_title))
+
     # Remove duplicates
-    games = list(set(games))
-    print(f"Found {len(games)} unique games.")
-    return games
-
-def parse_butler_db(content):
-    print("Finding matches in the database content...")
-    pattern = rb'\{"basePath":"(.*?)","totalSize".*?"candidates":\[(.*?)\]\}'
-    matches = re.findall(pattern, content)
-    print(f"Found {len(matches)} matches.")
-
-    print("Converting matches to database paths...")
-    db_paths = []
-    for match in matches:
-        base_path = match[0].decode(errors='ignore')
-        candidates_json = b'[' + match[1] + b']'
-        print(f"Candidates JSON: {candidates_json}")
-        try:
-            candidates = json.loads(candidates_json.decode(errors='ignore'))
-            paths = [candidate['path'] for candidate in candidates]
-            db_paths.append((base_path, paths))
-        except json.JSONDecodeError as e:
-            print(f"JSON decoding error: {e}. Skipping this entry and continuing...")
-            continue
-    print(f"Converted {len(matches)} matches to {len(db_paths)} database paths.")
-    return db_paths
+    games_list = list(set(games_list))
+    print(f"Found {len(games_list)} unique games.")
+    return games_list
 
 def dbpath_to_game(paths):
-    # Convert the Windows-style path from the database to a Unix-style path
-    db_path = paths[0].replace("\\\\", "/").replace("C:", "")
-    linux_path = f"{logged_in_home}/.local/share/Steam/steamapps/compatdata/{itchio_launcher}/pfx/drive_c" + db_path
+    # Convert the base path to a Unix-style path
+    base_path = paths[0].replace("\\\\", "/").replace("C:", "")
+    linux_path = f"{logged_in_home}/.local/share/Steam/steamapps/compatdata/{itchio_launcher}/pfx/drive_c" + base_path
     receipt_path = os.path.join(linux_path, ".itch", "receipt.json.gz")
+
     if not os.path.exists(receipt_path):
         return None
 
-    for executable in paths[1]:
+    for executable in paths[1:]:
         exe_path = os.path.join(linux_path, executable)
-        if os.access(exe_path, os.X_OK):  # check if file is executable
+        if os.access(exe_path, os.X_OK):  # Check if executable
             with gzip.open(receipt_path, 'rb') as f:
                 receipt_str = f.read().decode()
                 receipt = json.loads(receipt_str)
                 return (linux_path, executable, receipt['game']['title'])
-# Usage:
-itch_db_location = f"{logged_in_home}/.local/share/Steam/steamapps/compatdata/{itchio_launcher}/pfx/drive_c/users/steamuser/AppData/Roaming/itch/db/butler.db-wal"
+
+# Usage
+itch_db_location = f"{logged_in_home}/.local/share/Steam/steamapps/compatdata/{itchio_launcher}/pfx/drive_c/users/steamuser/AppData/Roaming/itch/db/butler.db"
 print(f"Getting games from {itch_db_location}...")
 games = get_itch_games(itch_db_location)
 print("Printing games...")
 for game in games:
     print(game)
 
+# For each game, prepare to create a new entry for launch
 for game in games:
     linux_path, executable, game_title = game
     exe_path = f"\"{os.path.join(linux_path, executable)}\""
@@ -1255,6 +1261,7 @@ for game in games:
     launchoptions = f"STEAM_COMPAT_DATA_PATH=\"{logged_in_home}/.local/share/Steam/steamapps/compatdata/{itchio_launcher}/\" %command%"
     create_new_entry(exe_path, game_title, launchoptions, start_dir)
 
+# End of Itchio Scanner
 #End of Itchio Scanner
 
 
