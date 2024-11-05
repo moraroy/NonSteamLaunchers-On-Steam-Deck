@@ -953,7 +953,8 @@ def adjust_dosbox_launch_options(launch_command, game_id):
             print(f"Error adjusting launch options: {e}")
             return launch_command
     else:
-        # For non-DOSBox games, return the original launch command
+        # For non-DOSBox games, return the original launch command without trailing spaces
+        launch_command = launch_command.strip()
         return f'STEAM_COMPAT_DATA_PATH="{logged_in_home}/.local/share/Steam/steamapps/compatdata/{gog_galaxy_launcher}/" %command% /command=runGame /gameId={game_id} /path="{launch_command}"'
 
 # Define your paths
@@ -980,6 +981,7 @@ else:
             create_new_entry(exe_path, game, launch_options, start_dir)
 
 # End of Gog Galaxy Scanner
+
 
 
 
