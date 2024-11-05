@@ -7,7 +7,7 @@
 NonSteamLaunchers 🚀
 </h1>
 
-This script installs the latest GE-Proton, installs NonSteamLaunchers under one unique Proton prefix folder in your compatdata folder path called "NonSteamLaunchers" and adds them to your Steam Library. It will also add the games automatically on every steam restart.
+This script installs the latest UMU & GE-Proton and installs NonSteamLaunchers under one unique Proton prefix folder in your compatdata folder path called "NonSteamLaunchers" and adds them to your Steam Library. It will also add the games automatically on every steam restart.
 So you can use them on Desktop or in Game Mode. 
 Local Saves and Cloud saves are supported, as well as multiplayer/online support (because youre using the launchers). Obviously, certain anticheat games will not work on linux enviroments; this is on a game to game basis.
 
@@ -32,6 +32,9 @@ Features  ✅
 - RemotePlayWhatever is also bundled with NSL to allow for local and co-op play between non steam games, this is created by m4Engi, here is the repo [here](https://github.com/m4dEngi/RemotePlayWhatever)
 
 - Ludusavi is also pre-installed and setup for NSL for your games save backups. Not all games will work with this yet so bare this in mind when deleted or uninstalling games that are arent backed up yet, here is the repo [here](https://github.com/mtkennerly/ludusavi)
+
+-UMU Launcher is automatically used and is processed for each game and Launcher. Proton GE will be used where necessary.
+
 
 <h1 align="center">
 Currently Working On 👷‍♂️
