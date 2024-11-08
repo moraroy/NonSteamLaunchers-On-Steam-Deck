@@ -624,13 +624,13 @@ def modify_shortcut_for_umu(appname, exe, launchoptions, startingdir):
                 # Update only the launchoptions part for different game types
                 updated_launch = launchoptions
                 if "origin2://game/launch?offerIds=" in launchoptions:
-                    updated_launch = f'origin2://game/launch?offerIds={codename}'
+                    updated_launch = f'"origin2://game/launch?offerIds={codename}"'
                 elif "amazon-games://play/amzn1.adg.product." in launchoptions:
-                    updated_launch = f'amazon-games://play/{codename}'
+                    updated_launch = f"-'amazon-games://play/{codename}'"
                 elif "com.epicgames.launcher://apps/" in launchoptions:
-                    updated_launch = f'-com.epicgames.launcher://apps/{codename}?action=launch&silent=true'
+                    updated_launch = f"-'com.epicgames.launcher://apps/{codename}?action=launch&silent=true'"
                 elif "uplay://launch/" in launchoptions:
-                    updated_launch = f'uplay://launch/{codename}/0'
+                    updated_launch = f'"uplay://launch/{codename}/0"'
                 elif "/command=runGame /gameId=" in launchoptions:
                     updated_launch = f'/command=runGame /gameId={codename} /path={launchoptions.split("/path=")[1]}'
 
