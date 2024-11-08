@@ -381,11 +381,11 @@ def add_compat_tool(app_id, launchoptions):
     if 'CompatToolMapping' not in config_data['InstallConfigStore']['Software']['Valve']['Steam']:
         config_data['InstallConfigStore']['Software']['Valve']['Steam']['CompatToolMapping'] = {}
         print(f"CompatToolMapping key not found in config.vdf, creating.")
-    if 'chrome' in launchoptions:
-        return False
-
-    if 'PROTONPATH' in launchoptions:
-        print("PROTONPATH found in launch options. Skipping compatibility tool update.")
+    
+    # Combine checks for 'chrome' and 'PROTONPATH'
+    if 'chrome' in launchoptions or 'PROTONPATH' in launchoptions:
+        if 'PROTONPATH' in launchoptions:
+            print("PROTONPATH found in launch options. Skipping compatibility tool update.")
         return False
 
     elif str(app_id) in config_data['InstallConfigStore']['Software']['Valve']['Steam']['CompatToolMapping']:
@@ -402,6 +402,7 @@ def add_compat_tool(app_id, launchoptions):
         config_data['InstallConfigStore']['Software']['Valve']['Steam']['CompatToolMapping'][str(app_id)] = {'name': f'{compat_tool_name}', 'config': '', 'priority': '250'}
         print(f"Created new CompatToolMapping entry for appid: {app_id}")
         return compat_tool_name
+
 
 def check_if_shortcut_exists(shortcut_id, display_name, exe_path, start_dir, launch_options):
     # Check if the game already exists in the shortcuts using the id
