@@ -1147,144 +1147,113 @@ else:
 
 
 #Battle.net Scanner
+
 # Define your mapping
 flavor_mapping = {
-    "Blizzard Arcade Collection": "RTRO",
-    "Diablo": "D1",
-    "Diablo II Resurrected": "OSI",
-    "Diablo III": "D3",
-    "Diablo IV": "Fen",
-    "Diablo Immortal (PC)": "ANBS",
-    "Hearthstone": "WTCG",
-    "Heroes of the Storm": "Hero",
-    "Overwatch": "Pro",
-    "Overwatch 2": "Pro",
-    "StarCraft": "S1",
-    "StarCraft 2": "S2",
-    "Warcraft: Orcs & Humans": "W1",
-    "Warcraft II: Battle.net Edition": "W2",
-    "Warcraft III: Reforged": "W3",
-    "World of Warcraft": "WoW",
-    "World of Warcraft Classic": "WoWC",
-    "Warcraft Arclight Rumble": "GRY",
-    "Call of Duty: Black Ops - Cold War": "ZEUS",
-    "Call of Duty: Black Ops 4": "VIPR",
-    "Call of Duty: Modern Warfare": "ODIN",
-    "Call of Duty": "AUKS",
-    "Call of Duty: MW 2 Campaign Remastered": "LAZR",
-    "Call of Duty: Vanguard": "FORE",
-    "Call of Duty: Modern Warfare III": "SPOT",
-    "Crash Bandicoot 4: It's About Time": "WLBY",
+    "RTRO": "Blizzard Arcade Collection",
+    "D1": "Diablo",
+    "OSI": "Diablo II Resurrected",
+    "D3": "Diablo III",
+    "Fen": "Diablo IV",
+    "ANBS": "Diablo Immortal (PC)",
+    "WTCG": "Hearthstone",
+    "Hero": "Heroes of the Storm",
+    "Pro": "Overwatch 2",
+    "S1": "StarCraft",
+    "S2": "StarCraft 2",
+    "W1": "Warcraft: Orcs & Humans",
+    "W2": "Warcraft II: Battle.net Edition",
+    "W3": "Warcraft III: Reforged",
+    "WoW": "World of Warcraft",
+    "WoWC": "World of Warcraft Classic",
+    "GRY": "Warcraft Arclight Rumble",
+    "ZEUS": "Call of Duty: Black Ops - Cold War",
+    "VIPR": "Call of Duty: Black Ops 4",
+    "ODIN": "Call of Duty: Modern Warfare",
+    "AUKS": "Call of Duty",
+    "LAZR": "Call of Duty: MW 2 Campaign Remastered",
+    "FORE": "Call of Duty: Vanguard",
+    "SPOT": "Call of Duty: Modern Warfare III",
+    "WLBY": "Crash Bandicoot 4: It's About Time",
     # Add more games here...
 }
 
-def get_flavor_from_file(game_path):
-    game_path = game_path.replace('\\', '/')
-    flavor_file = os.path.join(game_path, '_retail_', '.flavor.info')
-    if os.path.exists(flavor_file):
-        with open(flavor_file, 'r') as file:
-            for line in file:
-                if 'STRING' in line:
-                    return line.split(':')[-1].strip().capitalize()
-    else:
-        print(f"Flavor file not found: {flavor_file}")
-        # Use the mapping as a fallback
-        game_name = os.path.basename(game_path)
-        print(f"Game name from file path: {game_name}")
-        return flavor_mapping.get(game_name, 'unknown')
+def parse_battlenet_config(config_file_path):
+    print(f"Opening Battle.net config file at: {config_file_path}")
+    with open(config_file_path, 'r') as file:
+        config_data = json.load(file)
 
-def getBnetGameInfo(filePath):
-    # Check if the file contains any Battle.net entries
-    with open(filePath, 'r') as file:
-        if "Battle.net" not in file.read():
-            print("No Battle.net entries found in the registry file. Skipping Battle.net Games Scanner.")
-            return None
-
-    # If Battle.net entries exist, parse the registry file
+    games_info = config_data.get("Games", {})
     game_dict = {}
-    with open(filePath, 'r') as file:
-        game_name = None
-        exe_path = None
-        publisher = None
-        contact = None
-        for line in file:
-            split_line = line.split("=")
-            if len(split_line) > 1:
-                if "Publisher" in line:
-                    publisher = re.findall(r'\"(.+?)\"', split_line[1])
-                    if publisher:
-                        publisher = publisher[0]
-                        # Skip if the publisher is not Blizzard Entertainment
-                        if publisher != "Blizzard Entertainment":
-                            game_name = None
-                            exe_path = None
-                            publisher = None
-                            continue
-                if "Contact" in line:
-                    contact = re.findall(r'\"(.+?)\"', split_line[1])
-                    if contact:
-                        contact = contact[0]
-                if "DisplayName" in line:
-                    game_name = re.findall(r'\"(.+?)\"', split_line[1])
-                    if game_name:
-                        game_name = game_name[0]
-                if "InstallLocation" in line:
-                    exe_path = re.findall(r'\"(.+?)\"', split_line[1])
-                    if exe_path:
-                        exe_path = exe_path[0].replace('\\\\', '\\')
-                        # Skip if the install location is for the Battle.net launcher
-                        if "Battle.net" in exe_path:
-                            game_name = None
-                            exe_path = None
-                            publisher = None
-                            continue
-            if game_name and exe_path and publisher == "Blizzard Entertainment" and contact == "Blizzard Support":
-                game_dict[game_name] = {'exe': exe_path}
-                print(f"Game added to dictionary: {game_name}")
-                game_name = None
-                exe_path = None
-                publisher = None
-                contact = None
 
-    # If no games were found, return None
-    if not game_dict:
-        print("No Battle.net games found. Skipping Battle.net Games Scanner.")
-        return None
+    for game_key, game_data in games_info.items():
+        print(f"Processing game: {game_key}")
+        if game_key == "battle_net":
+            print("Skipping 'battle_net' entry")
+            continue
+        if "Resumable" not in game_data:
+            print(f"Skipping {game_key}, no 'Resumable' key found")
+            continue
+        if game_data["Resumable"] == "false":
+            print(f"Game {game_key} is not resumable, adding to game_dict")
+            game_dict[game_key] = {
+                "ServerUid": game_data.get("ServerUid", ""),
+                "LastActioned": game_data.get("LastActioned", "")
+            }
 
+    print(f"Parsed config data: {game_dict}")
     return game_dict
 
-# Define your paths
-registry_file_path = f"{logged_in_home}/.local/share/Steam/steamapps/compatdata/{bnet_launcher}/pfx/system.reg"
 
 game_dict = {}
 
-# Check if the paths exist
-if not os.path.exists(registry_file_path):
-    print("One or more paths do not exist.")
-    print("Battle.net game data not found. Skipping Battle.net Games Scanner.")
+print("Detected platform: Non-Windows")
+config_file_path = f"{logged_in_home}/.local/share/Steam/steamapps/compatdata/{bnet_launcher}/pfx/drive_c/users/steamuser/AppData/Roaming/Battle.net/Battle.net.config"
+
+print(f"Config file path: {config_file_path}")
+
+if os.path.exists(config_file_path):
+    print("Battle.net config file found, parsing...")
+    game_dict = parse_battlenet_config(config_file_path)
 else:
-    game_dict = getBnetGameInfo(registry_file_path)
-    if game_dict is None:
-        # Skip the rest of the Battle.net scanner
-        pass
-    else:
-        # Extract the flavor for each game and create the launch options
-        for game, game_info in game_dict.items():
-            game_info['flavor'] = get_flavor_from_file(game_info['exe'])
-            print(f"Flavor inferred: {game_info['flavor']}")
+    print("Battle.net config file not found. Skipping Battle.net Games Scanner.")
 
-            # Check if the game name is "Overwatch" and update it to "Overwatch 2"
-            if game == "Overwatch":
-                game = "Overwatch 2"
+if game_dict:
+    for game_key, game_info in game_dict.items():
+        print(f"Processing game: {game_key}")
 
-            if game_info['flavor'] == "unknown":
-                pass
+        if game_key == "prometheus":
+            print("Handling 'prometheus' as 'Pro'")
+            game_key = "Pro"
 
-            elif game_info['flavor']:
-                launch_options = f"STEAM_COMPAT_DATA_PATH=\"{logged_in_home}/.local/share/Steam/steamapps/compatdata/{bnet_launcher}/\" %command% \"battlenet://{game_info['flavor']}\""
-                exe_path = f"\"{logged_in_home}/.local/share/Steam/steamapps/compatdata/{bnet_launcher}/pfx/drive_c/Program Files (x86)/Battle.net/Battle.net.exe\" --exec=\"launch {game_info['flavor']}\""
-                start_dir = f"\"{logged_in_home}/.local/share/Steam/steamapps/compatdata/{bnet_launcher}/pfx/drive_c/Program Files (x86)/Battle.net/\""
-                create_new_entry(exe_path, game, launch_options, start_dir)
+        game_name = flavor_mapping.get(game_key, "unknown")
+
+        if game_name == "unknown":
+            game_name = flavor_mapping.get(game_key.upper(), "unknown")
+            print(f"Trying uppercase for {game_key}: {game_name}")
+            if game_name == "unknown":
+                print(f"Game {game_key} remains unknown, skipping...")
+                continue
+
+        matched_key = next((k for k, v in flavor_mapping.items() if v == game_name), game_key)
+        print(f"Matched key for {game_key}: {matched_key}")
+
+        if game_name == "Overwatch":
+            game_name = "Overwatch 2"
+            print(f"Renaming 'Overwatch' to 'Overwatch 2'")
+
+        if game_info['ServerUid'] == "unknown":
+            print(f"Skipping game {game_key} due to unknown ServerUid")
+            continue
+
+        exe_path = f'"{logged_in_home}/.local/share/Steam/steamapps/compatdata/{bnet_launcher}/pfx/drive_c/Program Files (x86)/Battle.net/Battle.net.exe"'
+        start_dir = f'"{logged_in_home}/.local/share/Steam/steamapps/compatdata/{bnet_launcher}/pfx/drive_c/Program Files (x86)/Battle.net/"'
+        launch_options = f'STEAM_COMPAT_DATA_PATH="{logged_in_home}/.local/share/Steam/steamapps/compatdata/{bnet_launcher}" %command% --exec="launch {matched_key}" battlenet://{matched_key}'
+
+        print(f"Creating new entry for {game_name} with exe_path: {exe_path}")
+        create_new_entry(exe_path, game_name, launch_options, start_dir)
+
+print("Battle.net Games Scanner completed.")
 
 # End of Battle.net Scanner
 
