@@ -358,7 +358,7 @@ function download_ge_proton() {
         exit 1
     fi
 
-    proton_dir=$(find "${logged_in_home}/.steam/root/compatibilitytools.d" -maxdepth 1 -type d -name "GE-Proton*" | sort -V | tail -n1)
+    proton_dir=$(find -L "${logged_in_home}/.steam/root/compatibilitytools.d" -maxdepth 1 -type d -name "GE-Proton*" | sort -V | tail -n1)
     echo "All done :)"
 }
 
@@ -375,7 +375,7 @@ function update_proton() {
     mkdir -p "${logged_in_home}/Downloads/NonSteamLaunchersInstallation" || { echo "Failed to create directory. Exiting."; exit 1; }
 
     # Set the path to the Proton directory
-    proton_dir=$(find "${logged_in_home}/.steam/root/compatibilitytools.d" -maxdepth 1 -type d -name "GE-Proton*" | sort -V | tail -n1)
+    proton_dir=$(find -L "${logged_in_home}/.steam/root/compatibilitytools.d" -maxdepth 1 -type d -name "GE-Proton*" | sort -V | tail -n1)
 
     # Check if GE-Proton is installed
     if [ -z "$proton_dir" ]; then
@@ -838,7 +838,7 @@ handle_uninstall_common() {
     app_name=$4
 
     # Set the path to the Proton directory
-    proton_dir=$(find "${logged_in_home}/.steam/root/compatibilitytools.d" -maxdepth 1 -type d -name "GE-Proton*" | sort -V | tail -n1)
+    proton_dir=$(find -L "${logged_in_home}/.steam/root/compatibilitytools.d" -maxdepth 1 -type d -name "GE-Proton*" | sort -V | tail -n1)
 
     # Set the paths for the environment variables
     STEAM_RUNTIME="${logged_in_home}/.steam/root/ubuntu12_32/steam-runtime/run.sh"
