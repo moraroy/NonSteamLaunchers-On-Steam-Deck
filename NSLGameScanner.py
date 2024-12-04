@@ -1225,6 +1225,9 @@ if game_dict:
         if game_key == "prometheus":
             print("Handling 'prometheus' as 'Pro'")
             game_key = "Pro"
+        elif game_key == "fenris":
+            print("Handling 'fenris' as 'Fen'")
+            game_key = "Fen"
 
         game_name = flavor_mapping.get(game_key, "unknown")
 
