@@ -43,7 +43,7 @@ exec > >(tee -a $log_file) 2>&1
 
 
 # Version number (major.minor)
-version=v3.9.7
+version=v3.9.8
 
 # TODO: tighten logic to check whether major/minor version is up-to-date via `-eq`, `-lt`, or `-gt` operators
 # Check repo releases via GitHub API then display current stable version
