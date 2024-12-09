@@ -178,7 +178,7 @@ def get_unsigned_shortcut_id(signed_shortcut_id):
 api_cache = {}
 
 #API KEYS FOR NONSTEAMLAUNCHER USE ONLY
-BASE_URL = 'https://myproxycache-203e9b0bbe5b.herokuapp.com/api'
+BASE_URL = 'https://proxycache.onrender.com/api'
 
 #GLOBAL VARS
 created_shortcuts = []
