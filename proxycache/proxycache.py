@@ -82,18 +82,34 @@ class ProxyCacheHandler(BaseHTTPRequestHandler):
             return
 
         if path_parts[1] == 'search':
+            # Handle search request: /search/<game_name>
+            if len(path_parts) < 3:
+                self.send_response(400)
+                self.end_headers()
+                self.wfile.write(b'Game name is required for search')
+                return
+            
             game_name = unquote(path_parts[2])  # Decode the URL-encoded game name
             self.handle_search(game_name)
         else:
+            # Handle artwork request: /<art_type>/<game_id>
             if len(path_parts) < 4:
                 self.send_response(400)
                 self.end_headers()
-                self.wfile.write(b'Invalid request')
+                self.wfile.write(b'Invalid request: art type and game ID are required')
                 return
 
-            art_type = path_parts[1]
-            game_id = path_parts[3]
+            art_type = path_parts[1]  # art type (e.g., grid, cover, etc.)
+            game_id = path_parts[2]   # game ID (e.g., 123456)
             dimensions = parse_qs(parsed_path.query).get('dimensions', [None])[0]
+
+            # Ensure that the art_type is valid
+            valid_art_types = ['grid', 'cover', 'banner', 'logo', 'icon']
+            if art_type not in valid_art_types:
+                self.send_response(400)
+                self.end_headers()
+                self.wfile.write(b'Invalid art type')
+                return
 
             logger.info(f"Art type: {art_type}")
             logger.info(f"Game ID: {game_id}")
@@ -102,16 +118,17 @@ class ProxyCacheHandler(BaseHTTPRequestHandler):
             self.handle_artwork(game_id, art_type, dimensions)
 
     def do_HEAD(self):
-        self.do_GET()  
-        self.send_response(200)  
+        self.do_GET()
+        self.send_response(200)
         self.end_headers()
         logger.info(f"HEAD request handled for: {self.path}")
 
     def do_OPTIONS(self):
         self.send_response(200)  # OK status
-        self.send_header('Allow', 'GET, POST, HEAD, OPTIONS') 
+        self.send_header('Allow', 'GET, POST, HEAD, OPTIONS')
         self.end_headers()
         logger.info(f"OPTIONS request handled for: {self.path}")
+
 
     def handle_search(self, game_name):
         logger.info(f"Searching for game ID for: {game_name}")
