@@ -74,24 +74,25 @@ class ProxyCacheHandler(BaseHTTPRequestHandler):
         logger.info(f"Parsed path: {parsed_path.path}")
         logger.info(f"Path parts: {path_parts}")
 
-        if len(path_parts) < 4:
-            self.send_response(400)
+        if len(path_parts) < 2 or path_parts[1] == '':
+            # Handle the root path ('/')
+            self.send_response(200)
             self.end_headers()
-            self.wfile.write(b'Invalid request')
+            self.wfile.write(b'Welcome to the Proxy Cache Server!')
             return
 
-        if path_parts[2] == 'search':
-            game_name = unquote(path_parts[3])  # Decode the URL-encoded game name
+        if path_parts[1] == 'search':
+            game_name = unquote(path_parts[2])  # Decode the URL-encoded game name
             self.handle_search(game_name)
         else:
-            if len(path_parts) < 5:
+            if len(path_parts) < 4:
                 self.send_response(400)
                 self.end_headers()
                 self.wfile.write(b'Invalid request')
                 return
 
-            art_type = path_parts[2]
-            game_id = path_parts[4]
+            art_type = path_parts[1]
+            game_id = path_parts[3]
             dimensions = parse_qs(parsed_path.query).get('dimensions', [None])[0]
 
             logger.info(f"Art type: {art_type}")
@@ -101,14 +102,14 @@ class ProxyCacheHandler(BaseHTTPRequestHandler):
             self.handle_artwork(game_id, art_type, dimensions)
 
     def do_HEAD(self):
-        self.do_GET()  # Use the same handling logic as GET requests
-        self.send_response(200)  # OK status
-        self.end_headers()  # Only send headers, no content (body)
+        self.do_GET()  
+        self.send_response(200)  
+        self.end_headers()
         logger.info(f"HEAD request handled for: {self.path}")
 
     def do_OPTIONS(self):
         self.send_response(200)  # OK status
-        self.send_header('Allow', 'GET, POST, HEAD, OPTIONS')  # Allow the methods you support
+        self.send_header('Allow', 'GET, POST, HEAD, OPTIONS') 
         self.end_headers()
         logger.info(f"OPTIONS request handled for: {self.path}")
 
