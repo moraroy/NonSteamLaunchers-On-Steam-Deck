@@ -11,7 +11,6 @@ from requests.packages.urllib3.util.retry import Retry
 from steamgrid.enums import PlatformType
 from datetime import datetime, timedelta
 import logging
-import time
 
 # Initialize logging
 logging.basicConfig(level=logging.INFO)
@@ -39,28 +38,15 @@ session.mount('https://', adapter)
 @limits(calls=RATE_LIMIT, period=RATE_LIMIT_PERIOD)
 def limited_request(url, headers):
     try:
-        # Set a timeout to prevent long hanging connections
-        response = session.get(url, headers=headers, timeout=10)  # Timeout set to 10 seconds
-        response.raise_for_status()  # Will raise HTTPError for bad responses (4xx, 5xx)
+        response = session.get(url, headers=headers)
+        response.raise_for_status()
         return response
     except RateLimitException as e:
         logger.error(f"Rate limit exceeded: {e}")
         raise
-    except requests.exceptions.Timeout as e:
-        logger.error(f"Request timed out: {e}")
-        raise
-    except requests.exceptions.ConnectionError as e:
-        logger.error(f"Connection error: {e}")
-        raise
     except requests.exceptions.RequestException as e:
-        # Handles all other request errors
         logger.error(f"Request error: {e}")
         raise
-    except requests.exceptions.RemoteDisconnected as e:
-        logger.error(f"Remote disconnected: {e}")
-        # Optionally retry after a short delay, or log the issue and return None
-        time.sleep(2)  # Retry after 2 seconds or use exponential backoff
-        return limited_request(url, headers)  # Retry the request
 
 def sanitize_game_name(game_name):
     # Remove special characters like ™ and ®
@@ -74,61 +60,31 @@ class ProxyCacheHandler(BaseHTTPRequestHandler):
         logger.info(f"Parsed path: {parsed_path.path}")
         logger.info(f"Path parts: {path_parts}")
 
-        if len(path_parts) < 2 or path_parts[1] == '':
-            # Handle the root path ('/')
-            self.send_response(200)
+        if len(path_parts) < 4:
+            self.send_response(400)
             self.end_headers()
-            self.wfile.write(b'Welcome to the Proxy Cache Server!')
+            self.wfile.write(b'Invalid request')
             return
 
-        if path_parts[1] == 'search':
-            # Handle search request: /search/<game_name>
-            if len(path_parts) < 3:
-                self.send_response(400)
-                self.end_headers()
-                self.wfile.write(b'Game name is required for search')
-                return
-            
-            game_name = unquote(path_parts[2])  # Decode the URL-encoded game name
+        if path_parts[2] == 'search':
+            game_name = unquote(path_parts[3])  # Decode the URL-encoded game name
             self.handle_search(game_name)
         else:
-            # Handle artwork request: /<art_type>/<game_id>
-            if len(path_parts) < 4:
+            if len(path_parts) < 5:
                 self.send_response(400)
                 self.end_headers()
-                self.wfile.write(b'Invalid request: art type and game ID are required')
+                self.wfile.write(b'Invalid request')
                 return
 
-            art_type = path_parts[1]  # art type (e.g., grid, cover, etc.)
-            game_id = path_parts[2]   # game ID (e.g., 123456)
+            art_type = path_parts[2]
+            game_id = path_parts[4]
             dimensions = parse_qs(parsed_path.query).get('dimensions', [None])[0]
-
-            # Ensure that the art_type is valid
-            valid_art_types = ['grid', 'cover', 'banner', 'logo', 'icon']
-            if art_type not in valid_art_types:
-                self.send_response(400)
-                self.end_headers()
-                self.wfile.write(b'Invalid art type')
-                return
 
             logger.info(f"Art type: {art_type}")
             logger.info(f"Game ID: {game_id}")
             logger.info(f"Dimensions: {dimensions}")
 
             self.handle_artwork(game_id, art_type, dimensions)
-
-    def do_HEAD(self):
-        self.do_GET()
-        self.send_response(200)
-        self.end_headers()
-        logger.info(f"HEAD request handled for: {self.path}")
-
-    def do_OPTIONS(self):
-        self.send_response(200)  # OK status
-        self.send_header('Allow', 'GET, POST, HEAD, OPTIONS')
-        self.end_headers()
-        logger.info(f"OPTIONS request handled for: {self.path}")
-
 
     def handle_search(self, game_name):
         logger.info(f"Searching for game ID for: {game_name}")
@@ -227,19 +183,22 @@ class ProxyCacheHandler(BaseHTTPRequestHandler):
                 logger.error(f"Error making API call: {e}")
                 self.send_response(500)
                 self.end_headers()
-                self.wfile.write(b'Error fetching artwork')
+                self.wfile.write(b'Error making API call')
                 return
 
-        # Send the response
+        if 'data' not in data:
+            self.send_response(500)
+            self.end_headers()
+            self.wfile.write(b'Invalid response from API')
+            return
+
         self.send_response(200)
-        self.send_header('Content-Type', 'application/json')
         self.end_headers()
         self.wfile.write(json.dumps(data).encode())
 
-    def is_cache_valid(self, cached_item):
-        expiration_time = timedelta(hours=1)
-        return datetime.now() - cached_item['timestamp'] < expiration_time
-
+    def is_cache_valid(self, cache_entry):
+        cache_expiry = timedelta(hours=168)  # Set cache expiry time
+        return datetime.now() - cache_entry['timestamp'] < cache_expiry
 
 def run(server_class=HTTPServer, handler_class=ProxyCacheHandler):
     port = int(os.environ.get('PORT', 8000))  # Use the environment variable PORT or default to 8000
