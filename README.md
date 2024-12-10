@@ -45,6 +45,30 @@ Currently Working On 👷‍♂️
  <p align="center">
   <a name="download button" href="https://github.com/moraroy/NonSteamLaunchers-On-Steam-Deck/releases/download/v3.9.6/NSLPlugin.desktop"><img src="https://user-images.githubusercontent.com/98482469/242361563-33f31d3d-9a69-4fca-a928-207a5d17a98f.png"  alt="Download NSL Decky Plugin" width="350px" style="padding-top: 15px;"></a>
 
+---
+
+**Windows Installation Steps**:
+
+1. **Sign in to GitHub** and go to this [link](https://github.com/SteamDeckHomebrew/decky-loader/actions/workflows/build-win.yml).
+
+2. Choose the latest link (or whichever version works for you).
+
+3. Scroll down to **"Artifacts"** and download **"PluginLoader Win"**. This is a zip file that you need to extract on your Windows machine. Make sure you're signed in to see the download link.
+
+4. Download **NSLPluginWindows.exe** from [here](https://github.com/moraroy/NonSteamLaunchersDecky/releases).
+
+5. Run **NSLPluginWindows.exe** first. This will also create the necessary cef debugging file for Decky Loader.
+
+6. Run either **No_console.exe** or **Plugin Loader.exe**, depending on your preference.
+
+7. Go into **Game Mode** or **Big Picture Mode** to see the Decky Loader plugin and NonSteamLaunchers.
+
+---
+
+This setup will automatically add all your non-Steam games with artwork, correctly formatted for Windows. Only scanning will work; nothing else will function, so you can either auto-scan or manually scan your games.
+
+---
+
 
 <p align="center">
 ▶️ YouTube Tutorial 🡺🡺🡺 https://youtu.be/sxMmI8I9G_g 🡸🡸🡸 ▶️
