@@ -177,22 +177,7 @@ class ProxyCacheHandler(BaseHTTPRequestHandler):
                 logger.info(f"Sending request to: {url}")
                 response = limited_request(url, headers)
                 data = response.json()
-
-                # Check for image quality, dimension, or alternate style information and store all metadata
-                artwork_data = {
-                    'images': [{
-                        'url': image['url'],
-                        'width': image.get('width'),
-                        'height': image.get('height'),
-                        'style': image.get('style', 'default'),
-                    } for image in data.get('data', [])],
-                    'other_metadata': {
-                        'image_quality': data.get('quality', 'high'),
-                        'last_updated': data.get('last_updated', str(datetime.now())),
-                    }
-                }
-
-                api_cache[cache_key] = {'data': artwork_data, 'timestamp': datetime.now()}
+                api_cache[cache_key] = {'data': data, 'timestamp': datetime.now()}
                 logger.info(f"Storing in cache: {cache_key}")
             except Exception as e:
                 logger.error(f"Error making API call: {e}")
@@ -205,15 +190,7 @@ class ProxyCacheHandler(BaseHTTPRequestHandler):
             self.send_response(500)
             self.end_headers()
             self.wfile.write(b'Invalid response from API')
-            logger.error(f"Artwork for Game ID {game_id} ({art_type}) with dimensions {dimensions} not found. Error: No 'data' in response.")
             return
-
-        # Log why artwork wasn't found (if any)
-        if not data.get('data', []):
-            logger.error(f"Artwork for Game ID {game_id} ({art_type}) with dimensions {dimensions} not found. Error: No artwork data.")
-            self.send_response(404)
-            self.end_headers()
-            self.wfile.write(b'Artwork not found')
 
         self.send_response(200)
         self.end_headers()
