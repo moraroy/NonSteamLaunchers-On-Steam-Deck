@@ -178,7 +178,7 @@ def get_unsigned_shortcut_id(signed_shortcut_id):
 api_cache = {}
 
 #API KEYS FOR NONSTEAMLAUNCHER USE ONLY
-BASE_URL = 'https://nonsteamlaunchers-on-steam-deck.onrender.com/api'
+BASE_URL = 'https://nonsteamlaunchers.onrender.com/api'
 
 #GLOBAL VARS
 created_shortcuts = []
