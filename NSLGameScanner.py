@@ -257,17 +257,20 @@ def download_artwork(game_id, art_type, shortcut_id, dimensions=None):
         filename = get_file_name(art_type, shortcut_id, dimensions)
     else:
         filename = get_file_name(art_type, shortcut_id)
+    
     file_path = f"{logged_in_home}/.steam/root/userdata/{steamid3}/config/grid/{filename}"
-
     directory = os.path.dirname(file_path)
+    
     if not os.path.exists(directory):
         os.makedirs(directory)
 
+    # Check if the file exists in the local cache
     if os.path.exists(file_path):
         print(f"Artwork for {game_id} already exists. Skipping download.")
         with open(file_path, 'rb') as image_file:
             return b64encode(image_file.read()).decode('utf-8')
 
+    # If the file is in the cache, use that data
     if cache_key in api_cache:
         data = api_cache[cache_key]
     else:
@@ -287,27 +290,31 @@ def download_artwork(game_id, art_type, shortcut_id, dimensions=None):
             api_cache[cache_key] = None
             return
 
-    if data is None:
+    if not data or 'data' not in data:
         print(f"No data available for {game_id}. Skipping download.")
         return
 
     for artwork in data['data']:
         image_url = artwork['thumb']
         print(f"Downloading image from: {image_url}")
-        try:
-            response = requests.get(image_url, stream=True)
-            response.raise_for_status()
-            if response.status_code == 200:
-                with open(file_path, 'wb') as file:
-                    file.write(response.content)
-                return b64encode(response.content).decode('utf-8')
-        except requests.exceptions.RequestException as e:
-            print(f"Error downloading image: {e}")
-            if art_type == 'icons':
-                download_artwork(game_id, 'icons', shortcut_id)
-
-
-
+  
+        for ext in ['png', 'ico']:
+            try:
+                alt_file_path = file_path.replace('.png', f'.{ext}')
+                response = requests.get(image_url, stream=True)
+                response.raise_for_status()
+                
+                
+                if response.status_code == 200:
+                    with open(alt_file_path, 'wb') as file:
+                        file.write(response.content)
+                    print(f"Downloaded {alt_file_path}")
+                    return b64encode(response.content).decode('utf-8')
+            except requests.exceptions.RequestException as e:
+                print(f"Error downloading image in {ext}: {e}")
+        
+    print(f"Artwork download failed for {game_id}. Neither PNG nor ICO was available.")
+    return None
 
 def get_game_id(game_name):
     print(f"Searching for game ID for: {game_name}")
@@ -330,12 +337,13 @@ def get_game_id(game_name):
         print(f"Error searching for game ID: {e}")
         return None
 
-
 def get_file_name(art_type, shortcut_id, dimensions=None):
     singular_art_type = art_type.rstrip('s')
     if art_type == 'icons':
+        # Check for the existing .png file first
         if os.path.exists(f"{logged_in_home}/.steam/root/userdata/{steamid3}/config/grid/{shortcut_id}-{singular_art_type}.png"):
             return f"{shortcut_id}-{singular_art_type}.png"
+        # Fallback to .ico if .png doesn't exist
         else:
             return f"{shortcut_id}-{singular_art_type}.ico"
     elif art_type == 'grids':
@@ -349,6 +357,7 @@ def get_file_name(art_type, shortcut_id, dimensions=None):
         return f"{shortcut_id}_logo.png"
     else:
         return f"{shortcut_id}.png"
+
 
 def is_match(name1, name2):
     if name1 and name2:
