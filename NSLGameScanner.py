@@ -307,24 +307,6 @@ def download_artwork(game_id, art_type, shortcut_id, dimensions=None):
                 download_artwork(game_id, 'icons', shortcut_id)
 
 
-    if data is None:
-        print(f"No data available for {game_id}. Skipping download.")
-        return
-
-    for artwork in data['data']:
-        image_url = artwork['thumb']
-        print(f"Downloading image from: {image_url}")
-        try:
-            response = requests.get(image_url, stream=True)
-            response.raise_for_status()
-            if response.status_code == 200:
-                with open(file_path, 'wb') as file:
-                    file.write(response.content)
-                return b64encode(response.content).decode('utf-8')
-        except requests.exceptions.RequestException as e:
-            print(f"Error downloading image: {e}")
-            if art_type == 'icons':
-                download_artwork(game_id, 'icons_ico', shortcut_id)
 
 
 def get_game_id(game_name):
