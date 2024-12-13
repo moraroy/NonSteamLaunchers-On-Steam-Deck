@@ -257,20 +257,17 @@ def download_artwork(game_id, art_type, shortcut_id, dimensions=None):
         filename = get_file_name(art_type, shortcut_id, dimensions)
     else:
         filename = get_file_name(art_type, shortcut_id)
-    
     file_path = f"{logged_in_home}/.steam/root/userdata/{steamid3}/config/grid/{filename}"
+
     directory = os.path.dirname(file_path)
-    
     if not os.path.exists(directory):
         os.makedirs(directory)
 
-    # Check if the file exists in the local cache
     if os.path.exists(file_path):
         print(f"Artwork for {game_id} already exists. Skipping download.")
         with open(file_path, 'rb') as image_file:
             return b64encode(image_file.read()).decode('utf-8')
 
-    # If the file is in the cache, use that data
     if cache_key in api_cache:
         data = api_cache[cache_key]
     else:
@@ -297,14 +294,14 @@ def download_artwork(game_id, art_type, shortcut_id, dimensions=None):
     for artwork in data['data']:
         image_url = artwork['thumb']
         print(f"Downloading image from: {image_url}")
-  
+
+        # Try both .png and .ico formats
         for ext in ['png', 'ico']:
             try:
                 alt_file_path = file_path.replace('.png', f'.{ext}')
                 response = requests.get(image_url, stream=True)
                 response.raise_for_status()
-                
-                
+
                 if response.status_code == 200:
                     with open(alt_file_path, 'wb') as file:
                         file.write(response.content)
@@ -312,7 +309,7 @@ def download_artwork(game_id, art_type, shortcut_id, dimensions=None):
                     return b64encode(response.content).decode('utf-8')
             except requests.exceptions.RequestException as e:
                 print(f"Error downloading image in {ext}: {e}")
-        
+
     print(f"Artwork download failed for {game_id}. Neither PNG nor ICO was available.")
     return None
 
@@ -358,12 +355,12 @@ def get_file_name(art_type, shortcut_id, dimensions=None):
     else:
         return f"{shortcut_id}.png"
 
-
 def is_match(name1, name2):
     if name1 and name2:
         return name1.lower() in name2.lower() or name2.lower() in name1.lower()
     else:
         return False
+
 
 
 # Add or update the proton compatibility settings
