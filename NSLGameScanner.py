@@ -304,7 +304,7 @@ def download_artwork(game_id, art_type, shortcut_id, dimensions=None):
         except requests.exceptions.RequestException as e:
             print(f"Error downloading image: {e}")
             if art_type == 'icons':
-                download_artwork(game_id, 'icons_ico', shortcut_id)
+                download_artwork(game_id, 'icons', shortcut_id)
 
 
     if data is None:
