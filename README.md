@@ -51,7 +51,7 @@ Currently Working On 👷‍♂️
 
 1. **Sign in to GitHub** and go to this [link](https://github.com/SteamDeckHomebrew/decky-loader/actions/workflows/build-win.yml).
 
-2. Choose the latest link (or whichever version works for you).
+2. Choose the latest link or whichever version works for you.
 
 3. Scroll down to **"Artifacts"** and download **"PluginLoader Win"**. This is a zip file that you need to extract on your Windows machine. Make sure you're signed in to see the download link.
 
