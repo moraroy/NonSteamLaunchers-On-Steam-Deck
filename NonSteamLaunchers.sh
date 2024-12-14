@@ -395,12 +395,14 @@ function download_umu_launcher() {
     echo "Downloading UMU Launcher using the GitHub API"
     cd "${logged_in_home}/Downloads/NonSteamLaunchersInstallation" || { echo "Failed to change directory. Exiting."; exit 1; }
 
-    # Download zip file
+    # Get the download URL for Zipapp.zip
     zip_url=$(curl -s https://api.github.com/repos/Open-Wine-Components/umu-launcher/releases/latest | grep browser_download_url | cut -d\" -f4 | grep Zipapp.zip)
     if [ -z "$zip_url" ]; then
         echo "Failed to get zip URL. Exiting."
         exit 1
     fi
+
+    # Download the zip file
     curl --retry 5 --retry-delay 0 --retry-max-time 60 -sLOJ "$zip_url"
     if [ $? -ne 0 ]; then
         echo "Curl failed to download zip file. Exiting."
@@ -412,11 +414,24 @@ function download_umu_launcher() {
         mkdir -p "${logged_in_home}/bin" || { echo "Failed to create bin directory. Exiting."; exit 1; }
     fi
 
-    # Extract zip file
+    # Extract the Zipapp.zip file
     unzip -o Zipapp.zip -d "${logged_in_home}/bin/"
     if [ $? -ne 0 ]; then
         echo "Zip extraction failed. Exiting."
         exit 1
+    fi
+
+    # Check if the extracted .tar file exists in the bin directory and extract it
+    tar_file="${logged_in_home}/bin/$(basename Zipapp.zip .zip).tar"
+    if [ -f "$tar_file" ]; then
+        echo "Found .tar file: $tar_file"
+        tar -xf "$tar_file" -C "${logged_in_home}/bin/"
+        if [ $? -ne 0 ]; then
+            echo "Tar extraction failed. Exiting."
+            exit 1
+        fi
+        # Remove the .tar file after extraction
+        rm -f "$tar_file"
     fi
 
     # Make all extracted files executable
@@ -424,6 +439,7 @@ function download_umu_launcher() {
 
     echo "UMU Launcher update completed :)"
 }
+
 
 
 
