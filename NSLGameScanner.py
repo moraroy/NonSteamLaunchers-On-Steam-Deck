@@ -365,11 +365,12 @@ def is_match(name1, name2):
 
 # Add or update the proton compatibility settings
 
+
 def add_compat_tool(app_id, launchoptions):
     if 'CompatToolMapping' not in config_data['InstallConfigStore']['Software']['Valve']['Steam']:
         config_data['InstallConfigStore']['Software']['Valve']['Steam']['CompatToolMapping'] = {}
         print(f"CompatToolMapping key not found in config.vdf, creating.")
-    
+
     # Combine checks for 'chrome' and 'PROTONPATH'
     if 'chrome' in launchoptions or 'PROTONPATH' in launchoptions:
         if 'PROTONPATH' in launchoptions:
@@ -392,8 +393,9 @@ def add_compat_tool(app_id, launchoptions):
         return compat_tool_name
 
 
+# Check if the shortcut already exists in the shortcuts
 def check_if_shortcut_exists(shortcut_id, display_name, exe_path, start_dir, launch_options):
-    # Check if the game already exists in the shortcuts using the id
+    # Check if the game already exists in the shortcuts using the ID
     if any(s.get('appid') == shortcut_id for s in shortcuts['shortcuts'].values()):
         print(f"Existing shortcut found based on shortcut ID for game {display_name}. Skipping creation.")
         return True
@@ -404,12 +406,10 @@ def check_if_shortcut_exists(shortcut_id, display_name, exe_path, start_dir, lau
     if any(s.get('AppName') == display_name and s.get('Exe') == exe_path and s.get('StartDir') == start_dir and s.get('LaunchOptions') == launch_options for s in shortcuts['shortcuts'].values()):
         print(f"Existing shortcut found based on matching fields for game {display_name}. Skipping creation.")
         return True
-#End of Code
+    return False
 
 
-
-
-#Start of Refactoring code from the .sh file
+# Start of Refactoring code from the .sh file
 sys.path.insert(0, os.path.expanduser(f"{logged_in_home}/Downloads/NonSteamLaunchersInstallation/lib/python{python_version}/site-packages"))
 print(sys.path)
 
@@ -417,12 +417,15 @@ print(sys.path)
 # Create an empty dictionary to store the app IDs
 app_ids = {}
 
+# Get the next available key for the shortcuts
 def get_next_available_key(shortcuts):
     key = 0
     while str(key) in shortcuts['shortcuts']:
         key += 1
     return str(key)
 
+
+# Create a new entry for a game shortcut
 def create_new_entry(shortcutdirectory, appname, launchoptions, startingdir):
     global new_shortcuts_added
     global shortcuts_updated
