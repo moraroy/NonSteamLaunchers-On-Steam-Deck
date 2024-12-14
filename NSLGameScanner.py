@@ -323,7 +323,6 @@ def get_game_id(game_name):
         response = requests.get(url)
         response.raise_for_status()
         data = response.json()
-        print(f"Response data: {data}")
         if data['data']:
             game_id = data['data'][0]['id']
             print(f"Found game ID: {game_id}")
