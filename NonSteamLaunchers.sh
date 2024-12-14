@@ -1282,7 +1282,7 @@ function install_gog {
     echo "# Downloading & Installing Gog Galaxy...Please wait..."
 
     # Cancel & Exit the GOG Galaxy Setup Wizard
-    end=$((SECONDS+180))  # Timeout after 180 seconds
+    end=$((SECONDS+90))  # Timeout after 90 seconds
     while true; do
         if pgrep -f "GalaxySetup.tmp" > /dev/null; then
             pkill -f "GalaxySetup.tmp"
@@ -1295,36 +1295,76 @@ function install_gog {
         sleep 1
     done
 
-    # Navigate to %LocalAppData%\Temp
-    temp_dir="${logged_in_home}/.local/share/Steam/steamapps/compatdata/$appid/pfx/drive_c/users/steamuser/AppData/Local/Temp"
-    if [ -d "$temp_dir" ]; then
-        cd "$temp_dir"
-    else
-        echo "Temp directory does not exist: $temp_dir"
+    # Check both Temp directories for Galaxy installer folder
+    temp_dir1="${logged_in_home}/.local/share/Steam/steamapps/compatdata/$appid/pfx/drive_c/users/steamuser/AppData/Local/Temp"
+    temp_dir2="${logged_in_home}/.local/share/Steam/steamapps/compatdata/$appid/pfx/drive_c/users/steamuser/Temp"
+
+    # First check temp_dir1 (AppData/Local/Temp)
+    if [ -d "$temp_dir1" ]; then
+        cd "$temp_dir1"
+        # Check if we found the installer folder
+        for dir in GalaxyInstaller_*; do
+            if [ -d "$dir" ]; then
+                galaxy_installer_folder="$dir"
+                break
+            fi
+        done
+    fi
+
+    # If not found, check temp_dir2 (Temp)
+    if [ -z "$galaxy_installer_folder" ] && [ -d "$temp_dir2" ]; then
+        cd "$temp_dir2"
+        # Now check if we found the installer folder in the second directory
+        for dir in GalaxyInstaller_*; do
+            if [ -d "$dir" ]; then
+                galaxy_installer_folder="$dir"
+                break
+            fi
+        done
+    fi
+
+    # If no installer folder was found in either directory, exit
+    if [ -z "$galaxy_installer_folder" ]; then
+        echo "Galaxy installer folder not found in either Temp directory"
         return 1
     fi
 
-    # Find the GalaxyInstaller_XXXXX folder and copy it to C:\Downloads
-    for dir in GalaxyInstaller_*; do
-        if [ -d "$dir" ]; then
-            galaxy_installer_folder="$dir"
-            break
-        fi
-    done
+    # Copy the GalaxyInstaller_* folder to Downloads
+    echo "Found Galaxy installer folder: $galaxy_installer_folder"
+    cp -r "$galaxy_installer_folder" "${logged_in_home}/Downloads/NonSteamLaunchersInstallation/"
 
-    if [ -n "$galaxy_installer_folder" ]; then
-        cp -r "$galaxy_installer_folder" "${logged_in_home}/Downloads/NonSteamLaunchersInstallation/"
-    else
-        echo "Galaxy installer folder not found"
-        return 1
-    fi
-
-    # Navigate to the C:\Downloads\GalaxyInstaller_XXXXX folder
+    # Navigate to the copied folder in Downloads
     cd "${logged_in_home}/Downloads/NonSteamLaunchersInstallation/$(basename "$galaxy_installer_folder")"
 
     # Run GalaxySetup.exe with the /VERYSILENT and /NORESTART options
     echo "Running GalaxySetup.exe with the /VERYSILENT and /NORESTART options"
-    "$STEAM_RUNTIME" "$proton_dir/proton" run GalaxySetup.exe /VERYSILENT /NORESTART
+    "$STEAM_RUNTIME" "$proton_dir/proton" run GalaxySetup.exe /VERYSILENT /NORESTART &
+
+    # Wait for the GalaxySetup.exe to finish running with a timeout of 90 seconds
+    end=$((SECONDS+90))  # Timeout after 90 seconds
+    while true; do
+        # Kill GalaxyClient.exe every 10 seconds if it's running
+        if [ $((SECONDS % 10)) -eq 0 ]; then
+            if pgrep -f "GalaxyClient.exe" > /dev/null; then
+                echo "Killing GalaxyClient.exe"
+                pkill -f "GalaxyClient.exe"
+            fi
+        fi
+
+        # Break the loop when GalaxySetup.exe finishes
+        if ! pgrep -f "GalaxySetup.exe" > /dev/null; then
+            echo "GalaxySetup.exe has finished running"
+            break
+        fi
+
+        # Timeout check (90 seconds)
+        if [ $SECONDS -gt $end ]; then
+            echo "Timeout while waiting for GalaxySetup.exe to finish"
+            break
+        fi
+
+        sleep 1
+    done
 }
 
 
