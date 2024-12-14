@@ -1344,7 +1344,7 @@ function install_gog {
     end=$((SECONDS+90))  # Timeout after 90 seconds
     while true; do
         # Kill GalaxyClient.exe every 10 seconds if it's running
-        if [ $((SECONDS % 10)) -eq 0 ]; then
+        if [ $((SECONDS % 20)) -eq 0 ]; then
             if pgrep -f "GalaxyClient.exe" > /dev/null; then
                 echo "Killing GalaxyClient.exe"
                 pkill -f "GalaxyClient.exe"
