@@ -1329,31 +1329,36 @@ else:
     # List to store final Itch.io game details
     itchgames = []
 
-    # Match game_id between 'caves' and 'games' tables
-    itchgames = []
+    # Match game_id between 'caves' and 'games' tables and collect relevant game details
     for cave in caves:
         game_id = cave[1]
         if game_id in games_dict:
             game_info = games_dict[game_id]
-            base_path = json.loads(cave[11])['basePath']
-            candidates = json.loads(cave[11])['candidates']
+            cave_info = json.loads(cave[11])
+            base_path = cave_info['basePath']
+            candidates = cave_info.get('candidates', [])
 
-            if candidates and isinstance(candidates, list) and len(candidates) > 0:
-                executable_path = candidates[0].get('path') 
-                if executable_path and executable_path.endswith('.html'):
+            # Check if candidates exist and are not empty
+            if candidates:
+                executable_path = candidates[0].get('path', None)
+                
+                # If there's no valid executable path, skip this entry
+                if not executable_path:
+                    print(f"Skipping game (no executable found): {game_info[2]}")
+                    continue
+
+                # Skip games with an executable that ends with '.html' (browser games)
+                if executable_path.endswith('.html'):
                     print(f"Skipping browser game: {game_info[2]}")
                     continue
+
+                # Extract the game title
                 game_title = game_info[2]
+
+                # Append the game info (base path, executable path, game title) to the list
                 itchgames.append((base_path, executable_path, game_title))
             else:
-                print(f"No candidates found for game: {game_info[2]}")
-
-
-            # Extract the game title
-            game_title = game_info[2]
-
-            # Append the game info (base path, executable path, game title) to the list
-            itchgames.append((base_path, executable_path, game_title))
+                print(f"Skipping game (no candidates): {game_info[2]}")
 
     # Process each game for creating new entries
     for base_path, executable, game_title in itchgames:
@@ -1367,7 +1372,7 @@ else:
 
     # Close the database connection
     conn.close()
-
+    
 # End of Itch.io Scanner
 
 
