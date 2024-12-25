@@ -1329,20 +1329,25 @@ else:
     # List to store final Itch.io game details
     itchgames = []
 
-    # Match game_id between 'caves' and 'games' tables and collect relevant game details
+    # Match game_id between 'caves' and 'games' tables
+    itchgames = []
     for cave in caves:
         game_id = cave[1]
         if game_id in games_dict:
             game_info = games_dict[game_id]
-            cave_info = json.loads(cave[11])
-            base_path = cave_info['basePath']
-            candidates = cave_info['candidates']
-            executable_path = candidates[0]['path']
+            base_path = json.loads(cave[11])['basePath']
+            candidates = json.loads(cave[11])['candidates']
 
-            # Skip games with an executable that ends with '.html' (browser games)
-            if executable_path.endswith('.html'):
-                print(f"Skipping browser game: {game_info[2]}")
-                continue
+            if candidates and isinstance(candidates, list) and len(candidates) > 0:
+                executable_path = candidates[0].get('path') 
+                if executable_path and executable_path.endswith('.html'):
+                    print(f"Skipping browser game: {game_info[2]}")
+                    continue
+                game_title = game_info[2]
+                itchgames.append((base_path, executable_path, game_title))
+            else:
+                print(f"No candidates found for game: {game_info[2]}")
+
 
             # Extract the game title
             game_title = game_info[2]
