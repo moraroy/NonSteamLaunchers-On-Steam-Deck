@@ -11,6 +11,7 @@ import sys
 import subprocess
 import sqlite3
 import csv
+import configparser
 from urllib.request import urlopen
 from urllib.request import urlretrieve
 from urllib.parse import quote
@@ -72,7 +73,7 @@ bnet_launcher = os.environ.get('bnet_launcher', '')
 amazon_launcher = os.environ.get('amazon_launcher', '')
 itchio_launcher = os.environ.get('itchio_launcher', '')
 legacy_launcher = os.environ.get('legacy_launcher', '')
-
+vkplay_launcher = os.environ.get('vkplay_launcher', '')
 
 #Variables of the Launchers
 # Define the path of the Launchers
@@ -280,7 +281,6 @@ def download_artwork(game_id, art_type, shortcut_id, dimensions=None):
             response = requests.get(url)
             response.raise_for_status()
             data = response.json()
-            print(f"Response data: {data}")
             api_cache[cache_key] = data
         except Exception as e:
             print(f"Error making API call: {e}")
@@ -1423,6 +1423,114 @@ else:
 
 #End of the Legacy Games Scanner
 
+
+
+#VKPlay Scanner
+
+# Define paths
+
+gamecenter_ini_path = f"{logged_in_home}/.local/share/Steam/steamapps/compatdata/{vkplay_launcher}/pfx/drive_c/users/steamuser/AppData/Local/GameCenter/GameCenter.ini"
+cache_folder_path = f"{logged_in_home}/.local/share/Steam/steamapps/compatdata/{vkplay_launcher}/pfx/drive_c/users/steamuser/AppData/Local/GameCenter/Cache/GameDescription/"
+
+if not os.path.exists(gamecenter_ini_path):
+    print(f"VK Play scanner skipped: {gamecenter_ini_path} does not exist.")
+else:
+    config = configparser.ConfigParser()
+
+    try:
+        with open(gamecenter_ini_path, 'r', encoding='utf-16') as file:
+            config.read_file(file)
+        print("File read successfully.")
+    except Exception as e:
+        print(f"Error reading the file: {e}")
+        exit(1)
+
+    downloaded_games = dict(config.items('StartDownloadingGames')) if 'StartDownloadingGames' in config else {}
+    installed_games = dict(config.items('DownloadFormSettings')) if 'DownloadFormSettings' in config else {}
+
+    all_game_ids = set(downloaded_games.keys()).union(installed_games.keys())
+
+    if 'Ad' in config:
+        for key in config['Ad']:
+            key_lower = key.lower()
+            if key_lower.startswith('idmtlink0.') or key_lower.startswith('idmtlinkts0.'):
+                game_id = '0.' + key_lower.split('.')[1]
+                all_game_ids.add(game_id)
+
+    print("\nGame IDs found in GameCenter.ini file:")
+    print(f"All game IDs from INI: {all_game_ids}")
+
+    if not os.path.exists(cache_folder_path):
+        print(f"VK Play scanner skipped: Cache folder {cache_folder_path} does not exist.")
+    else:
+        all_files = os.listdir(cache_folder_path)
+        valid_xml_files = []
+
+        for file_name in all_files:
+            if file_name.endswith(".json"):
+                continue
+
+            file_path = os.path.join(cache_folder_path, file_name)
+            try:
+                tree = ET.parse(file_path)
+                valid_xml_files.append(file_path)
+            except ET.ParseError:
+                continue
+
+        processed_game_ids = set()
+        found_games = []
+
+        for xml_file in valid_xml_files:
+            try:
+                tree = ET.parse(xml_file)
+                root = tree.getroot()
+                game_item = root.find('GameItem')
+
+                if game_item is not None:
+                    game_id_xml = game_item.get('Name') or game_item.get('PackageName')
+                    if game_id_xml:
+                        game_id_in_ini = game_id_xml.replace('_', '.')
+
+                        if game_id_in_ini in all_game_ids and game_id_in_ini not in processed_game_ids:
+                            game_name = game_item.get('TitleEn', 'Unnamed Game')
+                            found_games.append(f"{game_name} (ID: {game_id_in_ini})")
+                            processed_game_ids.add(game_id_in_ini)
+            except ET.ParseError:
+                continue
+
+        if found_games:
+            print("\nFound the following games:")
+            for game in found_games:
+                print(game)
+        else:
+            print("No games found.")
+
+        for game_id in all_game_ids:
+            game_name = 'Unknown Game'
+            for xml_file in valid_xml_files:
+                try:
+                    tree = ET.parse(xml_file)
+                    root = tree.getroot()
+                    game_item = root.find('GameItem')
+
+                    if game_item is not None:
+                        game_id_xml = game_item.get('Name') or game_item.get('PackageName')
+
+                        if game_id_xml and game_id_xml.replace('_', '.') == game_id:
+                            game_name = game_item.get('TitleEn', 'Unnamed Game')
+                            break
+                except ET.ParseError:
+                    continue
+
+            if game_name != 'Unknown Game':
+                display_name = game_name
+                launch_options = f"STEAM_COMPAT_DATA_PATH=\"{logged_in_home}/.local/share/Steam/steamapps/compatdata/{vkplay_launcher}/\" %command% 'vkplay://play/{game_id}'"
+                exe_path = f"\"{logged_in_home}/.local/share/Steam/steamapps/compatdata/{vkplay_launcher}/pfx/drive_c/users/steamuser/AppData/Local/GameCenter/GameCenter.exe\""
+                start_dir = f"\"{logged_in_home}/.local/share/Steam/steamapps/compatdata/{vkplay_launcher}/pfx/drive_c/users/steamuser/AppData/Local/GameCenter/\""
+
+                create_new_entry(exe_path, display_name, launch_options, start_dir)
+
+# End of VK Play Scanner
 
 
 
