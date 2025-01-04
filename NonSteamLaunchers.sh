@@ -2457,6 +2457,7 @@ sleep 20
 
 
 
+
 # Function to switch to Game Mode
 switch_to_game_mode() {
   echo "Switching to Game Mode..."
@@ -2555,34 +2556,38 @@ set +x
 show_message "Detected environment..."
 
 if $DECKY_LOADER_EXISTS; then
-  while true; do
-    USER_INPUT=$(zenity --forms --title="Authentication Required" --text="Decky Loader detected! $(if $NSL_PLUGIN_EXISTS; then echo 'NSL Plugin also detected and will be updated to the latest version 🚀.'; else echo 'But no NSL plugin :(. Would you like to inject it and go to Game Mode?'; fi) Please enter your sudo password to proceed:" --separator="|" --add-password="Password")
-    USER_PASSWORD=$(echo $USER_INPUT | cut -d'|' -f1)
+  # Compare versions before prompting for password
+  compare_versions
+  if [ $? -eq 0 ]; then
+    echo "No update needed. The plugin is already up-to-date."
+    show_message "No update needed. The plugin is already up-to-date."
+  else
+    # If version update is required, ask for the password
+    while true; do
+      USER_INPUT=$(zenity --forms --title="Authentication Required" --text="Decky Loader detected! $(if $NSL_PLUGIN_EXISTS; then echo 'NSL Plugin also detected and will be updated to the latest version 🚀.'; else echo 'But no NSL plugin :(. Would you like to inject it and go to Game Mode?'; fi) Please enter your sudo password to proceed:" --separator="|" --add-password="Password")
+      USER_PASSWORD=$(echo $USER_INPUT | cut -d'|' -f1)
 
-    if [ -z "$USER_PASSWORD" ]; then
-      zenity --error --text="No password entered. Exiting." --timeout 5
-      exit 1
-    fi
+      if [ -z "$USER_PASSWORD" ]; then
+        zenity --error --text="No password entered. Exiting." --timeout 5
+        exit 1
+      fi
 
-    echo "$USER_PASSWORD" | sudo -S echo "Password accepted" 2>/dev/null
-    if [ $? -eq 0 ]; then
-      break
-    else
-      zenity --error --text="Incorrect password. Please try again."
-    fi
-  done
+      echo "$USER_PASSWORD" | sudo -S echo "Password accepted" 2>/dev/null
+      if [ $? -eq 0 ]; then
+        break
+      else
+        zenity --error --text="Incorrect password. Please try again."
+      fi
+    done
+  fi
 else
   zenity --error --text="Decky Loader not detected. Please download and install it from their website first and re-run this script to get the NSL Plugin."
   rm -rf "$download_dir"
   exit 1
 fi
 
-# Compare versions before proceeding with installation
-compare_versions
-if [ $? -eq 0 ]; then
-  echo "No update needed. The plugin is already up-to-date."
-  show_message "No update needed. The plugin is already up-to-date."
-else
+# If update is needed, continue with the update process
+if [ $? -eq 1 ]; then
   # If NSL Plugin exists, delete and update
   if $NSL_PLUGIN_EXISTS; then
     show_message "NSL Plugin detected. Deleting and updating..."
@@ -2609,7 +2614,7 @@ set -x
 cd "$LOCAL_DIR"
 
 show_message "Plugin installed. Switching to Game Mode..."
-switch_to_game_mode
+#switch_to_game_mode
 
 sudo systemctl restart plugin_loader.service
 
