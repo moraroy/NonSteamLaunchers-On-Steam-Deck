@@ -1551,7 +1551,6 @@ if new_shortcuts_added or shortcuts_updated:
     except IOError as e:
         print(f"Error writing to shortcuts.vdf: {e}")
 
-
     # Print the created shortcuts
     if created_shortcuts:
         print("Created Shortcuts:")
@@ -1559,7 +1558,7 @@ if new_shortcuts_added or shortcuts_updated:
             print(name)
 
         # Combine the names of created shortcuts into a single notification message
-        notification_text = "Added the following games to your Steam library, dont forget to restart steam!:\n" + "\n".join(created_shortcuts)
+        notification_text = "New games added! Restart Steam to apply:\n" + "\n".join(created_shortcuts)
 
         time.sleep(1)
 
