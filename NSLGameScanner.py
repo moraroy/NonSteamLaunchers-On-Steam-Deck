@@ -1551,11 +1551,19 @@ if new_shortcuts_added or shortcuts_updated:
     except IOError as e:
         print(f"Error writing to shortcuts.vdf: {e}")
 
+
     # Print the created shortcuts
     if created_shortcuts:
         print("Created Shortcuts:")
         for name in created_shortcuts:
             print(name)
+
+        # Combine the names of created shortcuts into a single notification message
+        notification_text = "Added the following games to your Steam library:\n" + "\n".join(created_shortcuts)
+
+        time.sleep(1)
+
+        subprocess.run(['zenity', '--notification', '--text', notification_text, '--timeout=5'])
 
     # Create the path to the output file
     output_file_path = f"{logged_in_home}/.config/systemd/user/NSLGameScanner_output.log"
