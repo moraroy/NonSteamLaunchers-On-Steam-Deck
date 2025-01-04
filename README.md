@@ -108,12 +108,17 @@ Supported Streaming Sites for games and as well as any website. 🌐
 - Xbox Game Pass ✔️
 - GeForce Now ✔️
 - Amazon Luna ✔️
+- WebRcade ✔️
+- WebRcade Editor ✔️
 - Netflix ✔️
 - Amazon Prime Video ✔️
 - Disney+ ✔️
 - Hulu ✔️
 - Youtube ✔️
 - Twitch ✔️
+- Plex ✔️
+- Apple TV+ ✔️
+- Crunychroll ✔️
 
 <h1 align="left">
 Finds Games Automatically
