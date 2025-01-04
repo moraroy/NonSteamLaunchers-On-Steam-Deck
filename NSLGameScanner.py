@@ -1559,7 +1559,7 @@ if new_shortcuts_added or shortcuts_updated:
             print(name)
 
         # Combine the names of created shortcuts into a single notification message
-        notification_text = "Added the following games to your Steam library:\n" + "\n".join(created_shortcuts)
+        notification_text = "Added the following games to your Steam library, dont forget to restart steam!:\n" + "\n".join(created_shortcuts)
 
         time.sleep(1)
 
