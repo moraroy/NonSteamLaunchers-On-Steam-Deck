@@ -2455,6 +2455,8 @@ fi
 show_message "Waiting to detect plugin..."
 sleep 20
 
+
+
 # Function to switch to Game Mode
 switch_to_game_mode() {
   echo "Switching to Game Mode..."
@@ -2467,10 +2469,8 @@ switch_to_game_mode() {
 
 # Function to display a Zenity message
 show_message() {
-    zenity --notification --text="$1" --timeout=1
+  zenity --notification --text="$1" --timeout=1
 }
-
-
 
 # Set the remote repository URL
 REPO_URL="https://github.com/moraroy/NonSteamLaunchersDecky/archive/refs/heads/main.zip"
@@ -2494,9 +2494,65 @@ if [ -d "$LOCAL_DIR" ]; then
   fi
 fi
 
+# Set version check variables
+GITHUB_URL="https://raw.githubusercontent.com/moraroy/NonSteamLaunchersDecky/refs/heads/main/package.json"
+
+# Function to fetch GitHub package.json version
+fetch_github_version() {
+    response=$(curl -s "$GITHUB_URL")
+    github_version=$(echo "$response" | jq -r '.version')
+
+    if [ "$github_version" != "null" ]; then
+        echo "$github_version"
+    else
+        echo "Error: Could not fetch or parse GitHub version"
+        return 1
+    fi
+}
+
+# Function to fetch the local package.json version
+fetch_local_version() {
+    if [ -f "$LOCAL_DIR/package.json" ]; then
+        local_version=$(jq -r '.version' "$LOCAL_DIR/package.json")
+
+        if [ "$local_version" != "null" ]; then
+            echo "$local_version"
+        else
+            echo "Error: Failed to parse local version"
+            return 1
+        fi
+    else
+        echo "Error: Local package.json not found!"
+        return 1
+    fi
+}
+
+# Function to compare versions
+compare_versions() {
+    # Fetch local and GitHub versions
+    local_version=$(fetch_local_version)
+    github_version=$(fetch_github_version)
+
+    if [ "$local_version" == "Error:" ] || [ "$github_version" == "Error:" ]; then
+        echo "Error: Could not fetch version information"
+        return 1
+    fi
+
+    echo "Local Version: $local_version, GitHub Version: $github_version"
+
+    if [ "$local_version" == "$github_version" ]; then
+        echo "Status: Up-to-date"
+        return 0
+    else
+        echo "Status: Update available"
+        return 1
+    fi
+}
+
 set +x
 
-show_message "Detected enviroment..."
+# Show initial message
+show_message "Detected environment..."
 
 if $DECKY_LOADER_EXISTS; then
   while true; do
@@ -2521,25 +2577,33 @@ else
   exit 1
 fi
 
-if $NSL_PLUGIN_EXISTS; then
-  show_message "NSL Plugin detected. Deleting and updating..."
-  echo "Plugin directory exists. Removing..."
-  echo "$USER_PASSWORD" | sudo -S rm -rf "$LOCAL_DIR"
+# Compare versions before proceeding with installation
+compare_versions
+if [ $? -eq 0 ]; then
+  echo "No update needed. The plugin is already up-to-date."
+  show_message "No update needed. The plugin is already up-to-date."
+else
+  # If NSL Plugin exists, delete and update
+  if $NSL_PLUGIN_EXISTS; then
+    show_message "NSL Plugin detected. Deleting and updating..."
+    echo "Plugin directory exists. Removing..."
+    echo "$USER_PASSWORD" | sudo -S rm -rf "$LOCAL_DIR"
+  fi
+
+  sudo systemctl stop plugin_loader.service
+
+  show_message "Creating base directory and setting permissions..."
+  echo "$USER_PASSWORD" | sudo -S mkdir -p "$LOCAL_DIR"
+  echo "$USER_PASSWORD" | sudo -S chmod -R u+rw "$LOCAL_DIR"
+  echo "$USER_PASSWORD" | sudo -S chown -R $USER:$USER "$LOCAL_DIR"
+
+  echo "Downloading and extracting the repository..."
+  curl -L "$REPO_URL" -o /tmp/NonSteamLaunchersDecky.zip
+  echo "$USER_PASSWORD" | sudo -S unzip -o /tmp/NonSteamLaunchersDecky.zip -d /tmp/
+  echo "$USER_PASSWORD" | sudo -S cp -r /tmp/NonSteamLaunchersDecky-main/* "$LOCAL_DIR"
+
+  echo "$USER_PASSWORD" | sudo -S rm -rf /tmp/NonSteamLaunchersDecky*
 fi
-
-sudo systemctl stop plugin_loader.service
-
-show_message "Creating base directory and setting permissions..."
-echo "$USER_PASSWORD" | sudo -S mkdir -p "$LOCAL_DIR"
-echo "$USER_PASSWORD" | sudo -S chmod -R u+rw "$LOCAL_DIR"
-echo "$USER_PASSWORD" | sudo -S chown -R $USER:$USER "$LOCAL_DIR"
-
-echo "Downloading and extracting the repository..."
-curl -L "$REPO_URL" -o /tmp/NonSteamLaunchersDecky.zip
-echo "$USER_PASSWORD" | sudo -S unzip -o /tmp/NonSteamLaunchersDecky.zip -d /tmp/
-echo "$USER_PASSWORD" | sudo -S cp -r /tmp/NonSteamLaunchersDecky-main/* "$LOCAL_DIR"
-
-echo "$USER_PASSWORD" | sudo -S rm -rf /tmp/NonSteamLaunchersDecky*
 
 set -x
 cd "$LOCAL_DIR"
@@ -2548,6 +2612,7 @@ show_message "Plugin installed. Switching to Game Mode..."
 switch_to_game_mode
 
 sudo systemctl restart plugin_loader.service
+
 
 
 
