@@ -2614,7 +2614,7 @@ set -x
 cd "$LOCAL_DIR"
 
 show_message "Plugin installed. Switching to Game Mode..."
-#switch_to_game_mode
+switch_to_game_mode
 
 sudo systemctl restart plugin_loader.service
 
