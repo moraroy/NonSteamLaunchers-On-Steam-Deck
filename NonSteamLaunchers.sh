@@ -2610,13 +2610,18 @@ if [ $? -eq 1 ]; then
   echo "$USER_PASSWORD" | sudo -S rm -rf /tmp/NonSteamLaunchersDecky*
 fi
 
-set -x
-cd "$LOCAL_DIR"
+# Check if update was done
+if [ $? -eq 1 ]; then
+  set -x
+  cd "$LOCAL_DIR"
 
-show_message "Plugin installed. Switching to Game Mode..."
-switch_to_game_mode
+  show_message "Plugin installed. Switching to Game Mode..."
+  switch_to_game_mode
 
-sudo systemctl restart plugin_loader.service
+  sudo systemctl restart plugin_loader.service
+else
+  echo "No update needed. Skipping Game Mode switch."
+fi
 
 
 
