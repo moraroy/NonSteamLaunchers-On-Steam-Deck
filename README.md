@@ -118,7 +118,7 @@ Supported Streaming Sites for games and as well as any website. 🌐
 - Twitch ✔️
 - Plex ✔️
 - Apple TV+ ✔️
-- Crunychroll ✔️
+- Crunchyroll ✔️
 
 <h1 align="left">
 Finds Games Automatically
