@@ -82,7 +82,7 @@ This setup will automatically add all your non-Steam games with artwork, correct
 Supported Stores 🛍
 </h1>
 
-- Unreal Engine (via Epic Games)
+- Unreal Engine (via Epic Games) ✔️
 - Amazon Games Launcher ✔️
 - Battle.net ✔️
 - EA App ✔️
