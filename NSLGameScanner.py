@@ -1537,33 +1537,62 @@ else:
 
 
 # Only write back to the shortcuts.vdf and config.vdf files if new shortcuts were added or compattools changed
+# Function to send a notification with an optional icon
+def send_notification(message, icon_path=None):
+    """Send a notification with the message and optional icon."""
+    if icon_path and os.path.exists(icon_path):
+        subprocess.run(['notify-send', message, '--icon', icon_path, '--expire-time=5000'])
+    else:
+        subprocess.run(['notify-send', message, '--expire-time=5000'])
+
+# Only write back to the shortcuts.vdf and config.vdf files if new shortcuts were added or compattools changed
 if new_shortcuts_added or shortcuts_updated:
     print(f"Saving new config and shortcuts files")
+
+    # Serialize the config data to VDF
     conf = vdf.dumps(config_data, pretty=True)
     try:
         with open(f"{logged_in_home}/.steam/root/config/config.vdf", 'w') as file:
             file.write(conf)
     except IOError as e:
         print(f"Error writing to config.vdf: {e}")
+
+    # Write the updated shortcuts to the shortcuts.vdf file
     try:
         with open(f"{logged_in_home}/.steam/root/userdata/{steamid3}/config/shortcuts.vdf", 'wb') as file:
             file.write(vdf.binary_dumps(shortcuts))
     except IOError as e:
         print(f"Error writing to shortcuts.vdf: {e}")
 
-    # Print the created shortcuts
+    # Now that the files are updated, show the created shortcuts in the notification
     if created_shortcuts:
         print("Created Shortcuts:")
         for name in created_shortcuts:
             print(name)
 
-        # Combine the names of created shortcuts into a single notification message
-        notification_text = "New games added! Restart Steam to apply:\n" + "\n".join(created_shortcuts)
+        # Prepare notifications with game names and icons
+        notifications = []
+        for name in created_shortcuts:
+            # Loop through all entries in the shortcuts dictionary
+            found = False  # Flag to check if the name is found
 
-        time.sleep(1)
+            # Iterate through each shortcut entry
+            for shortcut_key, shortcut_data in shortcuts['shortcuts'].items():
+                if shortcut_data.get('appname') == name:
+                    icon_path = shortcut_data.get('icon', None)
+                    message = f"New game added! Restart Steam to apply: {name}"
+                    notifications.append((message, icon_path))
+                    found = True
+                    break
 
-        subprocess.run(['zenity', '--notification', '--text', notification_text, '--timeout=5'])
+            # If the game wasn't found in the shortcuts, log a warning
+            if not found:
+                print(f"Warning: Game '{name}' not found in shortcuts dictionary.")
 
+        # Send all notifications at once with the common message
+        for message, icon_path in notifications:
+            send_notification(message, icon_path)
+            
     # Create the path to the output file
     output_file_path = f"{logged_in_home}/.config/systemd/user/NSLGameScanner_output.log"
     # Open the output file in write mode
