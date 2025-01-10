@@ -1538,12 +1538,12 @@ else:
 
 # Only write back to the shortcuts.vdf and config.vdf files if new shortcuts were added or compattools changed
 # Function to send a notification with an optional icon
-def send_notification(message, icon_path=None):
+def send_notification(message, icon_path=None, expire_time=5000):
     """Send a notification with the message and optional icon."""
     if icon_path and os.path.exists(icon_path):
-        subprocess.run(['notify-send', message, '--icon', icon_path, '--expire-time=5000'])
+        subprocess.run(['notify-send', message, '--icon', icon_path, f'--expire-time={expire_time}'])
     else:
-        subprocess.run(['notify-send', message, '--expire-time=5000'])
+        subprocess.run(['notify-send', message, f'--expire-time={expire_time}'])
 
 # Only write back to the shortcuts.vdf and config.vdf files if new shortcuts were added or compattools changed
 if new_shortcuts_added or shortcuts_updated:
@@ -1572,7 +1572,9 @@ if new_shortcuts_added or shortcuts_updated:
 
         # Prepare notifications with game names and icons
         notifications = []
-        for name in created_shortcuts:
+        num_notifications = len(created_shortcuts)
+
+        for i, name in enumerate(created_shortcuts):
             # Loop through all entries in the shortcuts dictionary
             found = False  # Flag to check if the name is found
 
@@ -1581,7 +1583,15 @@ if new_shortcuts_added or shortcuts_updated:
                 if shortcut_data.get('appname') == name:
                     icon_path = shortcut_data.get('icon', None)
                     message = f"New game added! Restart Steam to apply: {name}"
-                    notifications.append((message, icon_path))
+
+                    # For 10 or fewer shortcuts, each will last 5 seconds
+                    if num_notifications <= 4:
+                        expire_time = 5000
+                    else:
+                        # For more than 10 shortcuts, start applying the gradient effect
+                        expire_time = min(5000, 500 + (i * (5000 // num_notifications)))
+
+                    notifications.append((message, icon_path, expire_time))
                     found = True
                     break
 
@@ -1589,9 +1599,9 @@ if new_shortcuts_added or shortcuts_updated:
             if not found:
                 print(f"Warning: Game '{name}' not found in shortcuts dictionary.")
 
-        # Send all notifications at once with the common message
-        for message, icon_path in notifications:
-            send_notification(message, icon_path)
+        # Send all notifications with dynamic expire times
+        for message, icon_path, expire_time in notifications:
+            send_notification(message, icon_path, expire_time)
             
     # Create the path to the output file
     output_file_path = f"{logged_in_home}/.config/systemd/user/NSLGameScanner_output.log"
