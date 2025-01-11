@@ -4,6 +4,7 @@
   <img src="https://github-readme-stats.vercel.app/api/top-langs/?username=moraroy&theme=transparent&show_icons=true&hide_border=true&layout=compact" width="33%" />
 </p>
 
+
 <p align="center">
   <img src="https://github.com/cchrkk/NSLOSD-DL/raw/main/logo.svg" width=40% height=auto
 </p>
@@ -68,7 +69,6 @@ Currently Working On 👷‍♂️
 
 7. Go into **Game Mode** or **Big Picture Mode** to see the Decky Loader plugin and NonSteamLaunchers.
 
----
 
 This setup will automatically add all your non-Steam games with artwork, correctly formatted for Windows. Only scanning will work; nothing else will function, so you can either auto-scan or manually scan your games.
 
