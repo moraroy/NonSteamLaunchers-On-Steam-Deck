@@ -135,6 +135,7 @@ Finds Games Automatically
 - Itch.io 🎮
 - Legacy Games 🎮
 - VK Play 🎮             💾 Full SD Card Support
+- HoYoPlay 🎮            💾 Full SD Card Support
 
 To stop the NSLGameScanner.service, open up NSL and hit "Stop NSLGameScanner" it will then ask you if you want to restart it, click no, and that's it.
 
