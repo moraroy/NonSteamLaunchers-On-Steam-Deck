@@ -74,8 +74,9 @@ amazon_launcher = os.environ.get('amazon_launcher', '')
 itchio_launcher = os.environ.get('itchio_launcher', '')
 legacy_launcher = os.environ.get('legacy_launcher', '')
 vkplay_launcher = os.environ.get('vkplay_launcher', '')
-
+hoyoplay_launcher = os.environ.get('hoyoplay_launcher', '')
 #Variables of the Launchers
+
 # Define the path of the Launchers
 epicshortcutdirectory = os.environ.get('epicshortcutdirectory')
 gogshortcutdirectory = os.environ.get('gogshortcutdirectory')
