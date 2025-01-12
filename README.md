@@ -1,3 +1,11 @@
+<p align="center"><em>“Who hath ascended up into heaven, or descended? who hath gathered the wind in his fists? who hath bound the waters in a garment? who hath established all the ends of the earth? what is his name, and what is his son's name, if thou canst tell?”</em></p>
+<p align="center"><em>- Proverbs 30:4 (KJV)</em></p>
+
+<p align="center"><em>“For God so loved the world, that he gave his only begotten Son, that whosoever believeth in him should not perish, but have everlasting life.”</em></p>
+<p align="center"><em>“For God sent not his Son into the world to condemn the world; but that the world through him might be saved.”</em></p>
+<p align="center"><em>- John 3:16-17 (KJV)</em></p>
+
+
 <p align="center">
   <img src="https://github-readme-stats.vercel.app/api?username=moraroy&theme=transparent&show_icons=true&hide_border=true&count_private=true" width="48%" />
   <img src="https://github-readme-streak-stats.herokuapp.com/?user=moraroy&theme=transparent&hide_border=true" width="48%" />
