@@ -569,7 +569,7 @@ def extract_base_path(launchoptions):
         return match.group(1)
     raise ValueError("STEAM_COMPAT_DATA_PATH not found in launch options")
 
-def modify_shortcut_for_umu(appname, exe, launchoptions, startingdir, logged_in_home, compat_tool_name):
+def modify_shortcut_for_umu(appname, exe, launchoptions, startingdir):
     # Skip processing if STEAM_COMPAT_DATA_PATH is not present
     if 'STEAM_COMPAT_DATA_PATH=' not in launchoptions:
         print(f"Launch options for {appname} do not contain STEAM_COMPAT_DATA_PATH. Skipping modification.")
@@ -600,13 +600,13 @@ def modify_shortcut_for_umu(appname, exe, launchoptions, startingdir, logged_in_
 
                 # Update only the launchoptions part for different game types
                 updated_launch = launchoptions
-                
+
                 # Hoyoplay - Extract the game identifier
                 match = re.search(r'--game=(\w+)', launchoptions)
                 if match:
                     codename = match.group(1)  # Capture the identifier
                     updated_launch = f"'--game={codename}'"
-                    
+
                 if "origin2://game/launch?offerIds=" in launchoptions:
                     updated_launch = f'"origin2://game/launch?offerIds={codename}"'
                 elif "amazon-games://play/amzn1.adg.product." in launchoptions:
