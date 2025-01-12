@@ -15,7 +15,7 @@ jobs:
 
     steps:
       - name: Release with release-please
-        uses: google-github-actions/release-please-action@v4
+        uses: googleapis/release-please-action@v3
         with:
           # PAT with write access to the repository
           token: ${{ secrets.RELEASE_PLEASE_TOKEN }}
