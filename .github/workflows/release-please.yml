@@ -17,9 +17,7 @@ jobs:
       - name: Release with release-please
         uses: googleapis/release-please-action@v3
         with:
-          # PAT with write access to the repository
           token: ${{ secrets.RELEASE_PLEASE_TOKEN }}
-          # optional. customize path to release-please-config.json
           config-file: release-please-config.json
-          # optional. customize path to .release-please-manifest.json
           manifest-file: .release-please-manifest.json
+          release-type: 'auto'
