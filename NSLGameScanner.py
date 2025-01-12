@@ -425,7 +425,6 @@ def get_next_available_key(shortcuts):
     return str(key)
 
 
-# Create a new entry for a game shortcut
 def create_new_entry(shortcutdirectory, appname, launchoptions, startingdir):
     global new_shortcuts_added
     global shortcuts_updated
@@ -496,20 +495,6 @@ def create_new_entry(shortcutdirectory, appname, launchoptions, startingdir):
         }
     }
 
-    # Create the decky entry, only including the compatTool if not processed by UMU
-    decky_entry = {
-        'appname': appname,
-        'exe': exe_path,
-        'StartDir': startingdir,
-        'icon': f"{logged_in_home}/.steam/root/userdata/{steamid3}/config/grid/{get_file_name('icons', unsigned_shortcut_id)}",
-        'LaunchOptions': launchoptions,
-        'CompatTool': compatTool,  # This will be None if UMU has processed the shortcut
-        'WideGrid': grid64,
-        'Grid': gridp64,
-        'Hero': hero64,
-        'Logo': logo64,
-    }
-
     # Add the new entry to the shortcuts dictionary and add proton
     key = get_next_available_key(shortcuts)
     shortcuts['shortcuts'][key] = new_entry
@@ -520,7 +505,7 @@ def create_new_entry(shortcutdirectory, appname, launchoptions, startingdir):
     # Mark it as processed by UMU (if it wasn't already processed)
     if compatTool is not None:
         umu_processed_shortcuts[unsigned_shortcut_id] = True
-    add_compat_tool(unsigned_shortcut_id, launchoptions)
+
 
 
 # UMU-related functions
@@ -1753,38 +1738,5 @@ if new_shortcuts_added or shortcuts_updated:
         # Send all notifications with dynamic expire times
         for message, icon_path, expire_time in notifications:
             send_notification(message, icon_path, expire_time)
-            
-    # Create the path to the output file
-    output_file_path = f"{logged_in_home}/.config/systemd/user/NSLGameScanner_output.log"
-    # Open the output file in write mode
-    try:
-        with open(output_file_path, 'w') as output_file:
-            for game in decky_shortcuts.values():
-                # Skip if 'appname' or 'exe' is None
-                if game.get('appname') is None or game.get('exe') is None:
-                    continue
-
-                # Create a dictionary to hold the shortcut information
-                shortcut_info = {
-                    'appname': game.get('appname'),
-                    'exe': game.get('exe'),
-                    'StartDir': game.get('StartDir'),
-                    'icon': game.get('icon'),
-                    'LaunchOptions': game.get('LaunchOptions'),
-                    'CompatTool': game.get('CompatTool'),
-                    'WideGrid': game.get('WideGrid'),
-                    'Grid': game.get('Grid'),
-                    'Hero': game.get('Hero'),
-                    'Logo': game.get('Logo'),
-                }
-
-                # Print the shortcut information in JSON format
-                message = json.dumps(shortcut_info)
-                print(message, flush=True)  # Print to stdout
-
-                # Print the shortcut information to the output file
-                print(message, file=output_file, flush=True)
-    except IOError as e:
-        print(f"Error writing to output file: {e}")
 
 print("All finished!")
