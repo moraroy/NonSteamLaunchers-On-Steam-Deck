@@ -39,12 +39,8 @@ if [ -d "${logged_in_home}/homebrew/plugins" ]; then
   DECKY_LOADER_EXISTS=true
 fi
 
-if [ -d "$LOCAL_DIR" ]; then
-  if [ -z "$(ls -A $LOCAL_DIR)" ]; then
-    NSL_PLUGIN_EXISTS=false
-  else
-    NSL_PLUGIN_EXISTS=true
-  fi
+if [ -d "$LOCAL_DIR" ] && [ -n "$(ls -A $LOCAL_DIR)" ]; then
+  NSL_PLUGIN_EXISTS=true
 fi
 
 # Set version check variables
@@ -82,6 +78,12 @@ fetch_local_version() {
 
 # Function to compare versions
 compare_versions() {
+    # Only compare versions if both local and GitHub versions are available
+    if [ ! -d "$LOCAL_DIR" ] || [ ! -f "$LOCAL_DIR/package.json" ]; then
+        echo "Local plugin not found or no package.json. Skipping version comparison."
+        return 1  # Skip version comparison and proceed to install/update
+    fi
+
     # Fetch local and GitHub versions
     local_version=$(fetch_local_version)
     github_version=$(fetch_github_version)
