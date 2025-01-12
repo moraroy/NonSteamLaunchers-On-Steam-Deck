@@ -1555,7 +1555,7 @@ else:
         else:
             print("No games found.")
 
-        for game_id in all_game_ids:
+        for game_id in game_ids:
             game_name = 'Unknown Game'
             for xml_file in valid_xml_files:
                 try:
