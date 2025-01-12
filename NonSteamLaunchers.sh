@@ -2,7 +2,6 @@
 
 set -x              # activate debugging (execution shown)
 set -o pipefail     # capture error from pipes
-# set -eu           # exit immediately, undefined vars are errors
 
 # ENVIRONMENT VARIABLES
 # $USER
@@ -23,13 +22,7 @@ logged_in_uid=$(id -u "${logged_in_user}")
 # $HOME
 logged_in_home=$(eval echo "~${logged_in_user}")
 
-# Debugging: Check the value of the DBUS_SESSION_BUS_ADDRESS environment variable
-zenity --info --text="DBus session address: $DBUS_SESSION_BUS_ADDRESS" --no-session-bus
-
-
-
-
-#Log
+# Log
 download_dir=$(eval echo ~$user)/Downloads/NonSteamLaunchersInstallation
 log_file=$(eval echo ~$user)/Downloads/NonSteamLaunchers-install.log
 
@@ -39,34 +32,89 @@ if [[ -f $log_file ]]; then
 fi
 
 # Redirect all output to the log file
-exec > >(tee -a $log_file) 2>&1
-
+exec > >(tee -a "$log_file") 2>&1
 
 # Version number (major.minor)
 version=v3.9.8
 
-# TODO: tighten logic to check whether major/minor version is up-to-date via `-eq`, `-lt`, or `-gt` operators
 # Check repo releases via GitHub API then display current stable version
 check_for_updates() {
-    # Set the URL to the GitHub API for the repository
     local api_url="https://api.github.com/repos/moraroy/NonSteamLaunchers-On-Steam-Deck/releases/latest"
-
-    # Get the latest release tag from the GitHub API
     local latest_version=$(curl -s "$api_url" | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/')
-
-    # Compare the version number in the script against the latest release tag
     if [ "$version" != "$latest_version" ]; then
-        # Display a Zenity window to notify the user that a new version is available
         zenity --info --text="A new version is available: $latest_version\nPlease download it from GitHub." --width=200 --height=100 --timeout=5
     else
         echo "You are already running the latest version: $version"
     fi
 }
 
+# Check if Zenity is installed
+if ! command -v zenity &> /dev/null; then
+    echo "Zenity is not installed. Installing Zenity..."
+    if command -v apt-get &> /dev/null; then
+        sudo apt-get install -y zenity
+    elif command -v dnf &> /dev/null; then
+        sudo dnf install -y zenity
+    elif command -v pacman &> /dev/null; then
+        sudo pacman -S --noconfirm zenity
+    else
+        echo "Unknown package manager. Please install Zenity manually."
+        exit 1
+    fi
+fi
 
+# Check if Steam is installed (non-flatpak)
+if ! command -v steam &> /dev/null; then
+    echo "Steam is not installed. Please install the non-flatpak version of Steam."
+    # Provide instructions for different package managers:
+    if command -v apt-get &> /dev/null; then
+        echo "To install Steam on a Debian-based system (e.g., Ubuntu, Pop!_OS), run:"
+        echo "  sudo apt update && sudo apt install steam"
+    elif command -v dnf &> /dev/null; then
+        echo "To install Steam on a Fedora-based system, run:"
+        echo "  sudo dnf install steam"
+    elif command -v pacman &> /dev/null; then
+        echo "To install Steam on an Arch-based system (e.g., ChimeraOS), run:"
+        echo "  sudo pacman -S steam"
+    else
+        echo "Unknown package manager. Please install Steam manually."
+        exit 1
+    fi
+fi
+
+# Check if wget is installed
+if ! command -v wget &> /dev/null; then
+    echo "wget is not installed. Installing wget..."
+    if command -v apt-get &> /dev/null; then
+        sudo apt-get install -y wget
+    elif command -v dnf &> /dev/null; then
+        sudo dnf install -y wget
+    elif command -v pacman &> /dev/null; then
+        sudo pacman -S --noconfirm wget
+    else
+        echo "Unknown package manager. Please install wget manually."
+        exit 1
+    fi
+fi
+
+# Check if curl is installed
+if ! command -v curl &> /dev/null; then
+    echo "curl is not installed. Installing curl..."
+    if command -v apt-get &> /dev/null; then
+        sudo apt-get install -y curl
+    elif command -v dnf &> /dev/null; then
+        sudo dnf install -y curl
+    elif command -v pacman &> /dev/null; then
+        sudo pacman -S --noconfirm curl
+    else
+        echo "Unknown package manager. Please install curl manually."
+        exit 1
+    fi
+fi
 
 # Get the command line arguments
 args=("$@")
+echo "Arguments passed: ${args[@]}"  # Debugging the passed arguments
 deckyplugin=false
 installchrome=false
 
@@ -76,7 +124,7 @@ for arg in "${args[@]}"; do
   elif [ "$arg" = "Chrome" ]; then
     installchrome=true
   fi
-  done
+done
 
 # Check if the user wants to install Chrome
 if $installchrome; then
@@ -100,6 +148,7 @@ if $installchrome; then
     flatpak --user override --filesystem=/run/udev:ro com.google.Chrome
   fi
 fi
+
 
 if [ "${deckyplugin}" = false ]; then
 	#Download Modules
