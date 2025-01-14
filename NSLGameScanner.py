@@ -1689,9 +1689,9 @@ else:
 def send_notification(message, icon_path=None, expire_time=5000):
     """Send a notification with the message and optional icon."""
     if icon_path and os.path.exists(icon_path):
-        subprocess.run(['notify-send', message, '--icon', icon_path, f'--expire-time={expire_time}'])
+        subprocess.run(['notify-send', '-a', 'NonSteamLaunchers', message, '--icon', icon_path, f'--expire-time={expire_time}'])
     else:
-        subprocess.run(['notify-send', message, f'--expire-time={expire_time}'])
+        subprocess.run(['notify-send', '-a', 'NonSteamLaunchers', message, f'--expire-time={expire_time}'])
 
 # Only write back to the shortcuts.vdf and config.vdf files if new shortcuts were added or compattools changed
 if new_shortcuts_added or shortcuts_updated:
