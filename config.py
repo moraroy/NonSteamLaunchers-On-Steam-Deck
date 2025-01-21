@@ -128,8 +128,10 @@ flavor_mapping = {
     "StarCraft": "S1",
     "Warcraft Arclight Rumble": "GRY",
     "Warcraft II: Battle.net Edition": "W2",
+    "Warcraft II: Remastered": "W2R",
     "Warcraft III: Reforged": "W3",
     "Warcraft: Orcs & Humans": "W1",
+    "Warcraft I: Remastered": "W1R",
     "World of Warcraft Classic": "WoWC",
     "World of Warcraft": "WoW",
 }
