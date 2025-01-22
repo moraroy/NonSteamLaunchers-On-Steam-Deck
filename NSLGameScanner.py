@@ -679,7 +679,7 @@ create_new_entry(os.environ.get('chromedirectory'), 'Xbox Game Pass', os.environ
 create_new_entry(os.environ.get('chromedirectory'), 'GeForce Now', os.environ.get('geforcechromelaunchoptions'), os.environ.get('chrome_startdir'))
 create_new_entry(os.environ.get('chromedirectory'), 'Boosteroid Cloud Gaming', os.environ.get('boosteroidchromelaunchoptions'), os.environ.get('chrome_startdir'))
 create_new_entry(os.environ.get('chromedirectory'), 'Stim.io', os.environ.get('stimiochromelaunchoptions'), os.environ.get('chrome_startdir'))
-create_new_entry(os.environ.get('chromedirectory'), 'watchparty.me', os.environ.get('watchpartychromelaunchoptions'), os.environ.get('chrome_startdir'))
+create_new_entry(os.environ.get('chromedirectory'), 'WatchParty', os.environ.get('watchpartychromelaunchoptions'), os.environ.get('chrome_startdir'))
 create_new_entry(os.environ.get('chromedirectory'), 'Netflix', os.environ.get('netflixchromelaunchoptions'), os.environ.get('chrome_startdir'))
 create_new_entry(os.environ.get('chromedirectory'), 'Hulu', os.environ.get('huluchromelaunchoptions'), os.environ.get('chrome_startdir'))
 create_new_entry(os.environ.get('chromedirectory'), 'Disney+', os.environ.get('disneychromelaunchoptions'), os.environ.get('chrome_startdir'))
