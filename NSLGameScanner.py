@@ -94,6 +94,9 @@ psplusshortcutdirectory = os.environ.get('psplusshortcutdirectory')
 vkplayshortcutdirectory = os.environ.get('vkplayshortcutdirectory')
 hoyoplayshortcutdirectory = os.environ.get('hoyoplayshortcutfirectory')
 nexonshortcutdirectory = os.environ.get('nexonshortcutdirectory')
+gamejoltshortcutdirectory = os.environ.get('gamejoltshortcutdirectory')
+artixgameshortcutdirectory = os.environ.get('artixgameshortcutdirectory')
+arcshortcutdirectory = os.environ.get('arcshortcutdirectory')
 repaireaappshortcutdirectory = os.environ.get('repaireaappshortcutdirectory')
 #Streaming
 chromedirectory = os.environ.get('chromedirectory')
@@ -455,7 +458,7 @@ def create_new_entry(shortcutdirectory, appname, launchoptions, startingdir):
         compatTool = add_compat_tool(unsigned_shortcut_id, launchoptions)
 
     # Only store the app ID for specific launchers
-    if appname in ['Epic Games', 'Gog Galaxy', 'Ubisoft Connect', 'Battle.net', 'EA App', 'Amazon Games', 'itch.io', 'Legacy Games', 'Humble Bundle', 'IndieGala Client', 'Rockstar Games Launcher', 'Glyph', 'Playstation Plus', 'VK Play', 'HoYoPlay', 'Nexon Launcher']:
+    if appname in ['Epic Games', 'Gog Galaxy', 'Ubisoft Connect', 'Battle.net', 'EA App', 'Amazon Games', 'itch.io', 'Legacy Games', 'Humble Bundle', 'IndieGala Client', 'Rockstar Games Launcher', 'Glyph', 'Playstation Plus', 'VK Play', 'HoYoPlay', 'Nexon Launcher', 'Game Jolt Client', 'Artix Game Launcher', 'ARC Launcher']:
         app_ids[appname] = unsigned_shortcut_id
 
     # Check if the game already exists in the shortcuts
@@ -674,6 +677,9 @@ create_new_entry(os.environ.get('psplusshortcutdirectory'), 'Playstation Plus', 
 create_new_entry(os.environ.get('vkplayshortcutdirectory'), 'VK Play', os.environ.get('vkplaylaunchoptions'), os.environ.get('vkplaystartingdir'))
 create_new_entry(os.environ.get('hoyoplayshortcutdirectory'), 'HoYoPlay', os.environ.get('hoyoplaylaunchoptions'), os.environ.get('hoyoplaystartingdir'))
 create_new_entry(os.environ.get('nexonshortcutdirectory'), 'Nexon Launcher', os.environ.get('nexonlaunchoptions'), os.environ.get('nexonstartingdir'))
+create_new_entry(os.environ.get('gamejoltshortcutdirectory'), 'Game Jolt Client', os.environ.get('gamejoltlaunchoptions'), os.environ.get('gamejoltstartingdir'))
+create_new_entry(os.environ.get('artixgameshortcutdirectory'), 'Artix Game Launcher', os.environ.get('artixgamelaunchoptions'), os.environ.get('artixgamestartingdir'))
+create_new_entry(os.environ.get('arcshortcutdirectory'), 'ARC Launcher', os.environ.get('arclaunchoptions'), os.environ.get('arcstartingdir'))
 create_new_entry(os.environ.get('repaireaappshortcutdirectory'), 'Repair EA App', os.environ.get('repaireaapplaunchoptions'), os.environ.get('repaireaappstartingdir'))
 create_new_entry(os.environ.get('chromedirectory'), 'Xbox Game Pass', os.environ.get('xboxchromelaunchoptions'), os.environ.get('chrome_startdir'))
 create_new_entry(os.environ.get('chromedirectory'), 'GeForce Now', os.environ.get('geforcechromelaunchoptions'), os.environ.get('chrome_startdir'))
@@ -792,6 +798,10 @@ folder_names = {
     'VK Play': 'VKPlayLauncher',
     'HoYoPlay': 'HoYoPlayLauncher',
     'Nexon Launcher': 'NexonLauncher',
+    'Game Jolt Client': 'GameJoltLauncher',
+    'Artix Game Launcher': 'ArtixGameLauncher',
+    'ARC Launcher': 'ARCLauncher',
+
 }
 
 
