@@ -313,6 +313,15 @@ hoyoplay_path1="${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSte
 hoyoplay_path2="${logged_in_home}/.local/share/Steam/steamapps/compatdata/HoYoPlayLauncher/pfx/drive_c/Program Files/HoYoPlay/launcher.exe"
 nexon_path1="${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/Program Files (x86)/Nexon/Nexon Launcher/nexon_launcher.exe"
 nexon_path2="${logged_in_home}/.local/share/Steam/steamapps/compatdata/NexonLauncher/pfx/drive_c/Program Files (x86)/Nexon/Nexon Launcher/nexon_launcher.exe"
+gamejolt_path1="${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/users/steamuser/AppData/Local/GameJoltClient/GameJoltClient.exe"
+gamejolt_path2="${logged_in_home}/.local/share/Steam/steamapps/compatdata/GameJoltLauncher/pfx/drive_c/users/steamuser/AppData/Local/GameJoltClient/GameJoltClient.exe"
+artixgame_path1="${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/Program Files/Artix Game Launcher/Artix Game Launcher.exe"
+artixgame_path2="${logged_in_home}/.local/share/Steam/steamapps/compatdata/ArtixGameLauncher/pfx/drive_c/Program Files/Artix Game Launcher/Artix Game Launcher.exe"
+arc_path1="${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/Program Files (x86)/Arc/Arc.exe"
+arc_path2="${logged_in_home}/.local/share/Steam/steamapps/compatdata/ARCLauncher/pfx/drive_c/Program Files (x86)/Arc/Arc.exe"
+
+
+
 
 # Chrome File Path
 # chrome_installpath="/app/bin/chrome"
@@ -323,9 +332,11 @@ chromedirectory="\"$chrome_path\""
 #Zenity Launcher Check Installation
 function CheckInstallations {
     declare -A paths1 paths2 names
-    paths1=(["epic_games"]="$epic_games_launcher_path1" ["gog_galaxy"]="$gog_galaxy_path1" ["uplay"]="$uplay_path1" ["battlenet"]="$battlenet_path1" ["eaapp"]="$eaapp_path1" ["amazongames"]="$amazongames_path1" ["itchio"]="$itchio_path1" ["legacygames"]="$legacygames_path1" ["humblegames"]="$humblegames_path1" ["indiegala"]="$indiegala_path1" ["rockstar"]="$rockstar_path1" ["glyph"]="$glyph_path1" ["psplus"]="$psplus_path1" ["vkplay"]="$vkplay_path1" ["hoyoplay"]=$hoyoplay_path1 ["nexon"]=$nexon_path1)
-    paths2=(["epic_games"]="$epic_games_launcher_path2" ["gog_galaxy"]="$gog_galaxy_path2" ["uplay"]="$uplay_path2" ["battlenet"]="$battlenet_path2" ["eaapp"]="$eaapp_path2" ["amazongames"]="$amazongames_path2" ["itchio"]="$itchio_path2" ["legacygames"]="$legacygames_path2" ["humblegames"]="$humblegames_path2" ["indiegala"]="$indiegala_path2" ["rockstar"]="$rockstar_path2" ["glyph"]="$glyph_path2" ["psplus"]="$psplus_path2" ["vkplay"]="$vkplay_path2" ["hoyoplay"]=$hoyoplay_path2 ["nexon"]=$nexon_path2)
-    names=(["epic_games"]="Epic Games" ["gog_galaxy"]="GOG Galaxy" ["uplay"]="Ubisoft Connect" ["battlenet"]="Battle.net" ["eaapp"]="EA App" ["amazongames"]="Amazon Games" ["itchio"]="itch.io" ["legacygames"]="Legacy Games" ["humblegames"]="Humble Games Collection" ["indiegala"]="IndieGala" ["rockstar"]="Rockstar Games Launcher" ["glyph"]="Glyph Launcher" ["psplus"]="Playstation Plus" ["vkplay"]="VK Play" ["hoyoplay"]="HoYoPlay" ["nexon"]="Nexon Launcher")
+    paths1=(["epic_games"]="$epic_games_launcher_path1" ["gog_galaxy"]="$gog_galaxy_path1" ["uplay"]="$uplay_path1" ["battlenet"]="$battlenet_path1" ["eaapp"]="$eaapp_path1" ["amazongames"]="$amazongames_path1" ["itchio"]="$itchio_path1" ["legacygames"]="$legacygames_path1" ["humblegames"]="$humblegames_path1" ["indiegala"]="$indiegala_path1" ["rockstar"]="$rockstar_path1" ["glyph"]="$glyph_path1" ["psplus"]="$psplus_path1" ["vkplay"]="$vkplay_path1" ["hoyoplay"]="$hoyoplay_path1" ["nexon"]="$nexon_path1" ["gamejolt"]="$gamejolt_path1" ["artixgame"]="$artixgame_path1" ["arc"]="$arc_path1")
+
+    paths2=(["epic_games"]="$epic_games_launcher_path2" ["gog_galaxy"]="$gog_galaxy_path2" ["uplay"]="$uplay_path2" ["battlenet"]="$battlenet_path2" ["eaapp"]="$eaapp_path2" ["amazongames"]="$amazongames_path2" ["itchio"]="$itchio_path2" ["legacygames"]="$legacygames_path2" ["humblegames"]="$humblegames_path2" ["indiegala"]="$indiegala_path2" ["rockstar"]="$rockstar_path2" ["glyph"]="$glyph_path2" ["psplus"]="$psplus_path2" ["vkplay"]="$vkplay_path2" ["hoyoplay"]="$hoyoplay_path2" ["nexon"]="$nexon_path2" ["gamejolt"]="$gamejolt_path2" ["artixgame"]="$artixgame_path2" ["arc"]="$arc_path2")
+
+    names=(["epic_games"]="Epic Games" ["gog_galaxy"]="GOG Galaxy" ["uplay"]="Ubisoft Connect" ["battlenet"]="Battle.net" ["eaapp"]="EA App" ["amazongames"]="Amazon Games" ["itchio"]="itch.io" ["legacygames"]="Legacy Games" ["humblegames"]="Humble Games Collection" ["indiegala"]="IndieGala" ["rockstar"]="Rockstar Games Launcher" ["glyph"]="Glyph Launcher" ["psplus"]="Playstation Plus" ["vkplay"]="VK Play" ["hoyoplay"]="HoYoPlay" ["nexon"]="Nexon Launcher" ["gamejolt"]="Game Jolt Client" ["artixgame"]="Artix Game Launcher" ["arc"]="ARC Launcher")
 
     for launcher in "${!names[@]}"; do
         if [[ -f "${paths1[$launcher]}" ]]; then
@@ -344,8 +355,9 @@ function CheckInstallations {
 # Verify launchers are installed
 function CheckInstallationDirectory {
     declare -A paths names
-    paths=(["nonsteamlauncher"]="${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers" ["epicgameslauncher"]="${logged_in_home}/.local/share/Steam/steamapps/compatdata/EpicGamesLauncher" ["goggalaxylauncher"]="${logged_in_home}/.local/share/Steam/steamapps/compatdata/GogGalaxyLauncher" ["uplaylauncher"]="${logged_in_home}/.local/share/Steam/steamapps/compatdata/UplayLauncher" ["battlenetlauncher"]="${logged_in_home}/.local/share/Steam/steamapps/compatdata/Battle.netLauncher" ["eaapplauncher"]="${logged_in_home}/.local/share/Steam/steamapps/compatdata/TheEAappLauncher" ["amazongameslauncher"]="${logged_in_home}/.local/share/Steam/steamapps/compatdata/AmazonGamesLauncher" ["itchiolauncher"]="${logged_in_home}/.local/share/Steam/steamapps/compatdata/itchioLauncher" ["legacygameslauncher"]="${logged_in_home}/.local/share/Steam/steamapps/compatdata/LegacyGamesLauncher" ["humblegameslauncher"]="${logged_in_home}/.local/share/Steam/steamapps/compatdata/HumbleGamesLauncher" ["indiegalalauncher"]="${logged_in_home}/.local/share/Steam/steamapps/compatdata/IndieGalaLauncher" ["rockstargameslauncher"]="${logged_in_home}/.local/share/Steam/steamapps/compatdata/RockstarGamesLauncher" ["glyphlauncher"]="${logged_in_home}/.local/share/Steam/steamapps/compatdata/GlyphLauncher" ["pspluslauncher"]="${logged_in_home}/.local/share/Steam/steamapps/compatdata/PlaystationPlusLauncher" ["vkplaylauncher"]="${logged_in_home}/.local/share/Steam/steamapps/compatdata/VKPlayLauncher" ["hoyoplaylauncher"]="${logged_in_home}/.local/share/Steam/steamapps/compatdata/HoYoPlayLauncher" ["nexonlauncher"]="${logged_in_home}/.local/share/Steam/steamapps/compatdata/NexonLauncher")
-    names=(["nonsteamlauncher"]="NonSteamLaunchers" ["epicgameslauncher"]="EpicGamesLauncher" ["goggalaxylauncher"]="GogGalaxyLauncher" ["uplaylauncher"]="UplayLauncher" ["battlenetlauncher"]="Battle.netLauncher" ["eaapplauncher"]="TheEAappLauncher" ["amazongameslauncher"]="AmazonGamesLauncher" ["itchiolauncher"]="itchioLauncher" ["legacygameslauncher"]="LegacyGamesLauncher" ["humblegameslauncher"]="HumbleGamesLauncher" ["indiegalalauncher"]="IndieGalaLauncher" ["rockstargameslauncher"]="RockstarGamesLauncher" ["glyphlauncher"]="GlyphLauncher" ["pspluslauncher"]="PlaystationPlusLauncher" ["vkplaylauncher"]="VKPlayLauncher" ["hoyoplaylauncher"]="HoYoPlayLauncher" ["nexonlauncher"]="NexonLauncher")
+    paths=(["nonsteamlauncher"]="${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers" ["epicgameslauncher"]="${logged_in_home}/.local/share/Steam/steamapps/compatdata/EpicGamesLauncher" ["goggalaxylauncher"]="${logged_in_home}/.local/share/Steam/steamapps/compatdata/GogGalaxyLauncher" ["uplaylauncher"]="${logged_in_home}/.local/share/Steam/steamapps/compatdata/UplayLauncher" ["battlenetlauncher"]="${logged_in_home}/.local/share/Steam/steamapps/compatdata/Battle.netLauncher" ["eaapplauncher"]="${logged_in_home}/.local/share/Steam/steamapps/compatdata/TheEAappLauncher" ["amazongameslauncher"]="${logged_in_home}/.local/share/Steam/steamapps/compatdata/AmazonGamesLauncher" ["itchiolauncher"]="${logged_in_home}/.local/share/Steam/steamapps/compatdata/itchioLauncher" ["legacygameslauncher"]="${logged_in_home}/.local/share/Steam/steamapps/compatdata/LegacyGamesLauncher" ["humblegameslauncher"]="${logged_in_home}/.local/share/Steam/steamapps/compatdata/HumbleGamesLauncher" ["indiegalalauncher"]="${logged_in_home}/.local/share/Steam/steamapps/compatdata/IndieGalaLauncher" ["rockstargameslauncher"]="${logged_in_home}/.local/share/Steam/steamapps/compatdata/RockstarGamesLauncher" ["glyphlauncher"]="${logged_in_home}/.local/share/Steam/steamapps/compatdata/GlyphLauncher" ["pspluslauncher"]="${logged_in_home}/.local/share/Steam/steamapps/compatdata/PlaystationPlusLauncher" ["vkplaylauncher"]="${logged_in_home}/.local/share/Steam/steamapps/compatdata/VKPlayLauncher" ["hoyoplaylauncher"]="${logged_in_home}/.local/share/Steam/steamapps/compatdata/HoYoPlayLauncher" ["nexonlauncher"]="${logged_in_home}/.local/share/Steam/steamapps/compatdata/NexonLauncher" ["gamejoltlauncher"]="${logged_in_home}/.local/share/Steam/steamapps/compatdata/GameJoltLauncher" ["artixgamelauncher"]="${logged_in_home}/.local/share/Steam/steamapps/compatdata/ArtixGameLauncher" ["arc"]="${logged_in_home}/.local/share/Steam/steamapps/compatdata/ARCLauncher")
+
+    names=(["nonsteamlauncher"]="NonSteamLaunchers" ["epicgameslauncher"]="EpicGamesLauncher" ["goggalaxylauncher"]="GogGalaxyLauncher" ["uplaylauncher"]="UplayLauncher" ["battlenetlauncher"]="Battle.netLauncher" ["eaapplauncher"]="TheEAappLauncher" ["amazongameslauncher"]="AmazonGamesLauncher" ["itchiolauncher"]="itchioLauncher" ["legacygameslauncher"]="LegacyGamesLauncher" ["humblegameslauncher"]="HumbleGamesLauncher" ["indiegalalauncher"]="IndieGalaLauncher" ["rockstargameslauncher"]="RockstarGamesLauncher" ["glyphlauncher"]="GlyphLauncher" ["pspluslauncher"]="PlaystationPlusLauncher" ["vkplaylauncher"]="VKPlayLauncher" ["hoyoplaylauncher"]="HoYoPlayLauncher" ["nexonlauncher"]="NexonLauncher" ["gamejoltlauncher"]="GameJoltLauncher" ["artixgamelauncher"]="ArtixGameLauncher" ["arc"]="ARCLauncher")
 
     for launcher in "${!names[@]}"; do
         if [[ -d "${paths[$launcher]}" ]]; then
@@ -540,7 +552,7 @@ separate_app_ids=false
 # Check if any command line arguments were provided
 if [ ${#args[@]} -eq 0 ]; then
     # No command line arguments were provided, so display the main zenity window
-    selected_launchers=$(zenity --list --text="Which launchers do you want to download and install?" --checklist --column="$version" --column="Default = one App ID Installation, One Prefix, NonSteamLaunchers - updated the NSLGameScanner.py $live" FALSE "SEPARATE APP IDS - CHECK THIS TO SEPARATE YOUR PREFIX" $epic_games_value "$epic_games_text" $gog_galaxy_value "$gog_galaxy_text" $uplay_value "$uplay_text" $battlenet_value "$battlenet_text" $amazongames_value "$amazongames_text" $eaapp_value "$eaapp_text" $legacygames_value "$legacygames_text" $itchio_value "$itchio_text" $humblegames_value "$humblegames_text" $indiegala_value "$indiegala_text" $rockstar_value "$rockstar_text" $glyph_value "$glyph_text" $psplus_value "$psplus_text" $vkplay_value "$vkplay_text" $hoyoplay_value "$hoyoplay_text" $nexon_value "$nexon_text" FALSE "RemotePlayWhatever" FALSE "Fortnite" FALSE "Venge" FALSE "Xbox Game Pass" FALSE "GeForce Now" FALSE "Amazon Luna" FALSE "Stim.io" FALSE "Boosteroid Cloud Gaming" FALSE "Rocketcrab" FALSE "WebRcade" FALSE "WebRcade Editor" FALSE "WatchParty" FALSE "Netflix" FALSE "Hulu" FALSE "Disney+" FALSE "Amazon Prime Video" FALSE "Youtube" FALSE "Twitch" FALSE "Apple TV+" FALSE "Crunchyroll" FALSE "Plex" --width=800 --height=740 --extra-button="Uninstall" --extra-button="Stop NSLGameScanner" --extra-button="Start Fresh" --extra-button="Move to SD Card" --extra-button="Update Proton-GE")
+    selected_launchers=$(zenity --list --text="Which launchers do you want to download and install?" --checklist --column="$version" --column="Default = one App ID Installation, One Prefix, NonSteamLaunchers - updated the NSLGameScanner.py $live" FALSE "SEPARATE APP IDS - CHECK THIS TO SEPARATE YOUR PREFIX" $epic_games_value "$epic_games_text" $gog_galaxy_value "$gog_galaxy_text" $uplay_value "$uplay_text" $battlenet_value "$battlenet_text" $amazongames_value "$amazongames_text" $eaapp_value "$eaapp_text" $legacygames_value "$legacygames_text" $itchio_value "$itchio_text" $humblegames_value "$humblegames_text" $indiegala_value "$indiegala_text" $rockstar_value "$rockstar_text" $glyph_value "$glyph_text" $psplus_value "$psplus_text" $vkplay_value "$vkplay_text" $hoyoplay_value "$hoyoplay_text" $nexon_value "$nexon_text" $gamejolt_value "$gamejolt_text" $artixgame_value "$artixgame_text" $arc_value "$arc_text" FALSE "RemotePlayWhatever" FALSE "Fortnite" FALSE "Venge" FALSE "Xbox Game Pass" FALSE "GeForce Now" FALSE "Amazon Luna" FALSE "Stim.io" FALSE "Boosteroid Cloud Gaming" FALSE "Rocketcrab" FALSE "WebRcade" FALSE "WebRcade Editor" FALSE "WatchParty" FALSE "Netflix" FALSE "Hulu" FALSE "Disney+" FALSE "Amazon Prime Video" FALSE "Youtube" FALSE "Twitch" FALSE "Apple TV+" FALSE "Crunchyroll" FALSE "Plex" --width=800 --height=740 --extra-button="Uninstall" --extra-button="Stop NSLGameScanner" --extra-button="Start Fresh" --extra-button="Move to SD Card" --extra-button="Update Proton-GE")
 
 
     # Check if the user clicked the 'Cancel' button or selected one of the extra buttons
@@ -639,10 +651,10 @@ function StartFreshFunction {
     other_dir="${logged_in_home}/.local/share/Steam/steamapps/shadercache/"
 
     # Define an array of original folder names
-    folder_names=("EpicGamesLauncher" "GogGalaxyLauncher" "UplayLauncher" "Battle.netLauncher" "TheEAappLauncher" "AmazonGamesLauncher" "itchioLauncher" "LegacyGamesLauncher" "HumbleGamesLauncher" "IndieGalaLauncher" "RockstarGamesLauncher" "GlyphLauncher" "PlaystationPlusLauncher" "VKPlayLauncher" "HoYoPlayLauncher" "NexonLauncher")
+    folder_names=("EpicGamesLauncher" "GogGalaxyLauncher" "UplayLauncher" "Battle.netLauncher" "TheEAappLauncher" "AmazonGamesLauncher" "itchioLauncher" "LegacyGamesLauncher" "HumbleGamesLauncher" "IndieGalaLauncher" "RockstarGamesLauncher" "GlyphLauncher" "PlaystationPlusLauncher" "VKPlayLauncher" "HoYoPlayLauncher" "NexonLauncher" "GameJoltLauncher" "ArtixGameLauncher" "ARCLauncher")
 
     # Define an array of app IDs
-    app_ids=("3772819390" "4294900670" "4063097571" "3786021133" "3448088735" "3923904787" "3440562512" "2948446662" "3908676077" "4206469918" "3303169468" "3595505624" "4272271078" "3259996605" "2588786779" "4090616647" "3494943831" "2390200925" "4253976432" "2221882453" "2296676888" "2486751858" "3974004104" "3811372789" "3788101956" "3782277090" "3640061468" "3216372511" "2882622939" "2800812206" "2580882702" "4022508926")
+    app_ids=("3772819390" "4294900670" "4063097571" "3786021133" "3448088735" "3923904787" "3440562512" "2948446662" "3908676077" "4206469918" "3303169468" "3595505624" "4272271078" "3259996605" "2588786779" "4090616647" "3494943831" "2390200925" "4253976432" "2221882453" "2296676888" "2486751858" "3974004104" "3811372789" "3788101956" "3782277090" "3640061468" "3216372511" "2882622939" "2800812206" "2580882702" "4022508926" "4182617613" "1981254598" "2136059209" "1401184678")
 
     # Iterate over each folder name in the folder_names array
     for folder in "${folder_names[@]}"; do
@@ -737,6 +749,9 @@ function StartFreshFunction {
     rm -rf "/run/media/mmcblk0p1/VKPlayLauncher/"
     rm -rf "/run/media/mmcblk0p1/HoYoPlayLauncher/"
     rm -rf "/run/media/mmcblk0p1/NexonLauncher/"
+    rm -rf "/run/media/mmcblk0p1/GameJoltLauncher/"
+    rm -rf "/run/media/mmcblk0p1/ArtixGameLauncher/"
+    rm -rf "/run/media/mmcblk0p1/ARCLauncher/"
     rm -rf ${logged_in_home}/Downloads/NonSteamLaunchersInstallation
     rm -rf ${logged_in_home}/.config/systemd/user/Modules
     rm -rf ${logged_in_home}/.config/systemd/user/env_vars
@@ -888,6 +903,26 @@ nexon_url="https://download.nxfs.nexon.com/download-launcher?file=NexonLauncherS
 
 # Set the path to save the Nexon Launcher to
 nexon_file=${logged_in_home}/Downloads/NonSteamLaunchersInstallation/NexonLauncherSetup.exe
+
+# Set the URL to download the GameJolt Launcher file from
+gamejolt_url="https://download.gamejolt.net/7f4ea08f3f8b964dafd1df8a4a4e44f4af49390b6c9402bd25d410b71341fb0b,1738120837,7/data/games/5/162/362412/files/66bc359fe3e14/gamejoltclientsetup.exe"
+
+# Set the path to save the GameJolt Launcher to
+gamejolt_file=${logged_in_home}/Downloads/NonSteamLaunchersInstallation/gamejoltclientsetup.exe
+
+# Set the URL to download the artix Launcher file from
+artixgame_url=https://launch.artix.com/latest/ArtixLauncher_win_x64.exe
+
+# Set the path to save the artix Launcher to
+artixgame_file="${logged_in_home}/Downloads/NonSteamLaunchersInstallation/ArtixLauncher_win_x64.exe"
+
+
+# Set the URL to download the arc Launcher file from
+arc_url=https://www.arcgames.com/download
+
+# Set the path to save the arc Launcher to
+arc_file="${logged_in_home}/Downloads/NonSteamLaunchersInstallation/Ar3Setup.exe"
+
 #End of Downloads INFO
 
 
@@ -992,6 +1027,20 @@ if [[ $uninstall_options == *"Uninstall PlayStation Plus"* ]]; then
     fi
 fi
 
+# Function to handle Artix uninstallation
+handle_uninstall_artix() {
+    artix_uninstaller="${logged_in_home}/.local/share/Steam/steamapps/compatdata/${1}/pfx/drive_c/Program Files/Artix Game Launcher/Uninstall Artix Game Launcher.exe"
+    handle_uninstall_common "$1" "$artix_uninstaller" "/S" "Artix Game Launcher"
+}
+
+# Uninstall Artix
+if [[ $uninstall_options == *"Uninstall Artix Game Launcher"* ]]; then
+    if [[ -d "${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/Program Files/Artix Game Launcher" ]]; then
+        handle_uninstall_artix "NonSteamLaunchers"
+    elif [[ -d "${logged_in_home}/.local/share/Steam/steamapps/compatdata/ArtixGameLauncher/pfx/drive_c/Program Files/Artix Game Launcher" ]]; then
+        handle_uninstall_artix "ArtixGameLauncher"
+    fi
+fi
 
 
 uninstall_launcher() {
@@ -1067,6 +1116,17 @@ process_uninstall_options() {
             fi
         fi
 
+        if [[ $uninstall_options == *"Uninstall Artix Game Launcher"* ]]; then
+            if [[ -d "${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/Program Files/Artix Game Launcher" ]]; then
+                handle_uninstall_artix "NonSteamLaunchers"
+                uninstall_launcher "$uninstall_options" "Artix Game Launcher" "$artixgame_path1" "$artixgame_path2" "" "" "artixgame"
+            elif [[ -d "${logged_in_home}/.local/share/Steam/steamapps/compatdata/ArtixGameLauncher/pfx/drive_c/Program Files/Artix Game Launcher" ]]; then
+                handle_uninstall_artix "ArtixGameLauncher"
+                uninstall_launcher "$uninstall_options" "Artix Game Launcher" "$artixgame_path1" "$artixgame_path2" "" "" "artixgame"
+            fi
+        fi
+
+
         if [[ $uninstall_options == *"Uninstall RemotePlayWhatever"* ]]; then
             rm -rf "${logged_in_home}/.local/share/applications/RemotePlayWhatever"
             rm -rf "${logged_in_home}/.local/share/applications/RemotePlayWhatever.desktop"
@@ -1075,6 +1135,7 @@ process_uninstall_options() {
             sleep 3
             killall zenity
         fi
+
         uninstall_launcher "$uninstall_options" "Uplay" "$uplay_path1" "$uplay_path2" "${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/Program Files (x86)/Ubisoft" "${logged_in_home}/.local/share/Steam/steamapps/compatdata/UplayLauncher" "uplay" "ubisoft"
         uninstall_launcher "$uninstall_options" "Battle.net" "$battlenet_path1" "$battlenet_path2" "${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/Program Files (x86)/Battle.net" "${logged_in_home}/.local/share/Steam/steamapps/compatdata/Battle.netLauncher" "battle" "bnet"
         uninstall_launcher "$uninstall_options" "Epic Games" "$epic_games_launcher_path1" "$epic_games_launcher_path2" "${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/Program Files (x86)/Epic Games" "${logged_in_home}/.local/share/Steam/steamapps/compatdata/EpicGamesLauncher" "epic"
@@ -1087,6 +1148,9 @@ process_uninstall_options() {
         uninstall_launcher "$uninstall_options" "VK Play" "$vkplay_path1" "$vkplay_path2" "${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/users/steamuser/AppData/Local/GameCenter" "${logged_in_home}/.local/share/Steam/steamapps/compatdata/VKPlayLauncher" "vkplay"
         uninstall_launcher "$uninstall_options" "HoYoPlay" "$hoyoplay_path1" "$hoyoplay_path2" "${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/Program Files/HoYoPlay" "${logged_in_home}/.local/share/Steam/steamapps/compatdata/HoYoPlayLauncher" "hoyoplay"
         uninstall_launcher "$uninstall_options" "Nexon Launcher" "$nexon_path1" "$nexon_path2" "${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/Program Files (x86)/Nexon" "${logged_in_home}/.local/share/Steam/steamapps/compatdata/NexonLauncher" "nexon"
+        uninstall_launcher "$uninstall_options" "Game Jolt Client" "$gamejolt_path1" "$gamejolt_path2" "${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/users/steamuser/AppData/Local/GameJoltClient" "${logged_in_home}/.local/share/Steam/steamapps/compatdata/GameJoltLauncher" "gamejolt"
+        uninstall_launcher "$uninstall_options" "ARC Launcher" "$arc_path1" "$arc_path2" "${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/Program Files (x86)/Arc" "${logged_in_home}/.local/share/Steam/steamapps/compatdata/ARCLauncher" "arc"
+
     fi
     # If the uninstall was successful,  set uninstalled_any_launcher to true
     if [ $? -eq 0 ]; then
@@ -1142,6 +1206,9 @@ else
             FALSE "VK Play" \
             FALSE "HoYoPlay" \
             FALSE "Nexon Launcher" \
+            FALSE "Game Jolt Client" \
+            FALSE "Artix Game Launcher" \
+            FALSE "ARC Launcher" \
             FALSE "RemotePlayWhatever" \
         )
         # Convert the returned string to an array
@@ -1190,7 +1257,7 @@ else
     if [[ $options == "Move to SD Card" ]]; then
         CheckInstallationDirectory
 
-    move_options=$(zenity --list --text="Which launcher IDs do you want to move to the SD card?" --checklist --column="Select" --column="Launcher ID" $nonsteamlauncher_move_value "NonSteamLaunchers" $epicgameslauncher_move_value "EpicGamesLauncher" $goggalaxylauncher_move_value "GogGalaxyLauncher" $uplaylauncher_move_value "UplayLauncher" $battlenetlauncher_move_value "Battle.netLauncher" $eaapplauncher_move_value "TheEAappLauncher" $amazongameslauncher_move_value "AmazonGamesLauncher" $itchiolauncher_move_value "itchioLauncher" $legacygameslauncher_move_value "LegacyGamesLauncher" $humblegameslauncher_move_value "HumbleGamesLauncher" $indiegalalauncher_move_value "IndieGalaLauncher" $rockstargameslauncher_move_value "RockstarGamesLauncher" $glyphlauncher_move_value "GlyphLauncher" $pspluslauncher_move_value "PlaystationPlusLauncher" $vkplaylauncher_move_value "VKPlayLauncher" $hoyoplaylauncher_move_value "HoYoPlayLauncher" $nexonlauncher_move_value "NexonLauncher" --width=335 --height=524)
+    move_options=$(zenity --list --text="Which launcher IDs do you want to move to the SD card?" --checklist --column="Select" --column="Launcher ID" $nonsteamlauncher_move_value "NonSteamLaunchers" $epicgameslauncher_move_value "EpicGamesLauncher" $goggalaxylauncher_move_value "GogGalaxyLauncher" $uplaylauncher_move_value "UplayLauncher" $battlenetlauncher_move_value "Battle.netLauncher" $eaapplauncher_move_value "TheEAappLauncher" $amazongameslauncher_move_value "AmazonGamesLauncher" $itchiolauncher_move_value "itchioLauncher" $legacygameslauncher_move_value "LegacyGamesLauncher" $humblegameslauncher_move_value "HumbleGamesLauncher" $indiegalalauncher_move_value "IndieGalaLauncher" $rockstargameslauncher_move_value "RockstarGamesLauncher" $glyphlauncher_move_value "GlyphLauncher" $pspluslauncher_move_value "PlaystationPlusLauncher" $vkplaylauncher_move_value "VKPlayLauncher" $hoyoplaylauncher_move_value "HoYoPlayLauncher" $nexonlauncher_move_value "NexonLauncher" $gamejoltlauncher_move_value "GameJoltLauncher" $artixgame_move_value "ArtixGameLauncher" $arc_move_value "ARCLauncher" --width=335 --height=524)
 
     if [ $? -eq 0 ]; then
         zenity --info --text="The selected directories have been moved to the SD card and symbolic links have been created." --width=200 --height=150
@@ -1663,6 +1730,9 @@ function install_hoyo {
 
 
 
+
+
+
 #Launcher Installs
 function install_launcher {
     launcher_name=$1
@@ -1734,6 +1804,14 @@ function install_launcher {
                 install_humblegames
             elif [ "$launcher_name" = "Rockstar Games Launcher" ]; then
                 install_rockstar
+            elif [ "$launcher_name" = "ARC Launcher" ]; then
+                "$STEAM_RUNTIME" "$proton_dir/proton" run "$arc_file"
+                pid=$!
+                while pgrep -x "Arc3Install_202" > /dev/null; do
+                    sleep 1
+                done
+                sleep 5
+                echo "ARC Launcher installation complete."
             else
                 "$STEAM_RUNTIME" "$proton_dir/proton" run ${run_command} &
             fi
@@ -1800,6 +1878,15 @@ install_launcher "HoYoPlay" "HoYoPlayLauncher" "$hoyoplay_file" "$hoyoplay_url" 
 
 # Install Nexon Launcher
 install_launcher "Nexon Launcher" "NexonLauncher" "$nexon_file" "$nexon_url" "$nexon_file" "99" "" "install_nexon" true
+
+# Install GameJolt Launcher
+install_launcher "Game Jolt Client" "GameJoltLauncher" "$gamejolt_file" "$gamejolt_url" "$gamejolt_file /silent" "99" "" ""
+
+# Install artix Launcher
+install_launcher "Artix Game Launcher" "ArtixGameLauncher" "$artixgame_file" "$artixgame_url" "$artixgame_file /S" "99" "" ""
+
+# Install ARC Launcher
+install_launcher "ARC Launcher" "ARCLauncher" "$arc_file" "$arc_url" "$arc_file" "99" "" "" true
 #End of Launcher Installations
 
 
@@ -1996,6 +2083,12 @@ roots:
     path: ${logged_in_home}/.local/share/Steam/steamapps/compatdata/HoYoPlayLauncher/pfx/drive_c/
   - store: otherWindows
     path: ${logged_in_home}/.local/share/Steam/steamapps/compatdata/NexonLauncher/pfx/drive_c/
+  - store: otherWindows
+    path: ${logged_in_home}/.local/share/Steam/steamapps/compatdata/GameJoltLauncher/pfx/drive_c/
+  - store: otherWindows
+    path: ${logged_in_home}/.local/share/Steam/steamapps/compatdata/ArtixGameLauncher/pfx/drive_c/
+  - store: otherWindows
+    path: ${logged_in_home}/.local/share/Steam/steamapps/compatdata/ARCLauncher/pfx/drive_c/
 redirects: []
 backup:
   path: ${logged_in_home}/NSLGameSaves
@@ -2130,6 +2223,9 @@ check_and_write "psplus" "$psplus_path1" "$psplus_path2" "NonSteamLaunchers" "Pl
 check_and_write "vkplay" "$vkplay_path1" "$vkplay_path2" "NonSteamLaunchers" "VKPlayLauncher" "" "vkplay_launcher"
 check_and_write "hoyoplay" "$hoyoplay_path1" "$hoyoplay_path2" "NonSteamLaunchers" "HoYoPlayLauncher" "" "hoyoplay_launcher"
 check_and_write "nexon" "$nexon_path1" "$nexon_path2" "NonSteamLaunchers" "NexonLauncher" "" "nexon_launcher"
+check_and_write "gamejolt" "$gamejolt_path1" "$gamejolt_path2" "NonSteamLaunchers" "GameJoltLauncher" "" "gamejolt_launcher"
+check_and_write "artixgame" "$artixgame_path1" "$artixgame_path2" "NonSteamLaunchers" "ArtixGameLauncher" "" "artixgame_launcher"
+check_and_write "arc" "$arc_path1" "$arc_path2" "NonSteamLaunchers" "ARCLauncher" "" "arc_launcher"
 
 # Special Shortcut for EA App NoRepair
 eaapp_path1="${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/users/steamuser/Downloads/EAappInstaller.exe"
