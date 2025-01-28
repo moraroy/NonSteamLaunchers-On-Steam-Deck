@@ -111,6 +111,11 @@ Supported Stores 🛍
 - VK Play ✔️
 - HoYoPlay ✔️
 - Nexon Launcher ✔️
+- Game Volt Client ✔️
+- Artix Game Launcher ✔️
+- ARC Launcher ✔️
+
+- RemotePlayWhatever ✔️
 
 <h1 align="center">
 Supported Streaming Sites for games and as well as any website. 🌐
@@ -118,11 +123,16 @@ Supported Streaming Sites for games and as well as any website. 🌐
 
 - Website Shortcut Creator ✔️
 - Fortnite ✔️
+- Venge ✔️
 - Xbox Game Pass ✔️
 - GeForce Now ✔️
 - Amazon Luna ✔️
+- Boosteroid Cloud Gaming ✔️
+- Stim.io ✔️
 - WebRcade ✔️
 - WebRcade Editor ✔️
+- WatchParty ✔️
+- Rocketcrab ✔️
 - Netflix ✔️
 - Amazon Prime Video ✔️
 - Disney+ ✔️
