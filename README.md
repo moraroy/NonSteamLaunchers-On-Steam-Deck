@@ -111,7 +111,7 @@ Supported Stores 🛍
 - VK Play ✔️
 - HoYoPlay ✔️
 - Nexon Launcher ✔️
-- Game Volt Client ✔️
+- Game Jolt Client ✔️
 - Artix Game Launcher ✔️
 - ARC Launcher ✔️
 - RemotePlayWhatever ✔️
