@@ -114,7 +114,6 @@ Supported Stores 🛍
 - Game Volt Client ✔️
 - Artix Game Launcher ✔️
 - ARC Launcher ✔️
-
 - RemotePlayWhatever ✔️
 
 <h1 align="center">
