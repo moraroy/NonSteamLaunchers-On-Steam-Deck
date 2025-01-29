@@ -2286,132 +2286,47 @@ fi
 
 
 # Set Chrome options based on user's selection
+# Function to set Chrome launch options for a given service
+set_chrome_launch_options() {
+    local option_var="${1}chromelaunchoptions"
+    local launch_options="run --branch=stable --arch=x86_64 --command=/app/bin/chrome --file-forwarding com.google.Chrome @@u @@ --window-size=1280,800 --force-device-scale-factor=1.00 --device-scale-factor=1.00 --start-fullscreen $2 --no-first-run --enable-features=OverlayScrollbar"
 
-if [[ $options == *"Xbox Game Pass"* ]]; then
-    # User selected Xbox Game Pass
-    xboxchromelaunchoptions="run --branch=stable --arch=x86_64 --command=/app/bin/chrome --file-forwarding com.google.Chrome @@u @@ --window-size=1280,800 --force-device-scale-factor=1.00 --device-scale-factor=1.00 --start-fullscreen https://www.xbox.com/play --no-first-run --enable-features=OverlayScrollbar"
-    echo "export xboxchromelaunchoptions=$xboxchromelaunchoptions" >> ${logged_in_home}/.config/systemd/user/env_vars
-fi
+    # Write to environment variables file
+    echo $option_var=$launch_options >> ${logged_in_home}/.config/systemd/user/env_vars
+}
 
-if [[ $options == *"WatchParty"* ]]; then
-    # User selected watchparty
-    watchpartychromelaunchoptions="run --branch=stable --arch=x86_64 --command=/app/bin/chrome --file-forwarding com.google.Chrome @@u @@ --window-size=1280,800 --force-device-scale-factor=1.00 --device-scale-factor=1.00 --start-fullscreen https://www.watchparty.me --no-first-run --enable-features=OverlayScrollbar"
-    echo "export watchpartychromelaunchoptions=$watchpartychromelaunchoptions" >> ${logged_in_home}/.config/systemd/user/env_vars
-fi
+# Array of options, command names, and corresponding URLs
+declare -A services=(
+    ["Xbox Game Pass"]="xbox|https://www.xbox.com/play"
+    ["WatchParty"]="watchparty|https://www.watchparty.me"
+    ["Netflix"]="netflix|https://www.netflix.com"
+    ["GeForce Now"]="geforce|https://play.geforcenow.com"
+    ["Hulu"]="hulu|https://www.hulu.com/welcome"
+    ["Disney+"]="disney|https://www.disneyplus.com"
+    ["Amazon Prime Video"]="amazon|https://www.amazon.com/primevideo"
+    ["Youtube"]="youtube|https://www.youtube.com"
+    ["Amazon Luna"]="luna|https://luna.amazon.com"
+    ["Twitch"]="twitch|https://www.twitch.tv"
+    ["Fortnite"]="fortnite|https://www.xbox.com/en-US/play/games/fortnite/BT5P2X999VH2"
+    ["Venge"]="venge|https://venge.io"
+    ["Boosteroid Cloud Gaming"]="boosteroid|https://cloud.boosteroid.com"
+    ["WebRcade"]="webrcade|https://play.webrcade.com"
+    ["WebRcade Editor"]="webrcadeedit|https://editor.webrcade.com"
+    ["Plex"]="plex|https://www.plex.tv"
+    ["Crunchyroll"]="crunchy|https://www.crunchyroll.com"
+    ["Apple TV+"]="apple|https://tv.apple.com"
+    ["Stim.io"]="stimio|https://stim.io"
+    ["Rocketcrab"]="rocketcrab|https://rocketcrab.com"
+)
 
-if [[ $options == *"Netflix"* ]]; then
-    # User selected Netflix
-    netflixchromelaunchoptions="run --branch=stable --arch=x86_64 --command=/app/bin/chrome --file-forwarding com.google.Chrome @@u @@ --window-size=1280,800 --force-device-scale-factor=1.00 --device-scale-factor=1.00 --start-fullscreen https://www.netflix.com --no-first-run --enable-features=OverlayScrollbar"
-    echo "export netflixchromelaunchoptions=$netflixchromelaunchoptions" >> ${logged_in_home}/.config/systemd/user/env_vars
-fi
+# Check user selection and call the function for each option
+for option in "${!services[@]}"; do
+    if [[ $options == *"$option"* ]]; then
+        IFS='|' read -r name url <<< "${services[$option]}"
+        set_chrome_launch_options "$name" "$url"
+    fi
+done
 
-if [[ $options == *"GeForce Now"* ]]; then
-    # User selected GeForce Now
-    geforcechromelaunchoptions="run --branch=stable --arch=x86_64 --command=/app/bin/chrome --file-forwarding com.google.Chrome @@u @@ --window-size=1280,800 --force-device-scale-factor=1.00 --device-scale-factor=1.00 --start-fullscreen https://play.geforcenow.com --no-first-run --enable-features=OverlayScrollbar"
-    echo "export geforcechromelaunchoptions=$geforcechromelaunchoptions" >> ${logged_in_home}/.config/systemd/user/env_vars
-fi
-
-if [[ $options == *"Hulu"* ]]; then
-    # User selected Hulu
-    huluchromelaunchoptions="run --branch=stable --arch=x86_64 --command=/app/bin/chrome --file-forwarding com.google.Chrome @@u @@ --window-size=1280,800 --force-device-scale-factor=1.00 --device-scale-factor=1.00 --start-fullscreen https://www.hulu.com/welcome --no-first-run --enable-features=OverlayScrollbar"
-    echo "export huluchromelaunchoptions=$huluchromelaunchoptions" >> ${logged_in_home}/.config/systemd/user/env_vars
-fi
-
-if [[ $options == *"Disney+"* ]]; then
-    # User selected Disney+
-    disneychromelaunchoptions="run --branch=stable --arch=x86_64 --command=/app/bin/chrome --file-forwarding com.google.Chrome @@u @@ --window-size=1280,800 --force-device-scale-factor=1.00 --device-scale-factor=1.00 --start-fullscreen https://www.disneyplus.com --no-first-run --enable-features=OverlayScrollbar"
-    echo "export disneychromelaunchoptions=$disneychromelaunchoptions" >> ${logged_in_home}/.config/systemd/user/env_vars
-fi
-
-if [[ $options == *"Amazon Prime Video"* ]]; then
-    # User selected Amazon Prime Video
-    amazonchromelaunchoptions="run --branch=stable --arch=x86_64 --command=/app/bin/chrome --file-forwarding com.google.Chrome @@u @@ --window-size=1280,800 --force-device-scale-factor=1.00 --device-scale-factor=1.00 --start-fullscreen https://www.amazon.com/primevideo --no-first-run --enable-features=OverlayScrollbar"
-    echo "export amazonchromelaunchoptions=$amazonchromelaunchoptions" >> ${logged_in_home}/.config/systemd/user/env_vars
-fi
-
-if [[ $options == *"Youtube"* ]]; then
-    # User selected Youtube
-    youtubechromelaunchoptions="run --branch=stable --arch=x86_64 --command=/app/bin/chrome --file-forwarding com.google.Chrome @@u @@ --window-size=1280,800 --force-device-scale-factor=1.00 --device-scale-factor=1.00 --start-fullscreen https://www.youtube.com --no-first-run --enable-features=OverlayScrollbar"
-    echo "export youtubechromelaunchoptions=$youtubechromelaunchoptions" >> ${logged_in_home}/.config/systemd/user/env_vars
-fi
-
-if [[ $options == *"Amazon Luna"* ]]; then
-    # User selected Amazon Luna
-    lunachromelaunchoptions="run --branch=stable --arch=x86_64 --command=/app/bin/chrome --file-forwarding com.google.Chrome @@u @@ --window-size=1280,800 --force-device-scale-factor=1.00 --device-scale-factor=1.00 --start-fullscreen https://luna.amazon.com --no-first-run --enable-features=OverlayScrollbar"
-    echo "export lunachromelaunchoptions=$lunachromelaunchoptions" >> ${logged_in_home}/.config/systemd/user/env_vars
-fi
-
-if [[ $options == *"Twitch"* ]]; then
-    # User selected Twitch
-    twitchchromelaunchoptions="run --branch=stable --arch=x86_64 --command=/app/bin/chrome --file-forwarding com.google.Chrome @@u @@ --window-size=1280,800 --force-device-scale-factor=1.00 --device-scale-factor=1.00 --start-fullscreen https://www.twitch.tv --no-first-run --enable-features=OverlayScrollbar"
-    echo "export twitchchromelaunchoptions=$twitchchromelaunchoptions" >> ${logged_in_home}/.config/systemd/user/env_vars
-fi
-
-
-if [[ $options == *"Fortnite"* ]]; then
-    # User selected Fortnite
-    fortnitechromelaunchoptions="run --branch=stable --arch=x86_64 --command=/app/bin/chrome --file-forwarding com.google.Chrome @@u @@ --window-size=1280,800 --force-device-scale-factor=1.00 --device-scale-factor=1.00 --start-fullscreen https://www.xbox.com/en-US/play/games/fortnite/BT5P2X999VH2 --no-first-run --enable-features=OverlayScrollbar"
-    echo "export fortnitechromelaunchoptions=$fortnitechromelaunchoptions" >> ${logged_in_home}/.config/systemd/user/env_vars
-fi
-
-if [[ $options == *"Venge"* ]]; then
-    # User selected Venge
-    vengechromelaunchoptions="run --branch=stable --arch=x86_64 --command=/app/bin/chrome --file-forwarding com.google.Chrome @@u @@ --window-size=1280,800 --force-device-scale-factor=1.00 --device-scale-factor=1.00 --start-fullscreen https://venge.io --no-first-run --enable-features=OverlayScrollbar"
-    echo "export vengechromelaunchoptions=$vengechromelaunchoptions" >> ${logged_in_home}/.config/systemd/user/env_vars
-fi
-
-
-if [[ $options == *"Boosteroid Cloud Gaming"* ]]; then
-    # User selected boosteroid
-    boosteroidchromelaunchoptions="run --branch=stable --arch=x86_64 --command=/app/bin/chrome --file-forwarding com.google.Chrome @@u @@ --window-size=1280,800 --force-device-scale-factor=1.00 --device-scale-factor=1.00 --start-fullscreen https://cloud.boosteroid.com --no-first-run --enable-features=OverlayScrollbar"
-    echo "export boosteroidchromelaunchoptions=$boosteroidchromelaunchoptions" >> ${logged_in_home}/.config/systemd/user/env_vars
-fi
-
-
-if [[ $options == *"WebRcade"* ]]; then
-    # User selected Webrcade
-    webrcadechromelaunchoptions="run --branch=stable --arch=x86_64 --command=/app/bin/chrome --file-forwarding com.google.Chrome @@u @@ --window-size=1280,800 --force-device-scale-factor=1.00 --device-scale-factor=1.00 --start-fullscreen https://play.webrcade.com --no-first-run --enable-features=OverlayScrollbar"
-    echo "export webrcadechromelaunchoptions=$webrcadechromelaunchoptions" >> ${logged_in_home}/.config/systemd/user/env_vars
-fi
-
-if [[ $options == *"WebRcade Editor"* ]]; then
-    # User selected Webrcade Editor
-    webrcadeeditchromelaunchoptions="run --branch=stable --arch=x86_64 --command=/app/bin/chrome --file-forwarding com.google.Chrome @@u @@ --window-size=1280,800 --force-device-scale-factor=1.00 --device-scale-factor=1.00 --start-fullscreen https://editor.webrcade.com --no-first-run --enable-features=OverlayScrollbar"
-    echo "export webrcadeeditchromelaunchoptions=$webrcadeeditchromelaunchoptions" >> ${logged_in_home}/.config/systemd/user/env_vars
-fi
-
-if [[ $options == *"Plex"* ]]; then
-    # User selected Webrcade
-    plexchromelaunchoptions="run --branch=stable --arch=x86_64 --command=/app/bin/chrome --file-forwarding com.google.Chrome @@u @@ --window-size=1280,800 --force-device-scale-factor=1.00 --device-scale-factor=1.00 --start-fullscreen https://www.plex.tv --no-first-run --enable-features=OverlayScrollbar"
-    echo "export plexchromelaunchoptions=$plexchromelaunchoptions" >> ${logged_in_home}/.config/systemd/user/env_vars
-fi
-
-if [[ $options == *"Crunchyroll"* ]]; then
-    # User selected Webrcade
-    crunchychromelaunchoptions="run --branch=stable --arch=x86_64 --command=/app/bin/chrome --file-forwarding com.google.Chrome @@u @@ --window-size=1280,800 --force-device-scale-factor=1.00 --device-scale-factor=1.00 --start-fullscreen https://www.crunchyroll.com --no-first-run --enable-features=OverlayScrollbar"
-    echo "export crunchychromelaunchoptions=$crunchychromelaunchoptions" >> ${logged_in_home}/.config/systemd/user/env_vars
-fi
-
-if [[ $options == *"Apple TV+"* ]]; then
-    # User selected Webrcade
-    applechromelaunchoptions="run --branch=stable --arch=x86_64 --command=/app/bin/chrome --file-forwarding com.google.Chrome @@u @@ --window-size=1280,800 --force-device-scale-factor=1.00 --device-scale-factor=1.00 --start-fullscreen https://tv.apple.com --no-first-run --enable-features=OverlayScrollbar"
-    echo "export applechromelaunchoptions=$applechromelaunchoptions" >> ${logged_in_home}/.config/systemd/user/env_vars
-fi
-
-
-if [[ $options == *"Stim.io"* ]]; then
-    # User selected stimio
-    stimiochromelaunchoptions="run --branch=stable --arch=x86_64 --command=/app/bin/chrome --file-forwarding com.google.Chrome @@u @@ --window-size=1280,800 --force-device-scale-factor=1.00 --device-scale-factor=1.00 --start-fullscreen https://stim.io --no-first-run --enable-features=OverlayScrollbar"
-    echo "export stimiochromelaunchoptions=$stimiochromelaunchoptions" >> ${logged_in_home}/.config/systemd/user/env_vars
-fi
-
-
-
-if [[ $options == *"Rocketcrab"* ]]; then
-    # User selected rocketcrab
-    rocketcrabchromelaunchoptions="run --branch=stable --arch=x86_64 --command=/app/bin/chrome --file-forwarding com.google.Chrome @@u @@ --window-size=1280,800 --force-device-scale-factor=1.00 --device-scale-factor=1.00 --start-fullscreen https://rocketcrab.com --no-first-run --enable-features=OverlayScrollbar"
-    echo "export rocketcrabchromelaunchoptions=$rocketcrabchromelaunchoptions" >> ${logged_in_home}/.config/systemd/user/env_vars
-fi
 
 # Check if any custom websites were provided
 if [ ${#custom_websites[@]} -gt 0 ]; then
