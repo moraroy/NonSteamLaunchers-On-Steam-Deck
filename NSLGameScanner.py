@@ -366,6 +366,50 @@ def is_match(name1, name2):
 
 
 
+def get_steam_store_appid(steam_store_game_name):
+    search_url = f"{proxy_url}/search/{steam_store_game_name}"
+    try:
+        response = requests.get(search_url)
+        response.raise_for_status()
+        data = response.json()
+        if 'data' in data and data['data']:
+            steam_store_appid = data['data'][0].get('steam_store_appid')
+            if steam_store_appid:
+                return steam_store_appid
+        return None
+
+    except requests.exceptions.RequestException as e:
+        return None
+
+def create_steam_store_app_manifest_file(steam_store_appid, steam_store_game_name):
+    steamapps_dir = f"{logged_in_home}/.steam/root/steamapps/"
+    appmanifest_path = os.path.join(steamapps_dir, f"appmanifest_{steam_store_appid}.acf")
+
+    # Ensure the directory exists
+    os.makedirs(steamapps_dir, exist_ok=True)
+
+    # Check if the file already exists
+    if os.path.exists(appmanifest_path):
+        print(f"Manifest file for {steam_store_appid} already exists.")
+        return
+
+    # Prepare the appmanifest data
+    app_manifest_data = {
+        "AppState": {
+            "AppID": str(steam_store_appid),
+            "Universe": "1",
+            "installdir": steam_store_game_name,
+            "StateFlags": "0"
+        }
+    }
+
+    # Write the manifest to the file
+    with open(appmanifest_path, 'w') as file:
+        json.dump(app_manifest_data, file, indent=2)
+
+    print(f"Created appmanifest file at: {appmanifest_path}")
+
+
 # Add or update the proton compatibility settings
 
 
@@ -474,6 +518,12 @@ def create_new_entry(shortcutdirectory, appname, launchoptions, startingdir):
         game_id = get_game_id(appname)
         if game_id is not None:
             get_sgdb_art(game_id, unsigned_shortcut_id)
+
+
+    steam_store_appid = get_steam_store_appid(appname)
+    if steam_store_appid:
+        print(f"Found Steam App ID for {appname}: {steam_store_appid}")
+        create_steam_store_app_manifest_file(steam_store_appid, appname)
 
     # Create a new entry for the Steam shortcut, only adding the compat tool if it's not processed by UMU
     new_entry = {
