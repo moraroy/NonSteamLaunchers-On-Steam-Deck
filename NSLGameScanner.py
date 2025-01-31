@@ -367,7 +367,7 @@ def is_match(name1, name2):
 
 
 def get_steam_store_appid(steam_store_game_name):
-    search_url = f"{proxy_url}/search/{steam_store_game_name}"
+    search_url = f"{BASE_URL}/search/{steam_store_game_name}"
     try:
         response = requests.get(search_url)
         response.raise_for_status()
