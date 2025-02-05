@@ -123,6 +123,7 @@ Supported Streaming Sites for games and as well as any website. 🌐
 - Website Shortcut Creator ✔️
 - Fortnite ✔️
 - Venge ✔️
+- PokéRogue ✔️
 - Xbox Game Pass ✔️
 - GeForce Now ✔️
 - Amazon Luna ✔️
