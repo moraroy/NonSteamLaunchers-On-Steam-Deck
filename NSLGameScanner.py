@@ -97,6 +97,7 @@ nexonshortcutdirectory = os.environ.get('nexonshortcutdirectory')
 gamejoltshortcutdirectory = os.environ.get('gamejoltshortcutdirectory')
 artixgameshortcutdirectory = os.environ.get('artixgameshortcutdirectory')
 arcshortcutdirectory = os.environ.get('arcshortcutdirectory')
+poketcgshortcutdirectory = os.environ.get('poketcgshortcutdirectory')
 repaireaappshortcutdirectory = os.environ.get('repaireaappshortcutdirectory')
 #Streaming
 chromedirectory = os.environ.get('chromedirectory')
@@ -502,7 +503,7 @@ def create_new_entry(shortcutdirectory, appname, launchoptions, startingdir):
         compatTool = add_compat_tool(unsigned_shortcut_id, launchoptions)
 
     # Only store the app ID for specific launchers
-    if appname in ['Epic Games', 'Gog Galaxy', 'Ubisoft Connect', 'Battle.net', 'EA App', 'Amazon Games', 'itch.io', 'Legacy Games', 'Humble Bundle', 'IndieGala Client', 'Rockstar Games Launcher', 'Glyph', 'Playstation Plus', 'VK Play', 'HoYoPlay', 'Nexon Launcher', 'Game Jolt Client', 'Artix Game Launcher', 'ARC Launcher']:
+    if appname in ['Epic Games', 'Gog Galaxy', 'Ubisoft Connect', 'Battle.net', 'EA App', 'Amazon Games', 'itch.io', 'Legacy Games', 'Humble Bundle', 'IndieGala Client', 'Rockstar Games Launcher', 'Glyph', 'Playstation Plus', 'VK Play', 'HoYoPlay', 'Nexon Launcher', 'Game Jolt Client', 'Artix Game Launcher', 'ARC Launcher', 'Pokémon Trading Card Game Live']:
         app_ids[appname] = unsigned_shortcut_id
 
     # Check if the game already exists in the shortcuts
@@ -730,6 +731,7 @@ create_new_entry(os.environ.get('nexonshortcutdirectory'), 'Nexon Launcher', os.
 create_new_entry(os.environ.get('gamejoltshortcutdirectory'), 'Game Jolt Client', os.environ.get('gamejoltlaunchoptions'), os.environ.get('gamejoltstartingdir'))
 create_new_entry(os.environ.get('artixgameshortcutdirectory'), 'Artix Game Launcher', os.environ.get('artixgamelaunchoptions'), os.environ.get('artixgamestartingdir'))
 create_new_entry(os.environ.get('arcshortcutdirectory'), 'ARC Launcher', os.environ.get('arclaunchoptions'), os.environ.get('arcstartingdir'))
+create_new_entry(os.environ.get('poketcgshortcutdirectory'), 'Pokémon Trading Card Game Live', os.environ.get('poketcglaunchoptions'), os.environ.get('poketcgstartingdir'))
 create_new_entry(os.environ.get('repaireaappshortcutdirectory'), 'Repair EA App', os.environ.get('repaireaapplaunchoptions'), os.environ.get('repaireaappstartingdir'))
 create_new_entry(os.environ.get('chromedirectory'), 'Xbox Game Pass', os.environ.get('xboxchromelaunchoptions'), os.environ.get('chrome_startdir'))
 create_new_entry(os.environ.get('chromedirectory'), 'GeForce Now', os.environ.get('geforcechromelaunchoptions'), os.environ.get('chrome_startdir'))
@@ -751,7 +753,7 @@ create_new_entry(os.environ.get('chromedirectory'), 'WebRcade Editor', os.enviro
 create_new_entry(os.environ.get('chromedirectory'), 'Plex', os.environ.get('plexchromelaunchoptions'), os.environ.get('chrome_startdir'))
 create_new_entry(os.environ.get('chromedirectory'), 'Apple TV+', os.environ.get('applechromelaunchoptions'), os.environ.get('chrome_startdir'))
 create_new_entry(os.environ.get('chromedirectory'), 'Crunchyroll', os.environ.get('crunchychromelaunchoptions'), os.environ.get('chrome_startdir'))
-create_new_entry(os.environ.get('chromedirectory'), 'PokeRogue', os.environ.get('pokeroguechromelaunchoptions'), os.environ.get('chrome_startdir'))
+create_new_entry(os.environ.get('chromedirectory'), 'PokéRogue', os.environ.get('pokeroguechromelaunchoptions'), os.environ.get('chrome_startdir'))
 
 # Iterate over each custom website
 for custom_website in custom_websites:
@@ -852,7 +854,7 @@ folder_names = {
     'Game Jolt Client': 'GameJoltLauncher',
     'Artix Game Launcher': 'ArtixGameLauncher',
     'ARC Launcher': 'ARCLauncher',
-
+    'Pokémon Trading Card Game Live': 'PokeTCGLauncher',
 }
 
 
