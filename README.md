@@ -114,6 +114,7 @@ Supported Stores 🛍
 - Game Jolt Client ✔️
 - Artix Game Launcher ✔️
 - ARC Launcher ✔️
+- Pokémon Trading Card Game Live ✔️
 - RemotePlayWhatever ✔️
 
 <h1 align="center">
