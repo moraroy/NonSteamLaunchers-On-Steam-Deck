@@ -1834,8 +1834,10 @@ function install_launcher {
             eval "$post_install_command"
         fi
 
-        # Wait for the installation process to complete
-        wait
+        # Wait for the installation process to complete (EXCEPT GOG)
+        if [ "$launcher_name" != "GOG Galaxy" ]; then
+            wait
+        fi
     fi
 }
 
