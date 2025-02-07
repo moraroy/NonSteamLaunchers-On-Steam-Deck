@@ -395,18 +395,20 @@ def create_steam_store_app_manifest_file(steam_store_appid, steam_store_game_nam
         return
 
     # Prepare the appmanifest data
-    app_manifest_data = {
-        "AppState": {
-            "AppID": str(steam_store_appid),
-            "Universe": "1",
-            "installdir": steam_store_game_name,
-            "StateFlags": "0"
-        }
-    }
+    app_manifest_data = f"""
+"AppState"
+{{
+    "appid"         "{steam_store_appid}"
+    "Universe"      "1"
+    "name"          "{steam_store_game_name}"
+    "StateFlags"    "0"
+    "installdir"    "{steam_store_game_name}"
+}}
+"""
 
     # Write the manifest to the file
     with open(appmanifest_path, 'w') as file:
-        json.dump(app_manifest_data, file, indent=2)
+        file.write(app_manifest_data.strip())
 
     print(f"Created appmanifest file at: {appmanifest_path}")
 
