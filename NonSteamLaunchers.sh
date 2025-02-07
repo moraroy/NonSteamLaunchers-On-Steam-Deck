@@ -1087,9 +1087,11 @@ process_uninstall_options() {
         if [[ $uninstall_options == *"Uninstall GOG Galaxy"* ]]; then
             if [[ -d "${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/Program Files (x86)/GOG Galaxy" ]]; then
                 handle_uninstall_gog "NonSteamLaunchers"
+                rm -rf "${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/users/steamuser/AppData/Local/GOG.com"
                 uninstall_launcher "$uninstall_options" "GOG Galaxy" "$gog_galaxy_path1" "$gog_galaxy_path2" "" "" "gog"
             elif [[ -d "${logged_in_home}/.local/share/Steam/steamapps/compatdata/GogGalaxyLauncher/pfx/drive_c/Program Files (x86)/GOG Galaxy" ]]; then
                 handle_uninstall_gog "GogGalaxyLauncher"
+                rm -rf "${logged_in_home}/.local/share/Steam/steamapps/compatdata/GogGalaxyLauncher/pfx/drive_c/users/steamuser/AppData/Local/GOG.com"
                 uninstall_launcher "$uninstall_options" "GOG Galaxy" "$gog_galaxy_path1" "$gog_galaxy_path2" "" "" "gog"
             fi
         fi
