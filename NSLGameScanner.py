@@ -401,7 +401,6 @@ def create_steam_store_app_manifest_file(steam_store_appid, steam_store_game_nam
 {{
     "appid"         "{steam_store_appid}"
     "Universe"      "1"
-    "name"          "{steam_store_game_name}"
     "StateFlags"    "0"
     "installdir"    "{steam_store_game_name}"
 }}
