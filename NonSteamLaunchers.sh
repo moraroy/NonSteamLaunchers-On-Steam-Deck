@@ -456,18 +456,21 @@ function download_umu_launcher() {
     echo "Downloading UMU Launcher using the GitHub API"
     cd "${logged_in_home}/Downloads/NonSteamLaunchersInstallation" || { echo "Failed to change directory. Exiting."; exit 1; }
 
-    # Get the download URL for Zipapp.zip
-    zip_url=$(curl -s https://api.github.com/repos/Open-Wine-Components/umu-launcher/releases/latest | grep browser_download_url | cut -d\" -f4 | grep Zipapp.zip)
+    # Get the download URL for a file that matches the pattern 'umu-launcher-*zipapp*.tar.gz'
+    zip_url=$(curl -s https://api.github.com/repos/Open-Wine-Components/umu-launcher/releases/latest | \
+      grep '"browser_download_url":' | grep -E 'umu-launcher-.*-zipapp.*\.(zip|tar\.gz)' | \
+      cut -d '"' -f 4)
+
     if [ -z "$zip_url" ]; then
-        echo "Failed to get zip URL. Exiting."
-        exit 1
+        echo "Failed to get zip/tar URL. Exiting."
     fi
 
-    # Download the zip file
+    echo "Found download URL: $zip_url"
+
+    # Download the file
     curl --retry 5 --retry-delay 0 --retry-max-time 60 -sLOJ "$zip_url"
     if [ $? -ne 0 ]; then
-        echo "Curl failed to download zip file. Exiting."
-        exit 1
+        echo "Curl failed to download the file. Exiting."
     fi
 
     # Ensure the bin directory exists
@@ -475,24 +478,38 @@ function download_umu_launcher() {
         mkdir -p "${logged_in_home}/bin" || { echo "Failed to create bin directory. Exiting."; exit 1; }
     fi
 
-    # Extract the Zipapp.zip file
-    unzip -o Zipapp.zip -d "${logged_in_home}/bin/"
-    if [ $? -ne 0 ]; then
-        echo "Zip extraction failed. Exiting."
-        exit 1
-    fi
+    # Get the downloaded file name
+    downloaded_file=$(basename "$zip_url")
 
-    # Check if the extracted .tar file exists in the bin directory and extract it
-    tar_file="${logged_in_home}/bin/$(basename Zipapp.zip .zip).tar"
-    if [ -f "$tar_file" ]; then
-        echo "Found .tar file: $tar_file"
-        tar -xf "$tar_file" -C "${logged_in_home}/bin/"
+    # Check if the downloaded file is a .zip file or a .tar.gz file and extract accordingly
+    if [[ "$downloaded_file" =~ \.zip$ ]]; then
+        # Extract the .zip file into /home/deck/bin/ without preserving directory structure
+        unzip -o -j "$downloaded_file" -d "${logged_in_home}/bin/"
         if [ $? -ne 0 ]; then
-            echo "Tar extraction failed. Exiting."
-            exit 1
+            echo "Zip extraction failed. Exiting."
         fi
-        # Remove the .tar file after extraction
-        rm -f "$tar_file"
+    elif [[ "$downloaded_file" =~ \.tar\.gz$ ]] || [[ "$downloaded_file" =~ \.tar$ ]]; then
+        # Check the actual file type using the `file` command
+        file_type=$(file --mime-type -b "$downloaded_file")
+
+        if [[ "$file_type" == "application/gzip" ]]; then
+            # If it's a gzipped tar file, extract it without leading directory (strip umu/)
+            tar --strip-components=1 -xvzf "$downloaded_file" -C "${logged_in_home}/bin/"
+            if [ $? -ne 0 ]; then
+                echo "Tar.gz extraction failed. Exiting."
+                exit 1
+            fi
+        elif [[ "$file_type" == "application/x-tar" ]]; then
+            # If it's a tar file (without gzip), extract it without leading directory
+            tar --strip-components=1 -xvf "$downloaded_file" -C "${logged_in_home}/bin/"
+            if [ $? -ne 0 ]; then
+                echo "Tar extraction failed. Exiting."
+            fi
+        else
+            echo "Unknown file type: $file_type. Exiting."
+        fi
+    else
+        echo "Unsupported file type: $downloaded_file. Exiting."
     fi
 
     # Make all extracted files executable
