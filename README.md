@@ -150,7 +150,7 @@ Finds Games Automatically
 
 "NSLGameScanner.service" is also live when you use this script and continues after the script is closed and even works after your Steam Deck has restarted. This works in the background as a service file to automatically add your games to your library on every Steam restart. Currently adds:
 - Epic Games 🎮          💾 Full SD Card Support
-- Ubisoft Connect 🎮
+- Ubisoft Connect 🎮     💾 Full SD Card Support
 - EA App 🎮
 - Gog Galaxy 🎮          💾 Full SD Card Support
 - Battle.net 🎮
