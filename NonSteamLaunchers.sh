@@ -35,7 +35,7 @@ fi
 exec > >(tee -a "$log_file") 2>&1
 
 # Version number (major.minor)
-version=v4.0.2
+version=v4.0.3
 
 # Check repo releases via GitHub API then display current stable version
 check_for_updates() {
