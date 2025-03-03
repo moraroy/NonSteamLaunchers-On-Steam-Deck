@@ -101,6 +101,7 @@ gamejoltshortcutdirectory = os.environ.get('gamejoltshortcutdirectory')
 artixgameshortcutdirectory = os.environ.get('artixgameshortcutdirectory')
 arcshortcutdirectory = os.environ.get('arcshortcutdirectory')
 poketcgshortcutdirectory = os.environ.get('poketcgshortcutdirectory')
+antstreamshortcutdirectory = os.environ.get('antstreamshortcutdirectory')
 repaireaappshortcutdirectory = os.environ.get('repaireaappshortcutdirectory')
 #Streaming
 chromedirectory = os.environ.get('chromedirectory')
@@ -505,7 +506,7 @@ def create_new_entry(shortcutdirectory, appname, launchoptions, startingdir):
         compatTool = add_compat_tool(unsigned_shortcut_id, launchoptions)
 
     # Only store the app ID for specific launchers
-    if appname in ['Epic Games', 'Gog Galaxy', 'Ubisoft Connect', 'Battle.net', 'EA App', 'Amazon Games', 'itch.io', 'Legacy Games', 'Humble Bundle', 'IndieGala Client', 'Rockstar Games Launcher', 'Glyph', 'Minecraft Launcher' 'Playstation Plus', 'VK Play', 'HoYoPlay', 'Nexon Launcher', 'Game Jolt Client', 'Artix Game Launcher', 'ARC Launcher', 'Pokémon Trading Card Game Live']:
+    if appname in ['Epic Games', 'Gog Galaxy', 'Ubisoft Connect', 'Battle.net', 'EA App', 'Amazon Games', 'itch.io', 'Legacy Games', 'Humble Bundle', 'IndieGala Client', 'Rockstar Games Launcher', 'Glyph', 'Minecraft Launcher' 'Playstation Plus', 'VK Play', 'HoYoPlay', 'Nexon Launcher', 'Game Jolt Client', 'Artix Game Launcher', 'ARC Launcher', 'Pokémon Trading Card Game Live', 'Antstream Arcade']:
         app_ids[appname] = unsigned_shortcut_id
 
     # Check if the game already exists in the shortcuts
@@ -735,6 +736,7 @@ create_new_entry(os.environ.get('gamejoltshortcutdirectory'), 'Game Jolt Client'
 create_new_entry(os.environ.get('artixgameshortcutdirectory'), 'Artix Game Launcher', os.environ.get('artixgamelaunchoptions'), os.environ.get('artixgamestartingdir'))
 create_new_entry(os.environ.get('arcshortcutdirectory'), 'ARC Launcher', os.environ.get('arclaunchoptions'), os.environ.get('arcstartingdir'))
 create_new_entry(os.environ.get('poketcgshortcutdirectory'), 'Pokémon Trading Card Game Live', os.environ.get('poketcglaunchoptions'), os.environ.get('poketcgstartingdir'))
+create_new_entry(os.environ.get('antstreamshortcutdirectory'), 'Antstream Arcade', os.environ.get('antstreamlaunchoptions'), os.environ.get('antstreamstartingdir'))
 create_new_entry(os.environ.get('repaireaappshortcutdirectory'), 'Repair EA App', os.environ.get('repaireaapplaunchoptions'), os.environ.get('repaireaappstartingdir'))
 create_new_entry(os.environ.get('chromedirectory'), 'Xbox Game Pass', os.environ.get('xboxchromelaunchoptions'), os.environ.get('chrome_startdir'))
 create_new_entry(os.environ.get('chromedirectory'), 'GeForce Now', os.environ.get('geforcechromelaunchoptions'), os.environ.get('chrome_startdir'))
@@ -753,6 +755,11 @@ create_new_entry(os.environ.get('chromedirectory'), 'Rocketcrab', os.environ.get
 create_new_entry(os.environ.get('chromedirectory'), 'Fortnite', os.environ.get('fortnitechromelaunchoptions'), os.environ.get('chrome_startdir'))
 create_new_entry(os.environ.get('chromedirectory'), 'WebRcade', os.environ.get('webrcadechromelaunchoptions'), os.environ.get('chrome_startdir'))
 create_new_entry(os.environ.get('chromedirectory'), 'WebRcade Editor', os.environ.get('webrcadeeditchromelaunchoptions'), os.environ.get('chrome_startdir'))
+create_new_entry(os.environ.get('chromedirectory'), 'Afterplay.io', os.environ.get('afterplayiochromelaunchoptions'), os.environ.get('chrome_startdir'))
+create_new_entry(os.environ.get('chromedirectory'), 'OnePlay', os.environ.get('oneplaychromelaunchoptions'), os.environ.get('chrome_startdir'))
+create_new_entry(os.environ.get('chromedirectory'), 'AirGPU', os.environ.get('airgpuchromelaunchoptions'), os.environ.get('chrome_startdir'))
+create_new_entry(os.environ.get('chromedirectory'), 'CloudDeck', os.environ.get('clouddeckchromelaunchoptions'), os.environ.get('chrome_startdir'))
+create_new_entry(os.environ.get('chromedirectory'), 'JioGamesCloud', os.environ.get('jiochromelaunchoptions'), os.environ.get('chrome_startdir'))
 create_new_entry(os.environ.get('chromedirectory'), 'Plex', os.environ.get('plexchromelaunchoptions'), os.environ.get('chrome_startdir'))
 create_new_entry(os.environ.get('chromedirectory'), 'Apple TV+', os.environ.get('applechromelaunchoptions'), os.environ.get('chrome_startdir'))
 create_new_entry(os.environ.get('chromedirectory'), 'Crunchyroll', os.environ.get('crunchychromelaunchoptions'), os.environ.get('chrome_startdir'))
@@ -858,6 +865,7 @@ folder_names = {
     'Artix Game Launcher': 'ArtixGameLauncher',
     'ARC Launcher': 'ARCLauncher',
     'Pokémon Trading Card Game Live': 'PokeTCGLauncher',
+    'Antstream Arcade': 'AntstreamLauncher',
 }
 
 
@@ -1295,6 +1303,12 @@ if game_dict:
         elif game_key == "fenris":
             print("Handling 'fenris' as 'Fen'")
             game_key = "Fen"
+        elif game_key == "diablo3":
+            print("Handling 'diablo3' as 'D3'")
+            game_key = "D3"
+        #elif game_key == "aqua":
+            #print("Handling 'aqua' as 'unknowm'")
+            #game_key = "unknown"
 
         game_name = flavor_mapping.get(game_key, "unknown")
 
