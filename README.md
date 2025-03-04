@@ -115,6 +115,8 @@ Supported Stores 🛍
 - Artix Game Launcher ✔️
 - ARC Launcher ✔️
 - Pokémon Trading Card Game Live ✔️
+- Minecraft Launcher(Legacy) (Java Edition & Dungeons) ✔️
+- Antstream Arcade ✔️
 - RemotePlayWhatever ✔️
 
 <h1 align="center">
@@ -132,6 +134,11 @@ Supported Streaming Sites for games and as well as any website. 🌐
 - Stim.io ✔️
 - WebRcade ✔️
 - WebRcade Editor ✔️
+- Afterplay.io ✔️
+- OnePlay ✔️
+- AirGPU ✔️
+- CloudDeck ✔️
+- JioGamesCloud ✔️
 - WatchParty ✔️
 - Rocketcrab ✔️
 - Netflix ✔️
@@ -151,7 +158,7 @@ Finds Games Automatically
 "NSLGameScanner.service" is also live when you use this script and continues after the script is closed and even works after your Steam Deck has restarted. This works in the background as a service file to automatically add your games to your library on every Steam restart. Currently adds:
 - Epic Games 🎮          💾 Full SD Card Support
 - Ubisoft Connect 🎮     💾 Full SD Card Support
-- EA App 🎮
+- EA App 🎮              💾 Full SD Card Support
 - Gog Galaxy 🎮          💾 Full SD Card Support
 - Battle.net 🎮
 - Amazon Games 🎮        💾 Full SD Card Support
@@ -160,6 +167,7 @@ Finds Games Automatically
 - VK Play 🎮             💾 Full SD Card Support
 - HoYoPlay 🎮            💾 Full SD Card Support
 - Game Jolt Client 🎮    💾 Full SD Card Support
+- Minecraft Launcher 🎮
 
 To stop the NSLGameScanner.service, open up NSL and hit "Stop NSLGameScanner" it will then ask you if you want to restart it, click no, and that's it.
 
