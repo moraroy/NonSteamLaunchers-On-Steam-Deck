@@ -462,7 +462,7 @@ function download_umu_launcher() {
 
     # Get the download URL for a file that matches the pattern 'umu-launcher-*zipapp*.tar.gz'
     zip_url=$(curl -s https://api.github.com/repos/Open-Wine-Components/umu-launcher/releases/latest | \
-      grep '"browser_download_url":' | grep -E 'umu-launcher-.*-zipapp.*\.(zip|tar\.gz)' | \
+      grep '"browser_download_url":' | grep -E 'umu-launcher-.*-zipapp.*\.(zip|tar\.gz|tar)' | \
       cut -d '"' -f 4)
 
     if [ -z "$zip_url" ]; then
