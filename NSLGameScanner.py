@@ -1306,6 +1306,12 @@ if game_dict:
         elif game_key == "diablo3":
             print("Handling 'diablo3' as 'D3'")
             game_key = "D3"
+        elif game_key == "hs_beta":
+            print("Handling 'hs_beta' as 'WTCG'")
+            game_key = "WTCG"
+        elif game_key == "wow_classic":
+            print("Handling 'wow_classic' as 'WoWC'")
+            game key = "WowC"
         #elif game_key == "aqua":
             #print("Handling 'aqua' as 'unknowm'")
             #game_key = "unknown"
@@ -1913,6 +1919,9 @@ def send_notification(message, icon_path=None, expire_time=5000):
     else:
         subprocess.run(['notify-send', '-a', 'NonSteamLaunchers', message, f'--expire-time={expire_time}'])
 
+# Track which games have already been notified in the current script run
+notified_games = set()
+
 # Only write back to the shortcuts.vdf and config.vdf files if new shortcuts were added or compattools changed
 if new_shortcuts_added or shortcuts_updated:
     print(f"Saving new config and shortcuts files")
@@ -1943,6 +1952,10 @@ if new_shortcuts_added or shortcuts_updated:
         num_notifications = len(created_shortcuts)
 
         for i, name in enumerate(created_shortcuts):
+            # Skip if the game has already been notified
+            if name in notified_games:
+                continue  # Skip sending notification for this game
+
             # Loop through all entries in the shortcuts dictionary
             found = False  # Flag to check if the name is found
 
@@ -1960,6 +1973,7 @@ if new_shortcuts_added or shortcuts_updated:
                         expire_time = min(5000, 500 + (i * (5000 // num_notifications)))
 
                     notifications.append((message, icon_path, expire_time))
+                    notified_games.add(name)  # Mark this game as notified
                     found = True
                     break
 
