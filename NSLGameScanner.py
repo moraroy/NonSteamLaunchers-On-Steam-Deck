@@ -415,9 +415,8 @@ def create_steam_store_app_manifest_file(steam_store_appid, steam_store_game_nam
     print(f"Created appmanifest file at: {appmanifest_path}")
 
 # Add or update the proton compatibility settings
-
-
 def add_compat_tool(app_id, launchoptions):
+    # Check if 'CompatToolMapping' exists in config_data, create it if not
     if 'CompatToolMapping' not in config_data['InstallConfigStore']['Software']['Valve']['Steam']:
         config_data['InstallConfigStore']['Software']['Valve']['Steam']['CompatToolMapping'] = {}
         print(f"CompatToolMapping key not found in config.vdf, creating.")
@@ -428,17 +427,17 @@ def add_compat_tool(app_id, launchoptions):
             print("PROTONPATH found in launch options. Skipping compatibility tool update.")
         return False
 
-    # Check if app_id exists in CompatToolMapping
+    # Check if the app_id exists in CompatToolMapping
     elif str(app_id) in config_data['InstallConfigStore']['Software']['Valve']['Steam']['CompatToolMapping']:
+        # Check if 'PROTONPATH' is present in the existing app's config
         existing_app = config_data['InstallConfigStore']['Software']['Valve']['Steam']['CompatToolMapping'][str(app_id)]
-        
-        # Check if 'PROTONPATH' is already in the existing app's config
+
         if 'PROTONPATH' in existing_app.get('config', ''):
-            # If 'PROTONPATH' is found in the config, skip the update
+            # If 'PROTONPATH' exists in the config for the app_id, skip the update
             print(f"PROTONPATH found in the config for appid: {app_id}. Skipping compatibility tool update.")
             return None
 
-        # If no 'PROTONPATH', proceed with the update
+        # If 'PROTONPATH' is not found, update the app's compatibility tool properties
         existing_app['name'] = f'{compat_tool_name}'
         existing_app['config'] = ''
         existing_app['priority'] = '250'
@@ -450,7 +449,7 @@ def add_compat_tool(app_id, launchoptions):
         if app_id in umu_processed_shortcuts:
             print(f"CompatTool update skipped for {app_id} because it was already processed by UMU.")
             return None
-        
+
         # Create a new CompatToolMapping entry if it doesn't exist
         config_data['InstallConfigStore']['Software']['Valve']['Steam']['CompatToolMapping'][str(app_id)] = {
             'name': f'{compat_tool_name}',
@@ -471,7 +470,7 @@ def check_if_shortcut_exists(shortcut_id, display_name, exe_path, start_dir, lau
     if any(s.get('appname') == display_name and s.get('exe') == exe_path and s.get('StartDir') == start_dir and s.get('LaunchOptions') == launch_options for s in shortcuts['shortcuts'].values()):
         print(f"Existing shortcut found based on matching fields for game {display_name}. Skipping creation.")
         return True
-    if any(s.get('AppName') == display_name and s.get('Exe') == exe_path and s.get('StartDir') == start_dir and s.get('LaunchOptions') == launchoptions for s in shortcuts['shortcuts'].values()):
+    if any(s.get('AppName') == display_name and s.get('Exe') == exe_path and s.get('StartDir') == start_dir and s.get('LaunchOptions') == launch_options for s in shortcuts['shortcuts'].values()):
         print(f"Existing shortcut found based on matching fields for game {display_name}. Skipping creation.")
         return True
     return False
