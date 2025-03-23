@@ -514,6 +514,11 @@ def create_new_entry(shortcutdirectory, appname, launchoptions, startingdir):
 
     # **Intercept and modify the shortcut based on UMU data**
     exe_path, startingdir, launchoptions = modify_shortcut_for_umu(appname, exe_path, launchoptions, startingdir)
+    
+    # Check if the modified shortcut already exists
+    if check_if_shortcut_exists(signed_shortcut_id, appname, exe_path, startingdir, launchoptions):
+        print(f"Skipping creation for already existing shortcut of {appname}.")
+        return
 
     # Check if the shortcut has already been processed by UMU and skip compat tool if so
     if unsigned_shortcut_id in umu_processed_shortcuts:
