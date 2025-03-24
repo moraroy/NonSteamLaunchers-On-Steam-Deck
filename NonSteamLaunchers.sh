@@ -1415,9 +1415,11 @@ if [[ " ${args[@]} " =~ " Stop NSLGameScanner " ]] || [[ $options == "Stop NSLGa
     if [ $? = 0 ]; then
         # User wants to run NSLGameScanner again
         python3 $python_script_path
+        show_message "NSLGameScanner is now restarting!"
     else
         # User does not want to run NSLGameScanner again
         stop_service
+        show_message "NSLGameScanner has been stopped and is no longer scanning for games!"
         exit 0
     fi
 fi
@@ -2821,4 +2823,15 @@ fi
 
 
 echo "Script completed successfully."
+#!/bin/bash
+
+# Check if the symlink exists
+if [ -L "${logged_in_home}/.config/systemd/user/default.target.wants/nslgamescanner.service" ]; then
+  # Symlink exists, show message
+  show_message "Script is done...and the NSLGamesScanner is actively scanning!"
+else
+  # Symlink does not exist
+  echo "Symlink does not exist."
+fi
+
 exit 0
