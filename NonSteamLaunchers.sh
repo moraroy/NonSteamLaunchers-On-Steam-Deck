@@ -2823,7 +2823,8 @@ fi
 
 
 echo "Script completed successfully."
-#!/bin/bash
+
+
 
 # Check if the symlink exists
 if [ -L "${logged_in_home}/.config/systemd/user/default.target.wants/nslgamescanner.service" ]; then
