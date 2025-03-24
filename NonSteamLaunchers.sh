@@ -149,7 +149,12 @@ if $installchrome; then
   fi
 fi
 
+# Function to display a Zenity message
+show_message() {
+  zenity --notification --text="$1" --timeout=1
+}
 
+show_message "Starting scan to find some games..."
 if [ "${deckyplugin}" = false ]; then
 	#Download Modules
 	# Define the repository and the folders to clone
@@ -259,7 +264,7 @@ if [ "${deckyplugin}" = false ]; then
 	    live="and is LIVE."
 	fi
 fi
-
+show_message "Finished! Welcome to NonSteamLaunchers!"
 
 
 # Check if any command line arguments were provided
@@ -550,7 +555,6 @@ function update_umu_launcher() {
 
 
 
-
 # Check which app IDs are installed
 CheckInstallations
 CheckInstallationDirectory
@@ -569,6 +573,8 @@ custom_websites=()
 
 # Initialize a variable to store whether the "Separate App IDs" option is selected or not
 separate_app_ids=false
+
+
 
 # Check if any command line arguments were provided
 if [ ${#args[@]} -eq 0 ]; then
@@ -2621,6 +2627,12 @@ echo "export chrome_startdir=$chrome_startdir" >> ${logged_in_home}/.config/syst
 
 
 
+# TODO: might be better to relocate temp files to `/tmp` or even use `mktemp -d` since `rm -rf` is potentially dangerous without the `-i` flag
+
+# Delete NonSteamLaunchersInstallation subfolder in Downloads folder
+rm -rf "$download_dir"
+
+
 
 # Check if either directory does not exist
 if [ "${deckyplugin}" = false ]; then
@@ -2679,10 +2691,6 @@ switch_to_game_mode() {
   qdbus org.kde.Shutdown /Shutdown org.kde.Shutdown.logout
 }
 
-# Function to display a Zenity message
-show_message() {
-  zenity --notification --text="$1" --timeout=1
-}
 
 # Set the remote repository URL
 REPO_URL="https://github.com/moraroy/NonSteamLaunchersDecky/archive/refs/heads/main.zip"
@@ -2751,9 +2759,9 @@ set +x
 # Compare versions and update if necessary
 if compare_versions; then
   echo "No update needed. Plugin is already up-to-date."
-  show_message "Plugin is up-to-date."
+  show_message "NSL Plugin is up-to-date."
 else
-  echo "Updating plugin..."
+  echo "Updating NSL plugin..."
   while true; do
     USER_INPUT=$(zenity --forms --title="Authentication Required" --text="NSL Plugin requires an update or needs installation! Please enter your sudo password to proceed:" --separator="|" --add-password="Password")
     USER_PASSWORD=$(echo $USER_INPUT | cut -d'|' -f1)
@@ -2807,10 +2815,6 @@ fi
 
 
 
-# TODO: might be better to relocate temp files to `/tmp` or even use `mktemp -d` since `rm -rf` is potentially dangerous without the `-i` flag
-
-# Delete NonSteamLaunchersInstallation subfolder in Downloads folder
-rm -rf "$download_dir"
 
 
 
