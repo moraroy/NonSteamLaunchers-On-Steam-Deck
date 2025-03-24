@@ -1411,7 +1411,7 @@ if [[ " ${args[@]} " =~ " Stop NSLGameScanner " ]] || [[ $options == "Stop NSLGa
     fi
 
     # If no command line arguments were provided, display the zenity window
-    zenity --question --text="NSLGameScanner has been stopped. Do you want to run it again?" --width=200 --height=150
+    zenity --question --text="NSLGameScanner has been stopped and is no longer scanning for games. Do you want to run it again?" --width=200 --height=150
     if [ $? = 0 ]; then
         # User wants to run NSLGameScanner again
         python3 $python_script_path
@@ -1419,8 +1419,7 @@ if [[ " ${args[@]} " =~ " Stop NSLGameScanner " ]] || [[ $options == "Stop NSLGa
     else
         # User does not want to run NSLGameScanner again
         stop_service
-        show_message "NSLGameScanner has been stopped and is no longer scanning for games!"
-        exit 0
+		exit 0
     fi
 fi
 
