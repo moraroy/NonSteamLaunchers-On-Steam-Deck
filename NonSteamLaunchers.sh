@@ -849,11 +849,14 @@ msi_url=https://launcher-public-service-prod06.ol.epicgames.com/launcher/api/ins
 # Set the path to save the MSI file to
 msi_file=${logged_in_home}/Downloads/NonSteamLaunchersInstallation/EpicGamesLauncherInstaller.msi
 
+
 # Set the URL to download the second file from
-exe_url=https://webinstallers.gog-statics.com/download/GOG_Galaxy_2.0.exe
+exe_url=https://content-system.gog.com/open_link/download?path=/open/galaxy/client/2.0.74.352/setup_galaxy_2.0.74.352.exe
+#exe_url=https://webinstallers.gog-statics.com/download/GOG_Galaxy_2.0.exe
 
 # Set the path to save the second file to
-exe_file=${logged_in_home}/Downloads/NonSteamLaunchersInstallation/GOG_Galaxy_2.0.exe
+exe_file=${logged_in_home}/Downloads/NonSteamLaunchersInstallation/setup_galaxy_2.0.74.352.exe
+#exe_file=${logged_in_home}/Downloads/NonSteamLaunchersInstallation/GOG_Galaxy_2.0.exe
 
 # Set the URL to download the third file from
 ubi_url=https://ubi.li/4vxt9
@@ -1598,7 +1601,34 @@ function install_gog {
     done
 }
 
+function install_gog2 {
+    echo "45"
+    echo "# Downloading & Installing GOG Galaxy... Please wait..."
 
+    # Check if either of the GOG Galaxy executables exists
+    if [ -e "${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/Program Files (x86)/GOG Galaxy/GalaxyClient.exe" ] || \
+       [ -e "${logged_in_home}/.local/share/Steam/steamapps/compatdata/GogGalaxyLauncher/pfx/drive_c/Program Files (x86)/GOG Galaxy/GalaxyClient.exe" ]; then
+
+        echo "GOG Galaxy executable found. Checking for setup_galaxy_2 process..."
+
+        # Now, check if setup_galaxy_2 is running and kill it
+        end=$((SECONDS+90))  # Timeout after 90 seconds
+        while true; do
+            if pgrep -f "setup_galaxy_2." > /dev/null; then
+                pkill -f "setup_galaxy_2."
+                echo "Setup process killed."
+                break
+            fi
+            if [ $SECONDS -gt $end ]; then
+                echo "Timeout while trying to kill setup_galaxy_2."
+                break
+            fi
+            sleep 1
+        done
+    else
+        echo "GOG Galaxy executable not found, skipping process kill."
+    fi
+}
 
 
 # Battle.net specific installation steps
@@ -1889,8 +1919,8 @@ function install_launcher {
         echo "Running ${file_name} using Proton with the specified command"
         if [ "$run_in_background" = true ]; then
             if [ "$launcher_name" = "GOG Galaxy" ]; then
-                "$STEAM_RUNTIME" "$proton_dir/proton" run "$exe_file" &
-                install_gog
+                "$STEAM_RUNTIME" "$proton_dir/proton" run "$exe_file" /silent &
+                install_gog2
             elif [ "$launcher_name" = "Battle.net" ]; then
                 "$STEAM_RUNTIME" "$proton_dir/proton" run "$battle_file" Battle.net-Setup.exe --lang=enUS --installpath="C:\Program Files (x86)\Battle.net" &
                 install_battlenet
@@ -1931,12 +1961,11 @@ function install_launcher {
         fi
     fi
 }
-
 # Install Epic Games Launcher
 install_launcher "Epic Games" "EpicGamesLauncher" "$msi_file" "$msi_url" "MsiExec.exe /i "$msi_file" -opengl /qn" "30" "" ""
 
 # Install GOG Galaxy
-install_launcher "GOG Galaxy" "GogGalaxyLauncher" "$exe_file" "$exe_url" "$exe_file" "40" "" "" true
+install_launcher "GOG Galaxy" "GogGalaxyLauncher" "$exe_file" "$exe_url" "$exe_file /silent" "40" "" "" true
 
 # Install Ubisoft Connect
 install_launcher "Ubisoft Connect" "UplayLauncher" "$ubi_file" "$ubi_url" "$ubi_file /S" "50" "" ""
@@ -1990,7 +2019,7 @@ install_launcher "Game Jolt Client" "GameJoltLauncher" "$gamejolt_file" "$gamejo
 install_launcher "Artix Game Launcher" "ArtixGameLauncher" "$artixgame_file" "$artixgame_url" "$artixgame_file /S" "99" "" ""
 
 # Install ARC Launcher
-install_launcher "ARC Launcher" "ARCLauncher" "$arc_file" "$arc_url" "$arc_file" "99" "" "" true
+install_launcher "ARC Launcher" "ARCLauncher" "$arc_file" "$arc_url" "$arc_file" "98" "" "" true
 
 # Install PokemonTCGLIVE
 install_launcher "Pokémon Trading Card Game Live" "PokeTCGLauncher" "$poketcg_file" "$poketcg_url" "MsiExec.exe /i "$poketcg_file" /qn" "99" "" ""
