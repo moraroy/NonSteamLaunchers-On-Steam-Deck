@@ -539,7 +539,7 @@ def create_new_entry(shortcutdirectory, appname, launchoptions, startingdir):
         return
 
     # Skip artwork download for specific shortcuts
-    if appname not in ['NonSteamLaunchers', 'Repair EA App']:
+    if appname not in ['Repair EA App']:
         # Get artwork
         game_id = get_game_id(appname)
         if game_id is not None:
