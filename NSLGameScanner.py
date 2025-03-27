@@ -101,6 +101,7 @@ gamejoltshortcutdirectory = os.environ.get('gamejoltshortcutdirectory')
 artixgameshortcutdirectory = os.environ.get('artixgameshortcutdirectory')
 arcshortcutdirectory = os.environ.get('arcshortcutdirectory')
 purpleshortcutdirectory = os.environ.get('purpleshortcutdirectory')
+plariumshortcutdirectory = os.environ.get('plariumshortcutdirectory')
 poketcgshortcutdirectory = os.environ.get('poketcgshortcutdirectory')
 antstreamshortcutdirectory = os.environ.get('antstreamshortcutdirectory')
 repaireaappshortcutdirectory = os.environ.get('repaireaappshortcutdirectory')
@@ -529,7 +530,7 @@ def create_new_entry(shortcutdirectory, appname, launchoptions, startingdir):
         compatTool = add_compat_tool(unsigned_shortcut_id, launchoptions)
 
     # Only store the app ID for specific launchers
-    if appname in ['Epic Games', 'Gog Galaxy', 'Ubisoft Connect', 'Battle.net', 'EA App', 'Amazon Games', 'itch.io', 'Legacy Games', 'Humble Bundle', 'IndieGala Client', 'Rockstar Games Launcher', 'Glyph', 'Minecraft Launcher' 'Playstation Plus', 'VK Play', 'HoYoPlay', 'Nexon Launcher', 'Game Jolt Client', 'Artix Game Launcher', 'ARC Launcher', 'PURPLE Launcher', 'Pokémon Trading Card Game Live', 'Antstream Arcade']:
+    if appname in ['Epic Games', 'Gog Galaxy', 'Ubisoft Connect', 'Battle.net', 'EA App', 'Amazon Games', 'itch.io', 'Legacy Games', 'Humble Bundle', 'IndieGala Client', 'Rockstar Games Launcher', 'Glyph', 'Minecraft Launcher' 'Playstation Plus', 'VK Play', 'HoYoPlay', 'Nexon Launcher', 'Game Jolt Client', 'Artix Game Launcher', 'ARC Launcher', 'PURPLE Launcher', 'Plarium Play', 'Pokémon Trading Card Game Live', 'Antstream Arcade']:
         app_ids[appname] = unsigned_shortcut_id
 
     # Check if the game already exists in the shortcuts
@@ -758,6 +759,7 @@ create_new_entry(os.environ.get('nexonshortcutdirectory'), 'Nexon Launcher', os.
 create_new_entry(os.environ.get('gamejoltshortcutdirectory'), 'Game Jolt Client', os.environ.get('gamejoltlaunchoptions'), os.environ.get('gamejoltstartingdir'))
 create_new_entry(os.environ.get('artixgameshortcutdirectory'), 'Artix Game Launcher', os.environ.get('artixgamelaunchoptions'), os.environ.get('artixgamestartingdir'))
 create_new_entry(os.environ.get('purpleshortcutdirectory'), 'PURPLE Launcher', os.environ.get('purplelaunchoptions'), os.environ.get('purplestartingdir'))
+create_new_entry(os.environ.get('plariumshortcutdirectory'), 'Plarium Play', os.environ.get('plariumlaunchoptions'), os.environ.get('plariumstartingdir'))
 create_new_entry(os.environ.get('arcshortcutdirectory'), 'ARC Launcher', os.environ.get('arclaunchoptions'), os.environ.get('arcstartingdir'))
 create_new_entry(os.environ.get('poketcgshortcutdirectory'), 'Pokémon Trading Card Game Live', os.environ.get('poketcglaunchoptions'), os.environ.get('poketcgstartingdir'))
 create_new_entry(os.environ.get('antstreamshortcutdirectory'), 'Antstream Arcade', os.environ.get('antstreamlaunchoptions'), os.environ.get('antstreamstartingdir'))
@@ -889,6 +891,7 @@ folder_names = {
     'Artix Game Launcher': 'ArtixGameLauncher',
     'ARC Launcher': 'ARCLauncher',
     'PURPLE Launcher': 'PURPLELauncher',
+    'Plarium Play': 'PlariumLauncher',
     'Pokémon Trading Card Game Live': 'PokeTCGLauncher',
     'Antstream Arcade': 'AntstreamLauncher',
 }
