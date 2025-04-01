@@ -998,15 +998,37 @@ if os.path.exists(non_steam_launchers_path):
 
 
 
+#notes
+# Define the path for the new file
+new_file_path = f'{logged_in_home}/.config/systemd/user/shortcuts'
 
-# Print the existing shortcuts
-print("Existing Shortcuts:")
+# Create a set to store unique names (to avoid duplicates)
+existing_shortcuts = set()
+
+# Define the extensions to skip
+skip_extensions = {'.exe', '.sh', '.bat', '.msi', '.app', '.apk', '.url', '.desktop'}
+
+# Check if the shortcuts file exists, create it if not
+if not os.path.exists(new_file_path):
+    print(f"Shortcuts file not found: {new_file_path}. Creating file...")
+    with open(new_file_path, 'w') as f:
+        pass  # Create an empty file
+
+# Iterate over all shortcuts and collect unique appnames (checking both 'appname' and 'AppName' keys)
 for shortcut in shortcuts['shortcuts'].values():
-    if shortcut.get('appname') is None:
-        print(f"AppID for {shortcut.get('AppName')}: {shortcut.get('appid')}")
-    else:
-        print(f"AppID for {shortcut.get('appname')}: {shortcut.get('appid')}")
+    # Check for both 'appname' and 'AppName' (case-sensitive)
+    appname = shortcut.get('appname') or shortcut.get('AppName')
 
+    # If appname is found and doesn't end with a skip extension, add it to the set (avoid duplicates)
+    if appname and not any(appname.endswith(ext) for ext in skip_extensions) and appname not in existing_shortcuts:
+        existing_shortcuts.add(appname)
+
+# Write the unique appnames to the new file
+with open(new_file_path, 'w') as f:
+    for name in existing_shortcuts:
+        f.write(f"{name}\n")  # Write only the appname (raw)
+
+print(f"Shortcuts written to {new_file_path}.")
 
 
 
@@ -1937,7 +1959,6 @@ else:
 
 
 
-
 # Only write back to the shortcuts.vdf and config.vdf files if new shortcuts were added or compattools changed
 # Function to send a notification with an optional icon
 def send_notification(message, icon_path=None, expire_time=5000):
@@ -1947,8 +1968,25 @@ def send_notification(message, icon_path=None, expire_time=5000):
     else:
         subprocess.run(['notify-send', '-a', 'NonSteamLaunchers', message, f'--expire-time={expire_time}'])
 
+# Define the path for the new file
+new_file_path = f'{logged_in_home}/.config/systemd/user/shortcuts'
+
+# Create a set to store unique appnames (to avoid duplicates)
+existing_shortcuts = set()
+
+# Read existing shortcuts from the file to avoid overwriting them
+try:
+    with open(new_file_path, 'r') as f:
+        for line in f:
+            existing_shortcuts.add(line.strip())  # Add existing shortcuts to the set
+except FileNotFoundError:
+    print(f"{new_file_path} not found, starting fresh.")
+
 # Track which games have already been notified in the current script run
 notified_games = set()
+
+# Define the extensions to skip
+skip_extensions = {'.exe', '.sh', '.bat', '.msi', '.app', '.apk', '.url', '.desktop'}
 
 # Only write back to the shortcuts.vdf and config.vdf files if new shortcuts were added or compattools changed
 if new_shortcuts_added or shortcuts_updated:
@@ -1974,6 +2012,18 @@ if new_shortcuts_added or shortcuts_updated:
         print("Created Shortcuts:")
         for name in created_shortcuts:
             print(name)
+            existing_shortcuts.add(name)  # Add the new shortcut name to the set
+
+        # Write the unique appnames (avoiding duplicates) to the new file
+        try:
+            with open(new_file_path, 'w') as f:  # Open in 'w' mode to overwrite and avoid duplicates
+                for name in existing_shortcuts:
+                    # Skip appnames with the defined extensions
+                    if not any(name.endswith(ext) for ext in skip_extensions):
+                        f.write(f"{name}\n")  # Write only the appname (raw)
+            print(f"Shortcuts written to {new_file_path}.")
+        except IOError as e:
+            print(f"Error writing to {new_file_path}: {e}")
 
         # Prepare notifications with game names and icons
         notifications = []
