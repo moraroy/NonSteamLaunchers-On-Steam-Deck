@@ -26,6 +26,22 @@ logged_in_home=$(eval echo "~${logged_in_user}")
 download_dir=$(eval echo ~$user)/Downloads/NonSteamLaunchersInstallation
 log_file=$(eval echo ~$user)/Downloads/NonSteamLaunchers-install.log
 
+find ${logged_in_home}/.local/share/Steam/steamapps/compatdata/ -maxdepth 1 -type d -empty -delete
+
+
+# Function to display a Zenity message
+show_message() {
+  zenity --notification --text="$1" --timeout=1
+}
+
+
+
+
+
+
+
+
+
 # Remove existing log file if it exists
 if [[ -f $log_file ]]; then
   rm $log_file
@@ -35,7 +51,7 @@ fi
 exec > >(tee -a "$log_file") 2>&1
 
 # Version number (major.minor)
-version=v4.0.4
+version=v4.1.0
 
 # Check repo releases via GitHub API then display current stable version
 check_for_updates() {
@@ -149,10 +165,7 @@ if $installchrome; then
   fi
 fi
 
-# Function to display a Zenity message
-show_message() {
-  zenity --notification --text="$1" --timeout=1
-}
+
 
 show_message "Starting scan to find some games..."
 if [ "${deckyplugin}" = false ]; then
@@ -332,7 +345,8 @@ antstream_path1="${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSt
 antstream_path2="${logged_in_home}/.local/share/Steam/steamapps/compatdata/AntstreamLauncher/pfx/drive_c/Program Files (x86)/Antstream Ltd/Antstream/AntstreamArcade.exe"
 purple_path1="${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/Program Files (x86)/NCSOFT/Purple/PurpleLauncher.exe"
 purple_path2="${logged_in_home}/.local/share/Steam/steamapps/compatdata/PURPLELauncher/pfx/drive_c/Program Files (x86)/NCSOFT/Purple/PurpleLauncher.exe"
-
+plarium_path1="${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/users/steamuser/AppData/Local/PlariumPlay/PlariumPlay.exe"
+plarium_path2="${logged_in_home}/.local/share/Steam/steamapps/compatdata/PlariumLauncher/pfx/drive_c/users/steamuser/AppData/Local/PlariumPlay/PlariumPlay.exe"
 
 # Chrome File Path
 # chrome_installpath="/app/bin/chrome"
@@ -343,11 +357,11 @@ chromedirectory="\"$chrome_path\""
 #Zenity Launcher Check Installation
 function CheckInstallations {
     declare -A paths1 paths2 names
-    paths1=(["epic_games"]="$epic_games_launcher_path1" ["gog_galaxy"]="$gog_galaxy_path1" ["uplay"]="$uplay_path1" ["battlenet"]="$battlenet_path1" ["eaapp"]="$eaapp_path1" ["amazongames"]="$amazongames_path1" ["itchio"]="$itchio_path1" ["legacygames"]="$legacygames_path1" ["humblegames"]="$humblegames_path1" ["indiegala"]="$indiegala_path1" ["rockstar"]="$rockstar_path1" ["glyph"]="$glyph_path1" ["minecraft"]="$minecraft_path1" ["psplus"]="$psplus_path1" ["vkplay"]="$vkplay_path1" ["hoyoplay"]="$hoyoplay_path1" ["nexon"]="$nexon_path1" ["gamejolt"]="$gamejolt_path1" ["artixgame"]="$artixgame_path1" ["arc"]="$arc_path1" ["poketcg"]="$poketcg_path1" ["antstream"]="$antstream_path1" ["purple"]="$purple_path1")
+    paths1=(["epic_games"]="$epic_games_launcher_path1" ["gog_galaxy"]="$gog_galaxy_path1" ["uplay"]="$uplay_path1" ["battlenet"]="$battlenet_path1" ["eaapp"]="$eaapp_path1" ["amazongames"]="$amazongames_path1" ["itchio"]="$itchio_path1" ["legacygames"]="$legacygames_path1" ["humblegames"]="$humblegames_path1" ["indiegala"]="$indiegala_path1" ["rockstar"]="$rockstar_path1" ["glyph"]="$glyph_path1" ["minecraft"]="$minecraft_path1" ["psplus"]="$psplus_path1" ["vkplay"]="$vkplay_path1" ["hoyoplay"]="$hoyoplay_path1" ["nexon"]="$nexon_path1" ["gamejolt"]="$gamejolt_path1" ["artixgame"]="$artixgame_path1" ["arc"]="$arc_path1" ["poketcg"]="$poketcg_path1" ["antstream"]="$antstream_path1" ["purple"]="$purple_path1" ["plarium"]="$plarium_path1")
 
-    paths2=(["epic_games"]="$epic_games_launcher_path2" ["gog_galaxy"]="$gog_galaxy_path2" ["uplay"]="$uplay_path2" ["battlenet"]="$battlenet_path2" ["eaapp"]="$eaapp_path2" ["amazongames"]="$amazongames_path2" ["itchio"]="$itchio_path2" ["legacygames"]="$legacygames_path2" ["humblegames"]="$humblegames_path2" ["indiegala"]="$indiegala_path2" ["rockstar"]="$rockstar_path2" ["glyph"]="$glyph_path2" ["minecraft"]="$minecraft_path2" ["psplus"]="$psplus_path2" ["vkplay"]="$vkplay_path2" ["hoyoplay"]="$hoyoplay_path2" ["nexon"]="$nexon_path2" ["gamejolt"]="$gamejolt_path2" ["artixgame"]="$artixgame_path2" ["arc"]="$arc_path2" ["poketcg"]="$poketcg_path2" ["antstream"]="$antstream_path2" ["purple"]="$purple_path2")
+    paths2=(["epic_games"]="$epic_games_launcher_path2" ["gog_galaxy"]="$gog_galaxy_path2" ["uplay"]="$uplay_path2" ["battlenet"]="$battlenet_path2" ["eaapp"]="$eaapp_path2" ["amazongames"]="$amazongames_path2" ["itchio"]="$itchio_path2" ["legacygames"]="$legacygames_path2" ["humblegames"]="$humblegames_path2" ["indiegala"]="$indiegala_path2" ["rockstar"]="$rockstar_path2" ["glyph"]="$glyph_path2" ["minecraft"]="$minecraft_path2" ["psplus"]="$psplus_path2" ["vkplay"]="$vkplay_path2" ["hoyoplay"]="$hoyoplay_path2" ["nexon"]="$nexon_path2" ["gamejolt"]="$gamejolt_path2" ["artixgame"]="$artixgame_path2" ["arc"]="$arc_path2" ["poketcg"]="$poketcg_path2" ["antstream"]="$antstream_path2" ["purple"]="$purple_path2" ["plarium"]="$plarium_path2")
 
-    names=(["epic_games"]="Epic Games" ["gog_galaxy"]="GOG Galaxy" ["uplay"]="Ubisoft Connect" ["battlenet"]="Battle.net" ["eaapp"]="EA App" ["amazongames"]="Amazon Games" ["itchio"]="itch.io" ["legacygames"]="Legacy Games" ["humblegames"]="Humble Games Collection" ["indiegala"]="IndieGala" ["rockstar"]="Rockstar Games Launcher" ["glyph"]="Glyph Launcher" ["minecraft"]="Minecraft Launcher" ["psplus"]="Playstation Plus" ["vkplay"]="VK Play" ["hoyoplay"]="HoYoPlay" ["nexon"]="Nexon Launcher" ["gamejolt"]="Game Jolt Client" ["artixgame"]="Artix Game Launcher" ["arc"]="ARC Launcher" ["poketcg"]="Pokémon Trading Card Game Live" ["antstream"]="Antstream Arcade" ["purple"]="PURPLE Launcher")
+    names=(["epic_games"]="Epic Games" ["gog_galaxy"]="GOG Galaxy" ["uplay"]="Ubisoft Connect" ["battlenet"]="Battle.net" ["eaapp"]="EA App" ["amazongames"]="Amazon Games" ["itchio"]="itch.io" ["legacygames"]="Legacy Games" ["humblegames"]="Humble Games Collection" ["indiegala"]="IndieGala" ["rockstar"]="Rockstar Games Launcher" ["glyph"]="Glyph Launcher" ["minecraft"]="Minecraft Launcher" ["psplus"]="Playstation Plus" ["vkplay"]="VK Play" ["hoyoplay"]="HoYoPlay" ["nexon"]="Nexon Launcher" ["gamejolt"]="Game Jolt Client" ["artixgame"]="Artix Game Launcher" ["arc"]="ARC Launcher" ["poketcg"]="Pokémon Trading Card Game Live" ["antstream"]="Antstream Arcade" ["purple"]="PURPLE Launcher" ["plarium"]="Plarium Play")
 
     for launcher in "${!names[@]}"; do
         if [[ -f "${paths1[$launcher]}" ]]; then
@@ -366,9 +380,9 @@ function CheckInstallations {
 # Verify launchers are installed
 function CheckInstallationDirectory {
     declare -A paths names
-    paths=(["nonsteamlauncher"]="${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers" ["epicgameslauncher"]="${logged_in_home}/.local/share/Steam/steamapps/compatdata/EpicGamesLauncher" ["goggalaxylauncher"]="${logged_in_home}/.local/share/Steam/steamapps/compatdata/GogGalaxyLauncher" ["uplaylauncher"]="${logged_in_home}/.local/share/Steam/steamapps/compatdata/UplayLauncher" ["battlenetlauncher"]="${logged_in_home}/.local/share/Steam/steamapps/compatdata/Battle.netLauncher" ["eaapplauncher"]="${logged_in_home}/.local/share/Steam/steamapps/compatdata/TheEAappLauncher" ["amazongameslauncher"]="${logged_in_home}/.local/share/Steam/steamapps/compatdata/AmazonGamesLauncher" ["itchiolauncher"]="${logged_in_home}/.local/share/Steam/steamapps/compatdata/itchioLauncher" ["legacygameslauncher"]="${logged_in_home}/.local/share/Steam/steamapps/compatdata/LegacyGamesLauncher" ["humblegameslauncher"]="${logged_in_home}/.local/share/Steam/steamapps/compatdata/HumbleGamesLauncher" ["indiegalalauncher"]="${logged_in_home}/.local/share/Steam/steamapps/compatdata/IndieGalaLauncher" ["rockstargameslauncher"]="${logged_in_home}/.local/share/Steam/steamapps/compatdata/RockstarGamesLauncher" ["glyphlauncher"]="${logged_in_home}/.local/share/Steam/steamapps/compatdata/GlyphLauncher" ["minecraftlauncher"]="${logged_in_home}/.local/share/Steam/steamapps/compatdata/MinecraftLauncher" ["pspluslauncher"]="${logged_in_home}/.local/share/Steam/steamapps/compatdata/PlaystationPlusLauncher" ["vkplaylauncher"]="${logged_in_home}/.local/share/Steam/steamapps/compatdata/VKPlayLauncher" ["hoyoplaylauncher"]="${logged_in_home}/.local/share/Steam/steamapps/compatdata/HoYoPlayLauncher" ["nexonlauncher"]="${logged_in_home}/.local/share/Steam/steamapps/compatdata/NexonLauncher" ["gamejoltlauncher"]="${logged_in_home}/.local/share/Steam/steamapps/compatdata/GameJoltLauncher" ["artixgamelauncher"]="${logged_in_home}/.local/share/Steam/steamapps/compatdata/ArtixGameLauncher" ["arc"]="${logged_in_home}/.local/share/Steam/steamapps/compatdata/ARCLauncher" ["poketcglauncher"]="${logged_in_home}/.local/share/Steam/steamapps/compatdata/PokeTCGLauncher" ["antstreamlauncher"]="${logged_in_home}/.local/share/Steam/steamapps/compatdata/AntstreamLauncher" ["purplelauncher"]="${logged_in_home}/.local/share/Steam/steamapps/compatdata/PURPLELauncher")
+    paths=(["nonsteamlauncher"]="${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers" ["epicgameslauncher"]="${logged_in_home}/.local/share/Steam/steamapps/compatdata/EpicGamesLauncher" ["goggalaxylauncher"]="${logged_in_home}/.local/share/Steam/steamapps/compatdata/GogGalaxyLauncher" ["uplaylauncher"]="${logged_in_home}/.local/share/Steam/steamapps/compatdata/UplayLauncher" ["battlenetlauncher"]="${logged_in_home}/.local/share/Steam/steamapps/compatdata/Battle.netLauncher" ["eaapplauncher"]="${logged_in_home}/.local/share/Steam/steamapps/compatdata/TheEAappLauncher" ["amazongameslauncher"]="${logged_in_home}/.local/share/Steam/steamapps/compatdata/AmazonGamesLauncher" ["itchiolauncher"]="${logged_in_home}/.local/share/Steam/steamapps/compatdata/itchioLauncher" ["legacygameslauncher"]="${logged_in_home}/.local/share/Steam/steamapps/compatdata/LegacyGamesLauncher" ["humblegameslauncher"]="${logged_in_home}/.local/share/Steam/steamapps/compatdata/HumbleGamesLauncher" ["indiegalalauncher"]="${logged_in_home}/.local/share/Steam/steamapps/compatdata/IndieGalaLauncher" ["rockstargameslauncher"]="${logged_in_home}/.local/share/Steam/steamapps/compatdata/RockstarGamesLauncher" ["glyphlauncher"]="${logged_in_home}/.local/share/Steam/steamapps/compatdata/GlyphLauncher" ["minecraftlauncher"]="${logged_in_home}/.local/share/Steam/steamapps/compatdata/MinecraftLauncher" ["pspluslauncher"]="${logged_in_home}/.local/share/Steam/steamapps/compatdata/PlaystationPlusLauncher" ["vkplaylauncher"]="${logged_in_home}/.local/share/Steam/steamapps/compatdata/VKPlayLauncher" ["hoyoplaylauncher"]="${logged_in_home}/.local/share/Steam/steamapps/compatdata/HoYoPlayLauncher" ["nexonlauncher"]="${logged_in_home}/.local/share/Steam/steamapps/compatdata/NexonLauncher" ["gamejoltlauncher"]="${logged_in_home}/.local/share/Steam/steamapps/compatdata/GameJoltLauncher" ["artixgamelauncher"]="${logged_in_home}/.local/share/Steam/steamapps/compatdata/ArtixGameLauncher" ["arc"]="${logged_in_home}/.local/share/Steam/steamapps/compatdata/ARCLauncher" ["poketcglauncher"]="${logged_in_home}/.local/share/Steam/steamapps/compatdata/PokeTCGLauncher" ["antstreamlauncher"]="${logged_in_home}/.local/share/Steam/steamapps/compatdata/AntstreamLauncher" ["purplelauncher"]="${logged_in_home}/.local/share/Steam/steamapps/compatdata/PURPLELauncher" ["plarium"]="${logged_in_home}/.local/share/Steam/steamapps/compatdata/PlariumLauncher")
 
-    names=(["nonsteamlauncher"]="NonSteamLaunchers" ["epicgameslauncher"]="EpicGamesLauncher" ["goggalaxylauncher"]="GogGalaxyLauncher" ["uplaylauncher"]="UplayLauncher" ["battlenetlauncher"]="Battle.netLauncher" ["eaapplauncher"]="TheEAappLauncher" ["amazongameslauncher"]="AmazonGamesLauncher" ["itchiolauncher"]="itchioLauncher" ["legacygameslauncher"]="LegacyGamesLauncher" ["humblegameslauncher"]="HumbleGamesLauncher" ["indiegalalauncher"]="IndieGalaLauncher" ["rockstargameslauncher"]="RockstarGamesLauncher" ["glyphlauncher"]="GlyphLauncher" ["minecraftlauncher"]="MinecraftLauncher" ["pspluslauncher"]="PlaystationPlusLauncher" ["vkplaylauncher"]="VKPlayLauncher" ["hoyoplaylauncher"]="HoYoPlayLauncher" ["nexonlauncher"]="NexonLauncher" ["gamejoltlauncher"]="GameJoltLauncher" ["artixgamelauncher"]="ArtixGameLauncher" ["arc"]="ARCLauncher" ["poketcg"]="PokeTCGLauncher" ["antstreamlauncher"]="AntstreamLauncher" ["purplelauncher"]="PURPLELauncher")
+    names=(["nonsteamlauncher"]="NonSteamLaunchers" ["epicgameslauncher"]="EpicGamesLauncher" ["goggalaxylauncher"]="GogGalaxyLauncher" ["uplaylauncher"]="UplayLauncher" ["battlenetlauncher"]="Battle.netLauncher" ["eaapplauncher"]="TheEAappLauncher" ["amazongameslauncher"]="AmazonGamesLauncher" ["itchiolauncher"]="itchioLauncher" ["legacygameslauncher"]="LegacyGamesLauncher" ["humblegameslauncher"]="HumbleGamesLauncher" ["indiegalalauncher"]="IndieGalaLauncher" ["rockstargameslauncher"]="RockstarGamesLauncher" ["glyphlauncher"]="GlyphLauncher" ["minecraftlauncher"]="MinecraftLauncher" ["pspluslauncher"]="PlaystationPlusLauncher" ["vkplaylauncher"]="VKPlayLauncher" ["hoyoplaylauncher"]="HoYoPlayLauncher" ["nexonlauncher"]="NexonLauncher" ["gamejoltlauncher"]="GameJoltLauncher" ["artixgamelauncher"]="ArtixGameLauncher" ["arc"]="ARCLauncher" ["poketcg"]="PokeTCGLauncher" ["antstreamlauncher"]="AntstreamLauncher" ["purplelauncher"]="PURPLELauncher" ["plariumlauncher"]="PlariumLauncher")
 
     for launcher in "${!names[@]}"; do
         if [[ -d "${paths[$launcher]}" ]]; then
@@ -494,7 +508,7 @@ function download_umu_launcher() {
 
     # Check if the downloaded file is a .zip file or a .tar.gz file and extract accordingly
     if [[ "$downloaded_file" =~ \.zip$ ]]; then
-        # Extract the .zip file into /home/deck/bin/ without preserving directory structure
+        # Extract the .zip file into without preserving directory structure
         unzip -o -j "$downloaded_file" -d "${logged_in_home}/bin/"
         if [ $? -ne 0 ]; then
             echo "Zip extraction failed. Exiting."
@@ -581,7 +595,7 @@ separate_app_ids=false
 # Check if any command line arguments were provided
 if [ ${#args[@]} -eq 0 ]; then
     # No command line arguments were provided, so display the main zenity window
-    selected_launchers=$(zenity --list --text="Which launchers do you want to download and install?" --checklist --column="$version" --column="Default = one App ID Installation, One Prefix, NonSteamLaunchers - updated the NSLGameScanner.py $live" FALSE "SEPARATE APP IDS - CHECK THIS TO SEPARATE YOUR PREFIX" $epic_games_value "$epic_games_text" $gog_galaxy_value "$gog_galaxy_text" $uplay_value "$uplay_text" $battlenet_value "$battlenet_text" $amazongames_value "$amazongames_text" $eaapp_value "$eaapp_text" $legacygames_value "$legacygames_text" $itchio_value "$itchio_text" $humblegames_value "$humblegames_text" $indiegala_value "$indiegala_text" $rockstar_value "$rockstar_text" $glyph_value "$glyph_text" $minecraft_value "$minecraft_text" $psplus_value "$psplus_text" $vkplay_value "$vkplay_text" $hoyoplay_value "$hoyoplay_text" $nexon_value "$nexon_text" $gamejolt_value "$gamejolt_text" $artixgame_value "$artixgame_text" $arc_value "$arc_text" $purple_value "$purple_text" $poketcg_value "$poketcg_text" $antstream_value "$antstream_text" FALSE "RemotePlayWhatever" FALSE "Fortnite" FALSE "Venge" FALSE "PokéRogue" FALSE "Xbox Game Pass" FALSE "GeForce Now" FALSE "Amazon Luna" FALSE "Stim.io" FALSE "Boosteroid Cloud Gaming" FALSE "Rocketcrab" FALSE "WebRcade" FALSE "WebRcade Editor" FALSE "Afterplay.io" FALSE "OnePlay" FALSE "AirGPU" FALSE "CloudDeck" FALSE "JioGamesCloud" FALSE "WatchParty" FALSE "Netflix" FALSE "Hulu" FALSE "Disney+" FALSE "Amazon Prime Video" FALSE "Youtube" FALSE "Twitch" FALSE "Apple TV+" FALSE "Crunchyroll" FALSE "Plex" --width=800 --height=740 --extra-button="Uninstall" --extra-button="Stop NSLGameScanner" --extra-button="Start Fresh" --extra-button="Move to SD Card" --extra-button="Update Proton-GE" --extra-button="Display Off")
+    selected_launchers=$(zenity --list --text="Which launchers do you want to download and install?" --checklist --column="$version" --column="Default = one App ID Installation, One Prefix, NonSteamLaunchers - updated the NSLGameScanner.py $live" FALSE "SEPARATE APP IDS - CHECK THIS TO SEPARATE YOUR PREFIX" $epic_games_value "$epic_games_text" $gog_galaxy_value "$gog_galaxy_text" $uplay_value "$uplay_text" $battlenet_value "$battlenet_text" $amazongames_value "$amazongames_text" $eaapp_value "$eaapp_text" $legacygames_value "$legacygames_text" $itchio_value "$itchio_text" $humblegames_value "$humblegames_text" $indiegala_value "$indiegala_text" $rockstar_value "$rockstar_text" $glyph_value "$glyph_text" $minecraft_value "$minecraft_text" $psplus_value "$psplus_text" $vkplay_value "$vkplay_text" $hoyoplay_value "$hoyoplay_text" $nexon_value "$nexon_text" $gamejolt_value "$gamejolt_text" $artixgame_value "$artixgame_text" $arc_value "$arc_text" $purple_value "$purple_text" $plarium_value "$plarium_text" $poketcg_value "$poketcg_text" $antstream_value "$antstream_text" FALSE "RemotePlayWhatever" FALSE "Fortnite" FALSE "Venge" FALSE "PokéRogue" FALSE "Xbox Game Pass" FALSE "GeForce Now" FALSE "Amazon Luna" FALSE "Stim.io" FALSE "Boosteroid Cloud Gaming" FALSE "Rocketcrab" FALSE "WebRcade" FALSE "WebRcade Editor" FALSE "Afterplay.io" FALSE "OnePlay" FALSE "AirGPU" FALSE "CloudDeck" FALSE "JioGamesCloud" FALSE "WatchParty" FALSE "Netflix" FALSE "Hulu" FALSE "Disney+" FALSE "Amazon Prime Video" FALSE "Youtube" FALSE "Twitch" FALSE "Apple TV+" FALSE "Crunchyroll" FALSE "Plex" --width=800 --height=600 --extra-button="❤️" --extra-button="Uninstall" --extra-button="🔍" --extra-button="Start Fresh" --extra-button="Move to SD Card" --extra-button="Update Proton-GE" --extra-button="🖥️ Off" --extra-button="NSLGameSaves")
 
 
     # Check if the user clicked the 'Cancel' button or selected one of the extra buttons
@@ -672,7 +686,15 @@ else
 fi
 
 
-if [[ $options == *"Display Off"* ]]; then
+
+
+
+
+
+
+
+
+if [[ $options == *"🖥️ Off"* ]]; then
     sleep 1
     xset dpms force off
     exit 0
@@ -687,7 +709,7 @@ function StartFreshFunction {
     other_dir="${logged_in_home}/.local/share/Steam/steamapps/shadercache/"
 
     # Define an array of original folder names
-    folder_names=("EpicGamesLauncher" "GogGalaxyLauncher" "UplayLauncher" "Battle.netLauncher" "TheEAappLauncher" "AmazonGamesLauncher" "itchioLauncher" "LegacyGamesLauncher" "HumbleGamesLauncher" "IndieGalaLauncher" "RockstarGamesLauncher" "GlyphLauncher" "PlaystationPlusLauncher" "VKPlayLauncher" "HoYoPlayLauncher" "NexonLauncher" "GameJoltLauncher" "ArtixGameLauncher" "ARCLauncher" "PokeTCGLauncher" "AntstreamLauncher" "PURPLELauncher")
+    folder_names=("EpicGamesLauncher" "GogGalaxyLauncher" "UplayLauncher" "Battle.netLauncher" "TheEAappLauncher" "AmazonGamesLauncher" "itchioLauncher" "LegacyGamesLauncher" "HumbleGamesLauncher" "IndieGalaLauncher" "RockstarGamesLauncher" "GlyphLauncher" "PlaystationPlusLauncher" "VKPlayLauncher" "HoYoPlayLauncher" "NexonLauncher" "GameJoltLauncher" "ArtixGameLauncher" "ARCLauncher" "PokeTCGLauncher" "AntstreamLauncher" "PURPLELauncher" "PlariumLauncher")
 
     # Define an array of app IDs
     app_ids=("3772819390" "4294900670" "4063097571" "3786021133" "3448088735" "3923904787" "3440562512" "2948446662" "3908676077" "4206469918" "3303169468" "3595505624" "4272271078" "3259996605" "2588786779" "4090616647" "3494943831" "2390200925" "4253976432" "2221882453" "2296676888" "2486751858" "3974004104" "3811372789" "3788101956" "3782277090" "3640061468" "3216372511" "2882622939" "2800812206" "2580882702" "4022508926" "4182617613" "1981254598" "2136059209" "1401184678" "3141683525")
@@ -792,6 +814,7 @@ function StartFreshFunction {
     rm -rf "/run/media/mmcblk0p1/PokeTCGLauncher/"
     rm -rf "/run/media/mmcblk0p1/AntstreamLauncher/"
     rm -rf "/run/media/mmcblk0p1/PURPLELauncher/"
+    rm -rf "/run/media/mmcblk0p1/PlariumLauncher/"
     rm -rf ${logged_in_home}/Downloads/NonSteamLaunchersInstallation
     rm -rf ${logged_in_home}/.config/systemd/user/Modules
     rm -rf ${logged_in_home}/.config/systemd/user/env_vars
@@ -990,6 +1013,10 @@ antstream_file=${logged_in_home}/Downloads/NonSteamLaunchersInstallation/antstre
 #PURPLE Launcher
 purple_url=https://gs-purple-inst.download.ncupdate.com/Purple/PurpleInstaller_2_25_325_23.exe
 purple_file=${logged_in_home}/Downloads/NonSteamLaunchersInstallation/PurpleInstaller_2_25_325_23.exe
+
+#Plarium Launcher
+plarium_url="https://installer.plarium.com/desktop?lid=1&arc=64&os=windows"
+plarium_file=${logged_in_home}/Downloads/NonSteamLaunchersInstallation/PlariumPlaySetup.exe
 #End of Downloads INFO
 
 
@@ -1174,6 +1201,41 @@ if [[ $uninstall_options == *"Uninstall PURPLE Launcher"* ]]; then
     fi
 fi
 
+
+
+
+# Function to handle Plarium Play folder deletion
+handle_uninstall_plarium() {
+    # Define the two possible paths
+    plarium_play_dir_1="${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/users/steamuser/AppData/Local/PlariumPlay"
+    plarium_play_dir_2="${logged_in_home}/.local/share/Steam/steamapps/compatdata/PlariumLauncher/pfx/drive_c/users/steamuser/AppData/Local/PlariumPlay"
+
+    # Check if either of the directories exists and delete the first one found
+    if [ -d "$plarium_play_dir_1" ]; then
+        echo "Deleting PlariumPlay folder from path 1... and is now uninstalled."
+        rm -rf "$plarium_play_dir_1"
+        # Notify the user via Zenity
+        zenity --info --text="Plarium Play folder has been successfully deleted from path 1." --width=300 --height=150 &
+        sleep 3
+        killall zenity
+    elif [ -d "$plarium_play_dir_2" ]; then
+        echo "Deleting PlariumPlay folder from path 2...and is now uninstalled."
+        rm -rf "$plarium_play_dir_2"
+        # Notify the user via Zenity
+        zenity --info --text="Plarium Play folder has been successfully deleted from path 2." --width=300 --height=150 &
+        sleep 3
+        killall zenity
+    else
+        # Notify the user if neither folder exists
+        zenity --error --text="Plarium Play folder not found at either path. Please check the paths." --width=300 --height=150 &
+    fi
+}
+
+
+
+
+
+
 uninstall_launcher() {
     local uninstall_options=$1
     local launcher=$2
@@ -1201,6 +1263,10 @@ uninstall_launcher() {
         echo "Deleted environment variables for $launcher"
     fi
 }
+
+
+
+
 
 # Function to process uninstall options
 process_uninstall_options() {
@@ -1283,6 +1349,18 @@ process_uninstall_options() {
             fi
         fi
 
+        if [[ $uninstall_options == *"Uninstall Plarium Play"* ]]; then
+            if [[ -d "${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/users/steamuser/AppData/Local/PlariumPlay" ]]; then
+                handle_uninstall_plarium "NonSteamLaunchers"
+                uninstall_launcher "$uninstall_options" "Plarium Play" "$plarium_path1" "$plarium_path2" "plarium" "plarium"
+                sed -i '' "${logged_in_home}/.config/systemd/user/env_vars"
+            elif [[ -d "${logged_in_home}/.local/share/Steam/steamapps/compatdata/PlariumLauncher" ]]; then
+                handle_uninstall_plarium "PlariumLauncher"
+                uninstall_launcher "$uninstall_options" "Plarium Play" "$eaapp_path1" "$eaapp_path2" "plarium" "plarium"
+                sed -i '' "${logged_in_home}/.config/systemd/user/env_vars"
+            fi
+        fi
+
         if [[ $uninstall_options == *"Uninstall RemotePlayWhatever"* ]]; then
             rm -rf "${logged_in_home}/.local/share/applications/RemotePlayWhatever"
             rm -rf "${logged_in_home}/.local/share/applications/RemotePlayWhatever.desktop"
@@ -1308,7 +1386,7 @@ process_uninstall_options() {
         uninstall_launcher "$uninstall_options" "Game Jolt Client" "$gamejolt_path1" "$gamejolt_path2" "${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/users/steamuser/AppData/Local/GameJoltClient" "${logged_in_home}/.local/share/Steam/steamapps/compatdata/GameJoltLauncher" "gamejolt"
         uninstall_launcher "$uninstall_options" "ARC Launcher" "$arc_path1" "$arc_path2" "${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/Program Files (x86)/Arc" "${logged_in_home}/.local/share/Steam/steamapps/compatdata/ARCLauncher" "arc"
         uninstall_launcher "$uninstall_options" "Pokémon Trading Card Game Live" "$poketcg_path1" "$poketcg_path2" "${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/users/steamuser/The Pokémon Company International" "${logged_in_home}/.local/share/Steam/steamapps/compatdata/PokeTCGLauncher" "poketcg"
-
+        uninstall_launcher "$uninstall_options" "Plarium Play" "$plarium_path1" "$plarium_path2" "${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/users/steamuser/AppData/Local/PlariumPlay" "${logged_in_home}/.local/share/Steam/steamapps/compatdata/PlariumLauncher" "plarium"
     fi
     # If the uninstall was successful,  set uninstalled_any_launcher to true
     if [ $? -eq 0 ]; then
@@ -1369,6 +1447,7 @@ else
             FALSE "Artix Game Launcher" \
             FALSE "ARC Launcher" \
             FALSE "PURPLE Launcher" \
+            FALSE "Plarium Play" \
             FALSE "Pokémon Trading Card Game Live" \
             FALSE "Antstream Arcade" \
             FALSE "RemotePlayWhatever" \
@@ -1419,7 +1498,7 @@ else
     if [[ $options == "Move to SD Card" ]]; then
         CheckInstallationDirectory
 
-    move_options=$(zenity --list --text="Which launcher IDs do you want to move to the SD card?" --checklist --column="Select" --column="Launcher ID" $nonsteamlauncher_move_value "NonSteamLaunchers" $epicgameslauncher_move_value "EpicGamesLauncher" $goggalaxylauncher_move_value "GogGalaxyLauncher" $uplaylauncher_move_value "UplayLauncher" $battlenetlauncher_move_value "Battle.netLauncher" $eaapplauncher_move_value "TheEAappLauncher" $amazongameslauncher_move_value "AmazonGamesLauncher" $itchiolauncher_move_value "itchioLauncher" $legacygameslauncher_move_value "LegacyGamesLauncher" $humblegameslauncher_move_value "HumbleGamesLauncher" $indiegalalauncher_move_value "IndieGalaLauncher" $rockstargameslauncher_move_value "RockstarGamesLauncher" $glyphlauncher_move_value "GlyphLauncher" "$minecraftlauncher_move_value" "MinecraftLauncher" $pspluslauncher_move_value "PlaystationPlusLauncher" $vkplaylauncher_move_value "VKPlayLauncher" $hoyoplaylauncher_move_value "HoYoPlayLauncher" $nexonlauncher_move_value "NexonLauncher" $gamejoltlauncher_move_value "GameJoltLauncher" $artixgame_move_value "ArtixGameLauncher" $arc_move_value "ARCLauncher" $purple_move_value "PURPLELauncher" $poketcg_move_value "PokeTCGLauncher" $antstream_move_value "AntstreamLauncher" --width=335 --height=524)
+    move_options=$(zenity --list --text="Which launcher IDs do you want to move to the SD card?" --checklist --column="Select" --column="Launcher ID" $nonsteamlauncher_move_value "NonSteamLaunchers" $epicgameslauncher_move_value "EpicGamesLauncher" $goggalaxylauncher_move_value "GogGalaxyLauncher" $uplaylauncher_move_value "UplayLauncher" $battlenetlauncher_move_value "Battle.netLauncher" $eaapplauncher_move_value "TheEAappLauncher" $amazongameslauncher_move_value "AmazonGamesLauncher" $itchiolauncher_move_value "itchioLauncher" $legacygameslauncher_move_value "LegacyGamesLauncher" $humblegameslauncher_move_value "HumbleGamesLauncher" $indiegalalauncher_move_value "IndieGalaLauncher" $rockstargameslauncher_move_value "RockstarGamesLauncher" $glyphlauncher_move_value "GlyphLauncher" "$minecraftlauncher_move_value" "MinecraftLauncher" $pspluslauncher_move_value "PlaystationPlusLauncher" $vkplaylauncher_move_value "VKPlayLauncher" $hoyoplaylauncher_move_value "HoYoPlayLauncher" $nexonlauncher_move_value "NexonLauncher" $gamejoltlauncher_move_value "GameJoltLauncher" $artixgame_move_value "ArtixGameLauncher" $arc_move_value "ARCLauncher" $purple_move_value "PURPLELauncher" $plarium_more_value "PlariumLauncher" $poketcg_move_value "PokeTCGLauncher" $antstream_move_value "AntstreamLauncher" --width=335 --height=524)
 
     if [ $? -eq 0 ]; then
         zenity --info --text="The selected directories have been moved to the SD card and symbolic links have been created." --width=200 --height=150
@@ -1464,8 +1543,8 @@ function stop_service {
 # Get the command line arguments
 args=("$@")
 
-# Check if the Stop NSLGameScanner option was passed as a command line argument or clicked in the GUI
-if [[ " ${args[@]} " =~ " Stop NSLGameScanner " ]] || [[ $options == "Stop NSLGameScanner" ]]; then
+# Check if the 🔍 option was passed as a command line argument or clicked in the GUI
+if [[ " ${args[@]} " =~ " 🔍 " ]] || [[ $options == "🔍" ]]; then
     stop_service
 
     # If command line arguments were provided, exit the script
@@ -2020,7 +2099,7 @@ function install_launcher {
         if [ "$launcher_name" != "GOG Galaxy" ]; then
             wait
         fi
-        pkill -f wineserver
+        #pkill -f wineserver
     fi
 }
 # Install Epic Games Launcher
@@ -2091,6 +2170,10 @@ install_launcher "Antstream Arcade" "AntstreamLauncher" "$antstream_file" "$ants
 
 # Install Purple Launcher
 install_launcher "PURPLE Launcher" "PURPLELauncher" "$purple_file" "$purple_url" "$purple_file /S" "99" "" ""
+
+# Install Plarium Launcher
+install_launcher "Plarium Play" "PlariumLauncher" "$plarium_file" "$plarium_url" "$plarium_file /S" "99" "" ""
+
 #End of Launcher Installations
 
 
@@ -2301,6 +2384,8 @@ roots:
     path: ${logged_in_home}/.local/share/Steam/steamapps/compatdata/AntstreamLauncher/pfx/drive_c/
   - store: otherWindows
     path: ${logged_in_home}/.local/share/Steam/steamapps/compatdata/PURPLELauncher/pfx/drive_c/
+  - store: otherWindows
+    path: ${logged_in_home}/.local/share/Steam/steamapps/compatdata/PlariumLauncher/pfx/drive_c/
 redirects: []
 backup:
   path: ${logged_in_home}/NSLGameSaves
@@ -2442,7 +2527,7 @@ check_and_write "arc" "$arc_path1" "$arc_path2" "NonSteamLaunchers" "ARCLauncher
 check_and_write "poketcg" "$poketcg_path1" "$poketcg_path2" "NonSteamLaunchers" "PokeTCGLauncher" "" "poketcg_launcher"
 check_and_write "antstream" "$antstream_path1" "$antstream_path2" "NonSteamLaunchers" "AntstreamLauncher" "" "antstream_launcher"
 check_and_write "purple" "$purple_path1" "$purple_path2" "NonSteamLaunchers" "PURPLELauncher" "" "purple_launcher"
-
+check_and_write "plarium" "$plarium_path1" "$plarium_path2" "NonSteamLaunchers" "PlariumLauncher" "" "plarium_launcher"
 
 # Special Shortcut for EA App NoRepair
 eaapp_path1="${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/users/steamuser/Downloads/EAappInstaller.exe"
@@ -2651,8 +2736,401 @@ else
 fi
 
 
-set -x
 
+
+
+
+
+
+
+#Send Nooooooooooooooootes
+# Send Notes
+if [[ $options == *"❤️"* ]]; then
+    show_message "Sending any #nsl notes to the community!<3"
+
+    search_directory="${logged_in_home}/.steam/root/userdata/${steamid3}/"
+
+    echo "Searching directory: $search_directory"
+
+    # Initialize the variable to store the selected remote directory
+    remote_dir=""
+
+    # Loop through the subdirectories under search_directory to find directories named 'remote'
+    echo "Searching for remote directories..."
+    for dir in "$search_directory"/*/; do
+        # Get the parent directory and check if it contains both 'remote' and 'remotecache.vdf'
+        parent_dir=$(basename "$dir")
+        remote_dir_path="$search_directory/$parent_dir/remote"
+        remotecache_file="$search_directory/$parent_dir/remotecache.vdf"
+
+        echo "Checking parent directory: $parent_dir"
+
+        # Check if both 'remote' directory and 'remotecache.vdf' exist
+        if [[ -d "$remote_dir_path" && -f "$remotecache_file" ]]; then
+            echo "'remote' directory found at: $remote_dir_path"
+            echo "remotecache.vdf found at: $remotecache_file"
+
+            # Check if the 'NSL Notes' folder exists and ignore the directory if it does
+            if [ -d "$remote_dir_path/NSL Notes" ]; then
+                echo "Remote directory $remote_dir_path is ignored due to the presence of 'NSL Notes' folder."
+            # Check if the 'remote' directory is empty (ignoring hidden files) or contains files matching 'notes_*'
+            elif [ -z "$(ls -A "$remote_dir_path" 2>/dev/null)" ]; then
+                echo "Remote directory $remote_dir_path is empty."
+            elif ls "$remote_dir_path"/notes_* >/dev/null 2>&1; then
+                echo "Remote directory $remote_dir_path contains notes_* files."
+            else
+                echo "Remote directory $remote_dir_path does not contain any notes_* files."
+            fi
+
+            # If the directory is empty or contains 'notes_*' files, select it
+            if [ -z "$(ls -A "$remote_dir_path" 2>/dev/null)" ] || ls "$remote_dir_path"/notes_* >/dev/null 2>&1; then
+                remote_dir="$remote_dir_path"
+                echo "Selected remote directory: $remote_dir"
+                break
+            fi
+        else
+            echo "No matching 'remote' directory or 'remotecache.vdf' found in parent directory $parent_dir. Skipping."
+        fi
+    done
+
+    # Check if a matching remote directory was found
+    if [[ -z "$remote_dir" ]]; then
+        echo "Error: No matching remote directory found."
+        exit 1
+    else
+        echo "Found matching remote directory: $remote_dir"
+    fi
+
+    # Path for the new "NSL Notes" folder
+    nsl_notes_folder="$remote_dir/NSL Notes"
+    echo "NSL Notes folder path: $nsl_notes_folder"
+
+    # Create the "NSL Notes" folder if it doesn't exist
+    echo "Creating NSL Notes folder if it doesn't exist..."
+    mkdir -p "$nsl_notes_folder" > /dev/null 2>&1
+
+    # Output JSON file
+    output_file="$nsl_notes_folder/nsl_notes_cache.json"
+    echo "Output file will be: $output_file"
+
+    # Initialize an empty array for collected data
+    collected_notes="[]"
+    note_count=0
+    echo "Initializing collection of notes..."
+
+    # Check if the file exists
+    if [[ -f "$output_file" ]]; then
+        # Read the existing data from the file (which should be a valid JSON array)
+        collected_notes=$(<"$output_file")
+    else
+        # If the file doesn't exist, start with an empty array
+        collected_notes="[]"
+    fi
+
+    # Loop through all files matching the pattern "notes_shortcut_*"
+    echo "Processing notes_shortcut_* files..."
+    for note_file in "$remote_dir"/notes_shortcut_*; do
+        [[ -f "$note_file" ]] || continue  # Skip if it's not a regular file
+
+        echo "Processing file: $note_file"
+
+        # Read the content of the current file all at once
+        data=$(<"$note_file")
+
+        # Parse the JSON structure and iterate over "notes" array
+        note_count_in_file=$(echo "$data" | jq '.notes | length')
+
+        echo "Found $note_count_in_file notes in file $note_file."
+
+        for i in $(seq 0 $((note_count_in_file - 1))); do
+            echo "Processing note $i..."
+
+            # Extract data for each note
+            id=$(echo "$data" | jq -r ".notes[$i].id")
+            shortcut_name=$(echo "$data" | jq -r ".notes[$i].shortcut_name")
+            ordinal=0  # Ordinal is always 0
+            time_created=$(echo "$data" | jq -r ".notes[$i].time_created")
+            time_modified=$(echo "$data" | jq -r ".notes[$i].time_modified")
+            title=$(echo "$data" | jq -r ".notes[$i].title")
+            content=$(echo "$data" | jq -r ".notes[$i].content")
+
+            echo "Processing note with ID: $id, Title: $title"
+
+            # Skip if ID contains the word "note"
+            [[ "$id" == *"note"* ]] && continue
+
+            # Process only the entries with #nsl in the title
+            [[ "$title" =~ "#nsl" ]] || continue
+
+            # Clean the content by removing #nsl and HTML tags
+            cleaned_content=$(echo "$content" | sed 's/#nsl//g' | sed 's/<[^>]*>//g')
+
+            # Decode HTML entities (such as &amp; to &)
+            cleaned_content=$(echo "$cleaned_content" | sed -e 's/&amp;/\&/g' -e 's/&lt;/</g' -e 's/&gt;/>/g' -e 's/&quot;/"/g' -e 's/&apos;/\'\''/g')
+
+            # Get just the file name (without the full path)
+            file_name=$(basename "$note_file")
+
+            # Ensure Time Created and Time Modified are treated as integers
+            time_created_int=$(echo "$time_created" | sed 's/^0*//')  # Remove leading zeros if any
+            time_modified_int=$(echo "$time_modified" | sed 's/^0*//')  # Remove leading zeros if any
+
+            # Add data to the collected_notes array (as a valid JSON object)
+            collected_notes=$(echo "$collected_notes" | jq ". += [{
+                \"ID\": \"$id\",
+                \"Shortcut Name\": \"$shortcut_name\",
+                \"Ordinal\": $ordinal,
+                \"Time Created\": $time_created_int,
+                \"Time Modified\": $time_modified_int,
+                \"Title\": \"$title\",
+                \"Content\": \"$cleaned_content\",
+                \"File Name\": \"$file_name\"
+            }]")
+
+            # Increment the note count
+            note_count=$((note_count + 1))
+        done
+    done
+
+    # Write the updated collected_notes array to the output file (appending properly formatted JSON)
+    echo "Writing collected notes to output file: $output_file"
+    echo "$collected_notes" > "$output_file" 2>/dev/null
+
+    # Send the collected data to the API
+    echo "Sending collected data to API..."
+    url="https://nslnotes.onrender.com/api/notes/"
+    response=$(curl -s -w "%{http_code}" -o /dev/null -X POST -H "Content-Type: application/json" -d "$collected_notes" "$url")
+
+    # Check if the request was successful
+    if [[ "$response" == "200" ]]; then
+        echo "$note_count notes successfully sent to the API."
+    else
+        echo "Failed to send data to the API. Status code: $response"
+    fi
+fi
+
+show_message "#nsl notes have been sent :) looking for new ones!<3"
+
+
+
+
+
+
+
+
+#recieve noooooooooooootes
+# Paths
+proton_dir=$(find -L "${logged_in_home}/.steam/root/compatibilitytools.d" -maxdepth 1 -type d -name "GE-Proton*" | sort -V | tail -n1)
+CSV_FILE="$proton_dir/protonfixes/umu-database.csv"
+echo "$CSV_FILE"
+shortcuts_file="${logged_in_home}/.config/systemd/user/shortcuts"
+output_dir="$remote_dir"
+
+# Function to get the current Unix timestamp
+get_current_timestamp() {
+    date +%s
+}
+
+# Function to validate JSON
+validate_json() {
+    local file_path="$1"
+    if ! jq . "$file_path" > /dev/null 2>&1; then
+        echo "Error: Invalid JSON in file $file_path"
+        return 1
+    fi
+    return 0
+}
+
+# Function to URL encode a string (replace spaces with %20 and other special characters)
+urlencode() {
+    local raw="$1"
+    echo -n "$raw" | jq -sRr @uri
+}
+
+# Function to fetch all notes from the API at once
+fetch_all_notes_from_api() {
+    # Get the JSON response from the API
+    response=$(curl -s "https://nslnotes.onrender.com/api/notes")
+
+    # Check if the response is valid JSON
+    if ! jq . <<< "$response" > /dev/null 2>&1; then
+        echo "Error: Invalid JSON response from the API"
+        return 1
+    fi
+
+    echo "$response"
+}
+
+# Function to create or update notes for a game
+# Function to update notes in the file for a game
+update_notes_in_file() {
+    local file_path="$1"
+    local game_name="$2"
+    local api_response="$3"  # All notes are passed in at once
+
+    # Sanitize the game name (replace spaces with underscores, etc.)
+    sanitized_game_name="$game_name"
+    sanitized_game_name="${sanitized_game_name// /_}"
+    sanitized_game_name="${sanitized_game_name//[^a-zA-Z0-9]/_}"
+
+    # URL encode the sanitized game name
+    encoded_game_name=$(urlencode "$sanitized_game_name")
+
+    # Filter the notes to only get the ones for the current game using `jq`
+    filtered_notes=$(echo "$api_response" | jq -r ".[] | select(.\"File Name\" == \"notes_shortcut_${encoded_game_name}\")")
+
+    # If no notes are found for this game, exit early
+    if [[ -z "$filtered_notes" ]]; then
+        echo "No notes found for game $game_name"
+        return
+    fi
+
+    # Start with an empty string to hold the formatted content for all notes
+    nsl_content=""
+
+    # Loop through the filtered notes for this game
+    for note in $(echo "$filtered_notes" | jq -r '@base64'); do
+        # Decode the note
+        note_decoded=$(echo "$note" | base64 --decode)
+
+        # Extract the relevant information for each note
+        user=$(echo "$note_decoded" | jq -r '."user"')
+        content=$(echo "$note_decoded" | jq -r '."Content"')
+        time_created=$(echo "$note_decoded" | jq -r '."Time Created"')
+
+        # Clean up content by replacing newline characters with <br> tags
+        content_cleaned=$(echo "$content" | sed 's/\n/<br>/g')
+
+        # Construct the content block for this note
+        nsl_content+=$"[p][i]A note called \"$user\" says,[/i][/p][p][b]$content_cleaned[/b][/p][p]$time_created[/p][p][/p]"
+    done
+
+    # Generate the current timestamp
+    local current_time=$(get_current_timestamp)
+
+    # Get the game details from the CSV file
+    game_details=$(grep -i "$game_name" "$CSV_FILE")
+
+    # If no details are found, use default values for the game
+    if [[ -z "$game_details" ]]; then
+        game_details="N/A,N/A,N/A,N/A,N/A,N/A"
+    fi
+
+    # Loop through each matching result and print each field without colons
+    echo "$game_details" | while IFS=',' read -r title store codename umu_id common_acronym note; do
+        # Handle missing fields by replacing them with "N/A"
+        title=${title:-N/A}
+        store=${store:-N/A}
+        codename=${codename:-N/A}
+        umu_id=${umu_id:-N/A}
+        common_acronym=${common_acronym:-N/A}
+        note=${note:-N/A}
+
+        # Construct the Proton-GE note with the game details
+        proton_ge_content="[p]Title: $title[/p][p]Store: $store[/p][p]Codename: $codename[/p][p]UMU ID: $umu_id[/p][p]Common Acronym: $common_acronym[/p][p]Note: $note[/p]"
+
+        # Construct the notes using jq (dynamically including the new Proton-GE content)
+        local note_1=$(jq -n --arg shortcut_name "$game_name" --argjson time_created "$current_time" --arg proton_ge_content "$proton_ge_content" \
+            '{"id":"note1675","shortcut_name":$shortcut_name,"ordinal":0,"time_created":$time_created,"time_modified":$time_created,"title":"Proton-GE & UMU","content":$proton_ge_content}')
+
+        local note_2=$(jq -n --arg shortcut_name "$game_name" --argjson time_created "$current_time" --arg nsl_content "$nsl_content" \
+            '{"id":"note2675","shortcut_name":$shortcut_name,"ordinal":0,"time_created":$time_created,"time_modified":$time_created,"title":"NSL Community Notes","content":$nsl_content}')
+
+        # Check if the file exists and is valid
+        if [[ -f "$file_path" ]]; then
+            # Validate if the file contains valid JSON
+            if validate_json "$file_path"; then
+                # Check if the file contains an array of notes
+                if jq -e '.notes | type == "array"' "$file_path" > /dev/null; then
+                    # Replace the existing notes with the new ones on top
+                    jq --argjson note1 "$note_1" --argjson note2 "$note_2" \
+                        '.notes = [$note1, $note2] + (.notes | map(select(.id != "note1675" and .id != "note2675")))' \
+                        "$file_path" > "$file_path.tmp" && mv "$file_path.tmp" "$file_path"
+                    echo "Replaced Proton and NSL Community Notes in $file_path"
+                else
+                    echo "Error: The 'notes' field is not an array or is missing in $file_path."
+                    return 1
+                fi
+            else
+                echo "Invalid JSON. Skipping update."
+                return 1  # Exit if the JSON is invalid
+            fi
+        else
+            # Create a new file with the notes structure if the file does not exist
+            if jq -n --argjson note1 "$note_1" --argjson note2 "$note_2" \
+                '{"notes":[$note1, $note2]}' > "$file_path"; then
+                echo "Created new file with notes: $file_path"
+            else
+                echo "Error creating file: $file_path"
+                return 1  # Exit if the file creation fails
+            fi
+        fi
+    done
+}
+
+
+# Function to list game names from the shortcuts file
+list_game_names() {
+    if [[ ! -f "$shortcuts_file" ]]; then
+        echo "The shortcuts file does not exist at $shortcuts_file."
+        exit 1
+    fi
+
+    echo "Reading game names from $shortcuts_file..."
+    while IFS= read -r game_name; do
+        # Clean up the game name (trim leading/trailing spaces)
+        game_name=$(echo "$game_name" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
+
+        # Skip empty lines or unwanted entries like executables (e.g., .exe, .sh, .bat, .msi, .app, .apk, .url, .desktop)
+        if [[ -n "$game_name" && ! "$game_name" =~ \.(exe|sh|bat|msi|app|apk|url|desktop)$ ]]; then
+            games+=("$game_name")
+            echo "Added game: $game_name"
+        else
+            echo "Skipped: $game_name"
+        fi
+    done < "$shortcuts_file"
+}
+
+# Main process
+echo "Starting script..."
+
+# Fetch all notes from the API once
+api_response=$(fetch_all_notes_from_api)
+if [[ $? -ne 0 ]]; then
+    echo "Failed to fetch all notes from the API"
+    exit 1
+fi
+
+list_game_names  # Get the list of game names
+
+# Loop over each game name
+for game_name in "${games[@]}"; do
+    # Create the file path for each game
+    sanitized_game_name="$game_name"
+    sanitized_game_name="${sanitized_game_name//\(/_}"
+    sanitized_game_name="${sanitized_game_name//\)/_}"
+    sanitized_game_name="${sanitized_game_name// /_}"
+    sanitized_game_name="${sanitized_game_name//[^a-zA-Z0-9™]/_}"
+    file_path="$output_dir/notes_shortcut_$sanitized_game_name"
+    echo "Processing: $game_name (File: $file_path)"
+    update_notes_in_file "$file_path" "$game_name" "$api_response"
+done
+
+echo "Script execution complete."
+show_message "Notes have been recieved!"
+#end of notes
+#noooooooooooooooootes
+
+
+
+
+
+
+
+
+
+
+#set -x
 
 # Check if userdata folder was found
 if [[ -n "$userdata_folder" ]]; then
