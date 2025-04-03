@@ -2743,55 +2743,14 @@ fi
 
 
 
-#Send Nooooooooooooooootes
 # Send Notes
 if [[ $options == *"❤️"* ]]; then
     show_message "Sending any #nsl notes to the community!<3"
 
     search_directory="${logged_in_home}/.steam/root/userdata/${steamid3}/"
-
     echo "Searching directory: $search_directory"
 
-    # Initialize the variable to store the selected remote directory
-    remote_dir=""
-
-    # Loop through the subdirectories under search_directory to find directories named 'remote'
-    echo "Searching for remote directories..."
-    for dir in "$search_directory"/*/; do
-        # Get the parent directory and check if it contains both 'remote' and 'remotecache.vdf'
-        parent_dir=$(basename "$dir")
-        remote_dir_path="$search_directory/$parent_dir/remote"
-        remotecache_file="$search_directory/$parent_dir/remotecache.vdf"
-
-        echo "Checking parent directory: $parent_dir"
-
-        # Check if both 'remote' directory and 'remotecache.vdf' exist
-        if [[ -d "$remote_dir_path" && -f "$remotecache_file" ]]; then
-            echo "'remote' directory found at: $remote_dir_path"
-            echo "remotecache.vdf found at: $remotecache_file"
-
-            # Check if the 'NSL Notes' folder exists and ignore the directory if it does
-            if [ -d "$remote_dir_path/NSL Notes" ]; then
-                echo "Remote directory $remote_dir_path is ignored due to the presence of 'NSL Notes' folder."
-            # Check if the 'remote' directory is empty (ignoring hidden files) or contains files matching 'notes_*'
-            elif [ -z "$(ls -A "$remote_dir_path" 2>/dev/null)" ]; then
-                echo "Remote directory $remote_dir_path is empty."
-            elif ls "$remote_dir_path"/notes_* >/dev/null 2>&1; then
-                echo "Remote directory $remote_dir_path contains notes_* files."
-            else
-                echo "Remote directory $remote_dir_path does not contain any notes_* files."
-            fi
-
-            # If the directory is empty or contains 'notes_*' files, select it
-            if [ -z "$(ls -A "$remote_dir_path" 2>/dev/null)" ] || ls "$remote_dir_path"/notes_* >/dev/null 2>&1; then
-                remote_dir="$remote_dir_path"
-                echo "Selected remote directory: $remote_dir"
-                break
-            fi
-        else
-            echo "No matching 'remote' directory or 'remotecache.vdf' found in parent directory $parent_dir. Skipping."
-        fi
-    done
+    remote_dir=$(find "$search_directory" -type f -name 'notes*' -exec dirname {} \; | sort -u | tail -n 1)
 
     # Check if a matching remote directory was found
     if [[ -z "$remote_dir" ]]; then
@@ -2808,6 +2767,7 @@ if [[ $options == *"❤️"* ]]; then
     # Create the "NSL Notes" folder if it doesn't exist
     echo "Creating NSL Notes folder if it doesn't exist..."
     mkdir -p "$nsl_notes_folder" > /dev/null 2>&1
+    echo "NSL Notes folder created."
 
     # Output JSON file
     output_file="$nsl_notes_folder/nsl_notes_cache.json"
