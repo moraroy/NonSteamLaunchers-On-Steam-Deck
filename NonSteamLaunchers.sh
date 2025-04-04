@@ -3365,7 +3365,7 @@ echo "Script completed successfully."
 # Check if the symlink exists
 if [ -L "${logged_in_home}/.config/systemd/user/default.target.wants/nslgamescanner.service" ]; then
   # Symlink exists, show message
-  show_message "Script is done...and the NSLGamesScanner is actively scanning!"
+  show_message "Script finished...and the NSLGamesScanner is actively scanning!"
 else
   # Symlink does not exist
   echo "Symlink does not exist."
