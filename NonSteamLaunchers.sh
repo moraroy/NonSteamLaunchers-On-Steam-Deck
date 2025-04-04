@@ -2924,9 +2924,9 @@ if [[ $options == *"❤️"* ]]; then
     else
         echo "Failed to send data to the API. Status code: $response"
     fi
+	
+    show_message "#nsl notes have been sent :) looking for new ones!<3"
 fi
-
-show_message "#nsl notes have been sent :) looking for new ones!<3"
 
 
 
