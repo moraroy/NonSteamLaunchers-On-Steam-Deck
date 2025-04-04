@@ -819,6 +819,7 @@ function StartFreshFunction {
     rm -rf ${logged_in_home}/.config/systemd/user/Modules
     rm -rf ${logged_in_home}/.config/systemd/user/env_vars
     rm -rf ${logged_in_home}/.config/systemd/user/NSLGameScanner.py
+	rm -rf ${logged_in_home}/.config/systemd/user/shortcuts
     rm -rf ${logged_in_home}/.local/share/applications/RemotePlayWhatever
     rm -rf ${logged_in_home}/.local/share/applications/RemotePlayWhatever.desktop
     rm -rf ${logged_in_home}/Downloads/NonSteamLaunchers-install.log
