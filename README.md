@@ -82,8 +82,19 @@ Currently Working On 👷‍♂️
 
 This setup will automatically add all your non-Steam games with artwork, correctly formatted for Windows. Only scanning will work; nothing else will function, so you can either auto-scan or manually scan your games.
 
----
+<h1 align="center">
+How to Install the Desktop Version 🔧
+</h1>
 
+<p align="center">
+  <a name="download button" href="https://github.com/moraroy/NonSteamLaunchers-On-Steam-Deck/releases/download/v3.9.1/NonSteamLaunchers.desktop"><img src="https://user-images.githubusercontent.com/98482469/242361563-33f31d3d-9a69-4fca-a928-207a5d17a98f.png"  alt="Download NonSteamLaunchers" width="350px" style="padding-top: 15px;"></a>
+</p>
+<!--- Thanks https://github.com/Heus-Sueh -->
+
+* Go to desktop mode, click the download button above and it should download the .desktop file in your Downloads folder.
+* Go to your downloads folder, click the NonSteamLaunchers icon, it will download and run the latest NonSteamLaunchers.sh from this repository and run it.
+* You will simply have to choose which launcher to install and let the script handle the rest. 💻 No files are left in your "Downloads" they are deleted after installation.
+* After running the script, launch Steam on your Steam Deck. You'll find the new launchers in your library under the non-steam tab. Click a launcher to see your installed games from that store, and launch them directly from Steam! If you have downloaded a game inside of your launcher, restart your Deck or quit and reopen Steam and the NSLGameScanner.service should add it to your library, even in gamemode! 🥳
 
 <p align="center">
 ▶️ YouTube Tutorial 🡺🡺🡺 https://youtu.be/sxMmI8I9G_g 🡸🡸🡸 ▶️
@@ -174,19 +185,7 @@ Finds Games Automatically
 
 To stop the NSLGameScanner.service, open up NSL and hit "Stop NSLGameScanner" it will then ask you if you want to restart it, click no, and that's it.
 
-<h1 align="center">
-How to Install the Desktop Version 🔧
-</h1>
 
-<p align="center">
-  <a name="download button" href="https://github.com/moraroy/NonSteamLaunchers-On-Steam-Deck/releases/download/v3.9.1/NonSteamLaunchers.desktop"><img src="https://user-images.githubusercontent.com/98482469/242361563-33f31d3d-9a69-4fca-a928-207a5d17a98f.png"  alt="Download NonSteamLaunchers" width="350px" style="padding-top: 15px;"></a>
-</p>
-<!--- Thanks https://github.com/Heus-Sueh -->
-
-* Go to desktop mode, click the download button above and it should download the .desktop file in your Downloads folder.
-* Go to your downloads folder, click the NonSteamLaunchers icon, it will download and run the latest NonSteamLaunchers.sh from this repository and run it.
-* You will simply have to choose which launcher to install and let the script handle the rest. 💻 No files are left in your "Downloads" they are deleted after installation.
-* After running the script, launch Steam on your Steam Deck. You'll find the new launchers in your library under the non-steam tab. Click a launcher to see your installed games from that store, and launch them directly from Steam! If you have downloaded a game inside of your launcher, restart your Deck or quit and reopen Steam and the NSLGameScanner.service should add it to your library, even in gamemode! 🥳
 
 <!--- TODO: handful of broken icons (cf. 🡺🡺🡺 ); probably should remove or replace them with more common font to handle unicode-->
 
