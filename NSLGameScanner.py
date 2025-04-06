@@ -37,22 +37,34 @@ if not os.path.exists(env_vars_path):
 with open(env_vars_path, 'r') as f:
     lines = f.readlines()
 
+# Determine which lines to keep
+modified = False
+separate_appids = None
+lines_to_keep = []
+
+# Lines to remove
+remove_lines = {'chromelaunchoptions', 'websites_str'}
+
 for line in lines:
     if line.startswith('export '):
         line = line[7:]  # Remove 'export '
     name, value = line.strip().split('=', 1)
     os.environ[name] = value
 
-# Store the value of separate_appids before deleting it
-separate_appids = None
+    # Track separate_appids
+    if 'export separate_appids=false' in line:
+        separate_appids = line.split('=')[1].strip()
 
-# Delete env_vars entries for Chrome shortcuts so that they're only added once
-with open(env_vars_path, 'w') as f:
-    for line in lines:
-        if 'export separate_appids=false' in line:
-            separate_appids = line.split('=')[1].strip()
-        if line.find('chromelaunchoptions') == -1 and line.find('websites_str') == -1:
-            f.write(line)
+    # Only keep lines that do not contain the unwanted keys
+    if not any(remove_key in line for remove_key in remove_lines):
+        lines_to_keep.append(line)
+    else:
+        modified = True  # Mark as modified if line is removed
+
+# If there were changes, write back to the file
+if modified:
+    with open(env_vars_path, 'w') as f:
+        f.writelines(lines_to_keep)
 
 
 
@@ -109,6 +121,8 @@ repaireaappshortcutdirectory = os.environ.get('repaireaappshortcutdirectory')
 chromedirectory = os.environ.get('chromedirectory')
 websites_str = os.environ.get('custom_websites_str')
 custom_websites = websites_str.split(', ') if websites_str else []
+
+
 
 
 
@@ -998,7 +1012,16 @@ if os.path.exists(non_steam_launchers_path):
 
 
 
-#notes
+
+
+
+
+
+
+
+
+#Creating Shortcuts file
+
 # Define the path for the new file
 new_file_path = f'{logged_in_home}/.config/systemd/user/shortcuts'
 
@@ -1006,13 +1029,16 @@ new_file_path = f'{logged_in_home}/.config/systemd/user/shortcuts'
 existing_shortcuts = set()
 
 # Define the extensions to skip
-skip_extensions = {'.exe', '.sh', '.bat', '.msi', '.app', '.apk', '.url', '.desktop'}
+skip_extensions = {'.exe', '.sh', '.bat', '.msi', '.app', '.apk', '.url', '.desktop', '.AppImage'}
 
-# Check if the shortcuts file exists, create it if not
-if not os.path.exists(new_file_path):
-    print(f"Shortcuts file not found: {new_file_path}. Creating file...")
-    with open(new_file_path, 'w') as f:
-        pass  # Create an empty file
+# Check if the shortcuts file exists
+if os.path.exists(new_file_path):
+    # Read the current content of the file
+    with open(new_file_path, 'r') as f:
+        current_content = set(f.read().splitlines())  # Read and split by lines into a set
+else:
+    # If the file doesn't exist, initialize an empty set for current content
+    current_content = set()
 
 # Iterate over all shortcuts and collect unique appnames (checking both 'appname' and 'AppName' keys)
 for shortcut in shortcuts['shortcuts'].values():
@@ -1020,15 +1046,45 @@ for shortcut in shortcuts['shortcuts'].values():
     appname = shortcut.get('appname') or shortcut.get('AppName')
 
     # If appname is found and doesn't end with a skip extension, add it to the set (avoid duplicates)
-    if appname and not any(appname.endswith(ext) for ext in skip_extensions) and appname not in existing_shortcuts:
+    if appname and not any(appname.endswith(ext) for ext in skip_extensions):
         existing_shortcuts.add(appname)
 
-# Write the unique appnames to the new file
-with open(new_file_path, 'w') as f:
-    for name in existing_shortcuts:
-        f.write(f"{name}\n")  # Write only the appname (raw)
+# Only write to the file if the set of unique appnames has changed
+if existing_shortcuts != current_content:
+    print(f"Shortcuts have changed. Writing to {new_file_path}...")
+    with open(new_file_path, 'w') as f:
+        for name in existing_shortcuts:
+            f.write(f"{name}\n")  # Write only the appname (raw)
+else:
+    print(f"No changes to shortcuts. File not modified.")
 
-print(f"Shortcuts written to {new_file_path}.")
+print(f"Shortcuts file check complete.")
+
+#End of Creating Shortcuts file
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -1959,7 +2015,21 @@ else:
 
 
 
-# Only write back to the shortcuts.vdf and config.vdf files if new shortcuts were added or compattools changed
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 # Function to send a notification with an optional icon
 def send_notification(message, icon_path=None, expire_time=5000):
     """Send a notification with the message and optional icon."""
@@ -1969,7 +2039,7 @@ def send_notification(message, icon_path=None, expire_time=5000):
         subprocess.run(['notify-send', '-a', 'NonSteamLaunchers', message, f'--expire-time={expire_time}'])
 
 # Define the path for the new file
-new_file_path = f'{logged_in_home}/.config/systemd/user/shortcuts'
+new_file_path = f"{logged_in_home}/.config/systemd/user/shortcuts"
 
 # Create a set to store unique appnames (to avoid duplicates)
 existing_shortcuts = set()
@@ -1987,6 +2057,105 @@ notified_games = set()
 
 # Define the extensions to skip
 skip_extensions = {'.exe', '.sh', '.bat', '.msi', '.app', '.apk', '.url', '.desktop'}
+
+# Create descriptions.json if it doesn't exist
+descriptions_file_path = f"{logged_in_home}/.config/systemd/user/descriptions.json"
+
+def create_descriptions_file():
+    if not os.path.exists(descriptions_file_path):
+        try:
+            # If the file does not exist, create it with an empty list or a default structure
+            with open(descriptions_file_path, 'w') as file:
+                json.dump([], file, indent=4)
+            print(f"{descriptions_file_path} created successfully with an empty list.")
+        except IOError as e:
+            print(f"Error creating {descriptions_file_path}: {e}")
+    else:
+        print(f"{descriptions_file_path} already exists.")
+
+# Function to load existing game data from descriptions.json
+def load_game_data():
+    try:
+        with open(descriptions_file_path, 'r') as file:
+            return json.load(file)
+    except FileNotFoundError:
+        print(f"File not found: {descriptions_file_path}, returning empty data.")
+        return []
+    except json.JSONDecodeError as e:
+        print(f"Error decoding JSON: {e}, returning empty data.")
+        return []
+
+# Function to check if the game already exists in descriptions.json without checking for game_details
+def game_exists_in_data(existing_data, game_name):
+    # Check if the game is in the list without checking 'game_details'
+    return any(game['game_name'] == game_name for game in existing_data)
+
+# Fetch game details for the newly created shortcuts from the API
+def get_game_details(game_name):
+    url = f"https://NonSteamLaunchers.onrender.com/api/details/{game_name}"
+    response = requests.get(url)
+
+    if response.status_code == 200:
+        return response.json()  # Return game details as a dictionary
+    else:
+        print(f"Error: Unable to retrieve data for {game_name}. Status code {response.status_code}")
+        return None
+
+# Fetch and update game details for created shortcuts
+def handle_new_shortcut(existing_data, game_name):
+    # If the game already exists in the data with valid details, skip the API call
+    if game_exists_in_data(existing_data, game_name):
+        print(f"Game details for {game_name} already exist. Skipping API call.")
+        return existing_data  # No need to make the API call or update the .json
+
+    # If the game doesn't have details or isn't already in the data, fetch and add
+    print(f"Fetching details for {game_name} as details were previously missing...")
+    game_details = get_game_details(game_name)
+    if game_details:
+        write_game_details(existing_data, game_details)
+    return existing_data  # Return the updated data
+
+# Function to write game details to descriptions.json (only if it's not already present)
+def write_game_details(existing_data, game_details):
+    if not game_details:
+        print("No game details to write.")
+        return
+
+    # Strip HTML tags and decode HTML entities from the 'about_the_game' section
+    if 'about_the_game' in game_details:
+        game_details['about_the_game'] = strip_html_tags(game_details['about_the_game'])
+        game_details['about_the_game'] = decode_html_entities(game_details['about_the_game'])
+
+    # Ensure that 'game_details' key does not exist before adding
+    if 'game_details' in game_details:
+        del game_details['game_details']  # Remove 'game_details' key
+
+    # Check if the game details already exist in the data based on game_name
+    game_exists = any(game['game_name'] == game_details['game_name'] for game in existing_data)
+
+    if not game_exists:
+        # Append new data if it doesn't already exist
+        existing_data.append(game_details)
+        print(f"Game details for {game_details['game_name']} added successfully.")
+    else:
+        print(f"Game details for {game_details['game_name']} already exist, skipping.")
+
+    return existing_data
+
+# Function to strip HTML tags from a string
+def strip_html_tags(text):
+    clean_text = re.sub(r'<[^>]*>', '', text)
+    return clean_text
+
+# Function to decode HTML entities like \u00a0 (non-breaking space) and \u2013 (en dash)
+def decode_html_entities(text):
+    text = text.replace("\u00a0", " ")
+    text = text.replace("\u2013", "-")
+    text = text.replace("\u2019", "'")
+    return text
+
+# Create descriptions.json if it doesn't exist
+create_descriptions_file()
 
 # Only write back to the shortcuts.vdf and config.vdf files if new shortcuts were added or compattools changed
 if new_shortcuts_added or shortcuts_updated:
@@ -2063,4 +2232,20 @@ if new_shortcuts_added or shortcuts_updated:
         for message, icon_path, expire_time in notifications:
             send_notification(message, icon_path, expire_time)
 
+    # Load existing game data
+    existing_data = load_game_data()  # Make sure this is implemented and loads your data correctly
+
+    # Fetch and update game details for created shortcuts
+    for game_name in created_shortcuts:
+        existing_data = handle_new_shortcut(existing_data, game_name)  # Handle each new game
+
+    # After processing all the created shortcuts, write the updated data back to the .json if necessary
+    # However, this will only happen if new data was added, otherwise it will not write or overwrite the .json
+    with open(descriptions_file_path, 'w') as file:
+        json.dump(existing_data, file, indent=4)
+        print(f"Updated {descriptions_file_path} with new game details (if applicable).")
+
 print("All finished!")
+
+
+
