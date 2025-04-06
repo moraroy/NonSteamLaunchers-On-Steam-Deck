@@ -2936,49 +2936,6 @@ fi
 
 
 #recieve noooooooooooootes
-# Paths
-proton_dir=$(find -L "${logged_in_home}/.steam/root/compatibilitytools.d" -maxdepth 1 -type d -name "GE-Proton*" | sort -V | tail -n1)
-CSV_FILE="$proton_dir/protonfixes/umu-database.csv"
-echo "$CSV_FILE"
-shortcuts_file="${logged_in_home}/.config/systemd/user/shortcuts"
-output_dir="$remote_dir"
-
-# Function to get the current Unix timestamp
-get_current_timestamp() {
-    date +%s
-}
-
-# Function to validate JSON
-validate_json() {
-    local file_path="$1"
-    if ! jq . "$file_path" > /dev/null 2>&1; then
-        echo "Error: Invalid JSON in file $file_path"
-        return 1
-    fi
-    return 0
-}
-
-# Function to URL encode a string (replace spaces with %20 and other special characters)
-urlencode() {
-    local raw="$1"
-    echo -n "$raw" | jq -sRr @uri
-}
-
-# Function to fetch all notes from the API at once
-fetch_all_notes_from_api() {
-    # Get the JSON response from the API
-    response=$(curl -s "https://nslnotes.onrender.com/api/notes")
-
-    # Check if the response is valid JSON
-    if ! jq . <<< "$response" > /dev/null 2>&1; then
-        echo "Error: Invalid JSON response from the API"
-        return 1
-    fi
-
-    echo "$response"
-}
-
-# Function to create or update notes for a game
 # Function to update notes in the file for a game
 update_notes_in_file() {
     local file_path="$1"
@@ -3053,38 +3010,51 @@ update_notes_in_file() {
         local note_2=$(jq -n --arg shortcut_name "$game_name" --argjson time_created "$current_time" --arg nsl_content "$nsl_content" \
             '{"id":"note2675","shortcut_name":$shortcut_name,"ordinal":0,"time_created":$time_created,"time_modified":$time_created,"title":"NSL Community Notes","content":$nsl_content}')
 
-        # Check if the file exists and is valid
-        if [[ -f "$file_path" ]]; then
-            # Validate if the file contains valid JSON
-            if validate_json "$file_path"; then
-                # Check if the file contains an array of notes
-                if jq -e '.notes | type == "array"' "$file_path" > /dev/null; then
-                    # Replace the existing notes with the new ones on top
-                    jq --argjson note1 "$note_1" --argjson note2 "$note_2" \
-                        '.notes = [$note1, $note2] + (.notes | map(select(.id != "note1675" and .id != "note2675")))' \
-                        "$file_path" > "$file_path.tmp" && mv "$file_path.tmp" "$file_path"
-                    echo "Replaced Proton and NSL Community Notes in $file_path"
+        # Read the descriptions from the JSON file
+        descriptions=$(read_descriptions)
+
+        # Find the description for the current game
+        game_description=$(echo "$descriptions" | jq -r ".[] | select(.game_name == \"$game_name\") | .about_the_game")
+
+        # If a description is found, create a description note
+        if [[ -n "$game_description" ]]; then
+            local note_3=$(jq -n --arg shortcut_name "$game_name" --argjson time_created "$current_time" --arg game_description "$game_description" \
+                '{"id":"note3675","shortcut_name":$shortcut_name,"ordinal":0,"time_created":$time_created,"time_modified":$time_created,"title":"Game Description","content":$game_description}')
+
+            # Check if the file exists and is valid
+            if [[ -f "$file_path" ]]; then
+                # Validate if the file contains valid JSON
+                if validate_json "$file_path"; then
+                    # Check if the file contains an array of notes
+                    if jq -e '.notes | type == "array"' "$file_path" > /dev/null; then
+                        # Replace the existing notes with the new ones on top
+                        jq --argjson note1 "$note_1" --argjson note2 "$note_2" --argjson note3 "$note_3" \
+                            '.notes = [$note1, $note2, $note3] + (.notes | map(select(.id != "note1675" and .id != "note2675" and .id != "note3675")))' \
+                            "$file_path" > "$file_path.tmp" && mv "$file_path.tmp" "$file_path"
+                        echo "Replaced Proton, NSL Community Notes, and Description Notes in $file_path"
+                    else
+                        echo "Error: The 'notes' field is not an array or is missing in $file_path."
+                        return 1
+                    fi
                 else
-                    echo "Error: The 'notes' field is not an array or is missing in $file_path."
-                    return 1
+                    echo "Invalid JSON. Skipping update."
+                    return 1  # Exit if the JSON is invalid
                 fi
             else
-                echo "Invalid JSON. Skipping update."
-                return 1  # Exit if the JSON is invalid
+                # Create a new file with the notes structure if the file does not exist
+                if jq -n --argjson note1 "$note_1" --argjson note2 "$note_2" --argjson note3 "$note_3" \
+                    '{"notes":[$note1, $note2, $note3]}' > "$file_path"; then
+                    echo "Created new file with notes: $file_path"
+                else
+                    echo "Error creating file: $file_path"
+                    return 1  # Exit if the file creation fails
+                fi
             fi
         else
-            # Create a new file with the notes structure if the file does not exist
-            if jq -n --argjson note1 "$note_1" --argjson note2 "$note_2" \
-                '{"notes":[$note1, $note2]}' > "$file_path"; then
-                echo "Created new file with notes: $file_path"
-            else
-                echo "Error creating file: $file_path"
-                return 1  # Exit if the file creation fails
-            fi
+            echo "No description found for $game_name"
         fi
     done
 }
-
 
 # Function to list game names from the shortcuts file
 list_game_names() {
@@ -3107,7 +3077,6 @@ list_game_names() {
         fi
     done < "$shortcuts_file"
 }
-
 
 # Main process
 echo "Starting script..."
@@ -3136,7 +3105,6 @@ done
 
 echo "Script execution complete."
 show_message "Notes have been recieved!"
-#end of notes
 #noooooooooooooooootes
 
 
