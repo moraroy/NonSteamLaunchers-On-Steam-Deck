@@ -2936,6 +2936,63 @@ fi
 
 
 #recieve noooooooooooootes
+# Paths
+proton_dir=$(find -L "${logged_in_home}/.steam/root/compatibilitytools.d" -maxdepth 1 -type d -name "GE-Proton*" | sort -V | tail -n1)
+CSV_FILE="$proton_dir/protonfixes/umu-database.csv"
+echo "$CSV_FILE"
+shortcuts_file="${logged_in_home}/.config/systemd/user/shortcuts"
+output_dir="$remote_dir"
+descriptions_file="${logged_in_home}/.config/systemd/user/descriptions.json"
+
+# Function to get the current Unix timestamp
+get_current_timestamp() {
+    date +%s
+}
+
+# Function to validate JSON
+validate_json() {
+    local file_path="$1"
+    if ! jq . "$file_path" > /dev/null 2>&1; then
+        echo "Error: Invalid JSON in file $file_path"
+        return 1
+    fi
+    return 0
+}
+
+# Function to URL encode a string (replace spaces with %20 and other special characters)
+urlencode() {
+    local raw="$1"
+    echo -n "$raw" | jq -sRr @uri
+}
+
+# Function to read descriptions from a file
+read_descriptions() {
+    if [[ -f "$descriptions_file" ]]; then
+        if ! validate_json "$descriptions_file"; then
+            echo "Error: Invalid JSON in descriptions file $descriptions_file"
+            return 1
+        fi
+        cat "$descriptions_file"
+    else
+        echo "Descriptions file does not exist, creating a new one."
+        echo "[]" > "$descriptions_file"  # Create an empty JSON array
+    fi
+}
+
+# Function to fetch all notes from the API at once
+fetch_all_notes_from_api() {
+    # Get the JSON response from the API
+    response=$(curl -s "https://nslnotes.onrender.com/api/notes")
+
+    # Check if the response is valid JSON
+    if ! jq . <<< "$response" > /dev/null 2>&1; then
+        echo "Error: Invalid JSON response from the API"
+        return 1
+    fi
+
+    echo "$response"
+}
+
 # Function to update notes in the file for a game
 update_notes_in_file() {
     local file_path="$1"
