@@ -1845,14 +1845,24 @@ else:
 
                 # Extract other relevant fields
                 persistent_install_path = data.get("persistentInstallPath", None)
+                install_path = data.get("installPath", None)  # This is the fallback option
                 game_install_status = data.get("gameInstallStatus", {})
 
                 game_exe_name = game_install_status.get("gameExeName", None)
-                install_path = game_install_status.get("gameInstallPath", None)
                 game_shortcut_name = data.get("gameShortcutName", None)  # Get the game shortcut name
 
+                # Debugging prints to check the values of persistentInstallPath and installPath
+                print(f"GameBiz: {game_biz}")
+                print(f"Persistent Install Path: {persistent_install_path}")
+                print(f"Install Path: {install_path}")
+
+                # If persistentInstallPath is empty, use installPath as fallback
+                if not persistent_install_path:
+                    print(f"Persistent Install Path is empty, using Install Path as fallback.")
+                    persistent_install_path = install_path
+
                 # Check if all important fields are missing or empty
-                if not game_exe_name and not install_path and not persistent_install_path:
+                if not game_exe_name and not persistent_install_path:
                     print(f"Skipping empty game entry for gameBiz: {game_biz}")
                     continue  # Skip if all important fields are empty
 
@@ -1875,6 +1885,12 @@ else:
             except json.JSONDecodeError as e:
                 print(f"Error decoding JSON: {e}")
                 print(f"Problematic JSON content (first 200 chars): {json_object[:200]}")
+
+# End of HoYoPlay Scanner
+
+
+# End of HoYoPlay Scanner
+
 
 # End of HoYoPlay Scanner
 
