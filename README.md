@@ -52,6 +52,40 @@ Features  ✅
 - With NSL youre able to send notes to each other and communicate to other NSL users via a hashtag in your note at the beginning, write #nsl and leave a space, and then type your actual note. The script will then look for that note and send it through the api and spit it back out for that non-steam game. Everyone who uses NSL will then receive it and it will be added to the "NSL Community Note". This is to allow people to have first hand information about their games right in front of them from others! Currently you can participate only if you send a note! Once you created a note, open up NonSteamLaunchers and press the ❤️. This is an expiremental feature so keep that in mind!
 
 
+# As Seen on
+just to name a few!...there are much more videos and articles out there just wanted to share some resources on how to install and how the program works.
+## Videos
+- [Linus Tech Tips](https://www.youtube.com/watch?v=tdR-bxvQKN8&t=885s) (starting at 14:45)
+- [GameTechPlanet](https://www.youtube.com/watch?v=jE1qD3yzrks)
+- [NerdZap](https://www.youtube.com/watch?v=t2EzbKkbS1Q)
+- [Joserra y sus cosicas](https://www.youtube.com/watch?v=6ETxmbzRODQ)
+- [Steam Deck In Hand](https://www.youtube.com/watch?v=_j3HV6yyGjI)
+- [Steam Deck Gaming](https://www.youtube.com/watch?v=svOj4MTEAVc)
+- [BakaKuma](https://www.youtube.com/watch?v=QluZ3UGYoKo)
+- [SteamFlow](https://www.youtube.com/watch?v=aud5F6iwA0s)
+- [Hooandee - 6 Hour Video](https://www.youtube.com/watch?v=OGmwtSS-zoE&t=7023s) (starting at 1:57:23)
+
+## Articles
+- [Gaming On Linux - Non-Steam Launchers Tool for Installing Popular Game Stores](https://www.gamingonlinux.com/2025/01/nonsteamlaunchers-tool-for-installing-popular-game-stores-working-on-better-desktop-linux-support/)
+- [Steam Deck HQ - Non-Steam Launchers New Update Community Notes](https://steamdeckhq.com/news/nonsteamlaunchers-new-update-community-notes/)
+- [Windows Central - How to Install Decky Loader on Steam Deck](https://www.windowscentral.com/gaming/how-to-install-decky-loader-on-steam-deck)
+- [Dexerto - Non-Steam Launchers on Steam Deck](https://www.dexerto.com/tech/nonsteamlaunchers-steam-deck-2808063/)
+- [MSN - Steam Deck: How to Install Epic Games Launcher with Decky Loader](https://www.msn.com/en-ca/news/technology/steam-deck-how-to-install-epic-games-launcher-with-decky-loader/ar-BB1pW1Ht)
+
+<p align="center">
+    ▶️ **YouTube Tutorial** 🡺🡺🡺 <a href="https://youtu.be/sxMmI8I9G_g">Watch here</a> 🡸🡸🡸 ▶️
+</p>
+<p align="center">
+    📖 **Step-by-step Article** 🡺🡺🡺 <a href="https://steamdeckhq.com/news/nonsteamlaunchers-adds-scan-support-launchers">here</a> 🡸🡸🡸 📖
+</p>
+
+---
+
+
+
+
+
+
 <h1 align="center">
 Currently Working On 👷‍♂️
 </h1>
@@ -98,11 +132,6 @@ How to Install the Desktop Version 🔧
 * After running the script, launch Steam on your Steam Deck. You'll find the new launchers in your library under the non-steam tab. Click a launcher to see your installed games from that store, and launch them directly from Steam! If you have downloaded a game inside of your launcher, restart your Deck or quit and reopen Steam and the NSLGameScanner.service should add it to your library, even in gamemode! 🥳
 
 <p align="center">
-▶️ YouTube Tutorial 🡺🡺🡺 https://youtu.be/sxMmI8I9G_g 🡸🡸🡸 ▶️
-</p>
-<p align="center">
-📖 Step-by-step Article 🡺🡺🡺 <a href="https://steamdeckhq.com/news/nonsteamlaunchers-adds-scan-support-launchers">here</a> 🡸🡸🡸 📖
-</p>
 
 
 <h1 align="center">
