@@ -131,6 +131,21 @@ if ! command -v curl &> /dev/null; then
     fi
 fi
 
+# Check if jq is installed
+if ! command -v jq &> /dev/null; then
+    echo "jq is not installed. Installing jq..."
+    if command -v apt-get &> /dev/null; then
+        sudo apt-get install -y jq
+    elif command -v dnf &> /dev/null; then
+        sudo dnf install -y jq
+    elif command -v pacman &> /dev/null; then
+        sudo pacman -S --noconfirm jq
+    else
+        echo "Unknown package manager. Please install jq manually."
+        exit 1
+    fi
+fi
+
 # Get the command line arguments
 args=("$@")
 echo "Arguments passed: ${args[@]}"  # Debugging the passed arguments
