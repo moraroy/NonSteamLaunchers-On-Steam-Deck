@@ -160,7 +160,11 @@ Supported Stores 🛍
 - Artix Game Launcher ✔️
 - ARC Launcher ✔️
 - Pokémon Trading Card Game Live ✔️
-- Minecraft Launcher(Legacy) (Java Edition & Dungeons) ✔️
+- Minecraft Launcher(Legacy) (Java Edition doesnt work but its for Dungeons) ✔️
+- PURPLE Launcher ✔️
+- Plarium Play ✔️
+- VFUN Launcher ✔️
+- Tempo Launcher ✔️
 - Antstream Arcade ✔️
 - RemotePlayWhatever ✔️
 
@@ -173,6 +177,7 @@ Supported Streaming Sites for games and as well as any website. 🌐
 - Venge ✔️
 - PokéRogue ✔️
 - Xbox Game Pass ✔️
+- Better xCloud ✔️
 - GeForce Now ✔️
 - Amazon Luna ✔️
 - Boosteroid Cloud Gaming ✔️
@@ -190,6 +195,7 @@ Supported Streaming Sites for games and as well as any website. 🌐
 - Amazon Prime Video ✔️
 - Disney+ ✔️
 - Hulu ✔️
+- Tubi ✔️
 - Youtube ✔️
 - Twitch ✔️
 - Plex ✔️
