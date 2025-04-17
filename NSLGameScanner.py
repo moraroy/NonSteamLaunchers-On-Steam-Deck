@@ -52,26 +52,29 @@ lines_to_keep = []
 remove_lines = {'chromelaunchoptions', 'websites_str'}
 
 for line in lines:
+    original_line = line  # Keep the original line for writing later
     if line.startswith('export '):
         line = line[7:]  # Remove 'export '
-    name, value = line.strip().split('=', 1)
-    os.environ[name] = value
 
-    # Track separate_appids
-    if 'export separate_appids=false' in line:
-        separate_appids = line.split('=')[1].strip()
+    # Parse the name and value
+    if '=' in line:
+        name, value = line.strip().split('=', 1)
+        os.environ[name] = value
+
+        # Track separate_appids if explicitly set to false
+        if name == 'separate_appids' and value.strip().lower() == 'false':
+            separate_appids = value.strip()
 
     # Only keep lines that do not contain the unwanted keys
-    if not any(remove_key in line for remove_key in remove_lines):
-        lines_to_keep.append(line)
+    if not any(remove_key in original_line for remove_key in remove_lines):
+        lines_to_keep.append(original_line)
     else:
-        modified = True  # Mark as modified if line is removed
+        modified = True  # Mark as modified if a line is removed
 
-# If there were changes, write back to the file
+# If there were changes, write the cleaned-up lines back to the file
 if modified:
     with open(env_vars_path, 'w') as f:
         f.writelines(lines_to_keep)
-
 
 
 
