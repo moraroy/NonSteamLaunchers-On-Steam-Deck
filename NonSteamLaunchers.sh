@@ -568,6 +568,12 @@ function download_umu_launcher() {
     # Make all extracted files executable
     find "${logged_in_home}/bin/" -type f -exec chmod +x {} \;
 
+    if [ -f "${logged_in_home}/bin/umu-run" ]; then
+        "${logged_in_home}/bin/umu-run" winetricks --self-update
+    else
+        echo "umu-run not found. Skipping self-update."
+    fi
+
     echo "UMU Launcher update completed :)"
 }
 
