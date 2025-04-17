@@ -2361,7 +2361,6 @@ fi
 
 
 
-wait
 echo "99"
 echo "# Checking if Chrome is installed...please wait..."
 
