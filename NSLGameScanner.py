@@ -606,9 +606,6 @@ def create_new_entry(shortcutdirectory, appname, launchoptions, startingdir):
     new_shortcuts_added = True
     created_shortcuts.append(appname)
 
-    # Mark it as processed by UMU (if it wasn't already processed)
-    if compatTool is not None:
-        umu_processed_shortcuts[unsigned_shortcut_id] = True
 
 
 
