@@ -471,10 +471,7 @@ def add_compat_tool(app_id, launchoptions):
             print("chrome or PROTONPATH found in launch options. Skipping compatibility tool creation.")
             return False
 
-        # Skip if the shortcut has already been processed by UMU
-        if app_id in umu_processed_shortcuts:
-            print(f"CompatTool update skipped for {app_id} because it was already processed by UMU.")
-            return None
+
 
         # Create a new CompatToolMapping entry if it doesn't exist
         config_data['InstallConfigStore']['Software']['Valve']['Steam']['CompatToolMapping'][str(app_id)] = {
@@ -540,17 +537,6 @@ def create_new_entry(shortcutdirectory, appname, launchoptions, startingdir):
     # **Intercept and modify the shortcut based on UMU data**
     exe_path, startingdir, launchoptions = modify_shortcut_for_umu(appname, exe_path, launchoptions, startingdir)
     
-    # Check if the modified shortcut already exists
-    if check_if_shortcut_exists(signed_shortcut_id, appname, exe_path, startingdir, launchoptions):
-        print(f"Skipping creation for already existing shortcut of {appname}.")
-        return
-
-    # Check if the shortcut has already been processed by UMU and skip compat tool if so
-    if unsigned_shortcut_id in umu_processed_shortcuts:
-        print(f"Skipping compatibility tool for {appname}, as it has already been processed by UMU.")
-        compatTool = None  # Skip adding compatibility tool
-    else:
-        compatTool = add_compat_tool(unsigned_shortcut_id, launchoptions)
 
     # Only store the app ID for specific launchers
     if appname in ['Epic Games', 'Gog Galaxy', 'Ubisoft Connect', 'Battle.net', 'EA App', 'Amazon Games', 'itch.io', 'Legacy Games', 'Humble Bundle', 'IndieGala Client', 'Rockstar Games Launcher', 'Glyph', 'Minecraft Launcher' 'Playstation Plus', 'VK Play', 'HoYoPlay', 'Nexon Launcher', 'Game Jolt Client', 'Artix Game Launcher', 'ARC Launcher', 'PURPLE Launcher', 'Plarium Play', 'VFUN Launcher', 'Tempo Launcher', 'Pokémon Trading Card Game Live', 'Antstream Arcade']:
