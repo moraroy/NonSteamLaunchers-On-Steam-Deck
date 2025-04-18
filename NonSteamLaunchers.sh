@@ -1005,7 +1005,7 @@ vkplay_url=https://static.gc.vkplay.ru/VKPlayLoader.exe
 vkplay_file=${logged_in_home}/Downloads/NonSteamLaunchersInstallation/VKPlayLoader.exe
 
 # Set the URL to download the Hoyo Play Play Launcher file from
-hoyoplay_url="https://download-porter.hoyoverse.com/download-porter/2024/06/07/hyp_global_setup_1.0.5.exe"
+hoyoplay_url="https://download-porter.hoyoverse.com/download-porter/2025/02/21/VYTpXlbWo8_1.4.5.222_1_0_hyp_hoyoverse_prod_202502081529_XFGRLkBk.exe"
 
 # Set the path to save the Hoyo Play Launcher to
 hoyoplay_file="${logged_in_home}/Downloads/NonSteamLaunchersInstallation/HoYoPlay_install.exe"
@@ -2071,7 +2071,7 @@ function install_nexon {
 function install_hoyo {
     hoyo_dir="${logged_in_home}/.local/share/Steam/steamapps/compatdata/${appid}/pfx/drive_c/Program Files/HoYoPlay"
     installer_file="${logged_in_home}/Downloads/NonSteamLaunchersInstallation/HoYoPlay_install.exe"
-    target_dir="${hoyo_dir}/1.0.5.88"
+    target_dir="${hoyo_dir}/1.4.5.222"
 
     echo "Creating directory for HoYoPlay..."
     mkdir -p "${hoyo_dir}" || { echo "Failed to create directory"; return 1; }
