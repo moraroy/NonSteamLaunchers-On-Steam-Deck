@@ -729,6 +729,24 @@ def modify_shortcut_for_umu(appname, exe, launchoptions, startingdir):
                     # Remove the existing STEAM_COMPAT_DATA_PATH if it exists in the launch options
                     updated_launch = re.sub(r'STEAM_COMPAT_DATA_PATH="[^"]+" ', '', updated_launch)
 
+
+                #Set compat tool name to UMU-Proton(Latest)
+                dir_path = f"{logged_in_home}/.steam/root/compatibilitytools.d"
+                pattern = re.compile(r"UMU-Proton-(\d+(?:\.\d+)*)(?:-(\d+(?:\.\d+)*))?")
+
+                def parse_version(m):
+                    main, sub = m.groups()
+                    return tuple(map(int, (main + '.' + (sub or '0')).split('.')))
+
+                umu_folders = [
+                    (parse_version(m), name)
+                    for name in os.listdir(dir_path)
+                    if (m := pattern.match(name)) and os.path.isdir(os.path.join(dir_path, name))
+                ]
+
+                if umu_folders:
+                    compat_tool_name = max(umu_folders)[1]
+
                 # Always include the first STEAM_COMPAT_DATA_PATH at the start
                 new_launch_options = (
                     f'STEAM_COMPAT_DATA_PATH="{base_path}" '
