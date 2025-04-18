@@ -448,14 +448,8 @@ def add_compat_tool(app_id, launchoptions):
         config_data['InstallConfigStore']['Software']['Valve']['Steam']['CompatToolMapping'] = {}
         print(f"CompatToolMapping key not found in config.vdf, creating.")
 
-    # Combine checks for 'chrome' and 'PROTONPATH'
-    if 'chrome' in launchoptions or 'PROTONPATH' in launchoptions:
-        if 'PROTONPATH' in launchoptions:
-            print("PROTONPATH found in launch options. Skipping compatibility tool update.")
-        return False
-
     # Check if the app_id exists in CompatToolMapping
-    elif str(app_id) in config_data['InstallConfigStore']['Software']['Valve']['Steam']['CompatToolMapping']:
+    if str(app_id) in config_data['InstallConfigStore']['Software']['Valve']['Steam']['CompatToolMapping']:
         # Check if 'PROTONPATH' is present in the existing app's config
         existing_app = config_data['InstallConfigStore']['Software']['Valve']['Steam']['CompatToolMapping'][str(app_id)]
 
@@ -472,6 +466,11 @@ def add_compat_tool(app_id, launchoptions):
         return compat_tool_name
 
     else:
+        # Combine checks for 'chrome' and 'PROTONPATH' — only skip if no CompatToolMapping and PROTONPATH is in launch options
+        if 'chrome' in launchoptions or 'PROTONPATH' in launchoptions:
+            print("chrome or PROTONPATH found in launch options. Skipping compatibility tool creation.")
+            return False
+
         # Skip if the shortcut has already been processed by UMU
         if app_id in umu_processed_shortcuts:
             print(f"CompatTool update skipped for {app_id} because it was already processed by UMU.")
@@ -485,7 +484,6 @@ def add_compat_tool(app_id, launchoptions):
         }
         print(f"Created new CompatToolMapping entry for appid: {app_id}")
         return compat_tool_name
-
 
 # Check if the shortcut already exists in the shortcuts
 def check_if_shortcut_exists(shortcut_id, display_name, exe_path, start_dir, launch_options):
