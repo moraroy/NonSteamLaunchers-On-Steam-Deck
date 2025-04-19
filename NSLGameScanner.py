@@ -657,6 +657,11 @@ def extract_base_path(launchoptions):
     raise ValueError("STEAM_COMPAT_DATA_PATH not found in launch options")
 
 def modify_shortcut_for_umu(appname, exe, launchoptions, startingdir):
+    # Skip UMU modification for specific titles
+    skip_titles = ["genshin impact", "zenless zone zero"]
+    if appname.lower() in skip_titles:
+        print(f"Skipping UMU modification for {appname}.")
+        return exe, startingdir, launchoptions
     # Skip processing if STEAM_COMPAT_DATA_PATH is not present
     if 'STEAM_COMPAT_DATA_PATH=' not in launchoptions:
         print(f"Launch options for {appname} do not contain STEAM_COMPAT_DATA_PATH. Skipping modification.")
