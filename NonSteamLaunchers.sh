@@ -2340,7 +2340,7 @@ if [[ $options == *"Epic Games"* ]]; then
         # Download and run Epic Online Services installer
         eos_dir="${logged_in_home}/Downloads/NonSteamLaunchersInstallation"
         eos_file="${eos_dir}/EpicOnlineServicesInstaller.exe"
-        eos_url="https://download1324.mediafire.com/0kg8it779xoglGdpxdIdxz1mU62VluXUIpSp7huzU-C47nXK98ZyXPF4R_sxtWkDSb4liX6fnwEUc3As8RA3K3WEQiAWwnot1e2PfH2JUr4ZYMFvli3qIlgvguY17OJhtz28NAqPhApMYNPzGZOWtj8P2K8vZu7RiB1SxwUeqNbsd3w/2qn3ff2wbh9dnvr/EpicOnlineServicesInstaller.exe"
+        eos_url="https://tinyurl.com/bdzjhbyz"
 
         echo "Downloading Epic Online Services installer..."
         mkdir -p "$eos_dir"
