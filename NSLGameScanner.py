@@ -1802,113 +1802,72 @@ else:
 
 
 # HoYo Play Scanner
+
 file_path = f"{logged_in_home}/.local/share/Steam/steamapps/compatdata/{hoyoplay_launcher}/pfx/drive_c/users/steamuser/AppData/Roaming/Cognosphere/HYP/1_0/data/gamedata.dat"
 
 # Check if the file exists
 if not os.path.exists(file_path):
-    print("Skipping HoYoPlay Scanner - File not found.")
+    print("Skipping HoYo Play scanner: File does not exist.")
 else:
-    # Read the file with ISO-8859-1 encoding
-    with open(file_path, 'r', encoding='ISO-8859-1') as file:
-        file_content = file.read()
+    def extract_json_objects(data):
+        decoder = json.JSONDecoder()
+        json_objects = []
 
-    # Function to manually extract JSON-like objects by finding balanced braces
-    def extract_json_objects(content):
-        objects = []
-        brace_count = 0
-        json_start = None
+        decoded = data.decode("utf-8", errors="ignore")
+        idx = 0
+        length = len(decoded)
 
-        for i, char in enumerate(content):
-            if char == '{':
-                if brace_count == 0:
-                    json_start = i  # Mark the start of a JSON object
-                brace_count += 1
-            elif char == '}':
-                brace_count -= 1
-                if brace_count == 0:
-                    json_object = content[json_start:i+1]  # Extract the full JSON object
-                    objects.append(json_object)
-                    json_start = None
-
-        return objects
-
-    # Extract JSON objects from the file content
-    json_objects = extract_json_objects(file_content)
-
-    # Create a set to track seen gameBiz values and avoid duplicates
-    seen_game_biz = set()
-
-    # Parse each JSON object
-    for json_object in json_objects:
-        json_object = json_object.strip()
-
-        # Skip empty JSON objects
-        if json_object == "{}":
-            continue
-
-        if json_object:
+        while idx < length:
             try:
-                # Attempt to load the JSON object
-                data = json.loads(json_object)
+                json_obj, end = decoder.raw_decode(decoded[idx:])
+                if isinstance(json_obj, dict):
+                    json_objects.append(json_obj)
+                idx += end
+            except json.JSONDecodeError:
+                idx += 1
 
-                # Extract gameBiz from the root and from the 'gameInstallStatus' object
-                game_biz = data.get("gameBiz", "").strip()
+        return json_objects
 
-                # If gameBiz is empty, check inside the 'gameInstallStatus' object
-                if not game_biz:
-                    game_biz = data.get("gameInstallStatus", {}).get("gameBiz", "").strip()
+    with open(file_path, "rb") as f:
+        f.read(8)
+        raw_data = f.read()
 
-                # Skip JSON objects where gameBiz is empty or already processed
-                if not game_biz or game_biz in seen_game_biz:
-                    continue  # Skip this object and move to the next one
+    json_objects = extract_json_objects(raw_data)
 
-                # Add this gameBiz to the seen set
-                seen_game_biz.add(game_biz)
+    games = {}
+    for entry in json_objects:
+        exe = entry.get("gameInstallStatus", {}).get("gameExeName", "").strip()
+        path = entry.get("installPath", "").strip()
+        persist = entry.get("persistentInstallPath", "").strip()
+        name = entry.get("gameShortcutName", "").strip()
+        biz = entry.get("gameBiz", "").strip()
 
-                # Extract other relevant fields
-                persistent_install_path = data.get("persistentInstallPath", None)
-                install_path = data.get("installPath", None)  # This is the fallback option
-                game_install_status = data.get("gameInstallStatus", {})
+        if exe and path:
+            key = name or exe
+            if key not in games:
+                games[key] = {
+                    "exe_name": exe,
+                    "install_path": path,
+                    "persistent_path": persist,
+                    "shortcut_name": name,
+                    "gamebiz": biz,
+                }
 
-                game_exe_name = game_install_status.get("gameExeName", None)
-                game_shortcut_name = data.get("gameShortcutName", None)  # Get the game shortcut name
+    if games:
+        for game, details in sorted(games.items()):
+            display_name = details["shortcut_name"] or game
+            game_biz = details["gamebiz"]
+            launch_options = f'STEAM_COMPAT_DATA_PATH="{logged_in_home}/.local/share/Steam/steamapps/compatdata/{hoyoplay_launcher}/" %command% "--game={game_biz}"'
+            exe_path = f'"{logged_in_home}/.local/share/Steam/steamapps/compatdata/{hoyoplay_launcher}/pfx/drive_c/Program Files/HoYoPlay/launcher.exe"'
+            start_dir = f'"{logged_in_home}/.local/share/Steam/steamapps/compatdata/{hoyoplay_launcher}/pfx/drive_c/Program Files/HoYoPlay"'
 
-                # Debugging prints to check the values of persistentInstallPath and installPath
-                print(f"GameBiz: {game_biz}")
-                print(f"Persistent Install Path: {persistent_install_path}")
-                print(f"Install Path: {install_path}")
+            if not details["install_path"] and not details["persistent_path"]:
+                continue
 
-                # If persistentInstallPath is empty, use installPath as fallback
-                if not persistent_install_path:
-                    print(f"Persistent Install Path is empty, using Install Path as fallback.")
-                    persistent_install_path = install_path
+            create_new_entry(exe_path, display_name, launch_options, start_dir)
 
-                # Check if all important fields are missing or empty
-                if not game_exe_name and not persistent_install_path:
-                    print(f"Skipping empty game entry for gameBiz: {game_biz}")
-                    continue  # Skip if all important fields are empty
+# End of HoYo Play Scanner
 
-                if not persistent_install_path:
-                    print(f"Skipping gameBiz: {game_biz} - No persistent install path found.")
-                    continue  # Skip if no persistent install path
-
-                if game_shortcut_name:
-                    print(f"  Game Shortcut Name: {game_shortcut_name}")
-
-                # Set the display name to the game shortcut name from the JSON
-                display_name = game_shortcut_name if game_shortcut_name else game_biz
-                launch_options = f"STEAM_COMPAT_DATA_PATH=\"{logged_in_home}/.local/share/Steam/steamapps/compatdata/{hoyoplay_launcher}/\" %command% \"--game={game_biz}\""
-                exe_path = f"\"{logged_in_home}/.local/share/Steam/steamapps/compatdata/{hoyoplay_launcher}/pfx/drive_c/Program Files/HoYoPlay/launcher.exe\""
-                start_dir = f"\"{logged_in_home}/.local/share/Steam/steamapps/compatdata/{hoyoplay_launcher}/pfx/drive_c/Program Files/HoYoPlay\""
-
-                # Create the new entry (this is where you can use your custom function for Steam shortcuts)
-                create_new_entry(exe_path, display_name, launch_options, start_dir)
-
-            except json.JSONDecodeError as e:
-                print(f"Error decoding JSON: {e}")
-                print(f"Problematic JSON content (first 200 chars): {json_object[:200]}")
-
-# End of HoYoPlay Scanner
 
 
 # Game Jolt Scanner
