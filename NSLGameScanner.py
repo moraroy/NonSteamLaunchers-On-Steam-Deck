@@ -2019,6 +2019,7 @@ else:
     # Lists to store results
     geforce_now_urls = []
     xbox_urls = []
+    luna_urls = []
 
     with open(bookmarks_file_path, 'r') as f:
         data = json.load(f)
