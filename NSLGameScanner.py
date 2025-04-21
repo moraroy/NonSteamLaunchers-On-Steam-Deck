@@ -2054,8 +2054,19 @@ else:
                 if game_name:
                     xbox_urls.append(("Xbox", game_name, url))
 
-    # Merge both into a single list for processing
-    all_urls = geforce_now_urls + xbox_urls
+            # Amazon Luna
+            elif "luna.amazon.com/game/" in url:
+                # Clean up the name
+                if name.startswith("Play "):
+                    game_name = name.replace("Play ", "").split(" |")[0].strip()
+                else:
+                    game_name = name.split(" |")[0].strip()
+
+                if game_name:
+                    luna_urls.append(("Amazon Luna", game_name, url))
+
+    # Merge all platforms' URLs into a single list for processing
+    all_urls = geforce_now_urls + xbox_urls + luna_urls
 
     for platform_name, game_name, url in all_urls:
         print(f"{platform_name}: {game_name} - {url}")
