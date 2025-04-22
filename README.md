@@ -202,6 +202,7 @@ Supported Streaming Sites for games and as well as any website. 🌐
 - Apple TV+ ✔️
 - Crunchyroll ✔️
 
+
 <h1 align="left">
 Finds Games Automatically
 </h1> 
@@ -219,6 +220,12 @@ Finds Games Automatically
 - HoYoPlay 🎮            💾 Full SD Card Support
 - Game Jolt Client 🎮    💾 Full SD Card Support
 - Minecraft Launcher 🎮
+
+## Chrome Bookmarks
+The scanner will pick these up automatically. But for Geforce Now only, change the name of the bookmark to your actual game name. Use "Ctrl + D".
+- Xbox Game Pass
+- GeForce Now
+- Amazon Luna
 
 To stop the NSLGameScanner.service, open up NSL and hit "Stop NSLGameScanner" it will then ask you if you want to restart it, click no, and that's it.
 
