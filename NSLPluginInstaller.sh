@@ -163,5 +163,7 @@ fi
 set -x
 cd "$LOCAL_DIR"
 
+# Now switch to Game Mode
 show_message "Plugin installed. Switching to Game Mode..."
 switch_to_game_mode
+
