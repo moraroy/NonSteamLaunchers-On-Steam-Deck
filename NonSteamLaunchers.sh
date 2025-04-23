@@ -3433,7 +3433,6 @@ fi
 show_message "Waiting to detect plugin..."
 sleep 20
 
-
 # Function to switch to Game Mode
 switch_to_game_mode() {
   echo "Switching to Game Mode..."
@@ -3443,7 +3442,6 @@ switch_to_game_mode() {
   systemctl --user daemon-reload
   qdbus org.kde.Shutdown /Shutdown org.kde.Shutdown.logout
 }
-
 
 # Set the remote repository URL
 REPO_URL="https://github.com/moraroy/NonSteamLaunchersDecky/archive/refs/heads/main.zip"
@@ -3515,50 +3513,35 @@ if compare_versions; then
   show_message "NSL Plugin is up-to-date."
 else
   echo "Updating NSL plugin..."
-  while true; do
-    USER_INPUT=$(zenity --forms --title="Authentication Required" --text="NSL Plugin requires an update or needs installation! Please enter your sudo password to proceed:" --separator="|" --add-password="Password")
-    USER_PASSWORD=$(echo $USER_INPUT | cut -d'|' -f1)
-
-    if [ -z "$USER_PASSWORD" ]; then
-      zenity --error --text="No password entered. Exiting." --timeout 5
-      exit 1
-    fi
-
-    echo "$USER_PASSWORD" | sudo -S echo "Password accepted" 2>/dev/null
-    if [ $? -eq 0 ]; then
-      break
-    else
-      zenity --error --text="Incorrect password. Please try again."
-    fi
-  done
 
   # Remove existing plugin if it exists
   if $NSL_PLUGIN_EXISTS; then
     show_message "Removing existing plugin..."
-    echo "$USER_PASSWORD" | sudo -S rm -rf "$LOCAL_DIR"
+    rm -rf "$LOCAL_DIR"
   fi
 
-  # Install or update plugin
-  sudo systemctl stop plugin_loader.service
+  # Stop plugin loader service (if it doesn't require sudo)
+  systemctl --user stop plugin_loader.service
 
   # Create directory and set permissions
-  echo "$USER_PASSWORD" | sudo -S mkdir -p "$LOCAL_DIR"
-  echo "$USER_PASSWORD" | sudo -S chmod -R u+rw "$LOCAL_DIR"
-  echo "$USER_PASSWORD" | sudo -S chown -R $USER:$USER "$LOCAL_DIR"
+  mkdir -p "$LOCAL_DIR"
+  chmod -R u+rw "$LOCAL_DIR"
+  chown -R "$USER:$USER" "$LOCAL_DIR"
 
   # Download and extract repository
   curl -L "$REPO_URL" -o /tmp/NonSteamLaunchersDecky.zip
-  echo "$USER_PASSWORD" | sudo -S unzip -o /tmp/NonSteamLaunchersDecky.zip -d /tmp/
-  echo "$USER_PASSWORD" | sudo -S cp -r /tmp/NonSteamLaunchersDecky-main/* "$LOCAL_DIR"
-  echo "$USER_PASSWORD" | sudo -S rm -rf /tmp/NonSteamLaunchersDecky*
+  unzip -o /tmp/NonSteamLaunchersDecky.zip -d /tmp/
+  cp -r /tmp/NonSteamLaunchersDecky-main/* "$LOCAL_DIR"
+  rm -rf /tmp/NonSteamLaunchersDecky*
 
   set -x
 
   # Switch to game mode and restart service
   show_message " NSL Plugin installed. Switching to Game Mode..."
   switch_to_game_mode
-  sudo systemctl restart plugin_loader.service
+  systemctl --user restart plugin_loader.service
 fi
+
 
 
 
