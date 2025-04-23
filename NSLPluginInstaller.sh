@@ -4,6 +4,15 @@
 logged_in_user=$(logname 2>/dev/null || whoami)
 logged_in_home=$(eval echo "~${logged_in_user}")
 
+# Function to switch to Game Mode
+switch_to_game_mode() {
+  echo "Switching to Game Mode..."
+  rm -rf ${logged_in_home}/.config/systemd/user/nslgamescanner.service
+  unlink ${logged_in_home}/.config/systemd/user/default.target.wants/nslgamescanner.service
+  systemctl --user daemon-reload
+  qdbus org.kde.Shutdown /Shutdown org.kde.Shutdown.logout
+}
+
 # Function to display a Zenity message
 show_message() {
   zenity --notification --text="$1" --timeout=1
