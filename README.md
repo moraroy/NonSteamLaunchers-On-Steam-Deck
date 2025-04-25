@@ -64,7 +64,7 @@ just to name a few!...there are much more videos and articles out there just wan
 - [BakaKuma](https://www.youtube.com/watch?v=QluZ3UGYoKo)
 - [SteamFlow](https://www.youtube.com/watch?v=aud5F6iwA0s)
 - [Hooandee - 6 Hour Video](https://www.youtube.com/watch?v=OGmwtSS-zoE&t=7023s) (starting at 1:57:23)
-- [Central Deck](https://www.youtube.com/oIKL1JRn4cw?si=79hL1fmpyw9jtaiE)
+- [Central Deck](https://www.youtube.com/watch?v=oIKL1JRn4cw)
 
 ## Articles
 - [Gaming On Linux - Non-Steam Launchers Tool for Installing Popular Game Stores](https://www.gamingonlinux.com/2025/01/nonsteamlaunchers-tool-for-installing-popular-game-stores-working-on-better-desktop-linux-support/)
