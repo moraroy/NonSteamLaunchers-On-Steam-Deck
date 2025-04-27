@@ -1,4 +1,4 @@
-certifi==2025.1.31 ; python_version >= "3.11" and python_version < "3.13"
+certifi==2025.4.26 ; python_version >= "3.11" and python_version < "3.13"
 charset-normalizer==3.4.1 ; python_version >= "3.11" and python_version < "3.13"
 idna==3.10 ; python_version >= "3.11" and python_version < "3.13"
 python-decouple==3.8 ; python_version >= "3.11" and python_version < "3.13"
