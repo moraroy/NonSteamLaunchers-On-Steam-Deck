@@ -46,6 +46,8 @@ Features  ✅
 
 - Ludusavi is also pre-installed and setup for NSL for your games save backups. Not all games will work with this yet so bare this in mind when deleted or uninstalling games that are arent backed up yet, here is the repo [here](https://github.com/mtkennerly/ludusavi)
 
+In both versions of NonSteamLaunchers, Desktop or Decky, /home/deck/NSLGameSaves is where your game saves are backed up. The Desktop Version only does this once per run, meaning you must run the whole script somehow, the decky plugin version does this on every manual scan.
+
 - [UMU Launcher](https://github.com/Open-Wine-Components/umu-launcher) is automatically used and is processed for each game and Launcher. Proton GE will be used where necessary.
 
 ### Notes
