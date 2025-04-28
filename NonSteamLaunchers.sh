@@ -185,7 +185,7 @@ fi
 
 
 
-show_message "Starting scan to find some games..."
+show_message "Starting scanner to find some games..."
 if [ "${deckyplugin}" = false ]; then
 	#Download Modules
 	# Define the repository and the folders to clone
@@ -294,7 +294,28 @@ if [ "${deckyplugin}" = false ]; then
 	    echo "env_vars file found. Running the .py file."
 	    live="and is LIVE."
 	fi
+
+    # Define the configuration directory
+    nsl_config_dir="${logged_in_home}/.var/app/com.github.mtkennerly.ludusavi/config/ludusavi/NSLconfig"
+
+    # Check if the config directory exists
+    if [ -d "$nsl_config_dir" ]; then
+        # Check if the Flatpak exists
+        if flatpak list --app | grep -q "com.github.mtkennerly.ludusavi"; then
+            # Run Once
+            echo "Running backup..."
+            nohup flatpak run com.github.mtkennerly.ludusavi --config "$nsl_config_dir" backup --force > /dev/null 2>&1 &
+            wait $!
+            echo "Backup completed"
+            show_message "Game Saves have been backed up! Please check here: /home/deck/NSLGameSaves"
+        else
+            echo "Flatpak com.github.mtkennerly.ludusavi not found. Skipping backup."
+        fi
+    else
+        echo "Config directory $nsl_config_dir does not exist. Skipping backup."
+    fi
 fi
+
 show_message "Finished! Welcome to NonSteamLaunchers!"
 
 
@@ -869,6 +890,8 @@ function StartFreshFunction {
     # Reload the systemd user instance
     systemctl --user daemon-reload
 
+    show_message "NonSteamLaunhers has been wiped!"
+
     # Exit the script with exit code 0 to indicate success
     exit 0
 }
@@ -1018,7 +1041,7 @@ nexon_file=${logged_in_home}/Downloads/NonSteamLaunchersInstallation/NexonLaunch
 
 
 # Set the URL to download the GameJolt Launcher file from
-gamejolt_url="https://download1652.mediafire.com/mzoty4dbmnagGikRUqK9uWSBBWCQxWr8Huf53X7W5FYaGVW5VKFmyqT6t3CElxXD4dnKxsZb1n7aOeBxsFk2Gc0lvI8qmIZ7lIh31tSE5dUwVKc_pUiIfbpZjM8lke5aPXQBsd787ibzNEEtEe8l4vvDnqTM674ZL5AqVxkf5ySzlE0/3qq9rj7bnknr5g6/gamejoltclientsetup.exe"
+gamejolt_url="https://tinyurl.com/4ae5c9kw"
 
 # Set the path to save the GameJolt Launcher to
 gamejolt_file=${logged_in_home}/Downloads/NonSteamLaunchersInstallation/gamejoltclientsetup.exe
@@ -1709,11 +1732,12 @@ export STEAM_COMPAT_DATA_PATH="${logged_in_home}/.local/share/Steam/steamapps/co
 
 
 if [[ $options == *"NSLGameSaves"* ]]; then
+    zenity --info --text="Restoring your game saves from: /home/deck/NSLGameSaves, back into your prefix and launchers, all at once." --timeout=5
     echo "Running restore..."
     nohup flatpak run com.github.mtkennerly.ludusavi --config "${logged_in_home}/.var/app/com.github.mtkennerly.ludusavi/config/ludusavi/NSLconfig/" restore --force > /dev/null 2>&1 &
     wait $!
     echo "Restore completed"
-    zenity --info --text="Restore was successful" --timeout=5
+    zenity --info --text="Restore was successful, you may now download your games from your launchers, and verify if the game saves are restored." --timeout=5
     exit 0
 fi
 
@@ -2208,7 +2232,7 @@ function install_launcher {
         if [ "$launcher_name" != "GOG Galaxy" ] && [ "$launcher_name" != "Battle.net" ]; then
             wait
         fi
-        #pkill -f wineserver
+        pkill -f wineserver
     fi
 }
 # Install Epic Games Launcher
@@ -2340,11 +2364,11 @@ if [[ $options == *"Epic Games"* ]]; then
         # Download and run Epic Online Services installer
         eos_dir="${logged_in_home}/Downloads/NonSteamLaunchersInstallation"
         eos_file="${eos_dir}/EpicOnlineServicesInstaller.exe"
-        eos_url="https://tinyurl.com/bdzjhbyz"
+        eos_url="https://tinyurl.com/33255n65"
 
         echo "Downloading Epic Online Services installer..."
         mkdir -p "$eos_dir"
-        curl -L -o "$eos_file" "$eos_url"
+        wget -L -O "$eos_file" "$eos_url"
 
         echo "Running Epic Online Services installer with Proton..."
         "$STEAM_RUNTIME" "$proton_dir/proton" run "$eos_file"
