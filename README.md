@@ -148,10 +148,10 @@ How to Run 🏃‍♂️
 + 🔍 = Pressing the magnifying glass will stop the NSL Sanner and prompt you to restart it if needed. When you open NSL the scanner only runs once. So restarting it activates the real time service file for active scanning.
 + Start Fresh = Wipes all of NSL, all the preixes, launchers, games, etc. Shortcuts will remain, and your game save backups, if any, at ```/home/deck/NSLGameSaves``` will not be deleted.
 + Move to SD Card = moves each prefix to your SD Card, this is legacy code and probably still needs work.
-+ Update Proton GE = this will update and install Proton GE and UMU if you dont have it already, the script attempts to do this on each launcher install but you can do it manually and help the script before hand if you want
++ Update Proton GE = this will update and install Proton GE and UMU if you dont have it already, the script attempts to do this on each launcher install but you can do it manually and help the script before hand if you want.
 + 🖥️ Off = this simply turns off your screen, useful if your doing long downloads to save battery.
 + NSLGameSaves = this will inject your game saves from ```/home/eck/NSLGameSaves``` into its correct locations using ludusavi into your launchers. Use this if you pressed "Start Fresh" and have downloaded your launchers again, dont download your games until you have pressed this button.
-+ How to use = opens up this read me file.
++ README = opens up this read me file.
 
 
 
