@@ -144,7 +144,7 @@ How to Run 🏃‍♂️
 
 + Select your launchers and hit OK. This will install your selected launchers. (Optionally, check "separate app ids", to install each launcher in its own prefix)
 + ❤️ = this will send and recieves any notes you have created to the community using the ```#nsl``` tag at the beginning of your note.
-+ Uninstall = uninstalls the specific launchers and possibly its games too, each launcher uninstallation is differnt.
++ Uninstall = uninstalls the specific launchers and possibly its games too, each launcher uninstallation is different.
 + 🔍 = Pressing the magnifying glass will stop the NSL Sanner and prompt you to restart it if needed. When you open NSL the scanner only runs once. So restarting it activates the real time service file for active scanning.
 + Start Fresh = Wipes all of NSL, all the preixes, launchers, games, etc. Shortcuts will remain, and your game save backups, if any, at ```/home/deck/NSLGameSaves``` will not be deleted.
 + Move to SD Card = moves each prefix to your SD Card, this is legacy code and probably still needs work.
