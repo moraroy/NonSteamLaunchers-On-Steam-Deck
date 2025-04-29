@@ -138,6 +138,48 @@ How to Install the Desktop Version 🔧
 
 <p align="center">
 
+<h1 align="center">
+How to Run 🏃‍♂️
+</h1>
+
++ Select your launchers and hit OK. This will install your selected launchers. (Optionally, check "separate app ids", to install each launcher in its own prefix)
++ ❤️ = this will send and recieves any notes you have created to the community using the ```#nsl``` tag at the beginning of your note.
++ Uninstall = uninstalls the specific launchers and possibly its games too, each launcher uninstallation is differnt.
++ 🔍 = Pressing the magnifying glass will stop the NSL Sanner and prompt you to restart it if needed. When you open NSL the scanner only runs once. So restarting it activates the real time service file for active scanning.
++ Start Fresh = Wipes all of NSL, all the preixes, launchers, games, etc. Shortcuts will remain, and your game save backups, if any, at ```/home/deck/NSLGameSaves``` will not be deleted.
++ Move to SD Card = moves each prefix to your SD Card, this is legacy code and probably still needs work.
++ Update Proton GE = this will update and install Proton GE and UMU if you dont have it already, the script attempts to do this on each launcher install but you can do it manually and help the script before hand if you want
++ 🖥️ Off = this simply turns off your screen, useful if your doing long downloads to save battery.
++ NSLGameSaves = this will inject your game saves from ```/home/eck/NSLGameSaves``` into its correct locations using ludusavi into your launchers. Use this if you pressed "Start Fresh" and have downloaded your launchers again, dont download your games until you have pressed this button.
++ How to use = opens up this read me file.
+
+
+
+<h1 align="center">
+Command Lines 🫡
+</h1>
+The NSL script can be called from online via bash, heres an example of it installing a launcher
+
+```/bin/bash -c 'curl -Ls https://raw.githubusercontent.com/moraroy/NonSteamLaunchers-On-Steam-Deck/main/NonSteamLaunchers.sh | nohup /bin/bash -s -- "Epic Games"'```
+
+
+- All launchers can be installed by calling their name like this  ```"Epic Games"``` ```"Ubisoft Connect"``` etc.
+- All launchers can be uninstalled by calling their name like this ```"Uninstall Epic Games"``` ```"Uninstall Ubisoft Connect"``` etc.
+- Here is the list of commands that can also be called
+  
+- ```"Start Fresh"``` ```"Update Proton-GE"``` ```"Stop NSLGameScanner"``` ```"Move to SD Card"```
+
+- The "Move to SD Card" function can only be called in this format
+  
+```/bin/bash -c 'curl -Ls https://raw.githubusercontent.com/moraroy/NonSteamLaunchers-On-Steam-Deck/main/NonSteamLaunchers.sh | nohup /bin/bash -s -- "Move to SD Card" "EpicGamesLauncher"```
+
+- The format of "EpicGamesLauncher" comes from the user choosing to either "Separate App ID's" or use the default installation prefix "NonSteamLaunchers" in the compatdata folder. This would be named differently for each launcher. Otherwise the command line would then only be 
+
+```/bin/bash -c 'curl -Ls https://raw.githubusercontent.com/moraroy/NonSteamLaunchers-On-Steam-Deck/main/NonSteamLaunchers.sh | nohup /bin/bash -s -- "Move to SD Card" "NonSteamLaunchers"```
+
+
+
+
 
 <h1 align="center">
 Supported Stores 🛍
@@ -237,36 +279,6 @@ To stop the NSLGameScanner.service, open up NSL and hit "Stop NSLGameScanner" it
 
 <!--- TODO: handful of broken icons (cf. 🡺🡺🡺 ); probably should remove or replace them with more common font to handle unicode-->
 
-
-
-<h1 align="center">
-How to Uninstall 🗑
-</h1>
-
-+ Just run the script, and hit "Uninstall". This will uninstall the launcher and its games. Alternatively, if you want to totally wipe everything from NonSteamLaunchers, click "Start Fresh".
-+ That's it.
-
-<h1 align="center">
-Command Lines 🫡
-</h1>
-The NSL script can be called from online via bash, heres an example of it installing a launcher
-
-```/bin/bash -c 'curl -Ls https://raw.githubusercontent.com/moraroy/NonSteamLaunchers-On-Steam-Deck/main/NonSteamLaunchers.sh | nohup /bin/bash -s -- "Epic Games"'```
-
-
-- All launchers can be installed by calling their name like this  ```"Epic Games"``` ```"Ubisoft Connect"``` etc.
-- All launchers can be uninstalled by calling their name like this ```"Uninstall Epic Games"``` ```"Uninstall Ubisoft Connect"``` etc.
-- Here is the list of commands that can also be called
-  
-- ```"Start Fresh"``` ```"Update Proton-GE"``` ```"Stop NSLGameScanner"``` ```"Move to SD Card"```
-
-- The "Move to SD Card" function can only be called in this format
-  
-```/bin/bash -c 'curl -Ls https://raw.githubusercontent.com/moraroy/NonSteamLaunchers-On-Steam-Deck/main/NonSteamLaunchers.sh | nohup /bin/bash -s -- "Move to SD Card" "EpicGamesLauncher"```
-
-- The format of "EpicGamesLauncher" comes from the user choosing to either "Separate App ID's" or use the default installation prefix "NonSteamLaunchers" in the compatdata folder. This would be named differently for each launcher. Otherwise the command line would then only be 
-
-```/bin/bash -c 'curl -Ls https://raw.githubusercontent.com/moraroy/NonSteamLaunchers-On-Steam-Deck/main/NonSteamLaunchers.sh | nohup /bin/bash -s -- "Move to SD Card" "NonSteamLaunchers"```
 
 
 
