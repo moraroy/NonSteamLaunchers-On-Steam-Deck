@@ -185,19 +185,15 @@ fi
 
 
 
-show_message "Starting scanner to find some games..."
 if [ "${deckyplugin}" = false ]; then
-	#Download Modules
-	# Define the repository and the folders to clone
+	# Download Modules
 	repo_url='https://github.com/moraroy/NonSteamLaunchers-On-Steam-Deck/archive/refs/heads/main.zip'
 	folders_to_clone=('requests' 'urllib3' 'steamgrid' 'vdf' 'charset_normalizer')
 
-	# Define the parent folder
 	logged_in_home=$(eval echo ~$user)
 	parent_folder="${logged_in_home}/.config/systemd/user/Modules"
 	mkdir -p "${parent_folder}"
 
-	# Check if the folders already exist
 	folders_exist=true
 	for folder in "${folders_to_clone[@]}"; do
 	  if [ ! -d "${parent_folder}/${folder}" ]; then
@@ -207,14 +203,10 @@ if [ "${deckyplugin}" = false ]; then
 	done
 
 	if [ "${folders_exist}" = false ]; then
-	  # Download the repository as a zip file
 	  zip_file_path="${parent_folder}/repo.zip"
 	  wget -O "${zip_file_path}" "${repo_url}" || { echo 'Download failed with error code: $?'; exit 1; }
-
-	  # Extract the zip file
 	  unzip -d "${parent_folder}" "${zip_file_path}" || { echo 'Unzip failed with error code: $?'; exit 1; }
 
-	  # Move the folders to the parent directory and delete the unnecessary files
 	  for folder in "${folders_to_clone[@]}"; do
 	    destination_path="${parent_folder}/${folder}"
 	    source_path="${parent_folder}/NonSteamLaunchers-On-Steam-Deck-main/Modules/${folder}"
@@ -223,38 +215,21 @@ if [ "${deckyplugin}" = false ]; then
 	    fi
 	  done
 
-	  # Delete the downloaded zip file and the extracted repository folder
 	  rm "${zip_file_path}"
 	  rm -r "${parent_folder}/NonSteamLaunchers-On-Steam-Deck-main"
 	fi
-	#End of Download Modules
 
-
-	#Service File rough update
+	# Service File rough update
 	rm -rf ${logged_in_home}/.config/systemd/user/NSLGameScanner.py
-
-	# Delete the service file
 	rm -rf ${logged_in_home}/.config/systemd/user/nslgamescanner.service
-
-	# Remove the symlink
 	unlink ${logged_in_home}/.config/systemd/user/default.target.wants/nslgamescanner.service
-
-	# Reload the systemd user instance
 	systemctl --user daemon-reload
 
-	# Define your Python script path
 	python_script_path="${logged_in_home}/.config/systemd/user/NSLGameScanner.py"
-
-	# Define your GitHub link
 	github_link="https://raw.githubusercontent.com/moraroy/NonSteamLaunchers-On-Steam-Deck/main/NSLGameScanner.py"
 	curl -o $python_script_path $github_link
 
-	# Define the path to the env_vars file
 	env_vars="${logged_in_home}/.config/systemd/user/env_vars"
-	#End of Rough Update of the .py
-
-
-
 
 	if [ -f "$env_vars" ]; then
 	    echo "env_vars file found. Running the .py file."
@@ -264,9 +239,6 @@ if [ "${deckyplugin}" = false ]; then
 	    live="and is not LIVE."
 	fi
 
-
-
-	# Check if "Decky Plugin" is one of the arguments
 	decky_plugin=false
 	for arg in "${args[@]}"; do
 	  if [ "$arg" = "Decky Plugin" ]; then
@@ -275,48 +247,95 @@ if [ "${deckyplugin}" = false ]; then
 	  fi
 	done
 
-	# If the Decky Plugin argument is set, check if the env_vars file exists
+	funny_messages=(
+	  "Wow, you have a lot of games!"
+	  "Getting artwork and descriptions for note system..."
+	  "So many launchers, so little time..."
+	  "Much game. Very library. Wow."
+	  "Looking under the Steam Deck couch cushions..."
+	  "Injecting metadata directly into your eyeballs..."
+	  "Downloading more RAM... just kidding."
+	  "Scanning your games like a barcode at checkout!"
+	  "Adding +10 charm to your launcher list..."
+	  "Man this is taking a long time..."
+	  "Removing NSL from Decky Loader Store... jk that happend in real life."
+	  "Learning your game choices and judging you for them..."
+	  "But why is that game in here!!??"
+	  "Downloading any boot videos for your enjoyment..."
+	  "Thank you for being patient..."
+	  "This may take a while..."
+	  "You may need to grab a coffee..."
+	)
+
 	if [ "$decky_plugin" = true ]; then
 	    if [ -f "$env_vars" ]; then
-	        # If the env_vars file exists, run the .py file and continue with the script
 	        echo "Decky Plugin argument set and env_vars file found. Running the .py file..."
+
+	        start_msg="${funny_messages[$RANDOM % ${#funny_messages[@]}]}"
+	        show_message "Starting Scanner... ${start_msg}"
+
+	        (
+	          while true; do
+	            sleep 15
+	            loop_msg="${funny_messages[$RANDOM % ${#funny_messages[@]}]}"
+	            show_message "Still scanning... ${loop_msg}"
+	          done
+	        ) &
+	        message_pid=$!
+
 	        python3 $python_script_path
+
+	        kill $message_pid
+	        show_message "Scanning complete! Your game library just leveled up."
 	        echo "Python script ran. Continuing with the script..."
 	    else
-	        # If the env_vars file does not exist, exit the script
 	        echo "Decky Plugin argument set but env_vars file not found. Exiting the script."
 	        exit 0
 	    fi
 	else
-	    # If the Decky Plugin argument is not set, continue with the script
 	    echo "Decky Plugin argument not set. Continuing with the script..."
+
+	    start_msg="${funny_messages[$RANDOM % ${#funny_messages[@]}]}"
+	    show_message "Starting Scanner... ${start_msg}"
+
+	    (
+	      while true; do
+	        sleep 15
+	        loop_msg="${funny_messages[$RANDOM % ${#funny_messages[@]}]}"
+	        show_message "Still scanning... ${loop_msg}"
+	      done
+	    ) &
+	    message_pid=$!
+
 	    python3 $python_script_path
+
+	    kill $message_pid
+	    show_message "Scanning complete! Your game library just leveled up."
+	    sleep 2
 	    echo "env_vars file found. Running the .py file."
 	    live="and is LIVE."
 	fi
 
-    # Define the configuration directory
-    nsl_config_dir="${logged_in_home}/.var/app/com.github.mtkennerly.ludusavi/config/ludusavi/NSLconfig"
+	nsl_config_dir="${logged_in_home}/.var/app/com.github.mtkennerly.ludusavi/config/ludusavi/NSLconfig"
 
-    # Check if the config directory exists
-    if [ -d "$nsl_config_dir" ]; then
-        # Check if the Flatpak exists
-        if flatpak list --app | grep -q "com.github.mtkennerly.ludusavi"; then
-            # Run Once
-            echo "Running backup..."
-            nohup flatpak run com.github.mtkennerly.ludusavi --config "$nsl_config_dir" backup --force > /dev/null 2>&1 &
-            wait $!
-            echo "Backup completed"
-            show_message "Game Saves have been backed up! Please check here: /home/deck/NSLGameSaves"
-        else
-            echo "Flatpak com.github.mtkennerly.ludusavi not found. Skipping backup."
-        fi
-    else
-        echo "Config directory $nsl_config_dir does not exist. Skipping backup."
-    fi
+	if [ -d "$nsl_config_dir" ]; then
+	    if flatpak list --app | grep -q "com.github.mtkennerly.ludusavi"; then
+	        echo "Running backup..."
+	        nohup flatpak run com.github.mtkennerly.ludusavi --config "$nsl_config_dir" backup --force > /dev/null 2>&1 &
+	        wait $!
+	        echo "Backup completed"
+	        show_message "Game Saves have been backed up! Please check here: /home/deck/NSLGameSaves"
+	        sleep 2
+	    else
+	        echo "Flatpak com.github.mtkennerly.ludusavi not found. Skipping backup."
+	    fi
+	else
+	    echo "Config directory $nsl_config_dir does not exist. Skipping backup."
+	fi
 fi
-
+sleep 1
 show_message "Finished! Welcome to NonSteamLaunchers!"
+
 
 
 # Check if any command line arguments were provided
@@ -1939,17 +1958,7 @@ function install_battlenet {
     pkill wineserver
     sleep 1  
 
-    # Start the second installation process in the background
-    echo "Starting second installation of Battle.net"
-    "$STEAM_RUNTIME" "$proton_dir/proton" run "$battle_file" Battle.net-Setup.exe --lang=enUS --installpath="C:\Program Files (x86)\Battle.net" &
-    second_install_pid=$!
 
-    # After second installation, kill wineserver again to clean up
-    pkill wineserver
-    sleep 1  
-
-    # After both installations are done, terminate any remaining Battle.net processes
-    terminate_processes "Battle.net.exe" #"BlizzardError.exe"
 }
 
 # Amazon Games specific installation steps
