@@ -272,7 +272,7 @@ if [ "${deckyplugin}" = false ]; then
 	        echo "Decky Plugin argument set and env_vars file found. Running the .py file..."
 
 	        start_msg="${funny_messages[$RANDOM % ${#funny_messages[@]}]}"
-	        show_message "Starting Scanner... ${start_msg}"
+	        show_message "Starting Scanner... looking for any games"
 
 	        (
 	          while true; do
@@ -296,7 +296,7 @@ if [ "${deckyplugin}" = false ]; then
 	    echo "Decky Plugin argument not set. Continuing with the script..."
 
 	    start_msg="${funny_messages[$RANDOM % ${#funny_messages[@]}]}"
-	    show_message "Starting Scanner... ${start_msg}"
+	    show_message "Starting Scanner... looking for any games"
 
 	    (
 	      while true; do
