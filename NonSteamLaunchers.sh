@@ -2486,7 +2486,6 @@ echo "Ludusavi installation script completed"
 # Ensure Ludusavi is installed before proceeding
 if ! flatpak list | grep com.github.mtkennerly.ludusavi &> /dev/null; then
     echo "Ludusavi installation failed. Exiting script."
-    exit 1
 fi
 
 
