@@ -810,15 +810,23 @@ custom_websites=()
 separate_app_ids=false
 
 
-
-
-resolution=$(xrandr | grep '*' | awk '{print $1}')
+# Get the screen resolution of the primary monitor only
+resolution=$(xrandr | grep '*' | head -n 1 | awk '{print $1}')
 screen_width=${resolution%x*}
 screen_height=${resolution#*x}
 
-# Calculate Zenity window size as a percentage of screen size (e.g. 80%)
+# If there are multiple monitors, select the first (primary) resolution
+if [[ $(xrandr | grep -c ' connected') -gt 1 ]]; then
+    # Get the first connected monitor resolution
+    resolution=$(xrandr | grep ' connected' | head -n 1 | awk '{print $3}' | sed 's/[^0-9x]//g')
+    screen_width=${resolution%x*}
+    screen_height=${resolution#*x}
+fi
+
+# Calculate Zenity window size as a percentage of screen size (e.g., 80%)
 zenity_width=$((screen_width * 80 / 100))
 zenity_height=$((screen_height * 80 / 100))
+
 # Check if any command line arguments were provided
 if [ ${#args[@]} -eq 0 ]; then
     # No command line arguments were provided, so display the main zenity window
