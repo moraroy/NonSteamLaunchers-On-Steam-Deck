@@ -430,7 +430,8 @@ if [ "${deckyplugin}" = false ]; then
 	        python3 $python_script_path
 
 	        kill $message_pid
-	        show_message "Scanning complete! Your game library just leveled up."
+	        show_message "Scanning complete! Your game library looks good!"
+
 	        echo "Python script ran. Continuing with the script..."
 	    else
 	        echo "Decky Plugin argument set but env_vars file not found. Exiting the script."
@@ -454,7 +455,7 @@ if [ "${deckyplugin}" = false ]; then
 	    python3 $python_script_path
 
 	    kill $message_pid
-	    show_message "Scanning complete! Your game library just leveled up."
+        show_message "Scanning complete! Your game library looks good!"
 	    sleep 2
 	    echo "env_vars file found. Running the .py file."
 	    live="and is LIVE."
@@ -2100,15 +2101,11 @@ function install_gog2 {
 function install_battlenet {
     # Terminate any existing Battle.net processes before starting installation
     #terminate_processes "Battle.net.exe" #"BlizzardError.exe"
-    proton_dir="${logged_in_home}/.local/share/Steam/steamapps/common/Proton - Experimental"
+    custom_dir="${logged_in_home}/.local/share/Steam/steamapps/common/Proton - Experimental"
 
-    # Start the first installation in the background
+    # Start the first installation
     echo "Starting first installation of Battle.net"
-    "$STEAM_RUNTIME" "$proton_dir/proton" run "$battle_file" Battle.net-Setup.exe --lang=enUS --installpath="C:\Program Files (x86)\Battle.net" &
-    first_install_pid=$!
-
-    # Wait for the installation process to finish
-    wait $first_install_pid
+    "$STEAM_RUNTIME" "$custom_dir/proton" run "$battle_file" Battle.net-Setup.exe --lang=enUS --installpath="C:\Program Files (x86)\Battle.net"
 
     # Optional: kill wineserver after installation is completely done
     #pkill wineserver
@@ -2116,6 +2113,7 @@ function install_battlenet {
 
     sleep 1
 }
+
 
 
 # Amazon Games specific installation steps
@@ -2430,10 +2428,7 @@ function install_launcher {
             eval "$post_install_command"
         fi
 
-        # Wait for the installation process to complete (except GOG Galaxy and Battle.net)
-        if [ "$launcher_name" != "GOG Galaxy" ] && [ "$launcher_name" != "Battle.net" ]; then
-            wait
-        fi
+        wait
         pkill -f wineserver
     fi
 }
