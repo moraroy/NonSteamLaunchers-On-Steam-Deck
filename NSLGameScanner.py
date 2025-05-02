@@ -809,6 +809,7 @@ create_new_entry(os.environ.get('chromedirectory'), 'Tubi', os.environ.get('tubi
 create_new_entry(os.environ.get('chromedirectory'), 'Disney+', os.environ.get('disneychromelaunchoptions'), os.environ.get('chrome_startdir'))
 create_new_entry(os.environ.get('chromedirectory'), 'Amazon Prime Video', os.environ.get('amazonchromelaunchoptions'), os.environ.get('chrome_startdir'))
 create_new_entry(os.environ.get('chromedirectory'), 'Youtube', os.environ.get('youtubechromelaunchoptions'), os.environ.get('chrome_startdir'))
+create_new_entry(os.environ.get('chromedirectory'), 'Youtube TV', os.environ.get('youtubetvchromelaunchoptions'), os.environ.get('chrome_startdir'))
 create_new_entry(os.environ.get('chromedirectory'), 'Amazon Luna', os.environ.get('lunachromelaunchoptions'), os.environ.get('chrome_startdir'))
 create_new_entry(os.environ.get('chromedirectory'), 'Twitch', os.environ.get('twitchchromelaunchoptions'), os.environ.get('chrome_startdir'))
 create_new_entry(os.environ.get('chromedirectory'), 'Venge', os.environ.get('vengechromelaunchoptions'), os.environ.get('chrome_startdir'))
