@@ -2416,7 +2416,7 @@ if new_shortcuts_added or shortcuts_updated:
         json.dump(existing_data, file, indent=4)
         print(f"Updated {descriptions_file_path} with new game details (if applicable).")
 
-print("All finished!")
+print("All finished, Scanner was successful!")
 
 
 
