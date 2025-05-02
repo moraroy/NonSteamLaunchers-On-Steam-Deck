@@ -2088,22 +2088,28 @@ function install_gog2 {
 }
 
 
+
 # Battle.net specific installation steps
 function install_battlenet {
     # Terminate any existing Battle.net processes before starting installation
-    terminate_processes "Battle.net.exe" #"BlizzardError.exe"
+    #terminate_processes "Battle.net.exe" #"BlizzardError.exe"
+    proton_dir="${logged_in_home}/.local/share/Steam/steamapps/common/Proton - Experimental"
 
     # Start the first installation in the background
     echo "Starting first installation of Battle.net"
     "$STEAM_RUNTIME" "$proton_dir/proton" run "$battle_file" Battle.net-Setup.exe --lang=enUS --installpath="C:\Program Files (x86)\Battle.net" &
     first_install_pid=$!
 
-    # After first installation, kill wineserver to clean up
-    pkill wineserver
-    sleep 1  
+    # Wait for the installation process to finish
+    wait $first_install_pid
 
+    # Optional: kill wineserver after installation is completely done
+    #pkill wineserver
+    echo "Battle.net installation complete."
 
+    sleep 1
 }
+
 
 # Amazon Games specific installation steps
 function install_amazon {
@@ -2383,8 +2389,8 @@ function install_launcher {
                 "$STEAM_RUNTIME" "$proton_dir/proton" run "$exe_file" /silent &
                 install_gog2
             elif [ "$launcher_name" = "Battle.net" ]; then
-                proton_dir="${logged_in_home}/.local/share/Steam/steamapps/common/Proton - Experimental"
-                "$STEAM_RUNTIME" "$proton_dir/proton" run "$battle_file" Battle.net-Setup.exe --lang=enUS --installpath="C:\Program Files (x86)\Battle.net" &
+
+
                 install_battlenet
             elif [ "$launcher_name" = "Amazon Games" ]; then
                 "$STEAM_RUNTIME" "$proton_dir/proton" run "$amazon_file" &
