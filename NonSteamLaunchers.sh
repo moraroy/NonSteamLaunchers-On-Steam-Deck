@@ -88,7 +88,7 @@ fi
 exec > >(tee -a "$log_file") 2>&1
 
 # Version number (major.minor)
-version=v4.1.5
+version=v4.1.6
 
 
 
