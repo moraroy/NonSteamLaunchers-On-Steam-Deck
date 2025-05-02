@@ -27,20 +27,54 @@ download_dir=$(eval echo ~$user)/Downloads/NonSteamLaunchersInstallation
 log_file=$(eval echo ~$user)/Downloads/NonSteamLaunchers-install.log
 
 
-#some cleaning
-find ${logged_in_home}/.local/share/Steam/steamapps/compatdata/ -maxdepth 1 -type d -empty -delete
-find ${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/ -maxdepth 1 -type f -name "*.tmp" -delete
 
+#Cleaning
+# Define the path to the compatdata directory
+compatdata_dir="${logged_in_home}/.local/share/Steam/steamapps/compatdata"
 
-# Function to display a Zenity message
-show_message() {
-  zenity --notification --text="$1" --timeout=1
-}
+# Define the NonSteamLaunchers directory path for cleaning .tmp files
+non_steam_launchers_dir="${compatdata_dir}/NonSteamLaunchers/pfx/drive_c/"
 
+# Define an array of folder names
+folder_names=("EpicGamesLauncher" "GogGalaxyLauncher" "UplayLauncher" "Battle.netLauncher" "TheEAappLauncher" "AmazonGamesLauncher" "itchioLauncher" "LegacyGamesLauncher" "HumbleGamesLauncher" "IndieGalaLauncher" "RockstarGamesLauncher" "GlyphLauncher" "PlaystationPlusLauncher" "VKPlayLauncher" "HoYoPlayLauncher" "NexonLauncher" "GameJoltLauncher" "ArtixGameLauncher" "ARCLauncher" "PokeTCGLauncher" "AntstreamLauncher" "PURPLELauncher" "PlariumLauncher" "VFUNLauncher" "TempoLauncher")
 
+# Cleaning up empty directories in compatdata (maxdepth 1 to avoid subdirectories)
+echo "Cleaning up empty directories in $compatdata_dir..."
+find "${compatdata_dir}" -maxdepth 1 -type d -empty -delete
+echo "Empty directories cleaned up."
 
+# Cleaning up .tmp files in the NonSteamLaunchers directory
+echo "Cleaning up .tmp files in $non_steam_launchers_dir..."
+find "${non_steam_launchers_dir}" -maxdepth 1 -type f -name "*.tmp" -delete
+echo ".tmp files cleaned up."
 
+# Loop through each folder name for symlink checking and deletion
+for folder in "${folder_names[@]}"; do
+  SYMLINK="$compatdata_dir/$folder"
 
+  # Check if it's a symlink and if the target is broken
+  if [ -L "$SYMLINK" ] && [ ! -e "$(readlink "$SYMLINK")" ]; then
+    echo "The symlink $SYMLINK is broken. Deleting it..."
+
+    # Delete the broken symlink
+    rm "$SYMLINK"
+    echo "Symlink $SYMLINK deleted successfully."
+  else
+    echo "The symlink $SYMLINK is either not a symlink or not broken. No action taken."
+  fi
+
+  # Check if the folder exists and clean up any .tmp files in it if applicable
+  TARGET_DIR="$compatdata_dir/$folder/pfx/drive_c/"
+  if [ -d "$TARGET_DIR" ]; then
+    echo "Cleaning up .tmp files in $TARGET_DIR..."
+    find "$TARGET_DIR" -maxdepth 1 -type f -name "*.tmp" -delete
+    echo ".tmp files cleaned up in $TARGET_DIR."
+  else
+    echo "No valid directory found for $folder at $TARGET_DIR. No .tmp cleanup needed."
+  fi
+done
+
+echo "Cleanup completed!"
 
 
 
@@ -55,6 +89,16 @@ exec > >(tee -a "$log_file") 2>&1
 
 # Version number (major.minor)
 version=v4.1.5
+
+
+
+
+# Function to display a Zenity message
+show_message() {
+  zenity --notification --text="$1" --timeout=1
+}
+
+
 
 # Check repo releases via GitHub API then display current stable version
 check_for_updates() {
@@ -182,6 +226,106 @@ if $installchrome; then
     flatpak --user override --filesystem=/run/udev:ro com.google.Chrome
   fi
 fi
+
+
+
+
+
+
+
+# --------------------------
+# First Run: VARIABLE SETUP
+# --------------------------
+
+# Function to extract steamid3 from Steam config
+get_steam_user_info() {
+    if [[ -f "${logged_in_home}/.steam/root/config/loginusers.vdf" ]] || [[ -f "${logged_in_home}/.local/share/Steam/config/loginusers.vdf" ]]; then
+        if [[ -f "${logged_in_home}/.steam/root/config/loginusers.vdf" ]]; then
+            file_path="${logged_in_home}/.steam/root/config/loginusers.vdf"
+        else
+            file_path="${logged_in_home}/.local/share/Steam/config/loginusers.vdf"
+        fi
+
+        most_recent_user=$(sed -n '/"users"/,/"MostRecent" "1"/p' "$file_path")
+
+        max_timestamp=0
+        current_user=""
+        current_steamid=""
+
+        while IFS="," read steamid account timestamp; do
+            if (( timestamp > max_timestamp )); then
+                max_timestamp=$timestamp
+                current_user=$account
+                current_steamid=$steamid
+            fi
+        done < <(echo "$most_recent_user" | awk -v RS='}\n' -F'\n' '
+        {
+            for(i=1;i<=NF;i++){
+                if($i ~ /[0-9]{17}/){
+                    split($i,a, "\""); steamid=a[2];
+                }
+                if($i ~ /"AccountName"/){
+                    split($i,b, "\""); account=b[4];
+                }
+                if($i ~ /"Timestamp"/){
+                    split($i,c, "\""); timestamp=c[4];
+                }
+            }
+            print steamid "," account "," timestamp
+        }')
+
+        steamid3=$((current_steamid - 76561197960265728))
+        echo "$steamid3"
+    else
+        return 0  # Graceful return if file not found
+    fi
+}
+
+# Suppress all Steam ID output temporarily
+{
+    set +x
+    steamid3=$(get_steam_user_info | tail -n1)
+    set -x
+} 2>/dev/null
+
+# Get Proton compatibility tool name or fall back
+proton_dir=$(find -L "${logged_in_home}/.steam/root/compatibilitytools.d" -maxdepth 1 -type d -name "GE-Proton*" | sort -V | tail -n1)
+if [[ -n "$proton_dir" ]]; then
+    compat_tool_name=$(basename "$proton_dir")
+else
+    compat_tool_name="Proton Experimental"
+fi
+
+# Get Python version
+python_version=$(python -c 'import sys; print(f"{sys.version_info.major}.{sys.version_info.minor}")' 2>/dev/null)
+
+# Just check if Chrome is installed via Flatpak — don't use its path
+if flatpak list --app | grep -q com.google.Chrome; then
+    echo "Google Chrome is installed via Flatpak."
+else
+    echo "Google Chrome is not installed via Flatpak."
+fi
+
+# Always assign these for Steam shortcut compatibility
+chromedirectory="/usr/bin/flatpak"
+chrome_startdir="/usr/bin"
+
+# Write to env_vars
+env_file="${logged_in_home}/.config/systemd/user/env_vars"
+mkdir -p "$(dirname "$env_file")"
+
+{
+    [[ -n "$steamid3" ]] && echo "export steamid3=$steamid3"
+    echo "export logged_in_home=$logged_in_home"
+    echo "export compat_tool_name=$compat_tool_name"
+    [[ -n "$python_version" ]] && echo "export python_version=$python_version"
+    echo "export chromedirectory=\"$chromedirectory\""
+    echo "export chrome_startdir=\"$chrome_startdir\""
+} > "$env_file"
+
+echo "Environment variables written to $env_file"
+#End of First Run Env_vars
+
 
 
 
