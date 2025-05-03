@@ -451,15 +451,19 @@ def add_compat_tool(app_id, launchoptions):
 
     # Check if the app_id exists in CompatToolMapping
     if str(app_id) in config_data['InstallConfigStore']['Software']['Valve']['Steam']['CompatToolMapping']:
-        # Check if 'PROTONPATH' is present in the existing app's config
         existing_app = config_data['InstallConfigStore']['Software']['Valve']['Steam']['CompatToolMapping'][str(app_id)]
 
+        # NEW: Skip if existing entry already has any non-empty values
+        if existing_app.get('name') or existing_app.get('config') or existing_app.get('priority'):
+            print(f"CompatToolMapping already populated for appid: {app_id}. Skipping update.")
+            return None
+
+        # Original logic: check for PROTONPATH
         if 'PROTONPATH' in existing_app.get('config', ''):
-            # If 'PROTONPATH' exists in the config for the app_id, skip the update
             print(f"PROTONPATH found in the config for appid: {app_id}. Skipping compatibility tool update.")
             return None
 
-        # If 'PROTONPATH' is not found, update the app's compatibility tool properties
+        # Update the app's compatibility tool properties
         existing_app['name'] = f'{compat_tool_name}'
         existing_app['config'] = ''
         existing_app['priority'] = '250'
@@ -467,12 +471,10 @@ def add_compat_tool(app_id, launchoptions):
         return compat_tool_name
 
     else:
-        # Combine checks for 'chrome' and 'PROTONPATH' — only skip if no CompatToolMapping and PROTONPATH is in launch options
+        # Skip creation if launch options contain 'chrome' or 'PROTONPATH'
         if 'chrome' in launchoptions or 'PROTONPATH' in launchoptions:
             print("chrome or PROTONPATH found in launch options. Skipping compatibility tool creation.")
             return False
-
-
 
         # Create a new CompatToolMapping entry if it doesn't exist
         config_data['InstallConfigStore']['Software']['Valve']['Steam']['CompatToolMapping'][str(app_id)] = {
@@ -482,6 +484,7 @@ def add_compat_tool(app_id, launchoptions):
         }
         print(f"Created new CompatToolMapping entry for appid: {app_id}")
         return compat_tool_name
+
 
 # Check if the shortcut already exists in the shortcuts
 def check_if_shortcut_exists(shortcut_id, display_name, exe_path, start_dir, launch_options):
