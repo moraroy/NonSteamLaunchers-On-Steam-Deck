@@ -14,13 +14,13 @@ if [[ -z "$DBUS_SESSION_BUS_ADDRESS" ]]; then
   export DBUS_SESSION_BUS_ADDRESS
 fi
 
+
 if ! zenity --info --text="Testing Zenity rendering" --timeout=1 >/dev/null 2>&1; then
     # If Zenity fails, fallback
     export GSK_RENDERER=cairo
     export GDK_BACKEND=x11
     export LIBGL_ALWAYS_SOFTWARE=1
 fi
-
 export LD_LIBRARY_PATH=$(pwd)
 
 # $UID
@@ -96,6 +96,8 @@ exec > >(tee -a "$log_file") 2>&1
 
 # Version number (major.minor)
 version=v4.1.6
+#NSL Decky Plugin Latest Github Version
+deckyversion=$(curl -s https://raw.githubusercontent.com/moraroy/NonSteamLaunchersDecky/refs/heads/main/package.json | grep -o '"version": "[^"]*' | sed 's/"version": "//')
 
 
 
@@ -384,10 +386,10 @@ if [ "${deckyplugin}" = false ]; then
 
 	if [ -f "$env_vars" ]; then
 	    echo "env_vars file found. Running the .py file."
-	    live="and is LIVE."
+	    live="and is LIVE. Latest NSL Decky Plugin Version on Github: $deckyversion"
 	else
 	    echo "env_vars file not found. Not Running the .py file."
-	    live="and is not LIVE."
+	    live="and is not LIVE. Latest NSL Decky Plugin Version on Github: $deckyversion"
 	fi
 
 	decky_plugin=false
@@ -465,7 +467,7 @@ if [ "${deckyplugin}" = false ]; then
         show_message "Scanning complete! Your game library looks good!"
 	    sleep 2
 	    echo "env_vars file found. Running the .py file."
-	    live="and is LIVE."
+	    live="successfully. Decky Plugin Version on Github is: $deckyversion"
 	fi
 
 	nsl_config_dir="${logged_in_home}/.var/app/com.github.mtkennerly.ludusavi/config/ludusavi/NSLconfig"
@@ -2116,7 +2118,21 @@ function install_gog2 {
 function install_battlenet {
     # Terminate any existing Battle.net processes before starting installation
     #terminate_processes "Battle.net.exe" #"BlizzardError.exe"
-    custom_dir="${logged_in_home}/.local/share/Steam/steamapps/common/Proton - Experimental"
+
+    custom_dir=$(find ~/.steam ~/.local ~/.var /run/media/$USER /mnt /media /opt -type d -iname "Proton - Experimental" 2>/dev/null | while read -r dir; do
+    if [[ -f "$dir/proton" ]]; then
+        echo "$dir"
+        break
+    fi
+    done)
+
+    if [[ -z "$custom_dir" ]]; then
+    echo "Proton Experimental not found with a 'proton' file."
+    else
+    echo "Found Proton Experimental at: $custom_dir"
+    fi
+
+    #custom_dir="${logged_in_home}/.local/share/Steam/steamapps/common/Proton - Experimental"
 
     # Start the first installation
     echo "Starting first installation of Battle.net"
