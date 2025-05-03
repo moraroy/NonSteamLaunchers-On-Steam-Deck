@@ -2200,22 +2200,6 @@ else:
 
 
 
-
-# Skip list for games that should not get details from the API
-skip_names = {
-    'Epic Games', 'GOG Galaxy', 'Ubisoft Connect', 'Battle.net', 'EA App',
-    'Amazon Games', 'itch.io', 'Legacy Games', 'Humble Bundle', 'IndieGala Client',
-    'Rockstar Games Launcher', 'Glyph', 'Minecraft Launcher', 'Playstation Plus',
-    'VK Play', 'HoYoPlay', 'Nexon Launcher', 'Game Jolt Client', 'Artix Game Launcher',
-    'PURPLE Launcher', 'Plarium Play', 'VFUN Launcher', 'Tempo Launcher', 'ARC Launcher',
-    'Pokémon Trading Card Game Live', 'Antstream Arcade', 'Repair EA App', 'Xbox Game Pass',
-    'Better xCloud', 'GeForce Now', 'Boosteroid Cloud Gaming', 'Stim.io', 'WatchParty',
-    'Netflix', 'Hulu', 'Tubi', 'Disney+', 'Amazon Prime Video', 'Youtube', 'Youtube TV',
-    'Amazon Luna', 'Twitch', 'Venge', 'Rocketcrab', 'Fortnite', 'WebRcade',
-    'WebRcade Editor', 'Afterplay.io', 'OnePlay', 'AirGPU', 'CloudDeck', 'JioGamesCloud',
-    'Plex', 'Apple TV+', 'Crunchyroll', 'PokéRogue', 'NonSteamLaunchers', 'Repair EA App'
-}
-
 # Function to send a notification with an optional icon
 def send_notification(message, icon_path=None, expire_time=5000):
     """Send a notification with the message and optional icon."""
@@ -2276,6 +2260,8 @@ def game_exists_in_data(existing_data, game_name):
     # Check if the game is in the list without checking 'game_details'
     return any(game['game_name'] == game_name for game in existing_data)
 
+
+
 # Fetch game details for the newly created shortcuts from the API
 def get_game_details(game_name):
     url = f"https://NonSteamLaunchers.onrender.com/api/details/{game_name}"
@@ -2288,24 +2274,6 @@ def get_game_details(game_name):
         # Return game details with 'about_the_game' set to null in case of error
         return {"game_name": game_name, "about_the_game": None}
 
-# Fetch and update game details for created shortcuts
-def handle_new_shortcut(existing_data, game_name):
-    # Skip games in the skip list
-    if game_name in skip_names:
-        print(f"Skipping {game_name} as it is in the skip list.")
-        return existing_data
-
-    # If the game already exists in the data with valid details, skip the API call
-    if game_exists_in_data(existing_data, game_name):
-        print(f"Game details for {game_name} already exist. Skipping API call.")
-        return existing_data  # No need to make the API call or update the .json
-
-    # If the game doesn't have details or isn't already in the data, fetch and add
-    print(f"Fetching details for {game_name} as details were previously missing...")
-    game_details = get_game_details(game_name)
-    if game_details:
-        write_game_details(existing_data, game_details)
-    return existing_data  # Return the updated data
 
 # Function to write game details to descriptions.json (only if it's not already present)
 def write_game_details(existing_data, game_details):
@@ -2334,6 +2302,39 @@ def write_game_details(existing_data, game_details):
 
     return existing_data
 
+
+# List of game names to skip fetching descriptions for
+skip_games = {'Epic Games', 'GOG Galaxy', 'Ubisoft Connect', 'Battle.net', 'EA App',
+    'Amazon Games', 'itch.io', 'Legacy Games', 'Humble Bundle', 'IndieGala Client',
+    'Rockstar Games Launcher', 'Glyph', 'Minecraft Launcher', 'Playstation Plus',
+    'VK Play', 'HoYoPlay', 'Nexon Launcher', 'Game Jolt Client', 'Artix Game Launcher',
+    'PURPLE Launcher', 'Plarium Play', 'VFUN Launcher', 'Tempo Launcher', 'ARC Launcher',
+    'Pokémon Trading Card Game Live', 'Antstream Arcade', 'Repair EA App', 'Xbox Game Pass',
+    'Better xCloud', 'GeForce Now', 'Boosteroid Cloud Gaming', 'Stim.io', 'WatchParty',
+    'Netflix', 'Hulu', 'Tubi', 'Disney+', 'Amazon Prime Video', 'Youtube', 'Youtube TV',
+    'Amazon Luna', 'Twitch', 'Venge', 'Rocketcrab', 'Fortnite', 'WebRcade',
+    'WebRcade Editor', 'Afterplay.io', 'OnePlay', 'AirGPU', 'CloudDeck', 'JioGamesCloud',
+    'Plex', 'Apple TV+', 'Crunchyroll', 'PokéRogue', 'NonSteamLaunchers', 'Repair EA App'}
+
+# Fetch and update game details for created shortcuts
+def handle_new_shortcut(existing_data, game_name):
+    # Check if the game is in the skip list
+    if game_name in skip_games:
+        print(f"Skipping {game_name} as it is in the skip list.")
+        return existing_data  # No need to make the API call or update the .json
+
+    # If the game already exists in the data with valid details, skip the API call
+    if game_exists_in_data(existing_data, game_name):
+        print(f"Game details for {game_name} already exist. Skipping API call.")
+        return existing_data  # No need to make the API call or update the .json
+
+    # If the game doesn't have details or isn't already in the data, fetch and add
+    print(f"Fetching details for {game_name} as details were previously missing...")
+    game_details = get_game_details(game_name)
+    if game_details:
+        write_game_details(existing_data, game_details)
+    return existing_data  # Return the updated data
+
 # Function to strip HTML tags from a string
 def strip_html_tags(text):
     clean_text = re.sub(r'<[^>]*>', '', text)
@@ -2349,92 +2350,88 @@ def decode_html_entities(text):
 # Create descriptions.json if it doesn't exist
 create_descriptions_file()
 
-# Only write back to the shortcuts.vdf and config.vdf files if new shortcuts were added or compat tools changed
+# Only write back to the shortcuts.vdf and config.vdf files if new shortcuts were added or compattools changed
 if new_shortcuts_added or shortcuts_updated:
-    print("Saving new config and shortcuts files")
-    conf = vdf.dumps(config_data, pretty=True)
-    try:
-        with open(f"{logged_in_home}/.steam/root/config/config.vdf", 'w') as file:
-            file.write(conf)
-    except IOError as e:
-        print(f"Error writing to config.vdf: {e}")
+    print(f"Saving new config and shortcuts files")
 
+    # Write the updated shortcuts to the shortcuts.vdf file
     try:
         with open(f"{logged_in_home}/.steam/root/userdata/{steamid3}/config/shortcuts.vdf", 'wb') as file:
             file.write(vdf.binary_dumps(shortcuts))
     except IOError as e:
         print(f"Error writing to shortcuts.vdf: {e}")
 
-# Load existing game data
-existing_data = load_game_data()  # Make sure this is implemented and loads your data correctly
 
-# Fetch and update game details for created shortcuts
-for game_name in created_shortcuts:
-    existing_data = handle_new_shortcut(existing_data, game_name)  # Handle each new game
+    # Now that the files are updated, show the created shortcuts in the notification
+    if created_shortcuts:
+        print("Created Shortcuts:")
+        for name in created_shortcuts:
+            print(name)
+            existing_shortcuts.add(name)  # Add the new shortcut name to the set
 
-# After processing all the created shortcuts, write the updated data back to the .json if necessary
-# However, this will only happen if new data was added, otherwise it will not write or overwrite the .json
-with open(descriptions_file_path, 'w') as file:
-    json.dump(existing_data, file, indent=4)
-    print(f"Updated {descriptions_file_path} with new game details (if applicable).")
+        # Write the unique appnames (avoiding duplicates) to the new file
+        try:
+            with open(new_file_path, 'w') as f:  # Open in 'w' mode to overwrite and avoid duplicates
+                for name in existing_shortcuts:
+                    # Skip appnames with the defined extensions
+                    if not any(name.endswith(ext) for ext in skip_extensions):
+                        f.write(f"{name}\n")  # Write only the appname (raw)
+            print(f"Shortcuts written to {new_file_path}.")
+        except IOError as e:
+            print(f"Error writing to {new_file_path}: {e}")
 
-# Now that the files are updated, show the created shortcuts in the notification
-if created_shortcuts:
-    print("Created Shortcuts:")
-    for name in created_shortcuts:
-        print(name)
-        existing_shortcuts.add(name)  # Add the new shortcut name to the set
+        # Prepare notifications with game names and icons
+        notifications = []
+        num_notifications = len(created_shortcuts)
 
-    # Write the unique appnames (avoiding duplicates) to the new file
-    try:
-        with open(new_file_path, 'w') as f:  # Open in 'w' mode to overwrite and avoid duplicates
-            for name in existing_shortcuts:
-                # Skip appnames with the defined extensions
-                if not any(name.endswith(ext) for ext in skip_extensions):
-                    f.write(f"{name}\n")  # Write only the appname (raw)
-        print(f"Shortcuts written to {new_file_path}.")
-    except IOError as e:
-        print(f"Error writing to {new_file_path}: {e}")
+        for i, name in enumerate(created_shortcuts):
+            # Skip if the game has already been notified
+            if name in notified_games:
+                continue  # Skip sending notification for this game
 
-    # Prepare notifications with game names and icons
-    notifications = []
-    num_notifications = len(created_shortcuts)
+            # Loop through all entries in the shortcuts dictionary
+            found = False  # Flag to check if the name is found
 
-    for i, name in enumerate(created_shortcuts):
-        # Skip if the game has already been notified
-        if name in notified_games:
-            continue  # Skip sending notification for this game
+            # Iterate through each shortcut entry
+            for shortcut_key, shortcut_data in shortcuts['shortcuts'].items():
+                if shortcut_data.get('appname') == name:
+                    icon_path = shortcut_data.get('icon', None)
+                    message = f"New game added! Restart Steam to apply: {name}"
 
-        # Loop through all entries in the shortcuts dictionary
-        found = False  # Flag to check if the name is found
+                    # For 10 or fewer shortcuts, each will last 5 seconds
+                    if num_notifications <= 4:
+                        expire_time = 5000
+                    else:
+                        # For more than 10 shortcuts, start applying the gradient effect
+                        expire_time = min(5000, 500 + (i * (5000 // num_notifications)))
 
-        # Iterate through each shortcut entry
-        for shortcut_key, shortcut_data in shortcuts['shortcuts'].items():
-            if shortcut_data.get('appname') == name:
-                icon_path = shortcut_data.get('icon', None)
-                message = f"New game added! Restart Steam to apply: {name}"
+                    notifications.append((message, icon_path, expire_time))
+                    notified_games.add(name)  # Mark this game as notified
+                    found = True
+                    break
 
-                # For 10 or fewer shortcuts, each will last 5 seconds
-                if num_notifications <= 4:
-                    expire_time = 5000
-                else:
-                    # For more than 10 shortcuts, start applying the gradient effect
-                    expire_time = min(5000, 500 + (i * (5000 // num_notifications)))
+            # If the game wasn't found in the shortcuts, log a warning
+            if not found:
+                print(f"Warning: Game '{name}' not found in shortcuts dictionary.")
 
-                notifications.append((message, icon_path, expire_time))
-                notified_games.add(name)  # Mark this game as notified
-                found = True
-                break
+        # Send all notifications with dynamic expire times
+        for message, icon_path, expire_time in notifications:
+            send_notification(message, icon_path, expire_time)
 
-        # If the game wasn't found in the shortcuts, log a warning
-        if not found:
-            print(f"Warning: Game '{name}' not found in shortcuts dictionary.")
+    # Load existing game data
+    existing_data = load_game_data()  # Make sure this is implemented and loads your data correctly
 
-    # Send all notifications with dynamic expire times
-    for message, icon_path, expire_time in notifications:
-        send_notification(message, icon_path, expire_time)
+    # Fetch and update game details for created shortcuts
+    for game_name in created_shortcuts:
+        existing_data = handle_new_shortcut(existing_data, game_name)  # Handle each new game
 
-print("Scanner has finished successfully!")
+    # After processing all the created shortcuts, write the updated data back to the .json if necessary
+    # However, this will only happen if new data was added, otherwise it will not write or overwrite the .json
+    with open(descriptions_file_path, 'w') as file:
+        json.dump(existing_data, file, indent=4)
+        print(f"Updated {descriptions_file_path} with new game details (if applicable).")
+
+print("All finished, Scanner was successful!")
 
 
 
