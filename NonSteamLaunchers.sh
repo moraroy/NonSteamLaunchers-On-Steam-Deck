@@ -322,7 +322,6 @@ chrome_startdir="/usr/bin"
 # Write to env_vars
 env_file="${logged_in_home}/.config/systemd/user/env_vars"
 mkdir -p "$(dirname "$env_file")"
-touch "$env_file"  # Ensure it exists
 
 # Declare vars to check and write
 declare -A vars_to_set
@@ -333,15 +332,24 @@ vars_to_set["compat_tool_name"]="$compat_tool_name"
 vars_to_set["chromedirectory"]="$chromedirectory"
 vars_to_set["chrome_startdir"]="$chrome_startdir"
 
-# Loop through and append missing exports
-for key in "${!vars_to_set[@]}"; do
-    if ! grep -qE "^export $key=" "$env_file"; then
-        echo "export $key=\"${vars_to_set[$key]}\"" >> "$env_file"
-        echo "Added: export $key=\"${vars_to_set[$key]}\""
-    fi
-done
-
-echo "Environment variables updated in $env_file (if needed)."
+# If file is missing or empty, write everything at once
+if [[ ! -s "$env_file" ]]; then
+    {
+        for key in "${!vars_to_set[@]}"; do
+            echo "export $key=\"${vars_to_set[$key]}\""
+        done
+    } > "$env_file"
+    echo "Environment variables written to $env_file (new or empty file)."
+else
+    # File exists with content: append only missing exports
+    for key in "${!vars_to_set[@]}"; do
+        if ! grep -qE "^export $key=" "$env_file"; then
+            echo "export $key=\"${vars_to_set[$key]}\"" >> "$env_file"
+            echo "Added: export $key=\"${vars_to_set[$key]}\""
+        fi
+    done
+    echo "Environment variables updated in $env_file (if needed)."
+fi
 #End of First Run Env_vars
 
 
