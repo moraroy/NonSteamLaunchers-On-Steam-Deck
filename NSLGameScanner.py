@@ -2353,8 +2353,12 @@ create_descriptions_file()
 # Only write back to the shortcuts.vdf and config.vdf files if new shortcuts were added or compattools changed
 if new_shortcuts_added or shortcuts_updated:
     print(f"Saving new config and shortcuts files")
-
-    # Write the updated shortcuts to the shortcuts.vdf file
+    conf = vdf.dumps(config_data, pretty=True)
+    try:
+        with open(f"{logged_in_home}/.steam/root/config/config.vdf", 'w') as file:
+            file.write(conf)
+    except IOError as e:
+        print(f"Error writing to config.vdf: {e}")
     try:
         with open(f"{logged_in_home}/.steam/root/userdata/{steamid3}/config/shortcuts.vdf", 'wb') as file:
             file.write(vdf.binary_dumps(shortcuts))
@@ -2432,6 +2436,5 @@ if new_shortcuts_added or shortcuts_updated:
         print(f"Updated {descriptions_file_path} with new game details (if applicable).")
 
 print("All finished, Scanner was successful!")
-
 
 
