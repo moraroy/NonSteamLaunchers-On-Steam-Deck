@@ -322,17 +322,26 @@ chrome_startdir="/usr/bin"
 # Write to env_vars
 env_file="${logged_in_home}/.config/systemd/user/env_vars"
 mkdir -p "$(dirname "$env_file")"
+touch "$env_file"  # Ensure it exists
 
-{
-    [[ -n "$steamid3" ]] && echo "export steamid3=$steamid3"
-    echo "export logged_in_home=$logged_in_home"
-    echo "export compat_tool_name=$compat_tool_name"
-    [[ -n "$python_version" ]] && echo "export python_version=$python_version"
-    echo "export chromedirectory=\"$chromedirectory\""
-    echo "export chrome_startdir=\"$chrome_startdir\""
-} > "$env_file"
+# Declare vars to check and write
+declare -A vars_to_set
+[[ -n "$steamid3" ]] && vars_to_set["steamid3"]="$steamid3"
+vars_to_set["logged_in_home"]="$logged_in_home"
+vars_to_set["compat_tool_name"]="$compat_tool_name"
+[[ -n "$python_version" ]] && vars_to_set["python_version"]="$python_version"
+vars_to_set["chromedirectory"]="$chromedirectory"
+vars_to_set["chrome_startdir"]="$chrome_startdir"
 
-echo "Environment variables written to $env_file"
+# Loop through and append missing exports
+for key in "${!vars_to_set[@]}"; do
+    if ! grep -qE "^export $key=" "$env_file"; then
+        echo "export $key=\"${vars_to_set[$key]}\"" >> "$env_file"
+        echo "Added: export $key=\"${vars_to_set[$key]}\""
+    fi
+done
+
+echo "Environment variables updated in $env_file (if needed)."
 #End of First Run Env_vars
 
 
