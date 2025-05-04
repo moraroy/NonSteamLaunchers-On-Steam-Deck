@@ -15,12 +15,13 @@ if [[ -z "$DBUS_SESSION_BUS_ADDRESS" ]]; then
 fi
 
 
-if ! zenity --info --text="NonSteamLaunchers is running tests.." --timeout=1 >/dev/null 2>&1; then
+if ! zenity --notification --text="NonSteamLaunchers is running tests..." >/dev/null 2>&1; then
     # If Zenity fails, fallback
     export GSK_RENDERER=cairo
     export GDK_BACKEND=x11
     export LIBGL_ALWAYS_SOFTWARE=1
 fi
+
 export LD_LIBRARY_PATH=$(pwd)
 
 # $UID
