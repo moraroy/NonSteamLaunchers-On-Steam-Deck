@@ -502,7 +502,6 @@ def check_if_shortcut_exists(shortcut_id, display_name, exe_path, start_dir, lau
         print(f"Existing shortcut found based on matching fields for game {display_name}. Skipping creation.")
         return True
 
-    # Check if the launch options differ from the default (added this section)
     for s in shortcuts['shortcuts'].values():
         if s.get('appname') == display_name and s.get('exe') == exe_path and s.get('StartDir') == start_dir:
             if s.get('LaunchOptions') != launch_options:
