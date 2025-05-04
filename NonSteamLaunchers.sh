@@ -15,7 +15,7 @@ if [[ -z "$DBUS_SESSION_BUS_ADDRESS" ]]; then
 fi
 
 
-if ! zenity --info --text="Testing Zenity rendering" --timeout=1 >/dev/null 2>&1; then
+if ! zenity --info --text="NonSteamLaunchers is running tests.." --timeout=1 >/dev/null 2>&1; then
     # If Zenity fails, fallback
     export GSK_RENDERER=cairo
     export GDK_BACKEND=x11
