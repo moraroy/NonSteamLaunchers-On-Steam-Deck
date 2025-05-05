@@ -3207,18 +3207,9 @@ fi
 if [[ $options == *"❤️"* ]]; then
     show_message "Sending any #nsl notes to the community!<3"
 
-    search_directory="${logged_in_home}/.steam/root/userdata/${steamid3}/"
-    echo "Searching directory: $search_directory"
-
-    remote_dir=$(find "$search_directory" -type f -name 'notes*' -exec dirname {} \; | sort -u | tail -n 1)
-
-    # Check if a matching remote directory was found
-    if [[ -z "$remote_dir" ]]; then
-        echo "Error: No matching remote directory found."
-        exit 1
-    else
-        echo "Found matching remote directory: $remote_dir"
-    fi
+    # Fixed remote directory path
+    remote_dir="${logged_in_home}/.steam/root/userdata/${steamid3}/2371090/remote"
+    echo "Using fixed remote directory: $remote_dir"
 
     # Path for the new "NSL Notes" folder
     nsl_notes_folder="$remote_dir/NSL Notes"
@@ -3327,7 +3318,7 @@ if [[ $options == *"❤️"* ]]; then
     else
         echo "Failed to send data to the API. Status code: $response"
     fi
-	
+
     show_message "#nsl notes have been sent :) looking for new ones!<3"
 fi
 
@@ -3344,7 +3335,7 @@ proton_dir=$(find -L "${logged_in_home}/.steam/root/compatibilitytools.d" -maxde
 CSV_FILE="$proton_dir/protonfixes/umu-database.csv"
 echo "$CSV_FILE"
 shortcuts_file="${logged_in_home}/.config/systemd/user/shortcuts"
-output_dir="$remote_dir"
+output_dir="${logged_in_home}/.steam/root/userdata/${steamid3}/2371090/remote"
 descriptions_file="${logged_in_home}/.config/systemd/user/descriptions.json"
 
 # Function to get the current Unix timestamp
@@ -3563,7 +3554,7 @@ for game_name in "${games[@]}"; do
     update_notes_in_file "$file_path" "$game_name" "$api_response"
 done
 
-echo "Script execution complete."
+echo "Notes execution complete."
 show_message "Notes have been recieved!"
 #noooooooooooooooootes
 
