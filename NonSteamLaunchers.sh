@@ -3207,9 +3207,17 @@ fi
 if [[ $options == *"❤️"* ]]; then
     show_message "Sending any #nsl notes to the community!<3"
 
-    # Fixed remote directory path
     remote_dir="${logged_in_home}/.steam/root/userdata/${steamid3}/2371090/remote"
-    echo "Using fixed remote directory: $remote_dir"
+    echo "Searching directory: $search_directory"
+
+
+    # Check if a matching remote directory was found
+    if [[ -z "$remote_dir" ]]; then
+        echo "Error: No matching remote directory found."
+        exit 1
+    else
+        echo "Found matching remote directory: $remote_dir"
+    fi
 
     # Path for the new "NSL Notes" folder
     nsl_notes_folder="$remote_dir/NSL Notes"
