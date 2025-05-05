@@ -3475,10 +3475,14 @@ update_notes_in_file() {
         # Find the description for the current game
         game_description=$(echo "$descriptions" | jq -r ".[] | select(.game_name == \"$game_name\") | .about_the_game")
 
-        # If a description is found, create a description note
-        if [[ -n "$game_description" ]]; then
-            local note_3=$(jq -n --arg shortcut_name "$game_name" --argjson time_created "$current_time" --arg game_description "$game_description" \
-                '{"id":"note3675","shortcut_name":$shortcut_name,"ordinal":0,"time_created":$time_created,"time_modified":$time_created,"title":"Game Description","content":$game_description}')
+        # Use a default description if none is found
+        if [[ -z "$game_description" ]]; then
+            game_description="No description found in the JSON file."
+        fi
+
+        #create a description note
+        local note_3=$(jq -n --arg shortcut_name "$game_name" --argjson time_created "$current_time" --arg game_description "$game_description" \
+            '{"id":"note3675","shortcut_name":$shortcut_name,"ordinal":0,"time_created":$time_created,"time_modified":$time_created,"title":"Game Description","content":$game_description}')
 
             # Check if the file exists and is valid
             if [[ -f "$file_path" ]]; then
@@ -3509,9 +3513,6 @@ update_notes_in_file() {
                     return 1  # Exit if the file creation fails
                 fi
             fi
-        else
-            echo "No description found for $game_name"
-        fi
     done
 }
 
