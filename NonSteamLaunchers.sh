@@ -3207,16 +3207,23 @@ fi
 if [[ $options == *"❤️"* ]]; then
     show_message "Sending any #nsl notes to the community!<3"
 
-    remote_dir="${logged_in_home}/.steam/root/userdata/${steamid3}/2371090/remote"
-    echo "Searching directory: $search_directory"
+    # Check if steamid3 is not empty
+    if [[ -n "$steamid3" ]]; then
+        remote_dir="${logged_in_home}/.steam/root/userdata/${steamid3}/2371090/remote"
+        echo "Searching directory: $remote_dir"
 
+        # Create the remote directory if it doesn't exist
+        mkdir -p "$remote_dir"
+        echo "Directory $remote_dir is ready."
 
-    # Check if a matching remote directory was found
-    if [[ -z "$remote_dir" ]]; then
-        echo "Error: No matching remote directory found."
-        exit 1
+        # Check if the remote directory exists now
+        if [[ -d "$remote_dir" ]]; then
+            echo "Found matching remote directory: $remote_dir"
+        else
+            echo "Error: No matching remote directory found."
+        fi
     else
-        echo "Found matching remote directory: $remote_dir"
+        echo "Error: steamid3 variable is not set."
     fi
 
     # Path for the new "NSL Notes" folder
