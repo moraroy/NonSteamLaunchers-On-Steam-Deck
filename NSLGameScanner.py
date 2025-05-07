@@ -12,6 +12,7 @@ import subprocess
 import sqlite3
 import csv
 import configparser
+import certifi
 from urllib.request import urlopen
 from urllib.request import urlretrieve
 from urllib.parse import quote
