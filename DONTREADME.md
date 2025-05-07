@@ -1,0 +1,1 @@
+Oh wow. It seems like you forced yourself to read this by your own free will. Thats known as a choice. A decision. You must be greatly offended with yourself by now. By the end of this sentence, your consent will be taken away from you. Maybe go read the README file instead?
