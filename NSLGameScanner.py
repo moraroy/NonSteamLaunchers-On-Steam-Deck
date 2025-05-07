@@ -2539,8 +2539,12 @@ if new_shortcuts_added or shortcuts_updated:
                 icon_path = shortcut_entry.get('icon')
                 message = f"New game added! Restart Steam to apply: {name}"
 
-                # Apply a gradient expire_time (increasing with index)
-                expire_time = max(1000, 1000 + (i * 200))  # Start at 1s, increase by 200ms
+                # Set the expire_time based on the number of notifications
+                if num_notifications <= 4:
+                    expire_time = 5000  # 5 seconds for small batches
+                else:
+                    expire_time = max(1000, 1000 + (i * 200))  # Gradient for larger batches
+
                 notifications.append((message, icon_path, expire_time))
                 notified_games.add(name)
             else:
