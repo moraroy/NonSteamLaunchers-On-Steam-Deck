@@ -1326,7 +1326,7 @@ vfun_url=https://vfun-cdn.qijisoft.com/vlauncher/fullclient/VFUNLauncherInstalle
 vfun_file=${logged_in_home}/Downloads/NonSteamLaunchersInstallation/VFUNLauncherInstaller.exe
 
 # TempoLauncher
-tempo_url="https://cdn.playthebazaar.com/launcher-0ca5d6/Tempo%20Launcher%20-%20Beta%20Setup%201.0.1.exe"
+tempo_url="https://cdn.playthebazaar.com/launcher-0ca5d6/Tempo%20Launcher%20-%20Beta%20Setup%201.0.4.exe"
 tempo_file="${logged_in_home}/Downloads/NonSteamLaunchersInstallation/TempoLauncherSetup.exe"
 
 
