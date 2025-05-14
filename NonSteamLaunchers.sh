@@ -2137,24 +2137,10 @@ function install_battlenet {
     # Terminate any existing Battle.net processes before starting installation
     #terminate_processes "Battle.net.exe" #"BlizzardError.exe"
 
-    custom_dir=$(find ~/.steam ~/.local ~/.var /run/media/$USER /mnt /media /opt -type d -iname "Proton - Experimental" 2>/dev/null | while read -r dir; do
-    if [[ -f "$dir/proton" ]]; then
-        echo "$dir"
-        break
-    fi
-    done)
-
-    if [[ -z "$custom_dir" ]]; then
-    echo "Proton Experimental not found with a 'proton' file."
-    else
-    echo "Found Proton Experimental at: $custom_dir"
-    fi
-
-    #custom_dir="${logged_in_home}/.local/share/Steam/steamapps/common/Proton - Experimental"
 
     # Start the first installation
     echo "Starting first installation of Battle.net"
-    "$STEAM_RUNTIME" "$custom_dir/proton" run "$battle_file" Battle.net-Setup.exe --lang=enUS --installpath="C:\Program Files (x86)\Battle.net"
+    "$STEAM_RUNTIME" "$proton_dir/proton" run "$battle_file" Battle.net-Setup.exe --lang=enUS --installpath="C:\Program Files (x86)\Battle.net"
 
     # Optional: kill wineserver after installation is completely done
     #pkill wineserver
