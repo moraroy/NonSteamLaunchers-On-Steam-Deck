@@ -472,9 +472,9 @@ def add_compat_tool(app_id, launchoptions):
         return compat_tool_name
 
     else:
-        # Skip creation if launch options contain 'chrome' or 'PROTONPATH'
-        if 'chrome' in launchoptions or 'PROTONPATH' in launchoptions:
-            print("chrome or PROTONPATH found in launch options. Skipping compatibility tool creation.")
+        # Skip creation if launch options contain 'chrome' or 'PROTONPATH' or waydroid format
+        if 'chrome' in launchoptions or 'PROTONPATH' in launchoptions or 'com.' in launchoptions or 'jp.' in launchoptions:
+            print("chrome or PROTONPATH or waydroid found in launch options. Skipping compatibility tool creation.")
             return False
 
         # Create a new CompatToolMapping entry if it doesn't exist
@@ -2207,6 +2207,72 @@ else:
 #end of chrome scanner for xbox and geforce bookmarks
 
 
+
+
+
+
+# Waydroid scanner
+# Check for Waydroid
+if shutil.which("waydroid") is None:
+    print("Waydroid not found. Skipping Waydroid scanner.")
+else:
+    applications_dir = f"{logged_in_home}/.local/share/applications/"
+    ignored_files = {
+        "waydroid.com.android.inputmethod.latin.desktop",
+        "waydroid.com.android.gallery3d.desktop",
+        "waydroid.com.android.documentsui.desktop",
+        "waydroid.com.android.settings.desktop",
+        "waydroid.org.lineageos.eleven.desktop",
+        "waydroid.com.android.calculator2.desktop",
+        "waydroid.com.android.contacts.desktop",
+        "waydroid.org.lineageos.etar.desktop",
+        "waydroid.org.lineageos.jelly.desktop",
+        "waydroid.com.android.camera2.desktop",
+        "waydroid.com.android.deskclock.desktop",
+        "waydroid.org.lineageos.recorder.desktop"
+    }
+
+    exe_path = f'{logged_in_home}/Android_Waydroid/Android_Waydroid_Cage.sh'
+    start_dir = f'{logged_in_home}/Android_Waydroid/'
+
+    if os.path.isdir(applications_dir):
+        for file_name in os.listdir(applications_dir):
+            if not file_name.endswith(".desktop") or file_name in ignored_files:
+                continue
+
+            file_path = os.path.join(applications_dir, file_name)
+            try:
+                with open(file_path, "r", encoding="utf-8") as f:
+                    content = f.read().lower()
+                    if "waydroid" not in content:
+                        continue
+
+                parser = configparser.ConfigParser(strict=False)
+                parser.read(file_path)
+
+                display_name = parser.get("Desktop Entry", "Name", fallback=None)
+                exec_cmd = parser.get("Desktop Entry", "Exec", fallback="")
+
+                if not display_name or "waydroid app launch" not in exec_cmd:
+                    continue
+
+                parts = exec_cmd.strip().split()
+                app_name = parts[-1] if len(parts) >= 3 else None
+                if not app_name:
+                    continue
+
+                create_new_entry(
+                    shortcutdirectory=f'"{exe_path}"',
+                    appname=display_name,
+                    launchoptions=app_name,
+                    startingdir=f'"{start_dir}"'
+                )
+
+            except Exception as e:
+                print(f"Failed to process {file_name}: {e}")
+    else:
+        print(f"Applications directory not found: {applications_dir}")
+#end of waydroid scanner
 
 
 
