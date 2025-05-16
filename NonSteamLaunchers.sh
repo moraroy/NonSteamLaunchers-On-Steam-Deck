@@ -1913,7 +1913,7 @@ if [[ " ${args[@]} " =~ " 🔍 " ]] || [[ $options == "🔍" ]]; then
     fi
 
     # If no command line arguments were provided, display the zenity window
-    zenity --question --text="NSLGameScanner has been stopped and is no longer scanning for games. Do you want to run it again?" --width=200 --height=150
+    zenity --question --text="NSLGameScanner has been stopped and is no longer scanning for games. Do you want to run it again? Pressing 'Yes' will turn on 'Auto Scan' until you stop it again." --width=200 --height=150
     if [ $? = 0 ]; then
         # User wants to run NSLGameScanner again
         python3 $python_script_path
