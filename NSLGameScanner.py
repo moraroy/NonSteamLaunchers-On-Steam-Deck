@@ -473,7 +473,7 @@ def add_compat_tool(app_id, launchoptions):
 
     else:
         # Skip creation if launch options contain 'chrome' or 'PROTONPATH' or waydroid format
-        if 'chrome' in launchoptions or 'PROTONPATH' in launchoptions or 'com.' in launchoptions or 'jp.' in launchoptions:
+        if 'chrome' in launchoptions or 'PROTONPATH' in launchoptions or 'com.' in launchoptions or 'jp.' in launchoptions or 'online.' in launchoptions:
             print("chrome or PROTONPATH or waydroid found in launch options. Skipping compatibility tool creation.")
             return False
 
