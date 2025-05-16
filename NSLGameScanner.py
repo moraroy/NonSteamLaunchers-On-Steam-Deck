@@ -472,10 +472,17 @@ def add_compat_tool(app_id, launchoptions):
         return compat_tool_name
 
     else:
-        # Skip creation if launch options contain 'chrome' or 'PROTONPATH' or waydroid format
-        if 'chrome' in launchoptions or 'PROTONPATH' in launchoptions or 'com.' in launchoptions or 'jp.' in launchoptions or 'online.' in launchoptions:
-            print("chrome or PROTONPATH or waydroid found in launch options. Skipping compatibility tool creation.")
+        # Skip creation if launch options contain 'chrome' or 'PROTONPATH'
+        if 'chrome' in launchoptions or 'PROTONPATH' in launchoptions:
+            print("chrome or PROTONPATH found in launch options. Skipping compatibility tool creation.")
             return False
+
+        # Skip if jp./com./online. is found but NOT steam compat marker
+        elif any(x in launchoptions for x in ['jp.', 'com.', 'online.']):
+            steam_compat_marker = 'STEAM_COMPAT_DATA_PATH'
+            if steam_compat_marker not in launchoptions:
+                print("Waydroid-style package found in launch options without STEAM_COMPAT_DATA_PATH. Skipping.")
+                return False
 
         # Create a new CompatToolMapping entry if it doesn't exist
         config_data['InstallConfigStore']['Software']['Valve']['Steam']['CompatToolMapping'][str(app_id)] = {
