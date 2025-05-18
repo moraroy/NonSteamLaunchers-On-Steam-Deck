@@ -266,6 +266,7 @@ Finds Games Automatically
 - HoYoPlay 🎮            💾 Full SD Card Support
 - Game Jolt Client 🎮    💾 Full SD Card Support
 - Minecraft Launcher 🎮
+- Waydroid Apps 🎮
 
 ## Chrome Bookmarks
 The scanner will pick these up automatically. But for Geforce Now only, change the name of the bookmark to your actual game name. Use "Ctrl + D".
