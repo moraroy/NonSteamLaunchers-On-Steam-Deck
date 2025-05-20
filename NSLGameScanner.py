@@ -2271,8 +2271,8 @@ else:
                 create_new_entry(
                     shortcutdirectory=f'"{exe_path}"',
                     appname=display_name,
-                    launchoptions=app_name,
-                    startingdir=f'"{start_dir}"'
+                    launchoptions=f'"{app_name}"',
+                    startingdir=start_dir
                 )
 
             except Exception as e:
