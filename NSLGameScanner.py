@@ -2150,17 +2150,15 @@ else:
 
             if not name:
                 continue
-
+                
             # GeForce NOW
             if "play.geforcenow.com/games" in url:
                 if name == "GeForce NOW":
-                    continue  # Skip generic folder/bookmark
+                    continue
+                game_name = name.replace(" on GeForce NOW", "").strip()
+                url = url.split("&")[0] if "&" in url else url
+                geforce_now_urls.append(("GeForce NOW", game_name, url))
 
-                # Strip anything from &lang and onward
-                if "&" in url:
-                    url = url.split("&")[0]
-
-                geforce_now_urls.append(("GeForce NOW", name, url))
 
             # Xbox Cloud Gaming
             elif "www.xbox.com/en-US/play/games/" in url:
