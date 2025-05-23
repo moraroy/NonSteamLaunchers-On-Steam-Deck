@@ -269,7 +269,7 @@ Finds Games Automatically
 - Waydroid Apps 🎮
 
 ## Chrome Bookmarks
-The scanner will pick these up automatically. But for Geforce Now only, change the name of the bookmark to your actual game name. Use "Ctrl + D".
+The scanner will pick these up automatically. But for Geforce Now only, change the name of the bookmark to your actual game name. Or you can press "Play" then Use "Ctrl + D". As long as the game name is in the Bookmark Name.
 - Xbox Game Pass
 - GeForce Now
 - Amazon Luna
