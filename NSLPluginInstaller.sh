@@ -163,7 +163,12 @@ fi
 set -x
 cd "$LOCAL_DIR"
 
-# Now switch to Game Mode
-show_message "Plugin installed. Switching to Game Mode..."
-switch_to_game_mode
+#Switching to Game Mode
+zenity --question --text="Plugin installed or updated. Do you want to switch to Game Mode now?" --title="Switch to Game Mode?" --ok-label="Yes" --cancel-label="No"
+if [ $? -eq 0 ]; then
+  switch_to_game_mode
+else
+  show_message "Remaining in Desktop Mode."
+fi
+
 
