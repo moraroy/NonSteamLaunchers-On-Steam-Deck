@@ -3848,12 +3848,14 @@ else
 
   set -x
 
-  # Switch to game mode
-  if zenity --question --timeout=30 --text="NSL Plugin has been installed or updated. Do you want to switch to Game Mode now?"; then
+
+  #Switch to Game Mode
+  zenity --question --timeout=30 --text="NSL Plugin has been installed or updated. Do you want to switch to Game Mode now?"
+  if [ $? -eq 0 ]; then
     show_message "Switching to Game Mode..."
     switch_to_game_mode
   else
-    echo "User chose not to switch to Game Mode."
+    echo "User chose not to switch to Game Mode or timed out."
   fi
 fi
 
