@@ -3848,9 +3848,13 @@ else
 
   set -x
 
-  # Switch to game mode and restart the service
-  show_message "NSL Plugin installed. Switching to Game Mode..."
-  switch_to_game_mode
+  # Switch to game mode
+  if zenity --question --timeout=30 --text="NSL Plugin has been installed or updated. Do you want to switch to Game Mode now?"; then
+    show_message "Switching to Game Mode..."
+    switch_to_game_mode
+  else
+    echo "User chose not to switch to Game Mode."
+  fi
 fi
 
 
