@@ -400,6 +400,9 @@ def is_match(name1, name2):
 
 
 
+
+steam_applist_cache = None
+
 def get_steam_store_appid(steam_store_game_name):
     search_url = f"{BASE_URL}/search/{steam_store_game_name}"
     try:
@@ -409,11 +412,33 @@ def get_steam_store_appid(steam_store_game_name):
         if 'data' in data and data['data']:
             steam_store_appid = data['data'][0].get('steam_store_appid')
             if steam_store_appid:
+                print(f"Found App ID for {steam_store_game_name} via primary source: {steam_store_appid}")
                 return steam_store_appid
-        return None
-
     except requests.exceptions.RequestException as e:
-        return None
+        print(f"Primary store App ID lookup failed for {steam_store_game_name}: {e}")
+
+    # Fallback using Steam AppList (cached)
+    global steam_applist_cache
+    if steam_applist_cache is None:
+        try:
+            STEAM_BASE_URL = "https://api.steampowered.com"
+            app_list_url = f"{STEAM_BASE_URL}/ISteamApps/GetAppList/v2/"
+            response = requests.get(app_list_url)
+            response.raise_for_status()
+            steam_applist_cache = response.json()['applist']['apps']
+            print("Cached Steam app list from Steam API.")
+        except requests.exceptions.RequestException as e:
+            print(f"Steam AppList fallback failed for {steam_store_game_name}: {e}")
+            return None
+
+    for app in steam_applist_cache:
+        if steam_store_game_name.lower() in app['name'].lower():
+            print(f"Found App ID for {steam_store_game_name} via cached Steam AppList: {app['appid']}")
+            return app['appid']
+
+    print(f"No App ID found for {steam_store_game_name} in cached Steam AppList.")
+    return None
+    
 
 def create_steam_store_app_manifest_file(steam_store_appid, steam_store_game_name):
     steamapps_dir = f"{logged_in_home}/.steam/root/steamapps/"
@@ -442,6 +467,36 @@ def create_steam_store_app_manifest_file(steam_store_appid, steam_store_game_nam
         json.dump(app_manifest_data, file, indent=2)
 
     print(f"Created appmanifest file at: {appmanifest_path}")
+
+
+
+def get_steam_fallback_url(steam_store_appid, art_type):
+    base_url = f"https://shared.steamstatic.com/store_item_assets/steam/apps/{steam_store_appid}/"
+
+    candidates = []
+    if art_type == "icons":
+        candidates = [base_url + "icon.png", base_url + "icon.ico"]
+    elif art_type == "logos":
+        candidates = [base_url + "logo_2x.png"]
+    elif art_type == "heroes":
+        candidates = [base_url + "library_hero_2x.jpg", base_url + "library_hero.jpg"]
+    elif art_type == "grids_600x900":
+        candidates = [base_url + "library_600x900_2x.jpg", base_url + "library_600x900.jpg"]
+    elif art_type == "grids_920x430":
+        candidates = [base_url + "header_2x.jpg", base_url + "header.jpg"]
+    else:
+        return None
+
+    for url in candidates:
+        try:
+            response = requests.head(url)
+            if response.status_code == 200:
+                return url
+        except requests.RequestException:
+            continue
+    return None
+
+
 
 # Add or update the proton compatibility settings
 def add_compat_tool(app_id, launchoptions):
@@ -581,6 +636,49 @@ def create_new_entry(shortcutdirectory, appname, launchoptions, startingdir):
     if steam_store_appid:
         print(f"Found Steam App ID for {appname}: {steam_store_appid}")
         create_steam_store_app_manifest_file(steam_store_appid, appname)
+
+
+        #Fallback Artwork
+        for art_type in ["icons", "logos", "heroes", "grids_600x900", "grids_920x430"]:
+            url = get_steam_fallback_url(steam_store_appid, art_type)
+            if not url:
+                print(f"Fallback URL invalid for {art_type} - No valid URL found")
+                continue
+
+            try:
+                response = requests.head(url)
+                if response.status_code == 200:
+                    ext = url.split('.')[-1]
+
+                    if art_type == "icons":
+                        filename = get_file_name("icons", unsigned_shortcut_id)
+                    elif art_type == "logos":
+                        filename = f"{unsigned_shortcut_id}_logo.{ext}"
+                    elif art_type == "heroes":
+                        filename = f"{unsigned_shortcut_id}_hero.{ext}"
+                    elif art_type == "grids_600x900":
+                        filename = f"{unsigned_shortcut_id}p.{ext}"
+                    elif art_type == "grids_920x430":
+                        filename = f"{unsigned_shortcut_id}.{ext}"
+                    else:
+                        continue
+
+                    base_file_path = f"{logged_in_home}/.steam/root/userdata/{steamid3}/config/grid/{filename.rsplit('.', 1)[0]}"
+                    file_path = f"{logged_in_home}/.steam/root/userdata/{steamid3}/config/grid/{filename}"
+
+                    # Check if file exists with any common extension before downloading
+                    if not file_exists_with_any_ext(base_file_path):
+                        img_data = requests.get(url).content
+                        with open(file_path, 'wb') as f:
+                            f.write(img_data)
+                        print(f"Downloaded fallback artwork: {filename}")
+                    else:
+                        print(f"File already exists (png/jpg/ico), skipping: {filename}")
+                else:
+                    print(f"Fallback URL invalid for {art_type} - {url}")
+            except Exception as e:
+                print(f"Error downloading fallback artwork for {art_type}: {e}")
+
 
     # Create a new entry for the Steam shortcut, only adding the compat tool if it's not processed by UMU
     new_entry = {
