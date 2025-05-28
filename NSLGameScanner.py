@@ -1562,6 +1562,9 @@ if game_dict:
         #elif game_key == "aqua":
             #print("Handling 'aqua' as 'unknowm'")
             #game_key = "unknown"
+        elif game_key == "aris":
+            print("Handling 'aris' as 'Aris'")
+            game_key = "Aris"
 
         game_name = flavor_mapping.get(game_key, "unknown")
 
