@@ -96,7 +96,7 @@ fi
 exec > >(tee -a "$log_file") 2>&1
 
 # Version number (major.minor)
-version=v4.1.7
+version=v4.1.8
 #NSL Decky Plugin Latest Github Version
 deckyversion=$(curl -s https://raw.githubusercontent.com/moraroy/NonSteamLaunchersDecky/refs/heads/main/package.json | grep -o '"version": "[^"]*' | sed 's/"version": "//')
 
@@ -817,125 +817,311 @@ function update_umu_launcher() {
 
 
 
-# Check which app IDs are installed
+
+# Pre-logic system cleanup
 CheckInstallations
 CheckInstallationDirectory
 
-
-rm -rf ${logged_in_home}/.config/systemd/user/nslgamescanner.service
-unlink ${logged_in_home}/.config/systemd/user/default.target.wants/nslgamescanner.service
+rm -rf "${logged_in_home}/.config/systemd/user/nslgamescanner.service"
+unlink "${logged_in_home}/.config/systemd/user/default.target.wants/nslgamescanner.service"
 systemctl --user daemon-reload
 
+# Define launcher entries
+launcher_entries=(
+  "FALSE|SEPARATE APP IDS - CHECK THIS TO SEPARATE YOUR PREFIX"
+  "$epic_games_value|$epic_games_text"
+  "$gog_galaxy_value|$gog_galaxy_text"
+  "$uplay_value|$uplay_text"
+  "$battlenet_value|$battlenet_text"
+  "$amazongames_value|$amazongames_text"
+  "$eaapp_value|$eaapp_text"
+  "$legacygames_value|$legacygames_text"
+  "$itchio_value|$itchio_text"
+  "$humblegames_value|$humblegames_text"
+  "$indiegala_value|$indiegala_text"
+  "$rockstar_value|$rockstar_text"
+  "$glyph_value|$glyph_text"
+  "$minecraft_value|$minecraft_text"
+  "$psplus_value|$psplus_text"
+  "$vkplay_value|$vkplay_text"
+  "$hoyoplay_value|$hoyoplay_text"
+  "$nexon_value|$nexon_text"
+  "$gamejolt_value|$gamejolt_text"
+  "$artixgame_value|$artixgame_text"
+  "$arc_value|$arc_text"
+  "$purple_value|$purple_text"
+  "$plarium_value|$plarium_text"
+  "$vfun_value|$vfun_text"
+  "$tempo_value|$tempo_text"
+  "$poketcg_value|$poketcg_text"
+  "$antstream_value|$antstream_text"
+  "FALSE|RemotePlayWhatever"
+  "FALSE|NVIDIA GeForce NOW"
+)
 
-# Get the command line arguments
-args=("$@")
+chrome_entries=(
+  "FALSE|Fortnite"
+  "FALSE|Venge"
+  "FALSE|PokéRogue"
+  "FALSE|Xbox Game Pass"
+  "FALSE|Better xCloud"
+  "FALSE|GeForce Now"
+  "FALSE|Amazon Luna"
+  "FALSE|Stim.io"
+  "FALSE|Boosteroid Cloud Gaming"
+  "FALSE|Rocketcrab"
+  "FALSE|WebRcade"
+  "FALSE|WebRcade Editor"
+  "FALSE|Afterplay.io"
+  "FALSE|OnePlay"
+  "FALSE|AirGPU"
+  "FALSE|CloudDeck"
+  "FALSE|JioGamesCloud"
+  "FALSE|WatchParty"
+  "FALSE|Netflix"
+  "FALSE|Hulu"
+  "FALSE|Tubi"
+  "FALSE|Disney+"
+  "FALSE|Amazon Prime Video"
+  "FALSE|Youtube"
+  "FALSE|Youtube TV"
+  "FALSE|Twitch"
+  "FALSE|Apple TV+"
+  "FALSE|Crunchyroll"
+  "FALSE|Plex"
+)
 
-# Initialize an array to store the custom websites
+# Convert to newline-separated strings
+launcher_data=$(IFS=$'\n'; echo "${launcher_entries[*]}")
+chrome_data=$(IFS=$'\n'; echo "${chrome_entries[*]}")
+
+# Export environment variables for GTK UI
+export LAUNCHER_DATA="${launcher_data}"
+export CHROME_DATA="${chrome_data}"
+export UI_VERSION="${version}"
+export UI_LIVE="${live}"
+
+# Arrays and flags to be filled
+selected_launchers=()
 custom_websites=()
+separate_appids=false
 
-# Initialize a variable to store whether the "Separate App IDs" option is selected or not
-separate_app_ids=false
+# --- Handle command line arguments or fallback to GTK UI ---
+
+if [ $# -eq 0 ]; then
+    # No CLI args — show GTK UI
+
+    readarray -t gtk_output < <(python3 - <<'EOF'
+import gi, os, sys
+import subprocess
+import re
+
+gi.require_version("Gtk", "3.0")
+from gi.repository import Gtk
+
+def get_screen_resolution():
+    xrandr_output = subprocess.check_output(["xrandr"]).decode("utf-8")
+    resolutions = re.findall(r"(\d+)x(\d+)\s*\*+", xrandr_output)
+    return map(int, resolutions[0]) if resolutions else (1920, 1080)
+
+def is_multiple_monitors():
+    xrandr_output = subprocess.check_output(["xrandr"]).decode("utf-8")
+    return len(re.findall(r" connected", xrandr_output)) > 1
+
+screen_width, screen_height = get_screen_resolution()
+if is_multiple_monitors():
+    xrandr_output = subprocess.check_output(["xrandr"]).decode("utf-8")
+    match = re.search(r"(\d+)x(\d+)\s+connected", xrandr_output)
+    if match:
+        screen_width, screen_height = map(int, match.groups())
+
+zenity_width = screen_width * 80 // 100
+zenity_height = screen_height * 80 // 100
+
+version = os.environ.get("UI_VERSION", "NSL")
+live = os.environ.get("UI_LIVE", "")
+
+launcher_lines = os.environ.get("LAUNCHER_DATA", "").splitlines()
+chrome_lines = os.environ.get("CHROME_DATA", "").splitlines()
+
+class LauncherUI(Gtk.Window):
+    def __init__(self):
+        Gtk.Window.__init__(self, title="Which launchers do you want to download and install?")
+        self.set_default_size(zenity_width, zenity_height)
+
+        self.store_launchers = Gtk.ListStore(bool, str)
+        self.store_chrome = Gtk.ListStore(bool, str)
+
+        for line in launcher_lines:
+            if "|" in line:
+                value, label = line.split("|", 1)
+                active = value == "TRUE"
+                self.store_launchers.append([active, label])
+
+        for line in chrome_lines:
+            if "|" in line:
+                value, label = line.split("|", 1)
+                active = value == "TRUE"
+                self.store_chrome.append([active, label])
+
+        main_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6, margin=10)
+        self.add(main_box)
+
+        header_label = Gtk.Label()
+        header_label.set_markup(f"<b>{version}</b> — Default = one App ID Installation, One Prefix, NonSteamLaunchers - updated the NSLGameScanner.py {live}")
+        header_label.set_line_wrap(True)
+        header_label.set_xalign(0)
+        main_box.pack_start(header_label, False, False, 0)
+
+        def create_tree(model, toggle_callback):
+            tree = Gtk.TreeView(model=model)
+            toggle = Gtk.CellRendererToggle()
+            toggle.connect("toggled", toggle_callback)
+            tree.append_column(Gtk.TreeViewColumn("Select", toggle, active=0))
+            tree.append_column(Gtk.TreeViewColumn("Launcher", Gtk.CellRendererText(), text=1))
+            return tree
+
+        launcher_label = Gtk.Label(label="Launchers:")
+        launcher_label.set_xalign(0)
+        main_box.pack_start(launcher_label, False, False, 0)
+
+        launcher_tree = create_tree(self.store_launchers, self.on_toggle_launcher)
+        scrolled1 = Gtk.ScrolledWindow()
+        scrolled1.set_vexpand(True)
+        scrolled1.add(launcher_tree)
+        main_box.pack_start(scrolled1, True, True, 0)
+
+        chrome_label = Gtk.Label(label="Google Chrome-based Services:")
+        chrome_label.set_xalign(0)
+        main_box.pack_start(chrome_label, False, False, 0)
+
+        chrome_tree = create_tree(self.store_chrome, self.on_toggle_chrome)
+        scrolled2 = Gtk.ScrolledWindow()
+        scrolled2.set_vexpand(True)
+        scrolled2.add(chrome_tree)
+        main_box.pack_start(scrolled2, True, True, 0)
+
+        self.entry = Gtk.Entry()
+        self.entry.set_placeholder_text("Enter custom websites that you want shortcuts for, separated by commas. Leave blank and press ok if you don't want any. E.g. myspace.com, limewire.com, my.screenname.aol.com")
+        main_box.pack_start(self.entry, False, False, 0)
+
+        button_box = Gtk.Box(spacing=6)
+        self.button_result = None
+        for label in ["Cancel", "OK", "❤️", "Uninstall", "🔍", "Start Fresh", "Move to SD Card", "Update Proton-GE", "🖥️ Off", "NSLGameSaves", "README"]:
+            btn = Gtk.Button(label=label)
+            btn.connect("clicked", self.on_button_clicked, label)
+            button_box.pack_start(btn, True, True, 0)
+
+        main_box.pack_start(button_box, False, False, 0)
+
+    def on_toggle_launcher(self, widget, path):
+        self.store_launchers[path][0] = not self.store_launchers[path][0]
+
+    def on_toggle_chrome(self, widget, path):
+        self.store_chrome[path][0] = not self.store_chrome[path][0]
+
+    def on_button_clicked(self, button, label):
+        selected = [row[1] for row in self.store_launchers if row[0]] + [row[1] for row in self.store_chrome if row[0]]
+        websites = self.entry.get_text().strip()
+        print("|".join(selected))
+        print(websites)
+        print(label)
+        sys.stdout.flush()
+        Gtk.main_quit()
+
+win = LauncherUI()
+win.connect("destroy", Gtk.main_quit)
+win.show_all()
+Gtk.main()
+EOF
+)
 
 
-# Get the screen resolution of the primary monitor only
-resolution=$(xrandr | grep '*' | head -n 1 | awk '{print $1}')
-screen_width=${resolution%x*}
-screen_height=${resolution#*x}
 
-# If there are multiple monitors, select the first (primary) resolution
-if [[ $(xrandr | grep -c ' connected') -gt 1 ]]; then
-    # Get the first connected monitor resolution
-    resolution=$(xrandr | grep ' connected' | head -n 1 | awk '{print $3}' | sed 's/[^0-9x]//g')
-    screen_width=${resolution%x*}
-    screen_height=${resolution#*x}
-fi
 
-# Calculate Zenity window size as a percentage of screen size (e.g., 80%)
-zenity_width=$((screen_width * 80 / 100))
-zenity_height=$((screen_height * 80 / 100))
 
-# Check if any command line arguments were provided
-if [ ${#args[@]} -eq 0 ]; then
-    # No command line arguments were provided, so display the main zenity window
-    selected_launchers=$(zenity --list --text="Which launchers do you want to download and install?" --checklist --column="$version" --column="Default = one App ID Installation, One Prefix, NonSteamLaunchers - updated the NSLGameScanner.py $live" FALSE "SEPARATE APP IDS - CHECK THIS TO SEPARATE YOUR PREFIX" $epic_games_value "$epic_games_text" $gog_galaxy_value "$gog_galaxy_text" $uplay_value "$uplay_text" $battlenet_value "$battlenet_text" $amazongames_value "$amazongames_text" $eaapp_value "$eaapp_text" $legacygames_value "$legacygames_text" $itchio_value "$itchio_text" $humblegames_value "$humblegames_text" $indiegala_value "$indiegala_text" $rockstar_value "$rockstar_text" $glyph_value "$glyph_text" $minecraft_value "$minecraft_text" $psplus_value "$psplus_text" $vkplay_value "$vkplay_text" $hoyoplay_value "$hoyoplay_text" $nexon_value "$nexon_text" $gamejolt_value "$gamejolt_text" $artixgame_value "$artixgame_text" $arc_value "$arc_text" $purple_value "$purple_text" $plarium_value "$plarium_text" $vfun_value "$vfun_text" $tempo_value "$tempo_text" $poketcg_value "$poketcg_text" $antstream_value "$antstream_text" FALSE "RemotePlayWhatever" FALSE "Fortnite" FALSE "Venge" FALSE "PokéRogue" FALSE "Xbox Game Pass" FALSE "Better xCloud" FALSE "GeForce Now" FALSE "Amazon Luna" FALSE "Stim.io" FALSE "Boosteroid Cloud Gaming" FALSE "Rocketcrab" FALSE "WebRcade" FALSE "WebRcade Editor" FALSE "Afterplay.io" FALSE "OnePlay" FALSE "AirGPU" FALSE "CloudDeck" FALSE "JioGamesCloud" FALSE "WatchParty" FALSE "Netflix" FALSE "Hulu" FALSE "Tubi" FALSE "Disney+" FALSE "Amazon Prime Video" FALSE "Youtube" FALSE "Youtube TV" FALSE "Twitch" FALSE "Apple TV+" FALSE "Crunchyroll" FALSE "Plex" --width=$zenity_width --height=$zenity_height --extra-button="❤️" --extra-button="Uninstall" --extra-button="🔍" --extra-button="Start Fresh" --extra-button="Move to SD Card" --extra-button="Update Proton-GE" --extra-button="🖥️ Off" --extra-button="NSLGameSaves" --extra-button="README")
+    selected_launchers_str="${gtk_output[0]}"
+    custom_websites_str="${gtk_output[1]}"
+    extra_button="${gtk_output[2]}"
 
-    # Check if the user clicked the 'Cancel' button or selected one of the extra buttons
-    if [ $? -eq 1 ] || [[ $selected_launchers == "Start Fresh" ]] || [[ $selected_launchers == "Move to SD Card" ]] || [[ $selected_launchers == "Uninstall" ]]; then
-        # The user clicked the 'Cancel' button or selected one of the extra buttons, so skip prompting for custom websites
-        custom_websites=()
+    IFS=',' read -ra custom_websites <<< "$custom_websites_str"
+    IFS='|' read -ra selected_launchers <<< "$selected_launchers_str"
+
+    # Determine what to put in options:
+    if [[ "$extra_button" == "OK" ]]; then
+        options="$selected_launchers_str"
+    elif [[ "$selected_launchers_str" == "" ]]; then
+        # Only a button was pressed, no launchers selected
+        options="$extra_button"
     else
-        # The user did not click the 'Cancel' button or select one of the extra buttons, so prompt for custom websites
-        custom_websites_str=$(zenity --entry --title="Shortcut Creator" --text="Enter custom websites that you want shortcuts for, separated by commas. Leave blank and press ok if you dont want any. E.g. myspace.com, limewire.com, my.screenname.aol.com")
-
-        # Split the custom_websites_str variable into an array using ',' as the delimiter
-        IFS=',' read -ra custom_websites <<< "$custom_websites_str"
+        # Button pressed with launchers selected, combine both
+        options="$extra_button|$selected_launchers_str"
     fi
 else
-    # Command line arguments were provided, so set the value of the options variable using the command line arguments
-
-    # Initialize an array to store the selected launchers
-    selected_launchers=()
-
-	IFS=" "
-    for arg in "${args[@]}"; do
+    # CLI args present — parse them
+    for arg in "$@"; do
         if [[ "$arg" =~ ^https?:// ]]; then
-			website=${arg#https://}
-
-            # Check if the arg is not an empty string before adding it to the custom_websites array
-            if [ -n "$website" ]; then
-                custom_websites+=("$website")
-            fi
+            website=${arg#http://}
+            website=${website#https://}
+            IFS=',' read -ra websites <<< "$website"
+            for site in "${websites[@]}"; do
+                custom_websites+=("$site")
+            done
         else
             selected_launchers+=("$arg")
         fi
     done
 
+    # ✅ Add this line after building the custom_websites array
+    custom_websites_str=$(IFS=', '; echo "${custom_websites[*]}")
 
-    # TODO: error handling for unbound variable $selected_launchers_str on line 564
-    # Convert the selected_launchers array to a string by joining its elements with a `|` delimiter.
-    selected_launchers_str=$(IFS="|"; echo "${selected_launchers[*]}")
+    extra_button="OK"
+    options="${selected_launchers[*]}"
+fi
 
-    # TODO: SC2199
-    # Check if the `SEPARATE APP IDS - CHECK THIS TO SEPARATE YOUR PREFIX` option was included in the `selected_launchers` variable. If this option was included, set the value of the `separate_app_ids` variable to `true`, indicating that separate app IDs should be used. Otherwise, set it to `false`.
-    if [[ "${selected_launchers[@]}" =~ "SEPARATE APP IDS - CHECK THIS TO SEPARATE YOUR PREFIX" ]]; then
-        separate_app_ids=true
-    else
-        separate_app_ids=false
+
+
+# Handle validation (skip if extra button is special)
+case "$extra_button" in
+    "Start Fresh"|"Uninstall"|"Move to SD Card"|"Update Proton-GE"|"NSLGameSaves"|"README"|"🖥️ Off"|"❤️"|"🔍")
+        # Skip validation
+        ;;
+    *)
+        if [ ${#selected_launchers[@]} -eq 0 ] && [ ${#custom_websites[@]} -eq 0 ]; then
+            zenity --error --text="No launchers or websites selected. Exiting." --width=300 --timeout=5
+            exit 1
+        fi
+        ;;
+esac
+
+# Handle special buttons
+if [[ "$extra_button" == "🖥️ Off" ]]; then
+    sleep 1
+    xset dpms force off
+    exit 0
+fi
+
+if [[ "$extra_button" == "README" ]]; then
+    README_URL="https://raw.githubusercontent.com/moraroy/NonSteamLaunchers-On-Steam-Deck/main/README.md"
+    TEMP_FILE=$(mktemp)
+    curl -s "$README_URL" |
+        sed 's/<[^>]*>//g' |
+        sed 's/^###\s*/---\n/g' |
+        sed 's/^##\s*/--\n/g' |
+        sed 's/^#\s*/\n/g' |
+        sed 's/^[-*]\s*/- /g' > "$TEMP_FILE"
+    zenity --text-info --title="NonSteamLaunchers README" --width=800 --height=600 --filename="$TEMP_FILE"
+    rm "$TEMP_FILE"
+    exit 1
+fi
+
+# Determine if separate app ID option was selected
+for launcher in "${selected_launchers[@]}"; do
+    if [[ "$launcher" == "SEPARATE APP IDS - CHECK THIS TO SEPARATE YOUR PREFIX" ]]; then
+        separate_appids=true
+        break
     fi
-fi
-
-
-
-
-# TODO: SC2145
-# Print the selected launchers and custom websites
-echo "Selected launchers: $selected_launchers"
-echo "Selected launchers: $selected_launchers_str"
-echo "Custom websites: ${custom_websites[@]}"
-echo "Separate App IDs: $separate_app_ids"
-
-# Set the value of the options variable
-if [ ${#args[@]} -eq 0 ]; then
-    # No command line arguments were provided, so set the value of the options variable using the selected_launchers variable
-    options="$selected_launchers"
-else
-    # Command line arguments were provided, so set the value of the options variable using the selected_launchers_str variable
-    options="$selected_launchers_str"
-fi
-
-# Check if the cancel button was clicked
-if [ $? -eq 1 ] && [[ $options != "Start Fresh" ]] && [[ $options != "Move to SD Card" ]] && [[ $options != "Uninstall" ]] && [[ $options != "README" ]]; then
-    # The cancel button was clicked
-    echo "The cancel button was clicked"
-    exit 1
-fi
-
-# Check if no options were selected and no custom website was provided
-if [ -z "$options" ] && [ -z "$custom_websites" ]; then
-    # No options were selected and no custom website was provided
-    zenity --error --text="No options were selected and no custom website was provided. The script will now exit." --width=200 --height=150 --timeout=5
-    exit 1
-fi
+done
 
 # Check if the user selected to use separate app IDs
 if [[ $options == *"SEPARATE APP IDS - CHECK THIS TO SEPARATE YOUR PREFIX"* ]]; then
@@ -946,51 +1132,12 @@ else
     use_separate_appids=false
 fi
 
-
-
-
-
-
-
-
-
-
-if [[ $options == *"🖥️ Off"* ]]; then
-    sleep 1
-    xset dpms force off
-    exit 0
-fi
-
-
-
-
-
-if [[ $options == *"README"* ]]; then
-  README_URL="https://raw.githubusercontent.com/moraroy/NonSteamLaunchers-On-Steam-Deck/main/README.md"
-  TEMP_FILE=$(mktemp)
-
-  # Fetch raw README content
-  curl -s "$README_URL" |
-    # Strip HTML tags
-    sed 's/<[^>]*>//g' |
-    # Replace Markdown headers with plain equivalents
-    sed 's/^###\s*/---\n/g' |
-    sed 's/^##\s*/--\n/g' |
-    sed 's/^#\s*/\n/g' |
-    # Replace Markdown bullets with dashes
-    sed 's/^[-*]\s*/- /g' \
-    > "$TEMP_FILE"
-
-  # Display in Zenity
-  zenity --text-info \
-    --title="NonSteamLaunchers README (Simplified)" \
-    --width=800 --height=600 \
-    --filename="$TEMP_FILE"
-
-  rm "$TEMP_FILE"
-  exit 1
-fi
-
+# Debug Output (optional)
+echo "Selected launchers: ${selected_launchers[*]}"
+echo "Custom websites: ${custom_websites[*]}"
+echo "Separate App IDs: $separate_appids"
+echo "Extra button: $extra_button"
+echo "Options: $options"
 
 
 
@@ -1724,6 +1871,17 @@ process_uninstall_options() {
             killall zenity
         fi
 
+
+        if [[ $uninstall_options == *"Uninstall NVIDIA GeForce NOW"* ]]; then
+            # Uninstall GeForce NOW Flatpak app and repository (user scope)
+            flatpak uninstall -y --delete-data --force-remove --user com.nvidia.geforcenow
+            flatpak remote-delete --user GeForceNOW
+
+            zenity --info --text="NVIDIA GeForce NOW has been uninstalled." --width=250 --height=150 &
+            sleep 3
+            killall zenity
+        fi
+
         uninstall_launcher "$uninstall_options" "Uplay" "$uplay_path1" "$uplay_path2" "${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/Program Files (x86)/Ubisoft" "${logged_in_home}/.local/share/Steam/steamapps/compatdata/UplayLauncher" "uplay" "ubisoft"
         uninstall_launcher "$uninstall_options" "Battle.net" "$battlenet_path1" "$battlenet_path2" "${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/Program Files (x86)/Battle.net" "${logged_in_home}/.local/share/Steam/steamapps/compatdata/Battle.netLauncher" "battle" "bnet"
         uninstall_launcher "$uninstall_options" "Epic Games" "$epic_games_launcher_path1" "$epic_games_launcher_path2" "${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/Program Files (x86)/Epic Games" "${logged_in_home}/.local/share/Steam/steamapps/compatdata/EpicGamesLauncher" "epic"
@@ -1810,6 +1968,7 @@ else
             FALSE "Pokémon Trading Card Game Live" \
             FALSE "Antstream Arcade" \
             FALSE "RemotePlayWhatever" \
+            FALSE "NVIDIA GeForce NOW" \
         )
         # Convert the returned string to an array
         IFS='|' read -r -a uninstall_options_array <<< "$uninstall_options"
@@ -2648,7 +2807,28 @@ if [[ $options == *"Apple TV+"* ]] || [[ $options == *"Plex"* ]] || [[ $options 
 fi
 
 
+
+
+
+
 echo "99.1"
+echo "# Installing NVIDIA GeForce NOW (Native Linux) ...please wait..."
+
+if flatpak info --user com.nvidia.geforcenow &>/dev/null || flatpak info --system com.nvidia.geforcenow &>/dev/null; then
+    echo "NVIDIA GeForce NOW is already installed (user or system)."
+else
+    echo "Adding NVIDIA GeForce NOW Flatpak repository..."
+    flatpak remote-add --user --if-not-exists GeForceNOW https://international.download.nvidia.com/GFNLinux/flatpak/geforcenow.flatpakrepo
+
+    echo "Installing NVIDIA GeForce NOW Flatpak app (user scope)..."
+    if flatpak install -y --user GeForceNOW com.nvidia.geforcenow; then
+        echo "NVIDIA GeForce NOW installed successfully."
+    else
+        echo "Failed to install NVIDIA GeForce NOW."
+    fi
+fi
+
+echo "99.2"
 echo "# Checking if Ludusavi is installed...please wait..."
 
 # AutoInstall Ludusavi
@@ -3084,11 +3264,34 @@ done
 
 # Check if any custom websites were provided
 if [ ${#custom_websites[@]} -gt 0 ]; then
-    # User entered one or more custom websites
+    echo "DEBUG: custom_websites array content: ${custom_websites[@]}"
+    echo "DEBUG: custom_websites array length: ${#custom_websites[@]}"
 
-    # Convert the custom_websites array to a string
-    custom_websites_str=$(IFS=", "; echo "${custom_websites[*]}")
-    echo "export custom_websites_str=$custom_websites_str" >> ${logged_in_home}/.config/systemd/user/env_vars
+    # Sanity check: try to split any single string containing commas into multiple array items
+    if [ ${#custom_websites[@]} -eq 1 ] && [[ "${custom_websites[0]}" == *,* ]]; then
+        IFS=',' read -ra custom_websites <<< "${custom_websites[0]}"
+        echo "DEBUG: Re-split single comma string into array: ${custom_websites[@]}"
+    fi
+
+    # Strip leading/trailing whitespace from each website
+    for i in "${!custom_websites[@]}"; do
+        # Remove leading/trailing whitespace from each entry
+        custom_websites[$i]=$(echo "${custom_websites[$i]}" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
+    done
+
+    # Join array with ', ' separator
+    custom_websites_str=""
+    for i in "${!custom_websites[@]}"; do
+        if [ "$i" -gt 0 ]; then
+            custom_websites_str+=", "
+        fi
+        custom_websites_str+="${custom_websites[$i]}"
+    done
+
+    echo "DEBUG: Final custom_websites_str = $custom_websites_str"
+
+    # Export the properly formatted value to env_vars
+    echo "export custom_websites_str=$custom_websites_str" >> "${logged_in_home}/.config/systemd/user/env_vars"
 fi
 
 
