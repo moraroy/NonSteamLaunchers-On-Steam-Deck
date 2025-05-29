@@ -2374,6 +2374,38 @@ else:
 #end of waydroid scanner
 
 
+#Geforce Now Flatpak Scanner
+def check_and_create_geforce_shortcut():
+    """Check if GeForce NOW Flatpak is installed, and create shortcut if it is."""
+    try:
+        # Check if installed for the user
+        subprocess.run(["flatpak", "info", "--user", "com.nvidia.geforcenow"],
+                       check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    except subprocess.CalledProcessError:
+        try:
+            # Check if installed system-wide
+            subprocess.run(["flatpak", "info", "--system", "com.nvidia.geforcenow"],
+                           check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        except subprocess.CalledProcessError:
+            print("GeForce NOW is not installed. Skipping shortcut creation.")
+            return
+
+    # GeForce NOW is installed — create shortcut
+    exe_path = "/usr/bin/flatpak"
+    display_name = "NVIDIA GeForce NOW"
+    app_name = "run com.nvidia.geforcenow"
+    start_dir = "/usr/bin"
+
+    create_new_entry(
+        shortcutdirectory=f'"{exe_path}"',
+        appname=display_name,
+        launchoptions=app_name,
+        startingdir=f'"{start_dir}"'
+    )
+
+# Call directly
+check_and_create_geforce_shortcut()
+# End of Geforce Now Flatpak Scanner
 
 
 
