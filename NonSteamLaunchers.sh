@@ -3335,7 +3335,7 @@ fi
 proton_dir=$(find -L "${logged_in_home}/.steam/root/compatibilitytools.d" -maxdepth 1 -type d -name "GE-Proton*" | sort -V | tail -n1)
 CSV_FILE="$proton_dir/protonfixes/umu-database.csv"
 echo "$CSV_FILE"
-shortcuts_file="${logged_in_home}/.config/systemd/user/shortcuts"
+shortcuts_file="${logged_in_home}/.steam/root/userdata/${steamid3}/config/shortcuts.vdf"
 output_dir="${logged_in_home}/.steam/root/userdata/${steamid3}/2371090/remote"
 descriptions_file="${logged_in_home}/.config/systemd/user/descriptions.json"
 
@@ -3511,24 +3511,39 @@ update_notes_in_file() {
 
 # Function to list game names from the shortcuts file
 list_game_names() {
+    local skip_ext='\.(exe|sh|bat|msi|app|apk|url|desktop|appimage)$'
+
     if [[ ! -f "$shortcuts_file" ]]; then
-        echo "The shortcuts file does not exist at $shortcuts_file. Creating an empty file..."
-        touch "$shortcuts_file"  # Create an empty file
+        echo "No shortcuts.vdf found at $shortcuts_file"
+        return 1
     fi
 
     echo "Reading game names from $shortcuts_file..."
-    while IFS= read -r game_name; do
-        # Clean up the game name (trim leading/trailing spaces)
-        game_name=$(echo "$game_name" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
 
-        # Skip empty lines or unwanted entries like executables (e.g., .exe, .sh, .bat, .msi, .app, .apk, .url, .desktop)
-        if [[ -n "$game_name" && ! "$game_name" =~ \.(exe|sh|bat|msi|app|apk|url|desktop)$ ]]; then
-            games+=("$game_name")
-            echo "Added game: $game_name"
-        else
-            echo "Skipped: $game_name"
+    # Reset games array
+    games=()
+
+    # Parse shortcuts.vdf for appname entries
+    mapfile -t lines < <(tr '\0\1\2' '\n\n\n' < "$shortcuts_file" | grep -v '^$')
+
+    for ((i=0; i < ${#lines[@]} - 1; i++)); do
+        if [[ "${lines[i],,}" == "appname" ]]; then
+            local appname="${lines[i+1]}"
+            # Trim whitespace
+            appname="${appname#"${appname%%[![:space:]]*}"}"  # leading
+            appname="${appname%"${appname##*[![:space:]]}"}"  # trailing
+
+            # Skip if appname matches skip extensions (case-insensitive)
+            if [[ -n "$appname" && ! "${appname,,}" =~ $skip_ext ]]; then
+                games+=("$appname")
+                echo "Added game: $appname"
+            else
+                echo "Skipped: $appname"
+            fi
         fi
-    done < "$shortcuts_file"
+    done
+
+    return 0
 }
 
 # Main process
