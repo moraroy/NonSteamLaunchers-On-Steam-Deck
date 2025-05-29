@@ -505,48 +505,41 @@ def add_compat_tool(app_id, launchoptions):
         config_data['InstallConfigStore']['Software']['Valve']['Steam']['CompatToolMapping'] = {}
         print(f"CompatToolMapping key not found in config.vdf, creating.")
 
-    # Check if the app_id exists in CompatToolMapping
-    if str(app_id) in config_data['InstallConfigStore']['Software']['Valve']['Steam']['CompatToolMapping']:
-        existing_app = config_data['InstallConfigStore']['Software']['Valve']['Steam']['CompatToolMapping'][str(app_id)]
+    compat_map = config_data['InstallConfigStore']['Software']['Valve']['Steam']['CompatToolMapping']
 
-        # NEW: Skip if existing entry already has any non-empty values
-        if existing_app.get('name') or existing_app.get('config') or existing_app.get('priority'):
-            print(f"CompatToolMapping already populated for appid: {app_id}. Skipping update.")
+    # If app already exists, skip modifying it to respect user's manual choice
+    if str(app_id) in compat_map:
+        existing_app = compat_map[str(app_id)]
+
+        #if any compat tool was set or deliberately cleared
+        if 'name' in existing_app:
+            print(f"CompatToolMapping entry already exists for appid: {app_id}. Skipping update to respect existing state.")
             return None
 
-        # Original logic: check for PROTONPATH
         if 'PROTONPATH' in existing_app.get('config', ''):
-            print(f"PROTONPATH found in the config for appid: {app_id}. Skipping compatibility tool update.")
+            print(f"PROTONPATH found in config for appid: {app_id}. Skipping.")
             return None
 
-        # Update the app's compatibility tool properties
-        existing_app['name'] = f'{compat_tool_name}'
-        existing_app['config'] = ''
-        existing_app['priority'] = '250'
-        print(f"Updated CompatToolMapping entry for appid: {app_id}")
-        return compat_tool_name
+    # Skip creation if launch options contain 'chrome' or 'PROTONPATH'
+    if 'chrome' in launchoptions or 'PROTONPATH' in launchoptions:
+        print("chrome or PROTONPATH found in launch options. Skipping compatibility tool creation.")
+        return False
 
-    else:
-        # Skip creation if launch options contain 'chrome' or 'PROTONPATH'
-        if 'chrome' in launchoptions or 'PROTONPATH' in launchoptions:
-            print("chrome or PROTONPATH found in launch options. Skipping compatibility tool creation.")
+    # Skip if jp./com./online. is found but NOT steam compat marker
+    if any(x in launchoptions for x in ['jp.', 'com.', 'online.']):
+        steam_compat_marker = 'STEAM_COMPAT_DATA_PATH'
+        if steam_compat_marker not in launchoptions:
+            print("Waydroid-style package found in launch options without STEAM_COMPAT_DATA_PATH. Skipping.")
             return False
 
-        # Skip if jp./com./online. is found but NOT steam compat marker
-        elif any(x in launchoptions for x in ['jp.', 'com.', 'online.']):
-            steam_compat_marker = 'STEAM_COMPAT_DATA_PATH'
-            if steam_compat_marker not in launchoptions:
-                print("Waydroid-style package found in launch options without STEAM_COMPAT_DATA_PATH. Skipping.")
-                return False
-
-        # Create a new CompatToolMapping entry if it doesn't exist
-        config_data['InstallConfigStore']['Software']['Valve']['Steam']['CompatToolMapping'][str(app_id)] = {
-            'name': f'{compat_tool_name}',
-            'config': '',
-            'priority': '250'
-        }
-        print(f"Created new CompatToolMapping entry for appid: {app_id}")
-        return compat_tool_name
+    # Create a new CompatToolMapping entry
+    compat_map[str(app_id)] = {
+        'name': f'{compat_tool_name}',
+        'config': '',
+        'priority': '250'
+    }
+    print(f"Created new CompatToolMapping entry for appid: {app_id}")
+    return compat_tool_name
 
 
 # Check if the shortcut already exists in the shortcuts
