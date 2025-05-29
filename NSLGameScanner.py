@@ -2377,18 +2377,23 @@ else:
 #Geforce Now Flatpak Scanner
 def check_and_create_geforce_shortcut():
     """Check if GeForce NOW Flatpak is installed, and create shortcut if it is."""
+    installed = False
+
     try:
-        # Check if installed for the user
         subprocess.run(["flatpak", "info", "--user", "com.nvidia.geforcenow"],
                        check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        installed = True
     except subprocess.CalledProcessError:
         try:
-            # Check if installed system-wide
             subprocess.run(["flatpak", "info", "--system", "com.nvidia.geforcenow"],
                            check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            installed = True
         except subprocess.CalledProcessError:
-            print("GeForce NOW is not installed. Skipping shortcut creation.")
-            return
+            pass
+
+    if not installed:
+        print("Skipping NVIDIA GeForce NOW scanner — Flatpak not found.")
+        return
 
     # GeForce NOW is installed — create shortcut
     exe_path = "/usr/bin/flatpak"
