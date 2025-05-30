@@ -213,6 +213,7 @@ Supported Stores 🛍
 - Tempo Launcher ✔️
 - Antstream Arcade ✔️
 - RemotePlayWhatever ✔️
+- NVIDIA GeForce NOW (Native Linux) ✔️ 
 
 <h1 align="center">
 Supported Streaming Sites for games and as well as any website. 🌐
