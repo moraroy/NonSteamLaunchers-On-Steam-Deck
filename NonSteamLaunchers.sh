@@ -2555,6 +2555,33 @@ function install_hoyo {
 }
 
 
+install_stove() {
+    local url="https://msedge.sf.dl.delivery.mp.microsoft.com/filestreamingservice/files/815d89c2-508a-4010-89af-4a6770e178d9/MicrosoftEdgeWebview2Setup.exe"
+    local installer="MicrosoftEdgeWebview2Setup.exe"
+
+    echo "Attempting to download $installer..."
+
+    if curl -fLo "$installer" "$url"; then
+        echo "Download successful. Running $installer silently..."
+
+        # Start the installer with Proton and capture PID
+        "$STEAM_RUNTIME" "$proton_dir/proton" run "$installer" /silent /install &
+        local pid=$!
+
+        echo "Installer PID: $pid. Waiting for it to complete..."
+        wait $pid
+
+        local exit_code=$?
+        if [ $exit_code -eq 0 ]; then
+            echo "$installer finished successfully."
+        else
+            echo "$installer exited with error code $exit_code."
+        fi
+    else
+        echo "Download failed. Skipping installation."
+    fi
+}
+
 
 
 
@@ -2735,7 +2762,7 @@ install_launcher "VFUN Launcher" "VFUNLauncher" "$vfun_file" "$vfun_url" "$vfun_
 #Install Tempo Launcher
 install_launcher "Tempo Launcher" "TempoLauncher" "$tempo_file" "$tempo_url" "$tempo_file /S" "95" "" ""
 #Install Stove Client
-install_launcher "STOVE Client" "STOVELauncher" "$stove_file" "$stove_url" "$stove_file" "96" "" ""
+install_launcher "STOVE Client" "STOVELauncher" "$stove_file" "$stove_url" "$stove_file" "96" "install_stove" "" true
 
 
 #End of Launcher Installations
