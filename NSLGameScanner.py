@@ -2456,7 +2456,7 @@ else:
                             print("Missing game_id in manifest:", manifest_path)
                             continue
 
-                        launch_options = f'STEAM_COMPAT_DATA_PATH="{steam_compat_base}" %command% sgup://run/{game_id}'
+                        launch_options = f'STEAM_COMPAT_DATA_PATH="{steam_compat_base}/" %command% "sgup://run/{game_id}"'
 
                         create_new_entry(
                             shortcutdirectory=f'"{stove_launcher_path}"',
