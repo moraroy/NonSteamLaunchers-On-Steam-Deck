@@ -499,6 +499,12 @@ def get_steam_fallback_url(steam_store_appid, art_type):
             continue
     return None
 
+def file_exists_with_any_ext(base_path):
+    for ext in ['png', 'jpg', 'ico']:
+        if os.path.exists(f"{base_path}.{ext}"):
+            return True
+    return False
+
 
 def tag_artwork_files(shortcut_id, game_name, steamid3, logged_in_home):
     grid_dir = f"{logged_in_home}/.steam/root/userdata/{steamid3}/config/grid"
