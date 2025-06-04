@@ -500,6 +500,41 @@ def get_steam_fallback_url(steam_store_appid, art_type):
     return None
 
 
+def tag_artwork_files(shortcut_id, game_name, steamid3, logged_in_home):
+    grid_dir = f"{logged_in_home}/.steam/root/userdata/{steamid3}/config/grid"
+    base_name = str(shortcut_id)
+
+
+    patterns = [
+        f"{base_name}-icon",        
+        f"{base_name}_logo",
+        f"{base_name}_hero",
+        f"{base_name}p",            
+        f"{base_name}"               
+    ]
+
+    found_files = []
+
+    for pattern in patterns:
+        for ext in ['png', 'jpg', 'ico']:
+            file_path = os.path.join(grid_dir, f"{pattern}.{ext}")
+            if os.path.exists(file_path):
+                found_files.append(file_path)
+
+    for file_path in found_files:
+        try:
+            subprocess.run(
+                ['setfattr', '-n', 'user.xdg.tags', '-v', game_name, file_path],
+                check=True
+            )
+            print(f"Tagged {file_path} with '{game_name}'")
+        except subprocess.CalledProcessError as e:
+            print(f"Failed to tag {file_path}: {e}")
+
+
+
+
+
 
 # Add or update the proton compatibility settings
 def add_compat_tool(app_id, launchoptions):
@@ -675,6 +710,7 @@ def create_new_entry(shortcutdirectory, appname, launchoptions, startingdir):
             except Exception as e:
                 print(f"Error downloading fallback artwork for {art_type}: {e}")
 
+    tag_artwork_files(unsigned_shortcut_id, appname, steamid3, logged_in_home)
 
     # Create a new entry for the Steam shortcut, only adding the compat tool if it's not processed by UMU
     new_entry = {
