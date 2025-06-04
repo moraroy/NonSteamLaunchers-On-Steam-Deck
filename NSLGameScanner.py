@@ -510,7 +510,6 @@ def tag_artwork_files(shortcut_id, game_name, steamid3, logged_in_home):
     grid_dir = f"{logged_in_home}/.steam/root/userdata/{steamid3}/config/grid"
     base_name = str(shortcut_id)
 
-
     patterns = [
         f"{base_name}-icon",        
         f"{base_name}_logo",
@@ -529,6 +528,20 @@ def tag_artwork_files(shortcut_id, game_name, steamid3, logged_in_home):
 
     for file_path in found_files:
         try:
+            # Check if file already has the correct tag
+            result = subprocess.run(
+                ['getfattr', '-n', 'user.xdg.tags', '--only-values', file_path],
+                stdout=subprocess.PIPE,
+                stderr=subprocess.DEVNULL,
+                text=True
+            )
+
+            existing_tags = result.stdout.strip().split(',') if result.returncode == 0 else []
+
+            if game_name in existing_tags:
+                print(f"Already tagged: {file_path}")
+                continue
+
             subprocess.run(
                 ['setfattr', '-n', 'user.xdg.tags', '-v', game_name, file_path],
                 check=True
@@ -536,7 +549,6 @@ def tag_artwork_files(shortcut_id, game_name, steamid3, logged_in_home):
             print(f"Tagged {file_path} with '{game_name}'")
         except subprocess.CalledProcessError as e:
             print(f"Failed to tag {file_path}: {e}")
-
 
 
 
