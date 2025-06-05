@@ -480,7 +480,7 @@ def get_steam_fallback_url(steam_store_appid, art_type):
     if art_type == "icons":
         candidates = [base_url + "icon.png", base_url + "icon.ico"]
     elif art_type == "logos":
-        candidates = [base_url + "logo_2x.png"]
+        candidates = [base_url + "logo_2x.png" + "logo.png"]
     elif art_type == "heroes":
         candidates = [base_url + "library_hero_2x.jpg", base_url + "library_hero.jpg"]
     elif art_type == "grids_600x900":
