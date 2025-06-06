@@ -213,7 +213,8 @@ Supported Stores 🛍
 - Tempo Launcher ✔️
 - Antstream Arcade ✔️
 - RemotePlayWhatever ✔️
-- NVIDIA GeForce NOW (Native Linux) ✔️ 
+- NVIDIA GeForce NOW (Native Linux) ✔️
+- STOVE Client ✔️
 
 <h1 align="center">
 Supported Streaming Sites for games and as well as any website. 🌐
@@ -268,6 +269,7 @@ Finds Games Automatically
 - Game Jolt Client 🎮    💾 Full SD Card Support
 - Minecraft Launcher 🎮
 - Waydroid Apps 🎮
+- Humble Games Collection 🎮 💾 Full SD Card Support
 
 ## Chrome Bookmarks
 The scanner will pick these up automatically. But for Geforce Now only, change the name of the bookmark to your actual game name. Or you can press "Play" then Use "Ctrl + D". As long as the game name is in the Bookmark Name.
