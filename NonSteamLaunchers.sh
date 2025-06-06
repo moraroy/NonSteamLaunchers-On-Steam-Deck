@@ -2369,8 +2369,7 @@ function install_itchio {
 # Humble Games specific installation steps
 function install_humblegames {
     # Create the handle-humble-scheme script
-    if [[ ! -f "${logged_in_home}/.local/share/Steam/steamapps/compatdata/$appid/pfx/handle-humble-scheme" ]]; then
-        cat << EOF > "${logged_in_home}/.local/share/Steam/steamapps/compatdata/$appid/pfx/handle-humble-scheme"
+    cat << EOF > "${logged_in_home}/.local/share/Steam/steamapps/compatdata/$appid/pfx/handle-humble-scheme"
     #!/usr/bin/env sh
     set -e
     export STEAM_COMPAT_CLIENT_INSTALL_PATH=~/.local/share/Steam
@@ -2379,12 +2378,10 @@ function install_humblegames {
     echo \$FIXED_SCHEME > "${logged_in_home}/.local/share/Steam/steamapps/compatdata/$appid/pfx/drive_c/.auth"
     "$STEAM_RUNTIME" "$proton_dir/proton" run ~/.local/share/Steam/steamapps/compatdata/$appid/pfx/start-humble.cmd
 EOF
-        chmod +x "${logged_in_home}/.local/share/Steam/steamapps/compatdata/$appid/pfx/handle-humble-scheme"
-    fi
+    chmod +x "${logged_in_home}/.local/share/Steam/steamapps/compatdata/$appid/pfx/handle-humble-scheme"
 
     # Create the Humble-scheme-handler.desktop file
-    if [[ ! -f "${logged_in_home}/.local/share/applications/Humble-scheme-handler.desktop" ]]; then
-        cat << EOF > "${logged_in_home}/.local/share/applications/Humble-scheme-handler.desktop"
+    cat << EOF > "${logged_in_home}/.local/share/applications/Humble-scheme-handler.desktop"
     [Desktop Entry]
     Name=Humble App (Login)
     Comment=Target for handling Humble App logins. You should not run this manually.
@@ -2392,12 +2389,10 @@ EOF
     Type=Application
     MimeType=x-scheme-handler/humble;
 EOF
-        desktop-file-install --rebuild-mime-info-cache --dir=${logged_in_home}/.local/share/applications "${logged_in_home}/.local/share/applications/Humble-scheme-handler.desktop"
-    fi
+    desktop-file-install --rebuild-mime-info-cache --dir=${logged_in_home}/.local/share/applications "${logged_in_home}/.local/share/applications/Humble-scheme-handler.desktop"
 
     # Create the start-humble.cmd script
-    if [[ ! -f "${logged_in_home}/.local/share/Steam/steamapps/compatdata/$appid/pfx/start-humble.cmd" ]]; then
-        cat << EOF > "${logged_in_home}/.local/share/Steam/steamapps/compatdata/$appid/pfx/start-humble.cmd"
+    cat << EOF > "${logged_in_home}/.local/share/Steam/steamapps/compatdata/$appid/pfx/start-humble.cmd"
     @echo off
     cd /d "C:\Program Files\Humble App\"
     set /p Url=<"C:\.auth"
@@ -2408,7 +2403,6 @@ EOF
     )
     exit
 EOF
-    fi
     wait
 }
 
