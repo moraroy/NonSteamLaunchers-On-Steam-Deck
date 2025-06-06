@@ -102,6 +102,7 @@ gamejolt_launcher = os.environ.get('gamejolt_launcher', '')
 minecraft_launcher = os.environ.get('minecraft_launcher', '')
 indie_launcher = os.environ.get('indie_launcher', '')
 stove_launcher = os.environ.get('stove_launcher', '')
+humble_launcher = os.environ.get('humble_launcher', '')
 #Variables of the Launchers
 
 # Define the path of the Launchers
@@ -2434,27 +2435,24 @@ else:
 
 
 #Geforce Now Flatpak Scanner
-def check_and_create_geforce_shortcut():
-    """Check if GeForce NOW Flatpak is installed, and create shortcut if it is."""
-    installed = False
 
+installed = False
+
+try:
+    subprocess.run(["flatpak", "info", "--user", "com.nvidia.geforcenow"],
+                   check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    installed = True
+except subprocess.CalledProcessError:
     try:
-        subprocess.run(["flatpak", "info", "--user", "com.nvidia.geforcenow"],
+        subprocess.run(["flatpak", "info", "--system", "com.nvidia.geforcenow"],
                        check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         installed = True
     except subprocess.CalledProcessError:
-        try:
-            subprocess.run(["flatpak", "info", "--system", "com.nvidia.geforcenow"],
-                           check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-            installed = True
-        except subprocess.CalledProcessError:
-            pass
+        pass
 
-    if not installed:
-        print("Skipping NVIDIA GeForce NOW scanner — Flatpak not found.")
-        return
-
-    # GeForce NOW is installed — create shortcut
+if not installed:
+    print("Skipping NVIDIA GeForce NOW scanner — Flatpak not found.")
+else:
     exe_path = "/usr/bin/flatpak"
     display_name = "NVIDIA GeForce NOW"
     app_name = "run com.nvidia.geforcenow"
@@ -2467,8 +2465,6 @@ def check_and_create_geforce_shortcut():
         startingdir=f'"{start_dir}"'
     )
 
-# Call directly
-check_and_create_geforce_shortcut()
 # End of Geforce Now Flatpak Scanner
 
 
@@ -2523,6 +2519,69 @@ else:
                         print("Error reading manifest", manifest_path, ":", e)
 
 #End of STOVE Client Scanner
+
+
+
+
+# Humble Games Collection Scanner (Humble Bundle, Humble Games, Humble Games Collection)
+proton_prefix = f"{logged_in_home}/.local/share/Steam/steamapps/compatdata/{humble_launcher}/pfx"
+
+# JSON config file path inside Proton prefix
+config_path = os.path.join(
+    proton_prefix,
+    "drive_c/users/steamuser/AppData/Roaming/Humble App/config.json"
+)
+
+# Convert Windows-style path to Linux path inside Proton prefix drive_c
+def windows_to_linux_path(win_path):
+    if not win_path:
+        return ""
+    if win_path.startswith("C:\\"):
+        rel_path = win_path.replace("C:\\", "").replace("\\", "/")
+        return os.path.join(proton_prefix, "drive_c", rel_path)
+    return win_path
+
+# Skip scanner if config doesn't exist
+if not os.path.isfile(config_path):
+    print("Skipping Humble Games Scanner (config not found)")
+else:
+    try:
+        with open(config_path, "r", encoding="utf-8") as f:
+            data = json.load(f)
+    except json.JSONDecodeError:
+        print("Skipping Humble Games Scanner (invalid config)")
+    else:
+        games = data.get("game-collection-4", [])
+
+        for idx, game in enumerate(games, 1):
+            status = game.get("status")
+            if status not in ("downloaded", "installed"):
+                continue
+
+            game_name = game.get("gameName", "Unknown")
+            win_install_path = game.get("filePath", "")
+            exe_rel_path = game.get("executablePath", "")
+
+
+            if not exe_rel_path or not win_install_path:
+                print("  Missing executable or install path, skipping")
+                continue
+
+            linux_install_path = windows_to_linux_path(win_install_path)
+            linux_exe_path = os.path.join(linux_install_path, exe_rel_path.replace("\\", "/"))
+
+            if not os.path.isfile(linux_exe_path):
+                print("  Executable not found, skipping game")
+                continue
+
+            start_dir = os.path.dirname(linux_exe_path)
+            launch_options = f'STEAM_COMPAT_DATA_PATH="{proton_prefix}" %command%'
+
+            # Your shortcut creation function (should be defined elsewhere)
+            create_new_entry(f'"{linux_exe_path}"', game_name, launch_options, f'"{start_dir}"')
+
+# End of Humble Scanner
+
 
 
 
