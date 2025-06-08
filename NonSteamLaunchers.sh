@@ -1741,8 +1741,6 @@ if [[ $uninstall_options == *"Uninstall STOVE Client"* ]]; then
     fi
 fi
 
-/home/deck/.local/share/Steam/steamapps/compatdata/STOVELauncher/pfx/drive_c/ProgramData/Smilegate/STOVE/
-
 uninstall_launcher() {
     local uninstall_options=$1
     local launcher=$2
@@ -2624,7 +2622,7 @@ function install_launcher {
         # Download file
         if [ ! -f "$file_name" ]; then
             echo "Downloading ${file_name}"
-            wget $file_url -O $file_name
+            curl -L $file_url -o $file_name
         fi
 
         # Execute the pre-installation command, if provided
