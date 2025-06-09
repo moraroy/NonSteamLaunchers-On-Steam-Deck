@@ -2866,19 +2866,22 @@ fi
 echo "99.1"
 echo "# Installing NVIDIA GeForce NOW (Native Linux) ...please wait..."
 
-if flatpak info --user com.nvidia.geforcenow &>/dev/null || flatpak info --system com.nvidia.geforcenow &>/dev/null; then
-    echo "NVIDIA GeForce NOW is already installed (user or system)."
-else
-    echo "Adding NVIDIA GeForce NOW Flatpak repository..."
-    flatpak remote-add --user --if-not-exists GeForceNOW https://international.download.nvidia.com/GFNLinux/flatpak/geforcenow.flatpakrepo
-
-    echo "Installing NVIDIA GeForce NOW Flatpak app (user scope)..."
-    if flatpak install -y --user GeForceNOW com.nvidia.geforcenow; then
-        echo "NVIDIA GeForce NOW installed successfully."
+if [[ $options == *"NVIDIA GeForce NOW"* ]]; then
+    if flatpak info --user com.nvidia.geforcenow &>/dev/null || flatpak info --system com.nvidia.geforcenow &>/dev/null; then
+        echo "NVIDIA GeForce NOW is already installed (user or system)."
     else
-        echo "Failed to install NVIDIA GeForce NOW."
+        echo "Adding NVIDIA GeForce NOW Flatpak repository..."
+        flatpak remote-add --user --if-not-exists GeForceNOW https://international.download.nvidia.com/GFNLinux/flatpak/geforcenow.flatpakrepo
+
+        echo "Installing NVIDIA GeForce NOW Flatpak app (user scope)..."
+        if flatpak install -y --user GeForceNOW com.nvidia.geforcenow; then
+            echo "NVIDIA GeForce NOW installed successfully."
+        else
+            echo "Failed to install NVIDIA GeForce NOW."
+        fi
     fi
 fi
+
 
 echo "99.2"
 echo "# Checking if Ludusavi is installed...please wait..."
