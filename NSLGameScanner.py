@@ -1330,49 +1330,6 @@ if os.path.exists(non_steam_launchers_path):
 
 
 
-#Creating Shortcuts file
-
-# Define the path for the new file
-new_file_path = f'{logged_in_home}/.config/systemd/user/shortcuts'
-
-# Create a set to store unique names (to avoid duplicates)
-existing_shortcuts = set()
-
-# Define the extensions to skip
-skip_extensions = {'.exe', '.sh', '.bat', '.msi', '.app', '.apk', '.url', '.desktop', '.AppImage'}
-
-# Check if the shortcuts file exists
-if os.path.exists(new_file_path):
-    # Read the current content of the file
-    with open(new_file_path, 'r') as f:
-        current_content = set(f.read().splitlines())  # Read and split by lines into a set
-else:
-    # If the file doesn't exist, initialize an empty set for current content
-    current_content = set()
-
-# Iterate over all shortcuts and collect unique appnames (checking both 'appname' and 'AppName' keys)
-for shortcut in shortcuts['shortcuts'].values():
-    # Check for both 'appname' and 'AppName' (case-sensitive)
-    appname = shortcut.get('appname') or shortcut.get('AppName')
-
-    # If appname is found and doesn't end with a skip extension, add it to the set (avoid duplicates)
-    if appname and not any(appname.endswith(ext) for ext in skip_extensions):
-        existing_shortcuts.add(appname)
-
-# Only write to the file if the set of unique appnames has changed
-if existing_shortcuts != current_content:
-    print(f"Shortcuts have changed. Writing to {new_file_path}...")
-    with open(new_file_path, 'w') as f:
-        for name in existing_shortcuts:
-            f.write(f"{name}\n")  # Write only the appname (raw)
-else:
-    print(f"No changes to shortcuts. File not modified.")
-
-print(f"Shortcuts file check complete.")
-
-#End of Creating Shortcuts file
-
-
 
 
 
@@ -2746,33 +2703,6 @@ def send_notification(message, icon_path=None, expire_time=5000):
         subprocess.run(['notify-send', '-a', 'NonSteamLaunchers', message, f'--expire-time={expire_time}'])
 
 
-# --- Write unique shortcuts to file ---
-def write_shortcuts_to_file(file_path, created_shortcuts, skip_extensions):
-    existing_shortcuts = set()
-
-    if not os.path.exists(file_path):
-        with open(file_path, 'w'): pass
-
-    with open(file_path, 'r') as f:
-        existing_shortcuts.update(line.strip() for line in f)
-
-    new_shortcuts = [
-        name for name in created_shortcuts
-        if name and name not in existing_shortcuts
-        and not any(name.endswith(ext) for ext in skip_extensions)
-    ]
-
-    if new_shortcuts:
-        with open(file_path, 'a') as f:
-            for name in new_shortcuts:
-                f.write(f"{name}\n")
-        print(f"New shortcuts added to {file_path}.")
-    else:
-        print("No new shortcuts to add.")
-# --- End of Shortcut File Logic ---
-
-
-
 
 # --- Game Descriptions Update Logic ---
 def update_game_details(games_to_check, logged_in_home, skip_games):
@@ -3028,9 +2958,6 @@ if new_shortcuts_added or shortcuts_updated:
 
             # Update game details for this shortcut
             update_game_details([name], logged_in_home, skip_games)
-
-        # Write newly created shortcuts to the file
-        write_shortcuts_to_file(shortcuts_file_path, created_shortcuts, skip_extensions)
 
         notifications = []
         num_notifications = len(created_shortcuts)
