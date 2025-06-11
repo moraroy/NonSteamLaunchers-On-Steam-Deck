@@ -20,7 +20,7 @@
 NonSteamLaunchers 🚀
 </h1>
 
-This script installs the latest UMU & GE-Proton and installs NonSteamLaunchers under one unique Proton prefix folder in your compatdata folder path called "NonSteamLaunchers" and adds them to your Steam Library. It will also add the games automatically on every steam restart and also attempt to remove the games from your library in real time when you uninstall a game.
+This script installs the latest UMU & GE-Proton and installs NonSteamLaunchers under one unique Proton prefix folder in your compatdata folder path called "NonSteamLaunchers" and adds them to your Steam Library. It will also add the games automatically on every steam restart and will attempt to remove the games from your library in real time when you uninstall a game.
 So you can use them on Desktop or in Game Mode. 
 Local Saves and Cloud saves are supported, as well as multiplayer/online support (because you're using the launchers). Obviously, certain anticheat games will not work on linux enviroments; this is on a game to game basis.
 
