@@ -2623,6 +2623,32 @@ install_stove() {
 }
 
 
+install_psplus() {
+    local url="https://aka.ms/highdpimfc2013x86enu"
+    local installer="vcredist_x86.exe"
+
+    echo "Attempting to download $installer..."
+
+    if curl -fLo "$installer" "$url"; then
+        echo "Download successful. Running $installer silently..."
+
+        # Start the installer with Proton and capture PID
+        "$STEAM_RUNTIME" "$proton_dir/proton" run "$installer"  /q /norestart &
+        local pid=$!
+
+        echo "Installer PID: $pid. Waiting for it to complete..."
+        wait $pid
+
+        local exit_code=$?
+        if [ $exit_code -eq 0 ]; then
+            echo "$installer finished successfully."
+        else
+            echo "$installer exited with error code $exit_code."
+        fi
+    else
+        echo "Download failed. Skipping installation."
+    fi
+}
 
 
 
@@ -2764,7 +2790,7 @@ install_launcher "Glyph Launcher" "GlyphLauncher" "$glyph_file" "$glyph_url" "$g
 install_launcher "Minecraft Launcher" "MinecraftLauncher" "$minecraft_file" "$minecraft_url" "MsiExec.exe /i "$minecraft_file" /q" "82" "" ""
 
 # Install Playstation Plus Launcher
-install_launcher "Playstation Plus" "PlaystationPlusLauncher" "$psplus_file" "$psplus_url" "$psplus_file /q" "83" "" ""
+install_launcher "Playstation Plus" "PlaystationPlusLauncher" "$psplus_file" "$psplus_url" "$psplus_file /q" "83" "install_psplus" "" true
 
 # Install VK Play
 install_launcher "VK Play" "VKPlayLauncher" "$vkplay_file" "$vkplay_url" "$vkplay_file" "84" "" "install_vkplay" true
