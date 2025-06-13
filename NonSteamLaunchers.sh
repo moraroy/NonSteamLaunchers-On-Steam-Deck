@@ -1858,14 +1858,22 @@ process_uninstall_options() {
                 uninstall_launcher "$uninstall_options" "Legacy Games" "$legacygames_path1" "$legacygames_path2" "" "" "legacy"
             fi
         fi
+
         if [[ $uninstall_options == *"Uninstall Playstation Plus"* ]]; then
+
+            # NonSteamLaunchers prefix: run uninstaller, do not delete prefix
             if [[ -d "${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/Program Files (x86)/PlayStationPlus" ]]; then
                 handle_uninstall_psplus "NonSteamLaunchers"
-                uninstall_launcher "$uninstall_options" "Playstation Plus" "$psplus_path1" "$psplus_path2" "" "" "psplus"
-            elif [[ -d "${logged_in_home}/.local/share/Steam/steamapps/compatdata/PlaystationPlusLauncher" ]]; then
-                handle_uninstall_psplus "PlaystationPlusLauncher"
-                uninstall_launcher "$uninstall_options" "Playstation Plus" "$psplus_path1" "$psplus_path2" "" "" "psplus"
+                uninstall_launcher "$uninstall_options" "Playstation Plus" "$psplus_path1" "" "" "" "psplus"
             fi
+
+            # PlaystationPlusLauncher prefix: run uninstaller and delete prefix
+            if [[ -d "${logged_in_home}/.local/share/Steam/steamapps/compatdata/PlaystationPlusLauncher/pfx/drive_c/Program Files (x86)/PlayStationPlus" ]]; then
+                handle_uninstall_psplus "PlaystationPlusLauncher"
+                uninstall_launcher "$uninstall_options" "Playstation Plus" "$psplus_path2" "" "${logged_in_home}/.local/share/Steam/steamapps/compatdata/PlaystationPlusLauncher" "" "psplus"
+                rm -rf "${logged_in_home}/.local/share/Steam/steamapps/compatdata/PlaystationPlusLauncher"
+            fi
+
         fi
 
         if [[ $uninstall_options == *"Uninstall Artix Game Launcher"* ]]; then
