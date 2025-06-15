@@ -395,6 +395,8 @@ if [ "${deckyplugin}" = false ]; then
 	rm -rf ${logged_in_home}/.config/systemd/user/nslgamescanner.service
 	unlink ${logged_in_home}/.config/systemd/user/default.target.wants/nslgamescanner.service
 	systemctl --user daemon-reload
+    systemctl --user stop $(systemctl --user list-units | grep -o 'app-NonSteamLaunchers@[^ ]*')
+    systemctl --user reset-failed
 
 	python_script_path="${logged_in_home}/.config/systemd/user/NSLGameScanner.py"
 	github_link="https://raw.githubusercontent.com/moraroy/NonSteamLaunchers-On-Steam-Deck/main/NSLGameScanner.py"
@@ -827,6 +829,8 @@ CheckInstallationDirectory
 rm -rf "${logged_in_home}/.config/systemd/user/nslgamescanner.service"
 unlink "${logged_in_home}/.config/systemd/user/default.target.wants/nslgamescanner.service"
 systemctl --user daemon-reload
+systemctl --user stop $(systemctl --user list-units | grep -o 'app-NonSteamLaunchers@[^ ]*')
+systemctl --user reset-failed
 
 # Define launcher entries
 launcher_entries=(
@@ -1281,6 +1285,8 @@ function StartFreshFunction {
 
     # Reload the systemd user instance
     systemctl --user daemon-reload
+	systemctl --user stop $(systemctl --user list-units | grep -o 'app-NonSteamLaunchers@[^ ]*')
+    systemctl --user reset-failed
 
     show_message "NonSteamLaunhers has been wiped!"
 
@@ -2140,6 +2146,8 @@ function stop_service {
 
     # Reload the systemd user instance
     systemctl --user daemon-reload
+	systemctl --user stop $(systemctl --user list-units | grep -o 'app-NonSteamLaunchers@[^ ]*')
+    systemctl --user reset-failed
 }
 
 # Get the command line arguments
@@ -4066,6 +4074,8 @@ switch_to_game_mode() {
   unlink ${logged_in_home}/.config/systemd/user/default.target.wants/nslgamescanner.service
   echo "Reloading systemd user daemon..."
   systemctl --user daemon-reload
+  systemctl --user stop $(systemctl --user list-units | grep -o 'app-NonSteamLaunchers@[^ ]*')
+  systemctl --user reset-failed
   echo "Logging out to complete Game Mode switch..."
   qdbus org.kde.Shutdown /Shutdown org.kde.Shutdown.logout
 }
