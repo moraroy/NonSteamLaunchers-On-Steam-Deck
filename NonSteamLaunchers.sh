@@ -828,7 +828,6 @@ CheckInstallationDirectory
 rm -rf "${logged_in_home}/.config/systemd/user/nslgamescanner.service"
 unlink "${logged_in_home}/.config/systemd/user/default.target.wants/nslgamescanner.service"
 systemctl --user daemon-reload
-systemctl --user stop $(systemctl --user list-units | grep -o 'app-NonSteamLaunchers@[^ ]*')
 systemctl --user reset-failed
 
 # Define launcher entries
