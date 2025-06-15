@@ -1283,7 +1283,6 @@ function StartFreshFunction {
 
     # Reload the systemd user instance
     systemctl --user daemon-reload
-	systemctl --user stop $(systemctl --user list-units | grep -o 'app-NonSteamLaunchers@[^ ]*')
     systemctl --user reset-failed
 
     show_message "NonSteamLaunhers has been wiped!"
@@ -2144,7 +2143,6 @@ function stop_service {
 
     # Reload the systemd user instance
     systemctl --user daemon-reload
-	systemctl --user stop $(systemctl --user list-units | grep -o 'app-NonSteamLaunchers@[^ ]*')
     systemctl --user reset-failed
 }
 
@@ -4072,7 +4070,6 @@ switch_to_game_mode() {
   unlink ${logged_in_home}/.config/systemd/user/default.target.wants/nslgamescanner.service
   echo "Reloading systemd user daemon..."
   systemctl --user daemon-reload
-  systemctl --user stop $(systemctl --user list-units | grep -o 'app-NonSteamLaunchers@[^ ]*')
   systemctl --user reset-failed
   echo "Logging out to complete Game Mode switch..."
   qdbus org.kde.Shutdown /Shutdown org.kde.Shutdown.logout
