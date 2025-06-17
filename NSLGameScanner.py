@@ -2947,9 +2947,6 @@ if new_shortcuts_added or shortcuts_updated:
 
     # --- Additional Logic ---
     notified_games = set()
-    shortcuts_file_path = os.path.join(logged_in_home, '.config/systemd/user/shortcuts')
-    skip_extensions = {'.exe', '.sh', '.bat', '.msi', '.app', '.apk', '.url', '.desktop', '.AppImage'}
-
     if created_shortcuts:
         print("Created Shortcuts:")
 
