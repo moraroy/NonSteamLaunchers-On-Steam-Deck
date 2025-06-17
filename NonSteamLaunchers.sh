@@ -531,6 +531,7 @@ if [ "${deckyplugin}" = false ]; then
 fi
 sleep 1
 show_message "Finished! Welcome to NonSteamLaunchers!"
+sleep 2
 
 
 
