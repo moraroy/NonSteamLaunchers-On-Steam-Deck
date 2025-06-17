@@ -437,8 +437,10 @@ if [ "${deckyplugin}" = false ]; then
 	  "Thank you for being patient..."
 	  "This may take a while..."
 	  "You may need to grab a coffee..."
+	  "If you see this notification, I'm still working dont worry..."
+	  "Getting Descriptions, Artwork and Boot Videos if applicable..."
 	)
-
+ 
 	if [ "$decky_plugin" = true ]; then
 	    if [ -f "$env_vars" ]; then
 	        echo "Decky Plugin argument set and env_vars file found. Running the .py file..."
@@ -485,6 +487,20 @@ if [ "${deckyplugin}" = false ]; then
 	    kill $message_pid
         show_message "Scanning complete! Your game library looks good!"
 	    sleep 2
+
+        # Close all instances of Steam
+        steam_pid() { pgrep -x steam ; }
+        steam_running=$(steam_pid)
+        [[ -n "$steam_running" ]] && killall steam
+
+        # Wait for the Steam process to exit
+        while steam_pid > /dev/null; do
+            sleep 1
+        done
+
+        # Relaunch Steam in the background
+        nohup /usr/bin/steam %U &
+		
 	    echo "env_vars file found. Running the .py file."
 	    live="successfully. Decky Plugin Version on Github is: $deckyversion"
 	fi
