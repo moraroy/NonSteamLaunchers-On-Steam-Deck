@@ -2527,6 +2527,9 @@ else:
 
 
 #Geforce Now Flatpak Scanner
+import subprocess
+
+# Geforce Now Flatpak Scanner
 
 installed = False
 
@@ -2534,16 +2537,16 @@ try:
     subprocess.run(["flatpak", "info", "--user", "com.nvidia.geforcenow"],
                    check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
     installed = True
-except subprocess.CalledProcessError:
+except (subprocess.CalledProcessError, FileNotFoundError):
     try:
         subprocess.run(["flatpak", "info", "--system", "com.nvidia.geforcenow"],
                        check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         installed = True
-    except subprocess.CalledProcessError:
+    except (subprocess.CalledProcessError, FileNotFoundError):
         pass
 
 if not installed:
-    print("Skipping NVIDIA GeForce NOW scanner — Flatpak not found.")
+    print("Skipping NVIDIA GeForce NOW scanner — Flatpak not found or app not installed.")
 else:
     exe_path = "/usr/bin/flatpak"
     display_name = "NVIDIA GeForce NOW"
