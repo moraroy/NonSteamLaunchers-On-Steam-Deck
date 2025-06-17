@@ -506,7 +506,7 @@ if [ "${deckyplugin}" = false ]; then
 
         # Relaunch Steam in the background
         echo "Relaunching Steam..."
-        nohup /usr/bin/steam %U &>/dev/null &
+        nohup /usr/bin/steam -silent %U &>/dev/null &
 		
 	    echo "env_vars file found. Running the .py file."
 	    live="successfully. Decky Plugin Version on Github is: $deckyversion"
@@ -531,7 +531,6 @@ if [ "${deckyplugin}" = false ]; then
 fi
 sleep 1
 show_message "Finished! Welcome to NonSteamLaunchers!"
-sleep 2
 
 
 
