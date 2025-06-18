@@ -1446,8 +1446,6 @@ else:
 # End of Ubisoft Game Scanner
 
 # EA App Game Scanner
-
-
 def get_ea_app_game_info(installed_games, game_directory_path):
     game_dict = {}
     for game in installed_games:
@@ -1468,11 +1466,32 @@ def get_ea_app_game_info(installed_games, game_directory_path):
                 continue
         if game_name is None:
             game_name = game
-        if ea_ids:  # Add the game's info to the dictionary if its ID was found in the folder
+        if ea_ids:  
             game_dict[game_name] = ea_ids
     return game_dict
 
+# Read EA Games path from registry
+def find_ea_games_path_from_registry():
+    with open(f"{logged_in_home}/.local/share/Steam/steamapps/compatdata/{ea_app_launcher}/pfx/system.reg", 'r', encoding='utf-16-le', errors='ignore') as file:
+        content = file.read()
+
+    matches = re.findall(r'\[Software\\\\EA Games\\\\.*?\]\s*[^[]*?"Install Dir"="(.*?)"', content, re.DOTALL)
+    if not matches:
+        return None
+
+    example_path = matches[0]
+    if "EA Games" in example_path:
+        ea_games_index = example_path.find("EA Games")
+        ea_games_path = example_path[:ea_games_index + len("EA Games")]
+        ea_games_path_unix = ea_games_path.replace("C:\\", "").replace("\\", "/")
+        return f"{logged_in_home}/.local/share/Steam/steamapps/compatdata/{ea_app_launcher}/pfx/drive_c/{ea_games_path_unix}/"
+    return None
+
+# Set default path, then try dynamic override
 game_directory_path = f"{logged_in_home}/.local/share/Steam/steamapps/compatdata/{ea_app_launcher}/pfx/drive_c/Program Files/EA Games/"
+detected_path = find_ea_games_path_from_registry()
+if detected_path:
+    game_directory_path = detected_path
 
 if not os.path.isdir(game_directory_path):
     print("EA App game data not found. Skipping EA App Scanner.")
