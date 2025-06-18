@@ -41,8 +41,6 @@ chmod 644 "$MAIN_PY_PATH"
 chmod 755 "$YTDLP_PATH"
 chmod u-w "$PLUGIN_DIR" "$BIN_DIR" 2>/dev/null || true
 
-# Removed sudo password and service restart logic here
-
 zenity --question --text="Plugin installed or updated. Do you want to switch to Game Mode now? You may have to go to the Plugin Settings and Reload the SDH-GameThemeMusic plugin if it doesnt work at first." \
   --title="Switch to Game Mode?" --ok-label="Yes" --cancel-label="No"
 zenity_exit_code=$?
