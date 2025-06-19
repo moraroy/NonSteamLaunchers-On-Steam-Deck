@@ -1450,7 +1450,10 @@ def get_ea_app_game_info(installed_games, game_directory_path):
     game_dict = {}
     for game in installed_games:
         try:
-            xml_file = ET.parse(f"{game_directory_path}{game}/__Installer/installerdata.xml")
+            xml_path = os.path.join(game_directory_path, game, "__Installer", "installerdata.xml")
+            if not os.path.isfile(xml_path):
+                continue
+            xml_file = ET.parse(xml_path)
             xml_root = xml_file.getroot()
             ea_ids = None
             game_name = None
@@ -1475,7 +1478,7 @@ def find_ea_games_path_from_registry():
     registry_path = f"{logged_in_home}/.local/share/Steam/steamapps/compatdata/{ea_app_launcher}/pfx/system.reg"
 
     if not os.path.isfile(registry_path):
-        print("EA App registry file not found. Skipping EA App Scanner.")
+        print("EA App registry file not found. Skipping registry check.")
         return None
 
     try:
@@ -1498,23 +1501,49 @@ def find_ea_games_path_from_registry():
 
     return None
 
+def find_external_game_paths():
+    possible_paths = []
+
+    # Common folders
+    for folder_name in ["EA Games", "Origin Games"]:
+        matches = glob.glob(f"/run/media/deck/*/{folder_name}/")
+        possible_paths.extend(matches)
+
+    # Also check top-level folders that look like game directories
+    top_level_dirs = glob.glob("/run/media/deck/*/*/")
+    for path in top_level_dirs:
+        if any(os.path.isdir(os.path.join(path, sub, "__Installer")) for sub in os.listdir(path)):
+            possible_paths.append(path)
+            break  # Use the first matching one
+
+    return [p for p in possible_paths if os.path.isdir(p)]
+
 
 if not ea_app_launcher:
     print("EA App launcher ID not set. Skipping EA App Scanner.")
 else:
-    # Default fallback path
-    game_directory_path = f"{logged_in_home}/.local/share/Steam/steamapps/compatdata/{ea_app_launcher}/pfx/drive_c/Program Files/EA Games/"
+    # 1. Default Proton path
+    default_path = f"{logged_in_home}/.local/share/Steam/steamapps/compatdata/{ea_app_launcher}/pfx/drive_c/Program Files/EA Games/"
+    game_directory_path = default_path
 
-    # Try to detect actual install path
+    # 2. Registry path
     detected_path = find_ea_games_path_from_registry()
     if detected_path:
         game_directory_path = detected_path
 
+    # 3. Check external SD card folders
+    if not os.path.isdir(game_directory_path):
+        external_paths = find_external_game_paths()
+        if external_paths:
+            game_directory_path = external_paths[0]
+            print(f"Using external EA App game path: {game_directory_path}")
+
+    # Final scan
     if not os.path.isdir(game_directory_path):
         print("EA App game data not found. Skipping EA App Scanner.")
     else:
         try:
-            installed_games = os.listdir(game_directory_path)
+            installed_games = [g for g in os.listdir(game_directory_path) if os.path.isdir(os.path.join(game_directory_path, g))]
             game_dict = get_ea_app_game_info(installed_games, game_directory_path)
 
             for game, ea_ids in game_dict.items():
@@ -1526,7 +1555,6 @@ else:
                 track_game(game, "EA App")
         except Exception as e:
             print(f"Error scanning EA App games: {e}")
-
 
 #End of EA App Scanner
 
