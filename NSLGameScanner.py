@@ -553,8 +553,6 @@ def tag_artwork_files(shortcut_id, game_name, steamid3, logged_in_home):
             print(f"Failed to tag {file_path}: {e}")
 
 
-
-
 def scan_and_track_games(logged_in_home, steamid3):
     def normalize_appname(name):
         return name.strip().lower() if name else ""
@@ -651,9 +649,23 @@ def scan_and_track_games(logged_in_home, steamid3):
                 master_list[launcher] = {}
             master_list[launcher].update(games)
 
-        os.makedirs(os.path.dirname(installed_apps_path), exist_ok=True)
-        with open(installed_apps_path, "w") as f:
-            json.dump(master_list, f, indent=4)
+        # Remove volatile fields (like "last_seen") for comparison
+        def cleaned(data):
+            if isinstance(data, dict):
+                return {k: cleaned(v) for k, v in data.items() if k != "last_seen"}
+            elif isinstance(data, list):
+                return [cleaned(i) for i in data]
+            else:
+                return data
+
+        # Only write to file if the cleaned data has meaningful changes
+        if cleaned(master_list) != cleaned(previous_master_list):
+            os.makedirs(os.path.dirname(installed_apps_path), exist_ok=True)
+            with open(installed_apps_path, "w") as f:
+                json.dump(master_list, f, indent=4)
+            print("Master list updated and saved.")
+        else:
+            print("No meaningful changes to master list. Skipping write.")
 
         if removed_apps:
             print(f"Removed apps: {removed_apps}")
@@ -662,11 +674,11 @@ def scan_and_track_games(logged_in_home, steamid3):
                 uninstall_removed_apps(apps, appid_map)
         else:
             print("No newly removed apps detected.")
+
         return removed_apps
 
     load_master_list()
     return track_game, finalize_game_tracking
-
 
 
 # Add or update the proton compatibility settings
