@@ -1449,31 +1449,41 @@ else:
 def get_ea_app_game_info(installed_games, game_directory_path):
     game_dict = {}
     for game in installed_games:
-        xml_file = ET.parse(f"{game_directory_path}{game}/__Installer/installerdata.xml")
-        xml_root = xml_file.getroot()
-        ea_ids = None
-        game_name = None
-        for content_id in xml_root.iter('contentID'):
-            ea_ids = content_id.text
-            break  # Exit the loop after the first ID is found
-        for game_title in xml_root.iter('gameTitle'):
+        try:
+            xml_file = ET.parse(f"{game_directory_path}{game}/__Installer/installerdata.xml")
+            xml_root = xml_file.getroot()
+            ea_ids = None
+            game_name = None
+            for content_id in xml_root.iter('contentID'):
+                ea_ids = content_id.text
+                break
+            for game_title in xml_root.iter('gameTitle'):
+                if game_name is None:
+                    game_name = game_title.text
+            for game_title in xml_root.iter('title'):
+                if game_name is None:
+                    game_name = game_title.text
             if game_name is None:
-                game_name = game_title.text
-                continue
-        for game_title in xml_root.iter('title'):
-            if game_name is None:
-                game_name = game_title.text
-                continue
-        if game_name is None:
-            game_name = game
-        if ea_ids:  
-            game_dict[game_name] = ea_ids
+                game_name = game
+            if ea_ids:
+                game_dict[game_name] = ea_ids
+        except Exception as e:
+            print(f"Error parsing XML for {game}: {e}")
     return game_dict
 
-# Read EA Games path from registry
 def find_ea_games_path_from_registry():
-    with open(f"{logged_in_home}/.local/share/Steam/steamapps/compatdata/{ea_app_launcher}/pfx/system.reg", 'r', encoding='utf-16-le', errors='ignore') as file:
-        content = file.read()
+    registry_path = f"{logged_in_home}/.local/share/Steam/steamapps/compatdata/{ea_app_launcher}/pfx/system.reg"
+
+    if not os.path.isfile(registry_path):
+        print("EA App registry file not found. Skipping EA App Scanner.")
+        return None
+
+    try:
+        with open(registry_path, 'r', encoding='utf-16-le', errors='ignore') as file:
+            content = file.read()
+    except Exception as e:
+        print(f"Error reading EA registry file: {e}")
+        return None
 
     matches = re.findall(r'\[Software\\\\EA Games\\\\.*?\]\s*[^[]*?"Install Dir"="(.*?)"', content, re.DOTALL)
     if not matches:
@@ -1485,26 +1495,38 @@ def find_ea_games_path_from_registry():
         ea_games_path = example_path[:ea_games_index + len("EA Games")]
         ea_games_path_unix = ea_games_path.replace("C:\\", "").replace("\\", "/")
         return f"{logged_in_home}/.local/share/Steam/steamapps/compatdata/{ea_app_launcher}/pfx/drive_c/{ea_games_path_unix}/"
+
     return None
 
-# Set default path, then try dynamic override
-game_directory_path = f"{logged_in_home}/.local/share/Steam/steamapps/compatdata/{ea_app_launcher}/pfx/drive_c/Program Files/EA Games/"
-detected_path = find_ea_games_path_from_registry()
-if detected_path:
-    game_directory_path = detected_path
 
-if not os.path.isdir(game_directory_path):
-    print("EA App game data not found. Skipping EA App Scanner.")
+if not ea_app_launcher:
+    print("EA App launcher ID not set. Skipping EA App Scanner.")
 else:
-    installed_games = os.listdir(game_directory_path)  # Get a list of game folders
-    game_dict = get_ea_app_game_info(installed_games, game_directory_path)
+    # Default fallback path
+    game_directory_path = f"{logged_in_home}/.local/share/Steam/steamapps/compatdata/{ea_app_launcher}/pfx/drive_c/Program Files/EA Games/"
 
-    for game, ea_ids in game_dict.items():
-        launch_options = f"STEAM_COMPAT_DATA_PATH=\"{logged_in_home}/.local/share/Steam/steamapps/compatdata/{ea_app_launcher}/\" %command% \"origin2://game/launch?offerIds={ea_ids}\""
-        exe_path = f"\"{logged_in_home}/.local/share/Steam/steamapps/compatdata/{ea_app_launcher}/pfx/drive_c/Program Files/Electronic Arts/EA Desktop/EA Desktop/EALaunchHelper.exe\""
-        start_dir = f"\"{logged_in_home}/.local/share/Steam/steamapps/compatdata/{ea_app_launcher}/pfx/drive_c/Program Files/Electronic Arts/EA Desktop/EA Desktop/\""
-        create_new_entry(exe_path, game, launch_options, start_dir)
-        track_game(game, "EA App")
+    # Try to detect actual install path
+    detected_path = find_ea_games_path_from_registry()
+    if detected_path:
+        game_directory_path = detected_path
+
+    if not os.path.isdir(game_directory_path):
+        print("EA App game data not found. Skipping EA App Scanner.")
+    else:
+        try:
+            installed_games = os.listdir(game_directory_path)
+            game_dict = get_ea_app_game_info(installed_games, game_directory_path)
+
+            for game, ea_ids in game_dict.items():
+                launch_options = f'STEAM_COMPAT_DATA_PATH="{logged_in_home}/.local/share/Steam/steamapps/compatdata/{ea_app_launcher}/" %command% "origin2://game/launch?offerIds={ea_ids}"'
+                exe_path = f'"{logged_in_home}/.local/share/Steam/steamapps/compatdata/{ea_app_launcher}/pfx/drive_c/Program Files/Electronic Arts/EA Desktop/EA Desktop/EALaunchHelper.exe"'
+                start_dir = f'"{logged_in_home}/.local/share/Steam/steamapps/compatdata/{ea_app_launcher}/pfx/drive_c/Program Files/Electronic Arts/EA Desktop/EA Desktop/"'
+
+                create_new_entry(exe_path, game, launch_options, start_dir)
+                track_game(game, "EA App")
+        except Exception as e:
+            print(f"Error scanning EA App games: {e}")
+
 
 #End of EA App Scanner
 
