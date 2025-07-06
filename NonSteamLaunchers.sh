@@ -440,7 +440,7 @@ if [ "${deckyplugin}" = false ]; then
 	  "If you see this notification, I'm still working dont worry..."
 	  "Getting Descriptions, Artwork and Boot Videos if applicable..."
 	)
- 
+
 	if [ "$decky_plugin" = true ]; then
 	    if [ -f "$env_vars" ]; then
 	        echo "Decky Plugin argument set and env_vars file found. Running the .py file..."
@@ -456,6 +456,28 @@ if [ "${deckyplugin}" = false ]; then
 	          done
 	        ) &
 	        message_pid=$!
+
+	        # Check Steam debug file before running Python
+	        steam_debug_file="${logged_in_home}/.local/share/Steam/.cef-enable-remote-debugging"
+	        if [ ! -f "$steam_debug_file" ]; then
+	            echo "Creating missing Steam remote debugging file: $steam_debug_file"
+	            touch "$steam_debug_file" || { echo "Failed to create file: $steam_debug_file"; exit 1; }
+
+	            steam_pid() { pgrep -x steam; }
+	            echo "File created successfully. Restarting Steam..."
+	            steam_running=$(steam_pid)
+	            if [[ -n "$steam_running" ]]; then
+	                echo "Closing Steam..."
+	                killall steam
+	            fi
+
+	            while steam_pid > /dev/null; do sleep 1; done
+
+	            echo "Relaunching Steam..."
+	            nohup /usr/bin/steam -silent %U &>/dev/null &
+	        else
+	            echo "Steam remote debugging file already exists: $steam_debug_file"
+	        fi
 
 	        python3 $python_script_path
 
@@ -482,32 +504,34 @@ if [ "${deckyplugin}" = false ]; then
 	    ) &
 	    message_pid=$!
 
+	    # Check Steam debug file before running Python
+	    steam_debug_file="${logged_in_home}/.local/share/Steam/.cef-enable-remote-debugging"
+	    if [ ! -f "$steam_debug_file" ]; then
+	        echo "Creating missing Steam remote debugging file: $steam_debug_file"
+	        touch "$steam_debug_file" || { echo "Failed to create file: $steam_debug_file"; exit 1; }
+
+	        steam_pid() { pgrep -x steam; }
+	        echo "File created successfully. Restarting Steam..."
+	        steam_running=$(steam_pid)
+	        if [[ -n "$steam_running" ]]; then
+	            echo "Closing Steam..."
+	            killall steam
+	        fi
+
+	        while steam_pid > /dev/null; do sleep 1; done
+
+	        echo "Relaunching Steam..."
+	        nohup /usr/bin/steam -silent %U &>/dev/null &
+	    else
+	        echo "Steam remote debugging file already exists: $steam_debug_file"
+	    fi
+
 	    python3 $python_script_path
 
 	    kill $message_pid
         show_message "Scanning complete! Your game library looks good!"
 	    sleep 2
-        # Define function to get Steam's PID
-        steam_pid() {
-            pgrep -x steam
-        }
 
-        # Close all instances of Steam
-        steam_running=$(steam_pid)
-        if [[ -n "$steam_running" ]]; then
-            echo "Closing Steam..."
-            killall steam
-        fi
-
-        # Wait for the Steam process to fully exit
-        while steam_pid > /dev/null; do
-            sleep 1
-        done
-
-        # Relaunch Steam in the background
-        echo "Relaunching Steam..."
-        nohup /usr/bin/steam -silent %U &>/dev/null &
-		
 	    echo "env_vars file found. Running the .py file."
 	    live="successfully. Decky Plugin Version on Github is: $deckyversion"
 	fi
@@ -531,7 +555,6 @@ if [ "${deckyplugin}" = false ]; then
 fi
 sleep 1
 show_message "Finished! Welcome to NonSteamLaunchers!"
-
 
 
 # Check if any command line arguments were provided
@@ -4061,20 +4084,7 @@ if [ "${deckyplugin}" = false ]; then
     echo "Starting the service..."
     python3 $python_script_path
 
-    show_message "Restarting Steam..."
 
-    # Detach script from Steam process
-    nohup sh -c 'sleep 10; /usr/bin/steam %U' &
-
-    # Close all instances of Steam
-    steam_pid() { pgrep -x steam ; }
-    steam_running=$(steam_pid)
-    [[ -n "$steam_running" ]] && killall steam
-
-    # Wait for the steam process to exit
-    while steam_pid > /dev/null; do
-        sleep 5
-    done
 fi
 
 show_message "Waiting to detect plugin..."
