@@ -14,11 +14,20 @@ import csv
 import configparser
 import certifi
 import glob
+from datetime import datetime
+
 from urllib.request import urlopen
 from urllib.request import urlretrieve
 from urllib.parse import quote
 from base64 import b64encode
 import xml.etree.ElementTree as ET
+
+import socket
+import base64
+
+from urllib.parse import urlparse
+import http.client
+
 
 # Check the value of the DBUS_SESSION_BUS_ADDRESS environment variable
 dbus_address = os.environ.get('DBUS_SESSION_BUS_ADDRESS')
@@ -102,6 +111,7 @@ gamejolt_launcher = os.environ.get('gamejolt_launcher', '')
 minecraft_launcher = os.environ.get('minecraft_launcher', '')
 indie_launcher = os.environ.get('indie_launcher', '')
 stove_launcher = os.environ.get('stove_launcher', '')
+humble_launcher = os.environ.get('humble_launcher', '')
 #Variables of the Launchers
 
 # Define the path of the Launchers
@@ -203,6 +213,7 @@ else:
 
 
 
+
 #Code
 def get_steam_shortcut_id(exe_path, display_name):
     unique_id = "".join([exe_path, display_name])
@@ -227,7 +238,7 @@ created_shortcuts = []
 new_shortcuts_added = False
 shortcuts_updated = False
 shortcut_id = None  # Initialize shortcut_id
-decky_shortcuts = {}
+
 gridp64 = ""
 grid64 = ""
 logo64 = ""
@@ -268,9 +279,7 @@ else:
 
 
 
-# Open the config.vdf file
-with open(f"{logged_in_home}/.steam/root/config/config.vdf", 'r') as file:
-    config_data = vdf.load(file)
+
 
 
 def get_sgdb_art(game_id, app_id):
@@ -305,10 +314,18 @@ def download_artwork(game_id, art_type, shortcut_id, dimensions=None):
     if not os.path.exists(directory):
         os.makedirs(directory)
 
+
+
+
+
     if os.path.exists(file_path):
-        print(f"Artwork for {game_id} already exists. Skipping download.")
-        with open(file_path, 'rb') as image_file:
-            return b64encode(image_file.read()).decode('utf-8')
+        if art_type == 'icons':
+            print(f"Icon artwork for {game_id} already exists. Skipping download.")
+            with open(file_path, 'rb') as image_file:
+                return b64encode(image_file.read()).decode('utf-8')
+        else:
+            print(f"{art_type} artwork already exists, but skipping file read. Will redownload for base64.")
+
 
     if cache_key in api_cache:
         data = api_cache[cache_key]
@@ -344,10 +361,19 @@ def download_artwork(game_id, art_type, shortcut_id, dimensions=None):
                 response.raise_for_status()
 
                 if response.status_code == 200:
-                    with open(alt_file_path, 'wb') as file:
-                        file.write(response.content)
-                    print(f"Downloaded {alt_file_path}")
+
+
+
+                    if art_type == 'icons':
+                        with open(alt_file_path, 'wb') as file:
+                            file.write(response.content)
+                        print(f"Downloaded and saved icon to: {alt_file_path}")
+                    else:
+                        print(f"Downloaded {art_type} artwork as base64 (not saved to disk)")
                     return b64encode(response.content).decode('utf-8')
+
+
+
             except requests.exceptions.RequestException as e:
                 print(f"Error downloading image in {ext}: {e}")
 
@@ -441,7 +467,7 @@ def get_steam_store_appid(steam_store_game_name):
 
     print(f"No App ID found for {steam_store_game_name} in cached Steam AppList.")
     return None
-    
+
 
 def create_steam_store_app_manifest_file(steam_store_appid, steam_store_game_name):
     steamapps_dir = f"{logged_in_home}/.steam/root/steamapps/"
@@ -473,6 +499,7 @@ def create_steam_store_app_manifest_file(steam_store_appid, steam_store_game_nam
 
 
 
+
 def get_steam_fallback_url(steam_store_appid, art_type):
     base_url = f"https://shared.steamstatic.com/store_item_assets/steam/apps/{steam_store_appid}/"
 
@@ -480,7 +507,7 @@ def get_steam_fallback_url(steam_store_appid, art_type):
     if art_type == "icons":
         candidates = [base_url + "icon.png", base_url + "icon.ico"]
     elif art_type == "logos":
-        candidates = [base_url + "logo_2x.png"]
+        candidates = [base_url + "logo_2x.png", base_url + "logo.png"]
     elif art_type == "heroes":
         candidates = [base_url + "library_hero_2x.jpg", base_url + "library_hero.jpg"]
     elif art_type == "grids_600x900":
@@ -492,80 +519,301 @@ def get_steam_fallback_url(steam_store_appid, art_type):
 
     for url in candidates:
         try:
-            response = requests.head(url)
+            response = requests.head(url, timeout=3)
             if response.status_code == 200:
                 return url
-        except requests.RequestException:
+        except requests.RequestException as e:
+            print(f"Error checking fallback URL: {url} — {e}")
             continue
     return None
 
 
+def file_exists_with_any_ext(base_path):
+    for ext in ['png', 'jpg', 'ico']:
+        if os.path.exists(f"{base_path}.{ext}"):
+            return True
+    return False
 
-# Add or update the proton compatibility settings
-def add_compat_tool(app_id, launchoptions):
-    # Check if 'CompatToolMapping' exists in config_data, create it if not
-    if 'CompatToolMapping' not in config_data['InstallConfigStore']['Software']['Valve']['Steam']:
-        config_data['InstallConfigStore']['Software']['Valve']['Steam']['CompatToolMapping'] = {}
-        print(f"CompatToolMapping key not found in config.vdf, creating.")
 
-    compat_map = config_data['InstallConfigStore']['Software']['Valve']['Steam']['CompatToolMapping']
 
-    # If app already exists, skip modifying it to respect user's manual choice
-    if str(app_id) in compat_map:
-        existing_app = compat_map[str(app_id)]
 
-        #if any compat tool was set or deliberately cleared
-        if 'name' in existing_app:
-            print(f"CompatToolMapping entry already exists for appid: {app_id}. Skipping update to respect existing state.")
-            return None
 
-        if 'PROTONPATH' in existing_app.get('config', ''):
-            print(f"PROTONPATH found in config for appid: {app_id}. Skipping.")
-            return None
 
-    # Skip creation if launch options contain 'chrome' or 'PROTONPATH'
-    if 'chrome' in launchoptions or 'PROTONPATH' in launchoptions:
-        print("chrome or PROTONPATH found in launch options. Skipping compatibility tool creation.")
+def tag_artwork_files(shortcut_id, game_name, steamid3, logged_in_home):
+    grid_dir = f"{logged_in_home}/.steam/root/userdata/{steamid3}/config/grid"
+    base_name = str(shortcut_id)
+
+    patterns = [
+        f"{base_name}-icon",        
+        f"{base_name}_logo",
+        f"{base_name}_hero",
+        f"{base_name}p",            
+        f"{base_name}"               
+    ]
+
+    found_files = []
+
+    for pattern in patterns:
+        for ext in ['png', 'jpg', 'ico']:
+            file_path = os.path.join(grid_dir, f"{pattern}.{ext}")
+            if os.path.exists(file_path):
+                found_files.append(file_path)
+
+    for file_path in found_files:
+        try:
+            # Check if file already has the correct tag
+            result = subprocess.run(
+                ['getfattr', '-n', 'user.xdg.tags', '--only-values', file_path],
+                stdout=subprocess.PIPE,
+                stderr=subprocess.DEVNULL,
+                text=True
+            )
+
+            existing_tags = result.stdout.strip().split(',') if result.returncode == 0 else []
+
+            if game_name in existing_tags:
+                print(f"Already tagged: {file_path}")
+                continue
+
+            subprocess.run(
+                ['setfattr', '-n', 'user.xdg.tags', '-v', game_name, file_path],
+                check=True
+            )
+            print(f"Tagged {file_path} with '{game_name}'")
+        except subprocess.CalledProcessError as e:
+            print(f"Failed to tag {file_path}: {e}")
+
+
+
+def delete_old_artwork_by_tag(appname, shortcut_id, steamid3, logged_in_home):
+    grid_path = os.path.join(logged_in_home, ".steam", "root", "userdata", str(steamid3), "config", "grid")
+
+    try:
+        for filename in os.listdir(grid_path):
+            filepath = os.path.join(grid_path, filename)
+
+            # Skip directories and .ico files
+            if os.path.isdir(filepath) or filename.endswith(".ico"):
+                continue
+
+            # Skip any files tagged for the current shortcut ID
+            if str(shortcut_id) in filename:
+                continue
+
+            try:
+                result = subprocess.run(
+                    ['getfattr', '-n', 'user.xdg.tags', '--only-values', filepath],
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.DEVNULL,
+                    text=True
+                )
+
+                if result.returncode != 0:
+                    continue  # No tag present
+
+                tags = result.stdout.strip().split(',')
+
+                if appname in tags:
+                    os.remove(filepath)
+                    print(f"Deleted old artwork tagged '{appname}': {filepath}")
+
+            except Exception as e:
+                print(f"Failed to process {filepath}: {e}")
+
+    except FileNotFoundError:
+        print(f"Grid path not found: {grid_path}")
+
+
+
+
+
+#for local check
+def file_tagged_with_appname(filepath, appname):
+    try:
+        result = subprocess.run(
+            ['getfattr', '-n', 'user.xdg.tags', '--only-values', filepath],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.DEVNULL,
+            text=True
+        )
+        if result.returncode != 0:
+            return False
+        tags = result.stdout.strip().split(',')
+        return appname in tags
+    except Exception as e:
+        print(f"Failed to get tags for {filepath}: {e}")
         return False
 
-    # Skip if jp./com./online. is found but NOT steam compat marker
-    if any(x in launchoptions for x in ['jp.', 'com.', 'online.']):
-        steam_compat_marker = 'STEAM_COMPAT_DATA_PATH'
-        if steam_compat_marker not in launchoptions:
-            print("Waydroid-style package found in launch options without STEAM_COMPAT_DATA_PATH. Skipping.")
-            return False
-
-    # Create a new CompatToolMapping entry
-    compat_map[str(app_id)] = {
-        'name': f'{compat_tool_name}',
-        'config': '',
-        'priority': '250'
-    }
-    print(f"Created new CompatToolMapping entry for appid: {app_id}")
-    return compat_tool_name
 
 
-# Check if the shortcut already exists in the shortcuts
+
+
+def scan_and_track_games(logged_in_home, steamid3):
+    def normalize_appname(name):
+        return name.strip().lower() if name else ""
+
+    shortcuts_path = f"{logged_in_home}/.steam/root/userdata/{steamid3}/config/shortcuts.vdf"
+    installed_apps_path = f"{logged_in_home}/.config/systemd/user/installedapps.json"
+
+    current_scan = {}
+    master_list = {}
+    previous_master_list = {}
+
+    def load_master_list():
+        nonlocal master_list, previous_master_list
+        if os.path.exists(installed_apps_path):
+            try:
+                with open(installed_apps_path, "r") as f:
+                    master_list_raw = json.load(f)
+                    if not isinstance(master_list_raw, dict):
+                        raise ValueError("Expected dictionary.")
+                    master_list = master_list_raw
+                    previous_master_list = json.loads(json.dumps(master_list))  # deep copy
+            except Exception as e:
+                print(f"Failed to load master list: {e}")
+                master_list = {}
+                previous_master_list = {}
+        else:
+            master_list = {}
+            previous_master_list = {}
+
+    def track_game(appname, launcher):
+        now = datetime.utcnow().isoformat() + "Z"
+        if launcher not in current_scan:
+            current_scan[launcher] = {}
+        current_scan[launcher][appname] = {
+            "first_seen": master_list.get(launcher, {}).get(appname, {}).get("first_seen", now),
+            "last_seen": now,
+            "still_installed": True
+        }
+
+    def load_shortcuts_appid_map():
+        if not os.path.isfile(shortcuts_path):
+            print("shortcuts.vdf not found!")
+            return {}
+
+        try:
+            with open(shortcuts_path, "rb") as f:
+                data = vdf.binary_load(f)
+
+            shortcuts = data.get("shortcuts", data)
+            appid_map = {}
+            for key, entry in shortcuts.items():
+                appname = entry.get("AppName") or entry.get("appname")
+                appid = entry.get("appid") or entry.get("AppID")
+                if appname and appid:
+                    norm_name = normalize_appname(appname)
+                    appid_map[norm_name] = appid
+            return appid_map
+        except Exception as e:
+            print(f"Failed to load shortcuts.vdf: {e}")
+            return {}
+
+    def uninstall_removed_apps(removed_appnames, appid_map):
+        for appname in removed_appnames:
+            norm_name = normalize_appname(appname)
+            appid = appid_map.get(norm_name)
+            if appid:
+                try:
+                    subprocess.run(["steam", f"steam://uninstall/{appid}"], check=True)
+                    print(f"Uninstall command sent for '{appname}' (AppID: {appid})")
+                except subprocess.CalledProcessError:
+                    print(f"Uninstall failed for '{appname}' (AppID: {appid})")
+            else:
+                print(f"AppID not found for '{appname}'")
+
+    def finalize_game_tracking():
+        now = datetime.utcnow().isoformat() + "Z"
+        removed_apps = {}
+
+        for launcher in list(master_list.keys()):
+            if launcher not in current_scan:
+                removed_apps[launcher] = list(master_list[launcher].keys())
+                del master_list[launcher]
+            else:
+                for appname in list(master_list[launcher].keys()):
+                    if appname not in current_scan[launcher]:
+                        was_installed = previous_master_list.get(launcher, {}).get(appname, {}).get("still_installed", True)
+                        if was_installed:
+                            removed_apps.setdefault(launcher, []).append(appname)
+                        master_list[launcher][appname]["still_installed"] = False
+                        master_list[launcher][appname]["last_seen"] = now
+
+        for launcher, games in current_scan.items():
+            if launcher not in master_list:
+                master_list[launcher] = {}
+            master_list[launcher].update(games)
+
+        # Remove volatile fields (like "last_seen") for comparison
+        def cleaned(data):
+            if isinstance(data, dict):
+                return {k: cleaned(v) for k, v in data.items() if k != "last_seen"}
+            elif isinstance(data, list):
+                return [cleaned(i) for i in data]
+            else:
+                return data
+
+        # Only write to file if the cleaned data has meaningful changes
+        if cleaned(master_list) != cleaned(previous_master_list):
+            os.makedirs(os.path.dirname(installed_apps_path), exist_ok=True)
+            with open(installed_apps_path, "w") as f:
+                json.dump(master_list, f, indent=4)
+            print("Master list updated and saved.")
+        else:
+            print("No meaningful changes to master list. Skipping write.")
+
+        if removed_apps:
+            print(f"Removed apps: {removed_apps}")
+            appid_map = load_shortcuts_appid_map()
+            for launcher, apps in removed_apps.items():
+                uninstall_removed_apps(apps, appid_map)
+        else:
+            print("No newly removed apps detected.")
+
+        return removed_apps
+
+    load_master_list()
+    return track_game, finalize_game_tracking
+
+
+
+
 def check_if_shortcut_exists(shortcut_id, display_name, exe_path, start_dir, launch_options):
-    # Check if the game already exists in the shortcuts using the ID
-    if any(s.get('appid') == shortcut_id for s in shortcuts['shortcuts'].values()):
-        print(f"Existing shortcut found based on shortcut ID for game {display_name}. Skipping creation.")
-        return True
-
-    # Check if the game already exists in the shortcuts using the fields (probably unnecessary)
-    if any(s.get('appname') == display_name and s.get('exe') == exe_path and s.get('StartDir') == start_dir for s in shortcuts['shortcuts'].values()):
-        print(f"Existing shortcut found based on matching fields for game {display_name}. Skipping creation.")
-        return True
-
-    if any(s.get('AppName') == display_name and s.get('Exe') == exe_path and s.get('StartDir') == start_dir for s in shortcuts['shortcuts'].values()):
-        print(f"Existing shortcut found based on matching fields for game {display_name}. Skipping creation.")
-        return True
+    # Normalize inputs for consistent comparison
+    stripped_exe = exe_path.strip('\"') if exe_path else None
+    stripped_start_dir = start_dir.strip('\"') if start_dir else None
+    display_name_lower = display_name.lower() if display_name else None
 
     for s in shortcuts['shortcuts'].values():
-        if s.get('appname') == display_name and s.get('exe') == exe_path and s.get('StartDir') == start_dir:
-            if s.get('LaunchOptions') != launch_options:
-                print(f"Launch options for {display_name} differ from the default. This could be due to the user manually modifying the launch options. Will skip creation.")
+        # Normalize shortcut dict keys (handle 'appname' vs 'AppName' etc.)
+        s_appname = s.get('appname') or s.get('AppName')
+        s_exe = (s.get('exe') or s.get('Exe') or "").strip('\"')
+        s_start_dir = s.get('StartDir').strip('\"') if s.get('StartDir') else None
+        s_launch_options = s.get('LaunchOptions')
+
+        # Check by shortcut ID
+        if s.get('appid') == shortcut_id:
+            print(f"Existing shortcut found by shortcut ID for game {display_name}. Skipping creation.")
+            return True
+
+        # Check by appname, exe, and start_dir match
+        if s_appname and s_exe and s_start_dir:
+            if s_appname.lower() == display_name_lower and s_exe == stripped_exe and s_start_dir == stripped_start_dir:
+                # If launch options differ, warn and skip creation (return False to allow re-creation?)
+                if s_launch_options != launch_options:
+                    print(f"Launch options for {display_name} differ from default. Possibly manually modified. Skipping creation.")
+                    return True
+
+                print(f"Existing shortcut found for game {display_name}. Skipping creation.")
                 return True
+
+        # Special case: Chrome shortcuts
+        if s_appname and s_exe and s_launch_options:
+            if s_appname.lower() == display_name_lower:
+                # Chrome executable shortcut check
+                if s_exe == '/app/bin/chrome' and launch_options in s_launch_options:
+                    print(f"Existing website shortcut found for {display_name}. Skipping creation.")
+                    return True
 
     return False
 
@@ -573,6 +821,299 @@ def check_if_shortcut_exists(shortcut_id, display_name, exe_path, start_dir, lau
 # Start of Refactoring code from the .sh file
 sys.path.insert(0, os.path.expanduser(f"{logged_in_home}/Downloads/NonSteamLaunchersInstallation/lib/python{python_version}/site-packages"))
 print(sys.path)
+
+track_game, finalize_tracking = scan_and_track_games(logged_in_home, steamid3)
+
+
+
+
+
+# === CONFIGURATION ===
+WS_HOST = "localhost"
+WS_PORT = 8080
+TARGET_TITLE = "SharedJSContext"
+
+
+
+
+# Embed the JS code as a string
+
+JS_CODE = """
+// Detects image format based on base64 header
+function detectImageFormat(base64String) {
+  if (base64String.startsWith("iVBORw0KGgo")) return "png";  // PNG
+  if (base64String.startsWith("/9j/")) return "jpg";          // JPG (still encoded as 'jpeg')
+  if (base64String.startsWith("AAABAAEAEBA")) return "ico";   // ICO (Windows-style header)
+  return "png"; // Fallback to PNG just in case
+}
+
+window.createShortcut = async function(data) {
+  console.log("createShortcut called with", data);
+
+  if (typeof SteamClient === 'undefined' || !SteamClient.Apps) {
+    console.error("SteamClient API is unavailable.");
+    return { success: false, message: "SteamClient API is unavailable." };
+  }
+
+  try {
+    const shortcutId = await SteamClient.Apps.AddShortcut(
+      data.appname,
+      data.exe,
+      data.StartDir,
+      data.LaunchOptions || ""
+    );
+    console.log("Shortcut created with ID:", shortcutId);
+
+    // Set shortcut properties
+    if (data.icon) {
+      await SteamClient.Apps.SetShortcutIcon(shortcutId, data.icon);
+      console.log("Icon set successfully!");
+    }
+
+    await SteamClient.Apps.SetShortcutName(shortcutId, data.appname);
+    await SteamClient.Apps.SetShortcutExe(shortcutId, data.exe);
+    await SteamClient.Apps.SetShortcutStartDir(shortcutId, data.StartDir);
+    await SteamClient.Apps.SetAppLaunchOptions(shortcutId, data.LaunchOptions || "");
+    console.log("Shortcut properties updated.");
+
+    // --- Compat Tool logic: Only apply if data.CompatTool is provided ---
+    if (data.CompatTool && data.CompatTool.trim() !== "") {
+      const availableTools = await SteamClient.Apps.GetAvailableCompatTools(shortcutId);
+      const toolExists = availableTools.some(tool => tool.strToolName === data.CompatTool);
+      if (toolExists) {
+        await SteamClient.Apps.SpecifyCompatTool(shortcutId, data.CompatTool);
+        console.log(`Compat tool set to ${data.CompatTool}`);
+      } else {
+        console.log(`Compat tool ${data.CompatTool} not found. Skipping compat tool application.`);
+      }
+    }
+
+    // Set artwork dynamically based on actual format
+    if (data.Hero) {
+      const format = detectImageFormat(data.Hero);
+      await SteamClient.Apps.SetCustomArtworkForApp(shortcutId, data.Hero, format, 1);
+      console.log(`Hero artwork set as ${format}`);
+    }
+
+    if (data.Logo) {
+      const format = detectImageFormat(data.Logo);
+      await SteamClient.Apps.SetCustomArtworkForApp(shortcutId, data.Logo, format, 2);
+      console.log(`Logo artwork set as ${format}`);
+    }
+
+    if (data.Grid) {
+      const format = detectImageFormat(data.Grid);
+      await SteamClient.Apps.SetCustomArtworkForApp(shortcutId, data.Grid, format, 0);
+      console.log(`Grid artwork set as ${format}`);
+    }
+
+    if (data.WideGrid) {
+      const format = detectImageFormat(data.WideGrid);
+      await SteamClient.Apps.SetCustomArtworkForApp(shortcutId, data.WideGrid, format, 3);
+      console.log(`Wide Grid artwork set as ${format}`);
+    }
+
+    return { success: true, shortcutId };
+  } catch (e) {
+    console.error("Failed to create shortcut:", e);
+    return { success: false, message: e.message || e.toString() };
+  }
+};
+"""
+
+
+
+
+
+
+
+# Utility: Fetch debugger targets
+def fetch_targets(host, port):
+    conn = http.client.HTTPConnection(host, port)
+    conn.request("GET", "/json")
+    resp = conn.getresponse()
+    if resp.status != 200:
+        raise Exception(f"Failed to fetch targets: {resp.status} {resp.reason}")
+    data = resp.read()
+    conn.close()
+    return json.loads(data)
+
+# Find websocket debugger URL for the target title
+def get_ws_url_by_title(host, port, title):
+    targets = fetch_targets(host, port)
+    for target in targets:
+        if target.get("title") == title:
+            return target.get("webSocketDebuggerUrl")
+    raise Exception(f"Target with title '{title}' not found.")
+
+# Create raw TCP socket and perform WebSocket handshake
+def create_websocket_connection(ws_url):
+    parsed = urlparse(ws_url)
+    host = parsed.hostname
+    port = parsed.port
+    path = parsed.path + ("?" + parsed.query if parsed.query else "")
+
+    sock = socket.create_connection((host, port))
+    key = base64.b64encode(os.urandom(16)).decode('utf-8')
+    headers = [
+        f"GET {path} HTTP/1.1",
+        f"Host: {host}:{port}",
+        "Upgrade: websocket",
+        "Connection: Upgrade",
+        f"Sec-WebSocket-Key: {key}",
+        "Sec-WebSocket-Version: 13",
+        "\r\n"
+    ]
+    handshake = "\r\n".join(headers)
+    sock.send(handshake.encode('utf-8'))
+
+    resp = b""
+    while b"\r\n\r\n" not in resp:
+        chunk = sock.recv(4096)
+        if not chunk:
+            break
+        resp += chunk
+
+    if b"101" not in resp.split(b"\r\n")[0]:
+        raise Exception("WebSocket upgrade failed:\n" + resp.decode('utf-8'))
+
+    return sock
+
+# Send a text frame (masked) over WebSocket
+def send_ws_text(sock, message):
+    frame = bytearray()
+    frame.append(0x81)  # FIN + opcode text frame
+    length = len(message)
+    mask_bit = 0x80
+
+    if length <= 125:
+        frame.append(length | mask_bit)
+    elif length <= 65535:
+        frame.append(126 | mask_bit)
+        frame += length.to_bytes(2, 'big')
+    else:
+        frame.append(127 | mask_bit)
+        frame += length.to_bytes(8, 'big')
+
+    mask_key = os.urandom(4)
+    frame += mask_key
+
+    msg_bytes = message.encode('utf-8')
+    masked_bytes = bytearray(b ^ mask_key[i % 4] for i, b in enumerate(msg_bytes))
+    frame += masked_bytes
+
+    sock.send(frame)
+
+# Receive a single text message from WebSocket
+def recv_ws_message(sock):
+    first_byte = sock.recv(1)
+    if not first_byte:
+        return None
+    fin = (first_byte[0] & 0x80) >> 7
+    opcode = first_byte[0] & 0x0f
+
+    if opcode == 0x8:
+        return None  # Close frame
+    if opcode != 0x1:
+        return None  # Not text frame
+
+    second_byte = sock.recv(1)
+    masked = (second_byte[0] & 0x80) >> 7
+    payload_len = second_byte[0] & 0x7f
+
+    if payload_len == 126:
+        extended = sock.recv(2)
+        payload_len = int.from_bytes(extended, 'big')
+    elif payload_len == 127:
+        extended = sock.recv(8)
+        payload_len = int.from_bytes(extended, 'big')
+
+    if masked:
+        mask_key = sock.recv(4)
+    else:
+        mask_key = None
+
+    payload = bytearray()
+    while len(payload) < payload_len:
+        chunk = sock.recv(payload_len - len(payload))
+        if not chunk:
+            break
+        payload.extend(chunk)
+
+    if masked and mask_key:
+        payload = bytearray(b ^ mask_key[i % 4] for i, b in enumerate(payload))
+
+    return payload.decode('utf-8')
+
+# Inject JS code and call createShortcut(data) directly
+def recv_ws_message_for_id(sock, expected_id):
+    while True:
+        message = recv_ws_message(sock)
+        if message is None:
+            return None
+        try:
+            data = json.loads(message)
+            if data.get("id") == expected_id:
+                return data
+            # Otherwise, it’s an event or unrelated message — ignore and continue waiting
+        except Exception:
+            continue
+
+def inject_and_create_shortcut(ws_socket, shortcut_data):
+    try:
+        # Wrap the embedded JS code in the same async function wrapper
+        wrapped_code = f"(async () => {{ {JS_CODE}; window.__injectedSteamMod = true; return 'Injection successful!'; }})()"
+
+        # Enable Runtime domain
+        send_ws_text(ws_socket, json.dumps({
+            "id": 1,
+            "method": "Runtime.enable"
+        }))
+        recv_ws_message_for_id(ws_socket, 1)  # Consume response for Runtime.enable
+
+        # Inject the createShortcut function
+        send_ws_text(ws_socket, json.dumps({
+            "id": 2,
+            "method": "Runtime.evaluate",
+            "params": {
+                "expression": wrapped_code,
+                "awaitPromise": True,
+            }
+        }))
+
+        injection_response = recv_ws_message_for_id(ws_socket, 2)
+        if not injection_response or injection_response.get("result", {}).get("result", {}).get("value") != "Injection successful!":
+            print("JS injection failed or response invalid:")
+            print(injection_response)
+            return None
+        print("JS injected successfully.")
+
+        # Call createShortcut with shortcut_data
+        shortcut_json_str = json.dumps(shortcut_data)
+        eval_expression = f"window.createShortcut({shortcut_json_str})"
+
+        send_ws_text(ws_socket, json.dumps({
+            "id": 3,
+            "method": "Runtime.evaluate",
+            "params": {
+                "expression": eval_expression,
+                "awaitPromise": True,
+                "returnByValue": True
+            }
+        }))
+
+        shortcut_result = recv_ws_message_for_id(ws_socket, 3)
+        if not shortcut_result:
+            print("No response from createShortcut call.")
+            return None
+
+        return shortcut_result
+
+    except Exception as e:
+        print(f"Exception during shortcut injection or creation: {e}")
+        return None
+
+
 
 
 # Create an empty dictionary to store the app IDs
@@ -585,17 +1126,47 @@ def get_next_available_key(shortcuts):
         key += 1
     return str(key)
 
+def get_compat_tool_if_needed(launchoptions):
+    steam_compat_marker = 'STEAM_COMPAT_DATA_PATH'
+    # Check for UMU-related Proton (UMU-Proton) and return None immediately if found
+    if 'UMU-Proton' in launchoptions:  # If it's an UMU-related shortcut, return None immediately
+        print("Exclusion: UMU-related shortcut detected.")
+        return None
+
+    # Exclude Chrome and AppID 0
+    if 'chrome' in launchoptions or '--appid 0' in launchoptions:
+        print("Exclusion: Chrome or AppID 0 detected.")
+        return None
+
+    # Exclude based on app regions like jp., com., online.
+    if any(x in launchoptions for x in ['jp.', 'com.', 'online.']):
+        print("Exclusion: App region detected.")
+        if steam_compat_marker not in launchoptions:
+            print(f"Exclusion: {steam_compat_marker} not in launch options.")
+            return None
+
+    # If none of the exclusions apply, return the compat tool name
+    print("No exclusions applied. Returning compat tool.")
+    return compat_tool_name
+
+
+
+
+
+
 
 def create_new_entry(shortcutdirectory, appname, launchoptions, startingdir):
     global new_shortcuts_added
     global shortcuts_updated
     global created_shortcuts
-    global decky_shortcuts
+
     global grid64
     global gridp64
     global logo64
     global hero64
-    global counter  # Add this line to access the counter variable
+    global counter
+
+
 
     # Check if the launcher is installed
     if not shortcutdirectory or not appname or not launchoptions or not startingdir:
@@ -607,21 +1178,27 @@ def create_new_entry(shortcutdirectory, appname, launchoptions, startingdir):
 
     # **Intercept and modify the shortcut based on UMU data**
     exe_path, startingdir, launchoptions = modify_shortcut_for_umu(appname, exe_path, launchoptions, startingdir)
-    
+
+    umu_id = extract_umu_id_from_launch_options(launchoptions)
+
+
 
     # Only store the app ID for specific launchers
-    if appname in ['Epic Games', 'Gog Galaxy', 'Ubisoft Connect', 'Battle.net', 'EA App', 'Amazon Games', 'itch.io', 'Legacy Games', 'Humble Bundle', 'IndieGala Client', 'Rockstar Games Launcher', 'Glyph', 'Minecraft Launcher' 'Playstation Plus', 'VK Play', 'HoYoPlay', 'Nexon Launcher', 'Game Jolt Client', 'Artix Game Launcher', 'ARC Launcher', 'PURPLE Launcher', 'Plarium Play', 'VFUN Launcher', 'Tempo Launcher', 'Pokémon Trading Card Game Live', 'Antstream Arcade', 'STOVE Client']:
+    if appname in ['Epic Games', 'Gog Galaxy', 'Ubisoft Connect', 'Battle.net', 'EA App', 'Amazon Games', 'itch.io', 'Legacy Games', 'Humble Bundle', 'IndieGala Client', 'Rockstar Games Launcher', 'Glyph', 'Minecraft Launcher', 'Playstation Plus', 'VK Play', 'HoYoPlay', 'Nexon Launcher', 'Game Jolt Client', 'Artix Game Launcher', 'ARC Launcher', 'PURPLE Launcher', 'Plarium Play', 'VFUN Launcher', 'Tempo Launcher', 'Pokémon Trading Card Game Live', 'Antstream Arcade', 'STOVE Client']:
         app_ids[appname] = unsigned_shortcut_id
 
     # Check if the game already exists in the shortcuts
     if check_if_shortcut_exists(signed_shortcut_id, appname, exe_path, startingdir, launchoptions):
         # Check if proton needs applying or updating
-        if add_compat_tool(unsigned_shortcut_id, launchoptions):
-            shortcuts_updated = True
+        #if add_compat_tool(unsigned_shortcut_id, launchoptions):
+            #shortcuts_updated = True
         return
 
     # Skip artwork download for specific shortcuts
     if appname not in ['Repair EA App']:
+        # Clean up old artwork for this shortcut if it exists
+        delete_old_artwork_by_tag(appname, unsigned_shortcut_id, steamid3, logged_in_home)
+
         # Get artwork
         game_id = get_game_id(appname)
         if game_id is not None:
@@ -647,7 +1224,7 @@ def create_new_entry(shortcutdirectory, appname, launchoptions, startingdir):
                     ext = url.split('.')[-1]
 
                     if art_type == "icons":
-                        filename = get_file_name("icons", unsigned_shortcut_id)
+                        filename = get_file_name("icons", shortcut_id)
                     elif art_type == "logos":
                         filename = f"{unsigned_shortcut_id}_logo.{ext}"
                     elif art_type == "heroes":
@@ -664,40 +1241,100 @@ def create_new_entry(shortcutdirectory, appname, launchoptions, startingdir):
 
                     # Check if file exists with any common extension before downloading
                     if not file_exists_with_any_ext(base_file_path):
+
+
                         img_data = requests.get(url).content
-                        with open(file_path, 'wb') as f:
-                            f.write(img_data)
-                        print(f"Downloaded fallback artwork: {filename}")
+                        if art_type == "icons":
+                            with open(file_path, 'wb') as f:
+                                f.write(img_data)
+                            print(f"Downloaded and saved fallback icon: {filename}")
+                        else:
+                            # Convert to base64 and assign to correct global
+                            encoded = b64encode(img_data).decode('utf-8')
+                            print(f"Downloaded fallback {art_type} as base64")
+
+                            if art_type == "logos" and not logo64:
+                                logo64 = encoded
+                            elif art_type == "heroes" and not hero64:
+                                hero64 = encoded
+                            elif art_type == "grids_600x900" and not gridp64:
+                                gridp64 = encoded
+                            elif art_type == "grids_920x430" and not grid64:
+                                grid64 = encoded
+
+
+
+
+
+
                     else:
-                        print(f"File already exists (png/jpg/ico), skipping: {filename}")
+                        print(f"File already exists (png/jpg/ico), loading: {filename}")
+                        if art_type != "icons":  # icons are saved to disk, not sent as base64
+
+
+
+
+
+
+
+
+                            actual_file_path = get_existing_file_path_with_ext(base_file_path)
+                            if actual_file_path and file_tagged_with_appname(actual_file_path, appname):
+                                print(f"Using local artwork for {appname}: {actual_file_path}")
+                                with open(actual_file_path, "rb") as f:
+                                    encoded = b64encode(f.read()).decode("utf-8")
+
+
+                                print(f"Using local fallback for {art_type}: {actual_file_path}")
+
+
+                                if art_type == "logos" and not logo64:
+                                    logo64 = encoded
+                                elif art_type == "heroes" and not hero64:
+                                    hero64 = encoded
+                                elif art_type == "grids_600x900" and not gridp64:
+                                    gridp64 = encoded
+                                elif art_type == "grids_920x430" and not grid64:
+                                    grid64 = encoded
+
+
+
+
                 else:
                     print(f"Fallback URL invalid for {art_type} - {url}")
             except Exception as e:
                 print(f"Error downloading fallback artwork for {art_type}: {e}")
 
 
-    # Create a new entry for the Steam shortcut, only adding the compat tool if it's not processed by UMU
+
+    tag_artwork_files(unsigned_shortcut_id, appname, steamid3, logged_in_home)
+
+
+
     new_entry = {
-        'appid': str(signed_shortcut_id),
         'appname': appname,
         'exe': exe_path,
         'StartDir': startingdir,
         'icon': f"{logged_in_home}/.steam/root/userdata/{steamid3}/config/grid/{get_file_name('icons', unsigned_shortcut_id)}",
-        'ShortcutPath': "",
         'LaunchOptions': launchoptions,
-        'IsHidden': 0,
-        'AllowDesktopConfig': 1,
-        'AllowOverlay': 1,
-        'OpenVR': 0,
-        'Devkit': 0,
-        'DevkitGameID': "",
-        'DevkitOverrideAppID': 0,
-        'LastPlayTime': 0,
-        'FlatpakAppID': "",
-        'tags': {
-            '0': 'NonSteamLaunchers'
-        }
+        'WideGrid': grid64,
+        'Grid': gridp64,
+        'Hero': hero64,
+        'Logo': logo64,
     }
+
+
+
+
+
+
+    compat_tool = get_compat_tool_if_needed(launchoptions)
+
+    # Skip setting compat tool if UMU already processed it
+    if not (umu_id and umu_processed_shortcuts.get(umu_id)) and compat_tool:
+        new_entry['CompatTool'] = compat_tool
+
+
 
     # Add the new entry to the shortcuts dictionary and add proton
     key = get_next_available_key(shortcuts)
@@ -707,6 +1344,56 @@ def create_new_entry(shortcutdirectory, appname, launchoptions, startingdir):
     created_shortcuts.append(appname)
 
 
+
+
+    # Inject JS + Send data over WebSocket
+    shortcut_id = None
+    try:
+        ws_url = get_ws_url_by_title(WS_HOST, WS_PORT, TARGET_TITLE)
+        print(f"Connecting to WebSocket URL: {ws_url}")
+
+        ws = create_websocket_connection(ws_url)
+        print("WebSocket connected")
+
+        result = inject_and_create_shortcut(ws, new_entry)
+        print("Shortcut creation result:", result)
+
+        shortcut_id = None
+        if result and 'result' in result:
+            value = result['result']['result'].get('value')
+            if isinstance(value, dict) and value.get('success'):
+                shortcut_id = value.get('shortcutId')
+                print("App ID returned from JS:", shortcut_id)
+
+
+
+
+                if shortcut_id:
+                    print(f"Tagging artwork files for final Steam shortcut ID: {shortcut_id}")
+                    tag_artwork_files(shortcut_id, appname, steamid3, logged_in_home)
+
+
+                    #Delete other artwork files tagged with the same appname
+                    delete_old_artwork_by_tag(appname, shortcut_id, steamid3, logged_in_home)
+
+            else:
+                print("JS returned unexpected structure:", value)
+        else:
+            print("No result returned from JS")
+
+
+
+
+
+        ws.close()
+        print("WebSocket closed.")
+    except Exception as e:
+        print(f"WebSocket error: {e}")
+
+
+
+    # ✅ Final return
+    return new_entry
 
 
 # UMU-related functions
@@ -874,43 +1561,47 @@ def modify_shortcut_for_umu(appname, exe, launchoptions, startingdir):
 
 
 
+def track_create_entry(directory, name, launch_options, starting_dir):
+    if not any([directory, launch_options, starting_dir]):
+        return  # Skip if not installed
+
+    create_new_entry(directory, name, launch_options, starting_dir)
+    track_game(name, "Launcher")
+
+
+track_create_entry(os.environ.get('epicshortcutdirectory'), 'Epic Games', os.environ.get('epiclaunchoptions'), os.environ.get('epicstartingdir'))
+track_create_entry(os.environ.get('gogshortcutdirectory'), 'GOG Galaxy', os.environ.get('goglaunchoptions'), os.environ.get('gogstartingdir'))
+track_create_entry(os.environ.get('uplayshortcutdirectory'), 'Ubisoft Connect', os.environ.get('uplaylaunchoptions'), os.environ.get('uplaystartingdir'))
+track_create_entry(os.environ.get('battlenetshortcutdirectory'), 'Battle.net', os.environ.get('battlenetlaunchoptions'), os.environ.get('battlenetstartingdir'))
+track_create_entry(os.environ.get('eaappshortcutdirectory'), 'EA App', os.environ.get('eaapplaunchoptions'), os.environ.get('eaappstartingdir'))
+track_create_entry(os.environ.get('amazonshortcutdirectory'), 'Amazon Games', os.environ.get('amazonlaunchoptions'), os.environ.get('amazonstartingdir'))
+track_create_entry(os.environ.get('itchioshortcutdirectory'), 'itch.io', os.environ.get('itchiolaunchoptions'), os.environ.get('itchiostartingdir'))
+track_create_entry(os.environ.get('legacyshortcutdirectory'), 'Legacy Games', os.environ.get('legacylaunchoptions'), os.environ.get('legacystartingdir'))
+track_create_entry(os.environ.get('humbleshortcutdirectory'), 'Humble Bundle', os.environ.get('humblelaunchoptions'), os.environ.get('humblestartingdir'))
+track_create_entry(os.environ.get('indieshortcutdirectory'), 'IndieGala Client', os.environ.get('indielaunchoptions'), os.environ.get('indiestartingdir'))
+track_create_entry(os.environ.get('rockstarshortcutdirectory'), 'Rockstar Games Launcher', os.environ.get('rockstarlaunchoptions'), os.environ.get('rockstarstartingdir'))
+track_create_entry(os.environ.get('glyphshortcutdirectory'), 'Glyph', os.environ.get('glyphlaunchoptions'), os.environ.get('glyphstartingdir'))
+track_create_entry(os.environ.get('minecraftshortcutdirectory'), 'Minecraft Launcher', os.environ.get('minecraftlaunchoptions'), os.environ.get('minecraftstartingdir'))
+track_create_entry(os.environ.get('psplusshortcutdirectory'), 'Playstation Plus', os.environ.get('pspluslaunchoptions'), os.environ.get('psplusstartingdir'))
+track_create_entry(os.environ.get('vkplayshortcutdirectory'), 'VK Play', os.environ.get('vkplaylaunchoptions'), os.environ.get('vkplaystartingdir'))
+track_create_entry(os.environ.get('hoyoplayshortcutdirectory'), 'HoYoPlay', os.environ.get('hoyoplaylaunchoptions'), os.environ.get('hoyoplaystartingdir'))
+track_create_entry(os.environ.get('nexonshortcutdirectory'), 'Nexon Launcher', os.environ.get('nexonlaunchoptions'), os.environ.get('nexonstartingdir'))
+track_create_entry(os.environ.get('gamejoltshortcutdirectory'), 'Game Jolt Client', os.environ.get('gamejoltlaunchoptions'), os.environ.get('gamejoltstartingdir'))
+track_create_entry(os.environ.get('artixgameshortcutdirectory'), 'Artix Game Launcher', os.environ.get('artixgamelaunchoptions'), os.environ.get('artixgamestartingdir'))
+track_create_entry(os.environ.get('purpleshortcutdirectory'), 'PURPLE Launcher', os.environ.get('purplelaunchoptions'), os.environ.get('purplestartingdir'))
+track_create_entry(os.environ.get('plariumshortcutdirectory'), 'Plarium Play', os.environ.get('plariumlaunchoptions'), os.environ.get('plariumstartingdir'))
+track_create_entry(os.environ.get('vfunshortcutdirectory'), 'VFUN Launcher', os.environ.get('vfunlaunchoptions'), os.environ.get('vfunstartingdir'))
+track_create_entry(os.environ.get('temposhortcutdirectory'), 'Tempo Launcher', os.environ.get('tempolaunchoptions'), os.environ.get('tempostartingdir'))
+track_create_entry(os.environ.get('arcshortcutdirectory'), 'ARC Launcher', os.environ.get('arclaunchoptions'), os.environ.get('arcstartingdir'))
+track_create_entry(os.environ.get('poketcgshortcutdirectory'), 'Pokémon Trading Card Game Live', os.environ.get('poketcglaunchoptions'), os.environ.get('poketcgstartingdir'))
+track_create_entry(os.environ.get('antstreamshortcutdirectory'), 'Antstream Arcade', os.environ.get('antstreamlaunchoptions'), os.environ.get('antstreamstartingdir'))
+track_create_entry(os.environ.get('stoveshortcutdirectory'), 'STOVE Client', os.environ.get('stovelaunchoptions'), os.environ.get('stovestartingdir'))
+track_create_entry(os.environ.get('repaireaappshortcutdirectory'), 'Repair EA App', os.environ.get('repaireaapplaunchoptions'), os.environ.get('repaireaappstartingdir'))
 
 
 
 
 
-
-
-
-
-create_new_entry(os.environ.get('epicshortcutdirectory'), 'Epic Games', os.environ.get('epiclaunchoptions'), os.environ.get('epicstartingdir'))
-create_new_entry(os.environ.get('gogshortcutdirectory'), 'GOG Galaxy', os.environ.get('goglaunchoptions'), os.environ.get('gogstartingdir'))
-create_new_entry(os.environ.get('uplayshortcutdirectory'), 'Ubisoft Connect', os.environ.get('uplaylaunchoptions'), os.environ.get('uplaystartingdir'))
-create_new_entry(os.environ.get('battlenetshortcutdirectory'), 'Battle.net', os.environ.get('battlenetlaunchoptions'), os.environ.get('battlenetstartingdir'))
-create_new_entry(os.environ.get('eaappshortcutdirectory'), 'EA App', os.environ.get('eaapplaunchoptions'), os.environ.get('eaappstartingdir'))
-create_new_entry(os.environ.get('amazonshortcutdirectory'), 'Amazon Games', os.environ.get('amazonlaunchoptions'), os.environ.get('amazonstartingdir'))
-create_new_entry(os.environ.get('itchioshortcutdirectory'), 'itch.io', os.environ.get('itchiolaunchoptions'), os.environ.get('itchiostartingdir'))
-create_new_entry(os.environ.get('legacyshortcutdirectory'), 'Legacy Games', os.environ.get('legacylaunchoptions'), os.environ.get('legacystartingdir'))
-create_new_entry(os.environ.get('humbleshortcutdirectory'), 'Humble Bundle', os.environ.get('humblelaunchoptions'), os.environ.get('humblestartingdir'))
-create_new_entry(os.environ.get('indieshortcutdirectory'), 'IndieGala Client', os.environ.get('indielaunchoptions'), os.environ.get('indiestartingdir'))
-create_new_entry(os.environ.get('rockstarshortcutdirectory'), 'Rockstar Games Launcher', os.environ.get('rockstarlaunchoptions'), os.environ.get('rockstarstartingdir'))
-create_new_entry(os.environ.get('glyphshortcutdirectory'), 'Glyph', os.environ.get('glyphlaunchoptions'), os.environ.get('glyphstartingdir'))
-create_new_entry(os.environ.get('minecraftshortcutdirectory'), 'Minecraft Launcher', os.environ.get('minecraftlaunchoptions'), os.environ.get('minecraftstartingdir'))
-create_new_entry(os.environ.get('psplusshortcutdirectory'), 'Playstation Plus', os.environ.get('pspluslaunchoptions'), os.environ.get('psplusstartingdir'))
-create_new_entry(os.environ.get('vkplayshortcutdirectory'), 'VK Play', os.environ.get('vkplaylaunchoptions'), os.environ.get('vkplaystartingdir'))
-create_new_entry(os.environ.get('hoyoplayshortcutdirectory'), 'HoYoPlay', os.environ.get('hoyoplaylaunchoptions'), os.environ.get('hoyoplaystartingdir'))
-create_new_entry(os.environ.get('nexonshortcutdirectory'), 'Nexon Launcher', os.environ.get('nexonlaunchoptions'), os.environ.get('nexonstartingdir'))
-create_new_entry(os.environ.get('gamejoltshortcutdirectory'), 'Game Jolt Client', os.environ.get('gamejoltlaunchoptions'), os.environ.get('gamejoltstartingdir'))
-create_new_entry(os.environ.get('artixgameshortcutdirectory'), 'Artix Game Launcher', os.environ.get('artixgamelaunchoptions'), os.environ.get('artixgamestartingdir'))
-create_new_entry(os.environ.get('purpleshortcutdirectory'), 'PURPLE Launcher', os.environ.get('purplelaunchoptions'), os.environ.get('purplestartingdir'))
-create_new_entry(os.environ.get('plariumshortcutdirectory'), 'Plarium Play', os.environ.get('plariumlaunchoptions'), os.environ.get('plariumstartingdir'))
-create_new_entry(os.environ.get('vfunshortcutdirectory'), 'VFUN Launcher', os.environ.get('vfunlaunchoptions'), os.environ.get('vfunstartingdir'))
-create_new_entry(os.environ.get('temposhortcutdirectory'), 'Tempo Launcher', os.environ.get('tempolaunchoptions'), os.environ.get('tempostartingdir'))
-create_new_entry(os.environ.get('arcshortcutdirectory'), 'ARC Launcher', os.environ.get('arclaunchoptions'), os.environ.get('arcstartingdir'))
-create_new_entry(os.environ.get('poketcgshortcutdirectory'), 'Pokémon Trading Card Game Live', os.environ.get('poketcglaunchoptions'), os.environ.get('poketcgstartingdir'))
-create_new_entry(os.environ.get('antstreamshortcutdirectory'), 'Antstream Arcade', os.environ.get('antstreamlaunchoptions'), os.environ.get('antstreamstartingdir'))
-create_new_entry(os.environ.get('stoveshortcutdirectory'), 'STOVE Client', os.environ.get('stovelaunchoptions'), os.environ.get('stovestartingdir'))
-create_new_entry(os.environ.get('repaireaappshortcutdirectory'), 'Repair EA App', os.environ.get('repaireaapplaunchoptions'), os.environ.get('repaireaappstartingdir'))
 create_new_entry(os.environ.get('chromedirectory'), 'Xbox Game Pass', os.environ.get('xboxchromelaunchoptions'), os.environ.get('chrome_startdir'))
 create_new_entry(os.environ.get('chromedirectory'), 'Better xCloud', os.environ.get('xcloudchromelaunchoptions'), os.environ.get('chrome_startdir'))
 create_new_entry(os.environ.get('chromedirectory'), 'GeForce Now', os.environ.get('geforcechromelaunchoptions'), os.environ.get('chrome_startdir'))
@@ -1159,49 +1850,6 @@ if os.path.exists(non_steam_launchers_path):
 
 
 
-#Creating Shortcuts file
-
-# Define the path for the new file
-new_file_path = f'{logged_in_home}/.config/systemd/user/shortcuts'
-
-# Create a set to store unique names (to avoid duplicates)
-existing_shortcuts = set()
-
-# Define the extensions to skip
-skip_extensions = {'.exe', '.sh', '.bat', '.msi', '.app', '.apk', '.url', '.desktop', '.AppImage'}
-
-# Check if the shortcuts file exists
-if os.path.exists(new_file_path):
-    # Read the current content of the file
-    with open(new_file_path, 'r') as f:
-        current_content = set(f.read().splitlines())  # Read and split by lines into a set
-else:
-    # If the file doesn't exist, initialize an empty set for current content
-    current_content = set()
-
-# Iterate over all shortcuts and collect unique appnames (checking both 'appname' and 'AppName' keys)
-for shortcut in shortcuts['shortcuts'].values():
-    # Check for both 'appname' and 'AppName' (case-sensitive)
-    appname = shortcut.get('appname') or shortcut.get('AppName')
-
-    # If appname is found and doesn't end with a skip extension, add it to the set (avoid duplicates)
-    if appname and not any(appname.endswith(ext) for ext in skip_extensions):
-        existing_shortcuts.add(appname)
-
-# Only write to the file if the set of unique appnames has changed
-if existing_shortcuts != current_content:
-    print(f"Shortcuts have changed. Writing to {new_file_path}...")
-    with open(new_file_path, 'w') as f:
-        for name in existing_shortcuts:
-            f.write(f"{name}\n")  # Write only the appname (raw)
-else:
-    print(f"No changes to shortcuts. File not modified.")
-
-print(f"Shortcuts file check complete.")
-
-#End of Creating Shortcuts file
-
-
 
 
 
@@ -1255,6 +1903,7 @@ if os.path.exists(dat_file_path) and os.path.exists(item_dir):
                 for game in dat_data['InstallationList']:
                     if game['AppName'] == item_data['AppName']:
                         create_new_entry(exe_path, display_name, launch_options, start_dir)
+                        track_game(display_name, "Epic Games")
 
 else:
     print("Epic Games Launcher data not found. Skipping Epic Games Scanner.")
@@ -1312,49 +1961,120 @@ else:
             exe_path = f"\"{logged_in_home}/.local/share/Steam/steamapps/compatdata/{ubisoft_connect_launcher}/pfx/drive_c/Program Files (x86)/Ubisoft/Ubisoft Game Launcher/upc.exe\""
             start_dir = f"\"{logged_in_home}/.local/share/Steam/steamapps/compatdata/{ubisoft_connect_launcher}/pfx/drive_c/Program Files (x86)/Ubisoft/Ubisoft Game Launcher/\""
             create_new_entry(exe_path, game, launch_options, start_dir)
+            track_game(game, "Ubisoft Connect")
 
 # End of Ubisoft Game Scanner
 
 # EA App Game Scanner
-
-
 def get_ea_app_game_info(installed_games, game_directory_path):
     game_dict = {}
     for game in installed_games:
-        xml_file = ET.parse(f"{game_directory_path}{game}/__Installer/installerdata.xml")
-        xml_root = xml_file.getroot()
-        ea_ids = None
-        game_name = None
-        for content_id in xml_root.iter('contentID'):
-            ea_ids = content_id.text
-            break  # Exit the loop after the first ID is found
-        for game_title in xml_root.iter('gameTitle'):
-            if game_name is None:
-                game_name = game_title.text
+        try:
+            xml_path = os.path.join(game_directory_path, game, "__Installer", "installerdata.xml")
+            if not os.path.isfile(xml_path):
                 continue
-        for game_title in xml_root.iter('title'):
+            xml_file = ET.parse(xml_path)
+            xml_root = xml_file.getroot()
+            ea_ids = None
+            game_name = None
+            for content_id in xml_root.iter('contentID'):
+                ea_ids = content_id.text
+                break
+            for game_title in xml_root.iter('gameTitle'):
+                if game_name is None:
+                    game_name = game_title.text
+            for game_title in xml_root.iter('title'):
+                if game_name is None:
+                    game_name = game_title.text
             if game_name is None:
-                game_name = game_title.text
-                continue
-        if game_name is None:
-            game_name = game
-        if ea_ids:  # Add the game's info to the dictionary if its ID was found in the folder
-            game_dict[game_name] = ea_ids
+                game_name = game
+            if ea_ids:
+                game_dict[game_name] = ea_ids
+        except Exception as e:
+            print(f"Error parsing XML for {game}: {e}")
     return game_dict
 
-game_directory_path = f"{logged_in_home}/.local/share/Steam/steamapps/compatdata/{ea_app_launcher}/pfx/drive_c/Program Files/EA Games/"
+def find_ea_games_path_from_registry():
+    registry_path = f"{logged_in_home}/.local/share/Steam/steamapps/compatdata/{ea_app_launcher}/pfx/system.reg"
 
-if not os.path.isdir(game_directory_path):
-    print("EA App game data not found. Skipping EA App Scanner.")
+    if not os.path.isfile(registry_path):
+        print("EA App registry file not found. Skipping registry check.")
+        return None
+
+    try:
+        with open(registry_path, 'r', encoding='utf-16-le', errors='ignore') as file:
+            content = file.read()
+    except Exception as e:
+        print(f"Error reading EA registry file: {e}")
+        return None
+
+    matches = re.findall(r'\[Software\\\\EA Games\\\\.*?\]\s*[^[]*?"Install Dir"="(.*?)"', content, re.DOTALL)
+    if not matches:
+        return None
+
+    example_path = matches[0]
+    if "EA Games" in example_path:
+        ea_games_index = example_path.find("EA Games")
+        ea_games_path = example_path[:ea_games_index + len("EA Games")]
+        ea_games_path_unix = ea_games_path.replace("C:\\", "").replace("\\", "/")
+        return f"{logged_in_home}/.local/share/Steam/steamapps/compatdata/{ea_app_launcher}/pfx/drive_c/{ea_games_path_unix}/"
+
+    return None
+
+def find_external_game_paths():
+    possible_paths = []
+
+    # Common folders
+    for folder_name in ["EA Games", "Origin Games"]:
+        matches = glob.glob(f"/run/media/deck/*/{folder_name}/")
+        possible_paths.extend(matches)
+
+    # Also check top-level folders that look like game directories
+    top_level_dirs = glob.glob("/run/media/deck/*/*/")
+    for path in top_level_dirs:
+        if any(os.path.isdir(os.path.join(path, sub, "__Installer")) for sub in os.listdir(path)):
+            possible_paths.append(path)
+            break  # Use the first matching one
+
+    return [p for p in possible_paths if os.path.isdir(p)]
+
+
+if not ea_app_launcher:
+    print("EA App launcher ID not set. Skipping EA App Scanner.")
 else:
-    installed_games = os.listdir(game_directory_path)  # Get a list of game folders
-    game_dict = get_ea_app_game_info(installed_games, game_directory_path)
+    # 1. Default Proton path
+    default_path = f"{logged_in_home}/.local/share/Steam/steamapps/compatdata/{ea_app_launcher}/pfx/drive_c/Program Files/EA Games/"
+    game_directory_path = default_path
 
-    for game, ea_ids in game_dict.items():
-        launch_options = f"STEAM_COMPAT_DATA_PATH=\"{logged_in_home}/.local/share/Steam/steamapps/compatdata/{ea_app_launcher}/\" %command% \"origin2://game/launch?offerIds={ea_ids}\""
-        exe_path = f"\"{logged_in_home}/.local/share/Steam/steamapps/compatdata/{ea_app_launcher}/pfx/drive_c/Program Files/Electronic Arts/EA Desktop/EA Desktop/EALaunchHelper.exe\""
-        start_dir = f"\"{logged_in_home}/.local/share/Steam/steamapps/compatdata/{ea_app_launcher}/pfx/drive_c/Program Files/Electronic Arts/EA Desktop/EA Desktop/\""
-        create_new_entry(exe_path, game, launch_options, start_dir)
+    # 2. Registry path
+    detected_path = find_ea_games_path_from_registry()
+    if detected_path:
+        game_directory_path = detected_path
+
+    # 3. Check external SD card folders
+    if not os.path.isdir(game_directory_path):
+        external_paths = find_external_game_paths()
+        if external_paths:
+            game_directory_path = external_paths[0]
+            print(f"Using external EA App game path: {game_directory_path}")
+
+    # Final scan
+    if not os.path.isdir(game_directory_path):
+        print("EA App game data not found. Skipping EA App Scanner.")
+    else:
+        try:
+            installed_games = [g for g in os.listdir(game_directory_path) if os.path.isdir(os.path.join(game_directory_path, g))]
+            game_dict = get_ea_app_game_info(installed_games, game_directory_path)
+
+            for game, ea_ids in game_dict.items():
+                launch_options = f'STEAM_COMPAT_DATA_PATH="{logged_in_home}/.local/share/Steam/steamapps/compatdata/{ea_app_launcher}/" %command% "origin2://game/launch?offerIds={ea_ids}"'
+                exe_path = f'"{logged_in_home}/.local/share/Steam/steamapps/compatdata/{ea_app_launcher}/pfx/drive_c/Program Files/Electronic Arts/EA Desktop/EA Desktop/EALaunchHelper.exe"'
+                start_dir = f'"{logged_in_home}/.local/share/Steam/steamapps/compatdata/{ea_app_launcher}/pfx/drive_c/Program Files/Electronic Arts/EA Desktop/EA Desktop/"'
+
+                create_new_entry(exe_path, game, launch_options, start_dir)
+                track_game(game, "EA App")
+        except Exception as e:
+            print(f"Error scanning EA App games: {e}")
 
 #End of EA App Scanner
 
@@ -1456,6 +2176,7 @@ else:
 
             # Create the new entry
             create_new_entry(exe_path, game, launch_options, start_dir)
+            track_game(game, "GOG Galaxy")
 
 # End of Gog Galaxy Scanner
 
@@ -1590,6 +2311,7 @@ if game_dict:
 
         print(f"Creating new entry for {game_name} with exe_path: {exe_path}")
         create_new_entry(exe_path, game_name, launch_options, start_dir)
+        track_game(game_name, "Battle.net")
 
 print("Battle.net Games Scanner completed.")
 
@@ -1642,6 +2364,8 @@ if amazon_games:
         start_dir = f"\"{logged_in_home}/.local/share/Steam/steamapps/compatdata/{amazon_launcher}/pfx/drive_c/users/steamuser/AppData/Local/Amazon Games/App/\""
         launch_options = f"STEAM_COMPAT_DATA_PATH=\"{logged_in_home}/.local/share/Steam/steamapps/compatdata/{amazon_launcher}/\" %command% -'amazon-games://play/{game['id']}'"
         create_new_entry(exe_path, display_name, launch_options, start_dir)
+        track_game(display_name, "Amazon Games")
+
 
 
 #End of Amazon Games Scanner
@@ -1715,6 +2439,7 @@ else:
 
         # Call the provided function to create a new entry for the game
         create_new_entry(exe_path, game_title, launchoptions, start_dir)
+        track_game(game_title, "itch.io")
 
     # Close the database connection
     conn.close()
@@ -1762,6 +2487,7 @@ else:
                 start_dir = f"{legacy_dir}{game_dir}"
                 launch_options = f"STEAM_COMPAT_DATA_PATH=\"{logged_in_home}/.local/share/Steam/steamapps/compatdata/{legacy_launcher}\" %command%"
                 create_new_entry(f'"{exe_path}"', game_name, launch_options, f'"{start_dir}"')
+                track_game(game_name, "Legacy Games")
             else:
                 print(f"No matching .exe file found for game: {game_dir}")
         else:
@@ -1917,6 +2643,7 @@ else:
                 start_dir = f"\"{logged_in_home}/.local/share/Steam/steamapps/compatdata/{vkplay_launcher}/pfx/drive_c/users/steamuser/AppData/Local/GameCenter/\""
 
                 create_new_entry(exe_path, display_name, launch_options, start_dir)
+                track_game(display_name, "VK Play")
 
 # End of VK Play Scanner
 
@@ -1985,6 +2712,7 @@ else:
                 continue
 
             create_new_entry(exe_path, display_name, launch_options, start_dir)
+            track_game(display_name, "HoYoPlay")
 
 # End of HoYo Play Scanner
 
@@ -2051,6 +2779,7 @@ else:
 
                 # Create the new entry (this is where you can use your custom function for Steam shortcuts)
                 create_new_entry(exe_path, display_name, launch_options, start_dir)
+                track_game(display_name, "Game Jolt")
 
         else:
             print("'objects' key not found in the games data.")
@@ -2113,6 +2842,7 @@ if os.path.exists(file_path):
 
                 # Create the new entry (this is where you can use your custom function for Steam shortcuts)
                 create_new_entry(exe_path, display_name, launch_options, start_dir)
+                track_game(display_name, "Minecraft Launcher")
 
             else:
                 print("Key 'productLibraryDir' not found in the JSON.")
@@ -2220,6 +2950,7 @@ else:
         start_dir = os.path.dirname(game_path)
         launchoptions = f'STEAM_COMPAT_DATA_PATH="{logged_in_home}/.local/share/Steam/steamapps/compatdata/{indie_launcher}/" %command%'
         create_new_entry(f"\"{game_path}\"", game_name, launchoptions, f"\"{start_dir}\"")
+        track_game(game_name, "IndieGala Client")
 #End of IndieGala Scanner
 
 
@@ -2307,6 +3038,7 @@ else:
             chromelaunch_options,
             chrome_startdir,
         )
+        track_game(game_name, "Google Chrome")
 
 #end of chrome scanner for xbox and geforce bookmarks
 
@@ -2333,7 +3065,10 @@ else:
         "waydroid.org.lineageos.jelly.desktop",
         "waydroid.com.android.camera2.desktop",
         "waydroid.com.android.deskclock.desktop",
-        "waydroid.org.lineageos.recorder.desktop"
+        "waydroid.org.lineageos.recorder.desktop",
+        "waydroid.com.google.android.apps.messaging.desktop",
+        "waydroid.com.google.android.contacts.desktop",
+        "waydroid.org.lineageos.aperture.desktop",
     }
 
     exe_path = f'{logged_in_home}/Android_Waydroid/Android_Waydroid_Cage.sh'
@@ -2371,6 +3106,7 @@ else:
                     launchoptions=f'"{app_name}"',
                     startingdir=start_dir
                 )
+                track_game(display_name, "Waydroid")
 
             except Exception as e:
                 print(f"Failed to process {file_name}: {e}")
@@ -2380,27 +3116,27 @@ else:
 
 
 #Geforce Now Flatpak Scanner
-def check_and_create_geforce_shortcut():
-    """Check if GeForce NOW Flatpak is installed, and create shortcut if it is."""
-    installed = False
+import subprocess
 
+# Geforce Now Flatpak Scanner
+
+installed = False
+
+try:
+    subprocess.run(["flatpak", "info", "--user", "com.nvidia.geforcenow"],
+                   check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    installed = True
+except (subprocess.CalledProcessError, FileNotFoundError):
     try:
-        subprocess.run(["flatpak", "info", "--user", "com.nvidia.geforcenow"],
+        subprocess.run(["flatpak", "info", "--system", "com.nvidia.geforcenow"],
                        check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         installed = True
-    except subprocess.CalledProcessError:
-        try:
-            subprocess.run(["flatpak", "info", "--system", "com.nvidia.geforcenow"],
-                           check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-            installed = True
-        except subprocess.CalledProcessError:
-            pass
+    except (subprocess.CalledProcessError, FileNotFoundError):
+        pass
 
-    if not installed:
-        print("Skipping NVIDIA GeForce NOW scanner — Flatpak not found.")
-        return
-
-    # GeForce NOW is installed — create shortcut
+if not installed:
+    print("Skipping NVIDIA GeForce NOW scanner — Flatpak not found or app not installed.")
+else:
     exe_path = "/usr/bin/flatpak"
     display_name = "NVIDIA GeForce NOW"
     app_name = "run com.nvidia.geforcenow"
@@ -2413,8 +3149,6 @@ def check_and_create_geforce_shortcut():
         startingdir=f'"{start_dir}"'
     )
 
-# Call directly
-check_and_create_geforce_shortcut()
 # End of Geforce Now Flatpak Scanner
 
 
@@ -2456,7 +3190,7 @@ else:
                             print("Missing game_id in manifest:", manifest_path)
                             continue
 
-                        launch_options = f'STEAM_COMPAT_DATA_PATH="{steam_compat_base}" %command% sgup://run/{game_id}'
+                        launch_options = f'STEAM_COMPAT_DATA_PATH="{steam_compat_base}/" %command% "sgup://run/{game_id}"'
 
                         create_new_entry(
                             shortcutdirectory=f'"{stove_launcher_path}"',
@@ -2464,6 +3198,7 @@ else:
                             launchoptions=launch_options,
                             startingdir=f'"{os.path.dirname(stove_launcher_path)}"'
                         )
+                        track_game(game_title, "STOVE Client")
 
                     except Exception as e:
                         print("Error reading manifest", manifest_path, ":", e)
@@ -2473,6 +3208,72 @@ else:
 
 
 
+# Humble Games Collection Scanner (Humble Bundle, Humble Games, Humble Games Collection)
+proton_prefix = f"{logged_in_home}/.local/share/Steam/steamapps/compatdata/{humble_launcher}/pfx"
+
+# JSON config file path inside Proton prefix
+config_path = os.path.join(
+    proton_prefix,
+    "drive_c/users/steamuser/AppData/Roaming/Humble App/config.json"
+)
+
+# Convert Windows-style path to Linux path inside Proton prefix drive_c
+def windows_to_linux_path(win_path):
+    if not win_path:
+        return ""
+    if win_path.startswith("C:\\"):
+        rel_path = win_path.replace("C:\\", "").replace("\\", "/")
+        return os.path.join(proton_prefix, "drive_c", rel_path)
+    return win_path
+
+# Skip scanner if config doesn't exist
+if not os.path.isfile(config_path):
+    print("Skipping Humble Games Scanner (config not found)")
+else:
+    try:
+        with open(config_path, "r", encoding="utf-8") as f:
+            data = json.load(f)
+    except json.JSONDecodeError:
+        print("Skipping Humble Games Scanner (invalid config)")
+    else:
+        games = data.get("game-collection-4", [])
+
+        for idx, game in enumerate(games, 1):
+            status = game.get("status")
+            if status not in ("downloaded", "installed"):
+                continue
+
+            game_name = game.get("gameName", "Unknown")
+            win_install_path = game.get("filePath", "")
+            exe_rel_path = game.get("executablePath", "")
+
+
+            if not exe_rel_path or not win_install_path:
+                print("  Missing executable or install path, skipping")
+                continue
+
+            linux_install_path = windows_to_linux_path(win_install_path)
+            linux_exe_path = os.path.join(linux_install_path, exe_rel_path.replace("\\", "/"))
+
+            if not os.path.isfile(linux_exe_path):
+                print("  Executable not found, skipping game")
+                continue
+
+            start_dir = os.path.dirname(linux_exe_path)
+            launch_options = f'STEAM_COMPAT_DATA_PATH="{proton_prefix}" %command%'
+
+            # Your shortcut creation function (should be defined elsewhere)
+            create_new_entry(f'"{linux_exe_path}"', game_name, launch_options, f'"{start_dir}"')
+            track_game(game_name, "Humble Bundle")
+
+# End of Humble Scanner
+
+
+
+
+
+# Call finalize_tracking and capture removed apps
+removed_apps = finalize_tracking()
 
 # List of game names to skip fetching descriptions for
 skip_games = {'Epic Games', 'GOG Galaxy', 'Ubisoft Connect', 'Battle.net', 'EA App',
@@ -2495,33 +3296,6 @@ def send_notification(message, icon_path=None, expire_time=5000):
         subprocess.run(['notify-send', '-a', 'NonSteamLaunchers', message, '--icon', icon_path, f'--expire-time={expire_time}'])
     else:
         subprocess.run(['notify-send', '-a', 'NonSteamLaunchers', message, f'--expire-time={expire_time}'])
-
-
-# --- Write unique shortcuts to file ---
-def write_shortcuts_to_file(file_path, created_shortcuts, skip_extensions):
-    existing_shortcuts = set()
-
-    if not os.path.exists(file_path):
-        with open(file_path, 'w'): pass
-
-    with open(file_path, 'r') as f:
-        existing_shortcuts.update(line.strip() for line in f)
-
-    new_shortcuts = [
-        name for name in created_shortcuts
-        if name and name not in existing_shortcuts
-        and not any(name.endswith(ext) for ext in skip_extensions)
-    ]
-
-    if new_shortcuts:
-        with open(file_path, 'a') as f:
-            for name in new_shortcuts:
-                f.write(f"{name}\n")
-        print(f"New shortcuts added to {file_path}.")
-    else:
-        print("No new shortcuts to add.")
-# --- End of Shortcut File Logic ---
-
 
 
 
@@ -2747,24 +3521,21 @@ def get_boot_video(game_name, logged_in_home):
 
 # --- Main block (MUST remain untouched) ---
 if new_shortcuts_added or shortcuts_updated:
-    print("Saving new config and shortcuts files")
-    conf = vdf.dumps(config_data, pretty=True)
-    try:
-        with open(f"{logged_in_home}/.steam/root/config/config.vdf", 'w') as file:
-            file.write(conf)
-    except IOError as e:
-        print(f"Error writing to config.vdf: {e}")
-    try:
-        with open(f"{logged_in_home}/.steam/root/userdata/{steamid3}/config/shortcuts.vdf", 'wb') as file:
-            file.write(vdf.binary_dumps(shortcuts))
-    except IOError as e:
-        print(f"Error writing to shortcuts.vdf: {e}")
+    #print("Saving new config and shortcuts files")
+    #conf = vdf.dumps(config_data, pretty=True)
+    #try:
+        #with open(f"{logged_in_home}/.steam/root/config/config.vdf", 'w') as file:
+            #file.write(conf)
+    #except IOError as e:
+        #print(f"Error writing to config.vdf: {e}")
+    #try:
+        #with open(f"{logged_in_home}/.steam/root/userdata/{steamid3}/config/shortcuts.vdf", 'wb') as file:
+            #file.write(vdf.binary_dumps(shortcuts))
+    #except IOError as e:
+        #print(f"Error writing to shortcuts.vdf: {e}")
 
     # --- Additional Logic ---
     notified_games = set()
-    shortcuts_file_path = os.path.join(logged_in_home, '.config/systemd/user/shortcuts')
-    skip_extensions = {'.exe', '.sh', '.bat', '.msi', '.app', '.apk', '.url', '.desktop', '.AppImage'}
-
     if created_shortcuts:
         print("Created Shortcuts:")
 
@@ -2779,9 +3550,6 @@ if new_shortcuts_added or shortcuts_updated:
 
             # Update game details for this shortcut
             update_game_details([name], logged_in_home, skip_games)
-
-        # Write newly created shortcuts to the file
-        write_shortcuts_to_file(shortcuts_file_path, created_shortcuts, skip_extensions)
 
         notifications = []
         num_notifications = len(created_shortcuts)
@@ -2798,9 +3566,9 @@ if new_shortcuts_added or shortcuts_updated:
 
             if shortcut_entry:
                 icon_path = shortcut_entry.get('icon')
-                message = f"New game added! Restart Steam to apply: {name}"
+                message = f"A new game has been added to your library! {name}"
 
-                # Set the expire_time based on the number of notifications
+                 #Set the expire_time based on the number of notifications
                 if num_notifications <= 4:
                     expire_time = 5000  # 5 seconds for small batches
                 else:
@@ -2819,3 +3587,12 @@ if new_shortcuts_added or shortcuts_updated:
 else:
     print("No new shortcuts were added.")
     print("All finished, Scanner was successful!")
+
+# Notify about removed games (if any)
+if removed_apps:
+    removed_game_names = []
+    for launcher, apps in removed_apps.items():
+        removed_game_names.extend([f"{app} ({launcher})" for app in apps])
+
+    removed_message = "Game(s) removed from library:\n" + "\n".join(removed_game_names)
+    send_notification(removed_message, icon_path=None, expire_time=7000)
