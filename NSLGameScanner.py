@@ -1189,11 +1189,9 @@ def create_new_entry(shortcutdirectory, appname, launchoptions, startingdir):
 
     # Check if the game already exists in the shortcuts
     if check_if_shortcut_exists(signed_shortcut_id, appname, exe_path, startingdir, launchoptions):
-        # Check if proton needs applying or updating
-        #if add_compat_tool(unsigned_shortcut_id, launchoptions):
-            #shortcuts_updated = True
-        return
 
+        shortcuts_updated = True
+        return
     # Skip artwork download for specific shortcuts
     if appname not in ['Repair EA App']:
         # Clean up old artwork for this shortcut if it exists
