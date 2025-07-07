@@ -778,42 +778,29 @@ def scan_and_track_games(logged_in_home, steamid3):
 
 
 
-def check_if_shortcut_exists(shortcut_id, display_name, exe_path, start_dir, launch_options):
-    # Normalize inputs for consistent comparison
-    stripped_exe = exe_path.strip('\"') if exe_path else None
-    stripped_start_dir = start_dir.strip('\"') if start_dir else None
-    display_name_lower = display_name.lower() if display_name else None
+def check_if_shortcut_exists(display_name, exe_path, start_dir, launch_options):
+    stripped_exe_path = exe_path.strip('\"') if exe_path else exe_path
+    stripped_start_dir = start_dir.strip('\"') if start_dir else start_dir
 
     for s in shortcuts['shortcuts'].values():
-        # Normalize shortcut dict keys (handle 'appname' vs 'AppName' etc.)
-        s_appname = s.get('appname') or s.get('AppName')
-        s_exe = (s.get('exe') or s.get('Exe') or "").strip('\"')
-        s_start_dir = s.get('StartDir').strip('\"') if s.get('StartDir') else None
-        s_launch_options = s.get('LaunchOptions')
+        # Non-Chrome shortcut check: We remove the launch options comparison for non-Chrome shortcuts
+        if (s.get('appname') == display_name or s.get('AppName') == display_name) and \
+           ((s.get('exe') and s.get('exe').strip('\"') == stripped_exe_path) or (s.get('Exe') and s.get('Exe').strip('\"') == stripped_exe_path)) and \
+           s.get('StartDir') and s.get('StartDir').strip('\"') == stripped_start_dir:
 
-        # Check by shortcut ID
-        if s.get('appid') == shortcut_id:
-            print(f"Existing shortcut found by shortcut ID for game {display_name}. Skipping creation.")
+            # Check if the launch options are different (for non-Chrome, no comparison is done, so add a warning here)
+            if s.get('LaunchOptions') != launch_options:
+                print(f"Launch options for {display_name} differ from the default. This could be due to the user manually modifying the launch options. Will skip creation")
+
+            print(f"Existing shortcut found for game {display_name}. Skipping creation.")
             return True
 
-        # Check by appname, exe, and start_dir match
-        if s_appname and s_exe and s_start_dir:
-            if s_appname.lower() == display_name_lower and s_exe == stripped_exe and s_start_dir == stripped_start_dir:
-                # If launch options differ, warn and skip creation (return False to allow re-creation?)
-                if s_launch_options != launch_options:
-                    print(f"Launch options for {display_name} differ from default. Possibly manually modified. Skipping creation.")
-                    return True
-
-                print(f"Existing shortcut found for game {display_name}. Skipping creation.")
-                return True
-
-        # Special case: Chrome shortcuts
-        if s_appname and s_exe and s_launch_options:
-            if s_appname.lower() == display_name_lower:
-                # Chrome executable shortcut check
-                if s_exe == '/app/bin/chrome' and launch_options in s_launch_options:
-                    print(f"Existing website shortcut found for {display_name}. Skipping creation.")
-                    return True
+        # Chrome (website) shortcut check
+        if (s.get('appname') == display_name or s.get('AppName') == display_name) and \
+           (s.get('exe') and s.get('exe').strip('\"') == '/app/bin/chrome') and \
+           s.get('LaunchOptions') and launch_options in s.get('LaunchOptions'):
+            print(f"Existing website shortcut found for {display_name}. Skipping creation.")
+            return True
 
     return False
 
@@ -1188,7 +1175,7 @@ def create_new_entry(shortcutdirectory, appname, launchoptions, startingdir):
         app_ids[appname] = unsigned_shortcut_id
 
     # Check if the game already exists in the shortcuts
-    if check_if_shortcut_exists(signed_shortcut_id, appname, exe_path, startingdir, launchoptions):
+    if check_if_shortcut_exists(appname, exe_path, startingdir, launchoptions):
 
         shortcuts_updated = True
         return
