@@ -1173,19 +1173,22 @@ def create_new_entry(shortcutdirectory, appname, launchoptions, startingdir):
     if not shortcutdirectory or not appname or not launchoptions or not startingdir:
         print(f"{appname} is not installed. Skipping.")
         return
-    exe_path = f"{shortcutdirectory}"
-    signed_shortcut_id = get_steam_shortcut_id(exe_path, appname)
-    unsigned_shortcut_id = get_unsigned_shortcut_id(signed_shortcut_id)
 
-    # Modify the shortcut for UMU if needed
+    exe_path = f"{shortcutdirectory}"
+
+    # --- FIX: Modify shortcut first ---
     exe_path, startingdir, launchoptions = modify_shortcut_for_umu(appname, exe_path, launchoptions, startingdir)
     umu_id = extract_umu_id_from_launch_options(launchoptions)
+
+    # --- Now generate IDs using modified exe_path ---
+    signed_shortcut_id = get_steam_shortcut_id(exe_path, appname)
+    unsigned_shortcut_id = get_unsigned_shortcut_id(signed_shortcut_id)
 
     # Only store app ID for specific launchers
     if appname in ['Epic Games', 'Gog Galaxy', 'Ubisoft Connect', 'Battle.net', 'EA App', 'Amazon Games', 'itch.io', 'Legacy Games', 'Humble Bundle', 'IndieGala Client', 'Rockstar Games Launcher', 'Glyph', 'Minecraft Launcher', 'Playstation Plus', 'VK Play', 'HoYoPlay', 'Nexon Launcher', 'Game Jolt Client', 'Artix Game Launcher', 'ARC Launcher', 'PURPLE Launcher', 'Plarium Play', 'VFUN Launcher', 'Tempo Launcher', 'Pokémon Trading Card Game Live', 'Antstream Arcade', 'STOVE Client']:
         app_ids[appname] = unsigned_shortcut_id
 
-    # Check if shortcut already exists
+    # Check if shortcut already exists with final values
     if check_if_shortcut_exists(appname, exe_path, startingdir, launchoptions):
         shortcuts_updated = True
         return
