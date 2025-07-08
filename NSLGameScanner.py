@@ -1048,9 +1048,6 @@ def recv_ws_message_for_id(sock, expected_id):
 
 def inject_and_create_shortcut(ws_socket, shortcut_data):
     try:
-        # Wrap the embedded JS code in the same async function wrapper
-        wrapped_code = f"(async () => {{ {JS_CODE}; window.__injectedSteamMod = true; return 'Injection successful!'; }})()"
-
         # Enable Runtime domain
         send_ws_text(ws_socket, json.dumps({
             "id": 1,
@@ -1058,24 +1055,42 @@ def inject_and_create_shortcut(ws_socket, shortcut_data):
         }))
         recv_ws_message_for_id(ws_socket, 1)  # Consume response for Runtime.enable
 
-        # Inject the createShortcut function
+        # Step 0: Check if JS is already injected
         send_ws_text(ws_socket, json.dumps({
-            "id": 2,
+            "id": 100,
             "method": "Runtime.evaluate",
             "params": {
-                "expression": wrapped_code,
-                "awaitPromise": True,
+                "expression": "window.__injectedSteamMod === true",
+                "returnByValue": True
             }
         }))
 
-        injection_response = recv_ws_message_for_id(ws_socket, 2)
-        if not injection_response or injection_response.get("result", {}).get("result", {}).get("value") != "Injection successful!":
-            print("JS injection failed or response invalid:")
-            print(injection_response)
-            return None
-        print("JS injected successfully.")
+        injected_check = recv_ws_message_for_id(ws_socket, 100)
+        already_injected = injected_check.get("result", {}).get("result", {}).get("value") is True
 
-        # Call createShortcut with shortcut_data
+        if not already_injected:
+            # Step 1: Inject JS
+            wrapped_code = f"(async () => {{ {JS_CODE}; window.__injectedSteamMod = true; return 'Injection successful!'; }})()"
+
+            send_ws_text(ws_socket, json.dumps({
+                "id": 2,
+                "method": "Runtime.evaluate",
+                "params": {
+                    "expression": wrapped_code,
+                    "awaitPromise": True,
+                }
+            }))
+
+            injection_response = recv_ws_message_for_id(ws_socket, 2)
+            if not injection_response or injection_response.get("result", {}).get("result", {}).get("value") != "Injection successful!":
+                print("JS injection failed or response invalid:")
+                print(injection_response)
+                return None
+            print("JS injected successfully.")
+        else:
+            print("JS already injected. Skipping re-injection.")
+
+        # Step 2: Call createShortcut with shortcut_data
         shortcut_json_str = json.dumps(shortcut_data)
         eval_expression = f"window.createShortcut({shortcut_json_str})"
 
@@ -1099,6 +1114,7 @@ def inject_and_create_shortcut(ws_socket, shortcut_data):
     except Exception as e:
         print(f"Exception during shortcut injection or creation: {e}")
         return None
+
 
 
 
@@ -1153,8 +1169,6 @@ def create_new_entry(shortcutdirectory, appname, launchoptions, startingdir):
     global hero64
     global counter
 
-
-
     # Check if the launcher is installed
     if not shortcutdirectory or not appname or not launchoptions or not startingdir:
         print(f"{appname} is not installed. Skipping.")
@@ -1163,40 +1177,32 @@ def create_new_entry(shortcutdirectory, appname, launchoptions, startingdir):
     signed_shortcut_id = get_steam_shortcut_id(exe_path, appname)
     unsigned_shortcut_id = get_unsigned_shortcut_id(signed_shortcut_id)
 
-    # **Intercept and modify the shortcut based on UMU data**
+    # Modify the shortcut for UMU if needed
     exe_path, startingdir, launchoptions = modify_shortcut_for_umu(appname, exe_path, launchoptions, startingdir)
-
     umu_id = extract_umu_id_from_launch_options(launchoptions)
 
-
-
-    # Only store the app ID for specific launchers
+    # Only store app ID for specific launchers
     if appname in ['Epic Games', 'Gog Galaxy', 'Ubisoft Connect', 'Battle.net', 'EA App', 'Amazon Games', 'itch.io', 'Legacy Games', 'Humble Bundle', 'IndieGala Client', 'Rockstar Games Launcher', 'Glyph', 'Minecraft Launcher', 'Playstation Plus', 'VK Play', 'HoYoPlay', 'Nexon Launcher', 'Game Jolt Client', 'Artix Game Launcher', 'ARC Launcher', 'PURPLE Launcher', 'Plarium Play', 'VFUN Launcher', 'Tempo Launcher', 'Pokémon Trading Card Game Live', 'Antstream Arcade', 'STOVE Client']:
         app_ids[appname] = unsigned_shortcut_id
 
-    # Check if the game already exists in the shortcuts
+    # Check if shortcut already exists
     if check_if_shortcut_exists(appname, exe_path, startingdir, launchoptions):
-
         shortcuts_updated = True
         return
+
     # Skip artwork download for specific shortcuts
     if appname not in ['Repair EA App']:
-        # Clean up old artwork for this shortcut if it exists
-        delete_old_artwork_by_tag(appname, unsigned_shortcut_id, steamid3, logged_in_home)
-
-        # Get artwork
+        #delete_old_artwork_by_tag(appname, unsigned_shortcut_id, steamid3, logged_in_home)
         game_id = get_game_id(appname)
         if game_id is not None:
             get_sgdb_art(game_id, unsigned_shortcut_id)
 
-
+    # Try Steam fallback artwork
     steam_store_appid = get_steam_store_appid(appname)
     if steam_store_appid:
         print(f"Found Steam App ID for {appname}: {steam_store_appid}")
         create_steam_store_app_manifest_file(steam_store_appid, appname)
 
-
-        #Fallback Artwork
         for art_type in ["icons", "logos", "heroes", "grids_600x900", "grids_920x430"]:
             url = get_steam_fallback_url(steam_store_appid, art_type)
             if not url:
@@ -1209,7 +1215,7 @@ def create_new_entry(shortcutdirectory, appname, launchoptions, startingdir):
                     ext = url.split('.')[-1]
 
                     if art_type == "icons":
-                        filename = get_file_name("icons", shortcut_id)
+                        filename = get_file_name("icons", unsigned_shortcut_id)
                     elif art_type == "logos":
                         filename = f"{unsigned_shortcut_id}_logo.{ext}"
                     elif art_type == "heroes":
@@ -1221,74 +1227,31 @@ def create_new_entry(shortcutdirectory, appname, launchoptions, startingdir):
                     else:
                         continue
 
-                    base_file_path = f"{logged_in_home}/.steam/root/userdata/{steamid3}/config/grid/{filename.rsplit('.', 1)[0]}"
                     file_path = f"{logged_in_home}/.steam/root/userdata/{steamid3}/config/grid/{filename}"
 
-                    # Check if file exists with any common extension before downloading
-                    if not file_exists_with_any_ext(base_file_path):
-
-
-                        img_data = requests.get(url).content
-                        if art_type == "icons":
-                            with open(file_path, 'wb') as f:
-                                f.write(img_data)
-                            print(f"Downloaded and saved fallback icon: {filename}")
-                        else:
-                            # Convert to base64 and assign to correct global
-                            encoded = b64encode(img_data).decode('utf-8')
-                            print(f"Downloaded fallback {art_type} as base64")
-
-                            if art_type == "logos" and not logo64:
-                                logo64 = encoded
-                            elif art_type == "heroes" and not hero64:
-                                hero64 = encoded
-                            elif art_type == "grids_600x900" and not gridp64:
-                                gridp64 = encoded
-                            elif art_type == "grids_920x430" and not grid64:
-                                grid64 = encoded
-
-
-
-
-
-
+                    # Download and use artwork directly — no file existence checks
+                    img_data = requests.get(url).content
+                    if art_type == "icons":
+                        with open(file_path, 'wb') as f:
+                            f.write(img_data)
+                        print(f"Downloaded and saved fallback icon: {filename}")
                     else:
-                        print(f"File already exists (png/jpg/ico), loading: {filename}")
-                        if art_type != "icons":  # icons are saved to disk, not sent as base64
+                        encoded = b64encode(img_data).decode('utf-8')
+                        print(f"Downloaded fallback {art_type} as base64")
 
-
-
-
-
-
-
-
-                            actual_file_path = get_existing_file_path_with_ext(base_file_path)
-                            if actual_file_path and file_tagged_with_appname(actual_file_path, appname):
-                                print(f"Using local artwork for {appname}: {actual_file_path}")
-                                with open(actual_file_path, "rb") as f:
-                                    encoded = b64encode(f.read()).decode("utf-8")
-
-
-                                print(f"Using local fallback for {art_type}: {actual_file_path}")
-
-
-                                if art_type == "logos" and not logo64:
-                                    logo64 = encoded
-                                elif art_type == "heroes" and not hero64:
-                                    hero64 = encoded
-                                elif art_type == "grids_600x900" and not gridp64:
-                                    gridp64 = encoded
-                                elif art_type == "grids_920x430" and not grid64:
-                                    grid64 = encoded
-
-
-
-
+                        if art_type == "logos" and not logo64:
+                            logo64 = encoded
+                        elif art_type == "heroes" and not hero64:
+                            hero64 = encoded
+                        elif art_type == "grids_600x900" and not gridp64:
+                            gridp64 = encoded
+                        elif art_type == "grids_920x430" and not grid64:
+                            grid64 = encoded
                 else:
                     print(f"Fallback URL invalid for {art_type} - {url}")
             except Exception as e:
                 print(f"Error downloading fallback artwork for {art_type}: {e}")
+
 
 
 
@@ -3279,8 +3242,10 @@ def send_notification(message, icon_path=None, expire_time=5000):
     """Send a notification with the message and optional icon."""
     if icon_path and os.path.exists(icon_path):
         subprocess.run(['notify-send', '-a', 'NonSteamLaunchers', message, '--icon', icon_path, f'--expire-time={expire_time}'])
+        subprocess.Popen(["paplay", "/usr/share/sounds/freedesktop/stereo/bell.oga"])
     else:
         subprocess.run(['notify-send', '-a', 'NonSteamLaunchers', message, f'--expire-time={expire_time}'])
+        subprocess.Popen(["paplay", "/usr/share/sounds/freedesktop/stereo/bell.oga"])
 
 
 
