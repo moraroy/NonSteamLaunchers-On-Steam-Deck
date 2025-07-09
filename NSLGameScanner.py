@@ -1178,6 +1178,11 @@ def create_new_entry(shortcutdirectory, appname, launchoptions, startingdir):
     global hero64
     global counter
 
+    grid64 = ""
+    gridp64 = ""
+    logo64 = ""
+    hero64 = ""
+
     # Check if the launcher is installed
     if not shortcutdirectory or not appname or not launchoptions or not startingdir:
         print(f"{appname} is not installed. Skipping.")
