@@ -835,6 +835,11 @@ function detectImageFormat(base64String) {
   return "png"; // Fallback to PNG just in case
 }
 
+// Simple delay function
+function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
 window.createShortcut = async function(data) {
   console.log("createShortcut called with", data);
 
@@ -899,6 +904,29 @@ window.createShortcut = async function(data) {
       const format = detectImageFormat(data.WideGrid);
       await SteamClient.Apps.SetCustomArtworkForApp(shortcutId, data.WideGrid, format, 3);
       console.log(`Wide Grid artwork set as ${format}`);
+    }
+
+
+
+    // --- Display notification ---
+    try {
+      await sleep(300); // slight delay to help notifications display correctly
+      const notificationType = 3;
+      const notificationPayload = {
+        rawbody: `${data.appname} was added to your library!`,
+        state: "ingame"
+      };
+      const jsonStr = JSON.stringify(notificationPayload);
+
+      if (window.SteamClient && SteamClient.ClientNotifications) {
+        SteamClient.ClientNotifications.DisplayClientNotification(notificationType, jsonStr, (arg) => {
+          console.log("Notification callback", arg);
+        });
+      } else {
+        console.warn("ClientNotifications API not available.");
+      }
+    } catch (notifyErr) {
+      console.warn("Failed to send notification:", notifyErr);
     }
 
     return { success: true, shortcutId };
@@ -1321,6 +1349,7 @@ def create_new_entry(shortcutdirectory, appname, launchoptions, startingdir):
         print("WebSocket connected")
 
         result = inject_and_create_shortcut(ws, new_entry)
+        time.sleep(4.0)
         print("Shortcut creation result:", result)
 
         shortcut_id = None
@@ -3535,14 +3564,14 @@ if new_shortcuts_added or shortcuts_updated:
                 icon_path = shortcut_entry.get('icon')
                 message = f"A new game has been added to your library! {name}"
 
-                 #Set the expire_time based on the number of notifications
+                #Set the expire_time based on the number of notifications
                 if num_notifications <= 4:
                     expire_time = 5000  # 5 seconds for small batches
                 else:
                     expire_time = max(1000, 1000 + (i * 200))  # Gradient for larger batches
 
-                notifications.append((message, icon_path, expire_time))
-                notified_games.add(name)
+                #notifications.append((message, icon_path, expire_time))
+                #notified_games.add(name)
             else:
                 print(f"Warning: Game '{name}' not found in shortcuts dictionary.")
 
