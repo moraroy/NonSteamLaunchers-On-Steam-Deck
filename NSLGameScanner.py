@@ -14,6 +14,7 @@ import csv
 import configparser
 import certifi
 import glob
+import itertools
 from datetime import datetime
 
 from urllib.request import urlopen
@@ -1046,26 +1047,34 @@ def recv_ws_message_for_id(sock, expected_id):
         except Exception:
             continue
 
+
+
+eval_id_counter = itertools.count(1000)
 def inject_and_create_shortcut(ws_socket, shortcut_data):
     try:
+        # Generate unique IDs
+        enable_id = next(eval_id_counter)
+        injected_check_id = next(eval_id_counter)
+        inject_js_id = next(eval_id_counter)
+        create_shortcut_id = next(eval_id_counter)
+
         # Enable Runtime domain
         send_ws_text(ws_socket, json.dumps({
-            "id": 1,
+            "id": enable_id,
             "method": "Runtime.enable"
         }))
-        recv_ws_message_for_id(ws_socket, 1)  # Consume response for Runtime.enable
+        recv_ws_message_for_id(ws_socket, enable_id)
 
         # Step 0: Check if JS is already injected
         send_ws_text(ws_socket, json.dumps({
-            "id": 100,
+            "id": injected_check_id,
             "method": "Runtime.evaluate",
             "params": {
                 "expression": "window.__injectedSteamMod === true",
                 "returnByValue": True
             }
         }))
-
-        injected_check = recv_ws_message_for_id(ws_socket, 100)
+        injected_check = recv_ws_message_for_id(ws_socket, injected_check_id)
         already_injected = injected_check.get("result", {}).get("result", {}).get("value") is True
 
         if not already_injected:
@@ -1073,15 +1082,14 @@ def inject_and_create_shortcut(ws_socket, shortcut_data):
             wrapped_code = f"(async () => {{ {JS_CODE}; window.__injectedSteamMod = true; return 'Injection successful!'; }})()"
 
             send_ws_text(ws_socket, json.dumps({
-                "id": 2,
+                "id": inject_js_id,
                 "method": "Runtime.evaluate",
                 "params": {
                     "expression": wrapped_code,
                     "awaitPromise": True,
                 }
             }))
-
-            injection_response = recv_ws_message_for_id(ws_socket, 2)
+            injection_response = recv_ws_message_for_id(ws_socket, inject_js_id)
             if not injection_response or injection_response.get("result", {}).get("result", {}).get("value") != "Injection successful!":
                 print("JS injection failed or response invalid:")
                 print(injection_response)
@@ -1095,7 +1103,7 @@ def inject_and_create_shortcut(ws_socket, shortcut_data):
         eval_expression = f"window.createShortcut({shortcut_json_str})"
 
         send_ws_text(ws_socket, json.dumps({
-            "id": 3,
+            "id": create_shortcut_id,
             "method": "Runtime.evaluate",
             "params": {
                 "expression": eval_expression,
@@ -1104,7 +1112,7 @@ def inject_and_create_shortcut(ws_socket, shortcut_data):
             }
         }))
 
-        shortcut_result = recv_ws_message_for_id(ws_socket, 3)
+        shortcut_result = recv_ws_message_for_id(ws_socket, create_shortcut_id)
         if not shortcut_result:
             print("No response from createShortcut call.")
             return None
@@ -1114,6 +1122,7 @@ def inject_and_create_shortcut(ws_socket, shortcut_data):
     except Exception as e:
         print(f"Exception during shortcut injection or creation: {e}")
         return None
+
 
 
 
