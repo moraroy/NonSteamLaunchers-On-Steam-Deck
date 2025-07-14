@@ -827,15 +827,14 @@ TARGET_TITLE = "SharedJSContext"
 # Embed the JS code as a string
 
 JS_CODE = """
-// Detects image format based on base64 header
 function detectImageFormat(base64String) {
   if (base64String.startsWith("iVBORw0KGgo")) return "png";  // PNG
-  if (base64String.startsWith("/9j/")) return "jpg";          // JPG (still encoded as 'jpeg')
-  if (base64String.startsWith("AAABAAEAEBA")) return "ico";   // ICO (Windows-style header)
-  return "png"; // Fallback to PNG just in case
+  if (base64String.startsWith("/9j/")) return "jpg";          // JPG
+  if (base64String.startsWith("AAABAAEAEBA")) return "ico";   // ICO
+  return "png"; // fallback
 }
 
-// Simple delay function
+// Simple delay
 function sleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
@@ -848,8 +847,10 @@ window.createShortcut = async function(data) {
     return { success: false, message: "SteamClient API is unavailable." };
   }
 
+  let shortcutId;  // Declare here to access in catch block
+
   try {
-    const shortcutId = await SteamClient.Apps.AddShortcut(
+    shortcutId = await SteamClient.Apps.AddShortcut(
       data.appname,
       data.exe,
       data.StartDir,
@@ -857,7 +858,6 @@ window.createShortcut = async function(data) {
     );
     console.log("Shortcut created with ID:", shortcutId);
 
-    // Set shortcut properties
     if (data.icon) {
       await SteamClient.Apps.SetShortcutIcon(shortcutId, data.icon);
       console.log("Icon set successfully!");
@@ -869,57 +869,83 @@ window.createShortcut = async function(data) {
     await SteamClient.Apps.SetAppLaunchOptions(shortcutId, data.LaunchOptions || "");
     console.log("Shortcut properties updated.");
 
-    // --- Compat Tool logic: Only apply if data.CompatTool is provided ---
     if (data.CompatTool && data.CompatTool.trim() !== "") {
       const availableTools = await SteamClient.Apps.GetAvailableCompatTools(shortcutId);
       const toolExists = availableTools.some(tool => tool.strToolName === data.CompatTool);
       if (toolExists) {
         await SteamClient.Apps.SpecifyCompatTool(shortcutId, data.CompatTool);
-        console.log(`Compat tool set to ${data.CompatTool}`);
+        console.log("Compat tool set to " + data.CompatTool);
       } else {
-        console.log(`Compat tool ${data.CompatTool} not found. Skipping compat tool application.`);
+        console.log("Compat tool " + data.CompatTool + " not found.");
       }
     }
 
-    // Set artwork dynamically based on actual format
     if (data.Hero) {
       const format = detectImageFormat(data.Hero);
       await SteamClient.Apps.SetCustomArtworkForApp(shortcutId, data.Hero, format, 1);
-      console.log(`Hero artwork set as ${format}`);
+      console.log("Hero artwork set as " + format);
     }
-
     if (data.Logo) {
       const format = detectImageFormat(data.Logo);
       await SteamClient.Apps.SetCustomArtworkForApp(shortcutId, data.Logo, format, 2);
-      console.log(`Logo artwork set as ${format}`);
+      console.log("Logo artwork set as " + format);
     }
-
     if (data.Grid) {
       const format = detectImageFormat(data.Grid);
       await SteamClient.Apps.SetCustomArtworkForApp(shortcutId, data.Grid, format, 0);
-      console.log(`Grid artwork set as ${format}`);
+      console.log("Grid artwork set as " + format);
     }
-
     if (data.WideGrid) {
       const format = detectImageFormat(data.WideGrid);
       await SteamClient.Apps.SetCustomArtworkForApp(shortcutId, data.WideGrid, format, 3);
-      console.log(`Wide Grid artwork set as ${format}`);
+      console.log("Wide Grid artwork set as " + format);
     }
 
+    // --- Add shortcut to launcher-specific collection ---
+    if (data.Launcher && typeof data.Launcher === "string" && data.Launcher.trim().length > 0) {
+      const tag = data.Launcher.trim();
+      const appId = shortcutId;
 
+      const collectionStore = window.g_CollectionStore || window.collectionStore;
+      if (!collectionStore) {
+        console.error("No collection store found.");
+      } else {
+        const collectionId = collectionStore.GetCollectionIDByUserTag(tag);
+        const collection = (typeof collectionId === "string")
+          ? collectionStore.GetCollection(collectionId)
+          : collectionStore.NewUnsavedCollection(tag, undefined, []);
 
-    // --- Display notification ---
+        if (!collection) {
+          console.error("Could not get or create collection: " + tag);
+        } else {
+          if (!collectionId) {
+            await collection.Save();
+            console.log("Created new collection: " + tag);
+          }
+
+          if (!collection.m_setApps.has(appId)) {
+            collection.m_setApps.add(appId);
+            collection.m_setAddedManually.add(appId);
+            await collection.Save();
+            console.log("Added app " + appId + " to collection: " + tag);
+          } else {
+            console.log("App " + appId + " already in collection: " + tag);
+          }
+        }
+      }
+    }
+
+    // --- Notification ---
     try {
-      await sleep(300); // slight delay to help notifications display correctly
-      const notificationType = 3;
+      await sleep(300);
       const notificationPayload = {
-        rawbody: `${data.appname} was added to your library!`,
+        rawbody: data.appname + " was added to your library!",
         state: "ingame"
       };
       const jsonStr = JSON.stringify(notificationPayload);
 
       if (window.SteamClient && SteamClient.ClientNotifications) {
-        SteamClient.ClientNotifications.DisplayClientNotification(notificationType, jsonStr, (arg) => {
+        SteamClient.ClientNotifications.DisplayClientNotification(3, jsonStr, function(arg) {
           console.log("Notification callback", arg);
         });
       } else {
@@ -930,8 +956,19 @@ window.createShortcut = async function(data) {
     }
 
     return { success: true, shortcutId };
+
   } catch (e) {
     console.error("Failed to create shortcut:", e);
+
+    if (typeof shortcutId === "number") {
+      try {
+        await SteamClient.Apps.RemoveShortcut(shortcutId);
+        console.log("Removed partially created shortcut:", shortcutId);
+      } catch (removeErr) {
+        console.warn("Failed to remove shortcut after creation failure:", removeErr);
+      }
+    }
+
     return { success: false, message: e.message || e.toString() };
   }
 };
@@ -1195,7 +1232,7 @@ def get_compat_tool_if_needed(launchoptions):
 
 
 
-def create_new_entry(shortcutdirectory, appname, launchoptions, startingdir):
+def create_new_entry(shortcutdirectory, appname, launchoptions, startingdir, launcher_name=None):
     global new_shortcuts_added
     global shortcuts_updated
     global created_shortcuts
@@ -1315,6 +1352,9 @@ def create_new_entry(shortcutdirectory, appname, launchoptions, startingdir):
         'Hero': hero64,
         'Logo': logo64,
     }
+
+    if launcher_name:
+        new_entry['Launcher'] = launcher_name
 
 
 
@@ -1896,7 +1936,7 @@ if os.path.exists(dat_file_path) and os.path.exists(item_dir):
             if item_data['LaunchExecutable'].endswith('.exe') and "Content" not in item_data['DisplayName'] and "Content" not in item_data['InstallLocation']:
                 for game in dat_data['InstallationList']:
                     if game['AppName'] == item_data['AppName']:
-                        create_new_entry(exe_path, display_name, launch_options, start_dir)
+                        create_new_entry(exe_path, display_name, launch_options, start_dir, launcher_name="Epic Games")
                         track_game(display_name, "Epic Games")
 
 else:
@@ -1954,7 +1994,7 @@ else:
             launch_options = f"STEAM_COMPAT_DATA_PATH=\"{logged_in_home}/.local/share/Steam/steamapps/compatdata/{ubisoft_connect_launcher}/\" %command% \"uplay://launch/{uplay_id}/0\""
             exe_path = f"\"{logged_in_home}/.local/share/Steam/steamapps/compatdata/{ubisoft_connect_launcher}/pfx/drive_c/Program Files (x86)/Ubisoft/Ubisoft Game Launcher/upc.exe\""
             start_dir = f"\"{logged_in_home}/.local/share/Steam/steamapps/compatdata/{ubisoft_connect_launcher}/pfx/drive_c/Program Files (x86)/Ubisoft/Ubisoft Game Launcher/\""
-            create_new_entry(exe_path, game, launch_options, start_dir)
+            create_new_entry(exe_path, game, launch_options, start_dir, launcher_name="Ubisoft Connect")
             track_game(game, "Ubisoft Connect")
 
 # End of Ubisoft Game Scanner
@@ -2065,7 +2105,7 @@ else:
                 exe_path = f'"{logged_in_home}/.local/share/Steam/steamapps/compatdata/{ea_app_launcher}/pfx/drive_c/Program Files/Electronic Arts/EA Desktop/EA Desktop/EALaunchHelper.exe"'
                 start_dir = f'"{logged_in_home}/.local/share/Steam/steamapps/compatdata/{ea_app_launcher}/pfx/drive_c/Program Files/Electronic Arts/EA Desktop/EA Desktop/"'
 
-                create_new_entry(exe_path, game, launch_options, start_dir)
+                create_new_entry(exe_path, game, launch_options, start_dir, launcher_name="EA App")
                 track_game(game, "EA App")
         except Exception as e:
             print(f"Error scanning EA App games: {e}")
@@ -2169,7 +2209,7 @@ else:
             start_dir = f"\"{logged_in_home}/.local/share/Steam/steamapps/compatdata/{gog_galaxy_launcher}/pfx/drive_c/Program Files (x86)/GOG Galaxy/\""
 
             # Create the new entry
-            create_new_entry(exe_path, game, launch_options, start_dir)
+            create_new_entry(exe_path, game, launch_options, start_dir, launcher_name="GOG Galaxy")
             track_game(game, "GOG Galaxy")
 
 # End of Gog Galaxy Scanner
@@ -2304,7 +2344,7 @@ if game_dict:
         launch_options = f'STEAM_COMPAT_DATA_PATH="{logged_in_home}/.local/share/Steam/steamapps/compatdata/{bnet_launcher}" %command% --exec="launch {matched_key}" battlenet://{matched_key}'
 
         print(f"Creating new entry for {game_name} with exe_path: {exe_path}")
-        create_new_entry(exe_path, game_name, launch_options, start_dir)
+        create_new_entry(exe_path, game_name, launch_options, start_dir, launcher_name="Battle.net")
         track_game(game_name, "Battle.net")
 
 print("Battle.net Games Scanner completed.")
@@ -2357,7 +2397,7 @@ if amazon_games:
         exe_path = f"\"{logged_in_home}/.local/share/Steam/steamapps/compatdata/{amazon_launcher}/pfx/drive_c/users/steamuser/AppData/Local/Amazon Games/App/Amazon Games.exe\""
         start_dir = f"\"{logged_in_home}/.local/share/Steam/steamapps/compatdata/{amazon_launcher}/pfx/drive_c/users/steamuser/AppData/Local/Amazon Games/App/\""
         launch_options = f"STEAM_COMPAT_DATA_PATH=\"{logged_in_home}/.local/share/Steam/steamapps/compatdata/{amazon_launcher}/\" %command% -'amazon-games://play/{game['id']}'"
-        create_new_entry(exe_path, display_name, launch_options, start_dir)
+        create_new_entry(exe_path, display_name, launch_options, start_dir, launcher_name="Amazon Games")
         track_game(display_name, "Amazon Games")
 
 
@@ -2432,7 +2472,7 @@ else:
         launchoptions = f"STEAM_COMPAT_DATA_PATH=\"{logged_in_home}/.local/share/Steam/steamapps/compatdata/{itchio_launcher}/\" %command%"
 
         # Call the provided function to create a new entry for the game
-        create_new_entry(exe_path, game_title, launchoptions, start_dir)
+        create_new_entry(exe_path, game_title, launchoptions, start_dir, launcher_name="itch.io")
         track_game(game_title, "itch.io")
 
     # Close the database connection
@@ -2480,7 +2520,7 @@ else:
                 print(f"GameExe found in user.reg: {game_exe_reg.group(1)}")
                 start_dir = f"{legacy_dir}{game_dir}"
                 launch_options = f"STEAM_COMPAT_DATA_PATH=\"{logged_in_home}/.local/share/Steam/steamapps/compatdata/{legacy_launcher}\" %command%"
-                create_new_entry(f'"{exe_path}"', game_name, launch_options, f'"{start_dir}"')
+                create_new_entry(f'"{exe_path}"', game_name, launch_options, f'"{start_dir}"', launcher_name="Legacy Games")
                 track_game(game_name, "Legacy Games")
             else:
                 print(f"No matching .exe file found for game: {game_dir}")
@@ -2636,7 +2676,7 @@ else:
                 exe_path = f"\"{logged_in_home}/.local/share/Steam/steamapps/compatdata/{vkplay_launcher}/pfx/drive_c/users/steamuser/AppData/Local/GameCenter/GameCenter.exe\""
                 start_dir = f"\"{logged_in_home}/.local/share/Steam/steamapps/compatdata/{vkplay_launcher}/pfx/drive_c/users/steamuser/AppData/Local/GameCenter/\""
 
-                create_new_entry(exe_path, display_name, launch_options, start_dir)
+                create_new_entry(exe_path, display_name, launch_options, start_dir, launcher_name="VK Play")
                 track_game(display_name, "VK Play")
 
 # End of VK Play Scanner
@@ -2705,7 +2745,7 @@ else:
             if not details["install_path"] and not details["persistent_path"]:
                 continue
 
-            create_new_entry(exe_path, display_name, launch_options, start_dir)
+            create_new_entry(exe_path, display_name, launch_options, start_dir, launcher_name="HoYoPlay")
             track_game(display_name, "HoYoPlay")
 
 # End of HoYo Play Scanner
@@ -2772,7 +2812,7 @@ else:
                 start_dir = f"\"{logged_in_home}/.local/share/Steam/steamapps/compatdata/{gamejolt_launcher}/pfx/drive_c/users/steamuser/AppData/Local/GameJoltClient\""
 
                 # Create the new entry (this is where you can use your custom function for Steam shortcuts)
-                create_new_entry(exe_path, display_name, launch_options, start_dir)
+                create_new_entry(exe_path, display_name, launch_options, start_dir, launcher_name="Game Jolt")
                 track_game(display_name, "Game Jolt")
 
         else:
@@ -2835,7 +2875,7 @@ if os.path.exists(file_path):
 
 
                 # Create the new entry (this is where you can use your custom function for Steam shortcuts)
-                create_new_entry(exe_path, display_name, launch_options, start_dir)
+                create_new_entry(exe_path, display_name, launch_options, start_dir, launcher_name="Minecraft Launcher")
                 track_game(display_name, "Minecraft Launcher")
 
             else:
@@ -2943,7 +2983,7 @@ else:
 
         start_dir = os.path.dirname(game_path)
         launchoptions = f'STEAM_COMPAT_DATA_PATH="{logged_in_home}/.local/share/Steam/steamapps/compatdata/{indie_launcher}/" %command%'
-        create_new_entry(f"\"{game_path}\"", game_name, launchoptions, f"\"{start_dir}\"")
+        create_new_entry(f"\"{game_path}\"", game_name, launchoptions, f"\"{start_dir}\"", launcher_name="IndieGala Client")
         track_game(game_name, "IndieGala Client")
 #End of IndieGala Scanner
 
@@ -3031,6 +3071,7 @@ else:
             game_name,
             chromelaunch_options,
             chrome_startdir,
+            launcher_name="Google Chrome"
         )
         track_game(game_name, "Google Chrome")
 
@@ -3098,7 +3139,8 @@ else:
                     shortcutdirectory=f'"{exe_path}"',
                     appname=display_name,
                     launchoptions=f'"{app_name}"',
-                    startingdir=start_dir
+                    startingdir=start_dir,
+                    launcher_name="Waydroid"
                 )
                 track_game(display_name, "Waydroid")
 
@@ -3109,8 +3151,8 @@ else:
 #end of waydroid scanner
 
 
-#Geforce Now Flatpak Scanner
-import subprocess
+
+
 
 # Geforce Now Flatpak Scanner
 
@@ -3190,7 +3232,8 @@ else:
                             shortcutdirectory=f'"{stove_launcher_path}"',
                             appname=game_title,
                             launchoptions=launch_options,
-                            startingdir=f'"{os.path.dirname(stove_launcher_path)}"'
+                            startingdir=f'"{os.path.dirname(stove_launcher_path)}"',
+                            launcher_name="STOVE Client"
                         )
                         track_game(game_title, "STOVE Client")
 
@@ -3257,7 +3300,7 @@ else:
             launch_options = f'STEAM_COMPAT_DATA_PATH="{proton_prefix}" %command%'
 
             # Your shortcut creation function (should be defined elsewhere)
-            create_new_entry(f'"{linux_exe_path}"', game_name, launch_options, f'"{start_dir}"')
+            create_new_entry(f'"{linux_exe_path}"', game_name, launch_options, f'"{start_dir}"', launcher_name="Humble Bundle")
             track_game(game_name, "Humble Bundle")
 
 # End of Humble Scanner
