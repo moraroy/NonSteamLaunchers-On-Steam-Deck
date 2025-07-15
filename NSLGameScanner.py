@@ -153,16 +153,18 @@ custom_websites = websites_str.split(', ') if websites_str else []
 
 
 
-# Define the parent folder
-parent_folder = f"{logged_in_home}/.config/systemd/user/Modules"
-sys.path.insert(0, os.path.expanduser(f"{logged_in_home}/.config/systemd/user/Modules"))
+# Fix sys.path insertion to avoid duplicates
+parent_folder = os.path.expanduser(f"{logged_in_home}/.config/systemd/user/Modules")
+
+if parent_folder not in sys.path:
+    sys.path.insert(0, parent_folder)
+
 print(sys.path)
-# Now that the requests module has been downloaded, you can import it
-sys.path.insert(0, parent_folder)
+
+# Now import your modules after the single insert
 import requests
 import vdf
 from steamgrid import SteamGridDB
-print(sys.path)
 
 
 
@@ -807,8 +809,8 @@ def check_if_shortcut_exists(display_name, exe_path, start_dir, launch_options):
 
 
 # Start of Refactoring code from the .sh file
-sys.path.insert(0, os.path.expanduser(f"{logged_in_home}/Downloads/NonSteamLaunchersInstallation/lib/python{python_version}/site-packages"))
-print(sys.path)
+#sys.path.insert(0, os.path.expanduser(f"{logged_in_home}/Downloads/NonSteamLaunchersInstallation/lib/python{python_version}/site-packages"))
+#print(sys.path)
 
 track_game, finalize_tracking = scan_and_track_games(logged_in_home, steamid3)
 
