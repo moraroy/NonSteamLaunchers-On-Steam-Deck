@@ -871,10 +871,10 @@ function update_umu_launcher() {
 CheckInstallations
 CheckInstallationDirectory
 
-rm -rf "${logged_in_home}/.config/systemd/user/nslgamescanner.service"
-unlink "${logged_in_home}/.config/systemd/user/default.target.wants/nslgamescanner.service"
-systemctl --user daemon-reload
-systemctl --user reset-failed
+#rm -rf "${logged_in_home}/.config/systemd/user/nslgamescanner.service"
+#unlink "${logged_in_home}/.config/systemd/user/default.target.wants/nslgamescanner.service"
+#systemctl --user daemon-reload
+#systemctl --user reset-failed
 
 # Define launcher entries
 launcher_entries=(
@@ -4060,38 +4060,10 @@ rm -rf "$download_dir"
 
 
 
-# Check if either directory does not exist
-if [ "${deckyplugin}" = false ]; then
-    # Function to display a Zenity message
-    show_message() {
-        zenity --notification --text="$1" --timeout=1
-    }
 
-    show_message "Activating Scanner..."
-
-    # Setup NSLGameScanner.service
-    python_script_path="${logged_in_home}/.config/systemd/user/NSLGameScanner.py"
-    # Define your GitHub link
-    github_link="https://raw.githubusercontent.com/moraroy/NonSteamLaunchers-On-Steam-Deck/main/NSLGameScanner.py"
-
-    # Check if the service is already running
-    service_status=$(systemctl --user is-active nslgamescanner.service)
-    if [ "$service_status" = "active" ] || [ "$service_status" = "activating" ]; then
-        echo "Service is already running or activating. Stopping the service..."
-        systemctl --user stop nslgamescanner.service
-    fi
-
-    echo "Updating Python script from GitHub..."
-    curl -o $python_script_path $github_link
-
-    echo "Starting the service..."
-    python3 $python_script_path
-
-
-fi
 
 show_message "Waiting to detect plugin..."
-sleep 20
+
 
 
 
