@@ -1372,8 +1372,8 @@ def create_new_entry(shortcutdirectory, appname, launchoptions, startingdir, lau
 
 
     # Add the new entry to the shortcuts dictionary and add proton
-    key = get_next_available_key(shortcuts)
-    shortcuts['shortcuts'][key] = new_entry
+    #key = get_next_available_key(shortcuts)
+    #shortcuts['shortcuts'][key] = new_entry
     print(f"Added new entry for {appname} to shortcuts.")
     new_shortcuts_added = True
     created_shortcuts.append(appname)
