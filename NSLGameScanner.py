@@ -2832,8 +2832,8 @@ else:
                 start_dir = f"\"{logged_in_home}/.local/share/Steam/steamapps/compatdata/{gamejolt_launcher}/pfx/drive_c/users/steamuser/AppData/Local/GameJoltClient\""
 
                 # Create the new entry (this is where you can use your custom function for Steam shortcuts)
-                create_new_entry(exe_path, display_name, launch_options, start_dir, launcher_name="Game Jolt")
-                track_game(display_name, "Game Jolt")
+                create_new_entry(exe_path, display_name, launch_options, start_dir, launcher_name="Game Jolt Client")
+                track_game(display_name, "Game Jolt Client")
 
         else:
             print("'objects' key not found in the games data.")
