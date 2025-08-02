@@ -3427,7 +3427,7 @@ else:
                 )
                 print(f"Creating shortcut for: {display_name}")
                 create_new_entry(exe_path, display_name, launch_options, start_dir, "NVIDIA GeForce NOW")
-                track_game(display_name, "NVIDIA GeForce NOW")
+                #track_game(display_name, "NVIDIA GeForce NOW")
             else:
                 print(f"Missing cmsId for favorite game: {fav.get('fullGameName') or fav.get('shortName')}")
 #End NVIDIA GeForce NOW Game Scanner
