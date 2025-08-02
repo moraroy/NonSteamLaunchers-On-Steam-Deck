@@ -3187,7 +3187,6 @@ flatpak_apps = [
     }
 ]
 
-
 exe_path = "/usr/bin/flatpak"
 start_dir = "/usr/bin"
 
@@ -3211,16 +3210,21 @@ for app in flatpak_apps:
         print(f"Skipping {display_name} scanner — Flatpak not found or app not installed.")
         continue
 
-    app_name = f"run {app_id}"
+    # Custom launch options for Moonlight
+    if app_id == "com.moonlight_stream.Moonlight":
+        app_launch_options = '"run" "--branch=stable" "--arch=x86_64" "--command=moonlight" "com.moonlight_stream.Moonlight"'
+    else:
+        app_launch_options = f"run {app_id}"
 
     create_new_entry(
         shortcutdirectory=f'"{exe_path}"',
         appname=display_name,
-        launchoptions=app_name,
+        launchoptions=app_launch_options,
         startingdir=f'"{start_dir}"'
     )
 
-#End of Flatpak Scanner
+# End of Flatpak Scanner
+
 
 
 
