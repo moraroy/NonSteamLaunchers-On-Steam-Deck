@@ -1656,13 +1656,13 @@ create_new_entry(os.environ.get('chromedirectory'), 'Twitch', os.environ.get('tw
 create_new_entry(os.environ.get('chromedirectory'), 'Venge', os.environ.get('vengechromelaunchoptions'), os.environ.get('chrome_startdir'))
 create_new_entry(os.environ.get('chromedirectory'), 'Rocketcrab', os.environ.get('rocketcrabchromelaunchoptions'), os.environ.get('chrome_startdir'))
 create_new_entry(os.environ.get('chromedirectory'), 'Fortnite', os.environ.get('fortnitechromelaunchoptions'), os.environ.get('chrome_startdir'))
+create_new_entry(os.environ.get('chromedirectory'), 'Cloudy Pad', os.environ.get('cloudychromelaunchoptions'), os.environ.get('chrome_startdir'))
 create_new_entry(os.environ.get('chromedirectory'), 'WebRcade', os.environ.get('webrcadechromelaunchoptions'), os.environ.get('chrome_startdir'))
 create_new_entry(os.environ.get('chromedirectory'), 'WebRcade Editor', os.environ.get('webrcadeeditchromelaunchoptions'), os.environ.get('chrome_startdir'))
 create_new_entry(os.environ.get('chromedirectory'), 'Afterplay.io', os.environ.get('afterplayiochromelaunchoptions'), os.environ.get('chrome_startdir'))
 create_new_entry(os.environ.get('chromedirectory'), 'OnePlay', os.environ.get('oneplaychromelaunchoptions'), os.environ.get('chrome_startdir'))
 create_new_entry(os.environ.get('chromedirectory'), 'AirGPU', os.environ.get('airgpuchromelaunchoptions'), os.environ.get('chrome_startdir'))
 create_new_entry(os.environ.get('chromedirectory'), 'CloudDeck', os.environ.get('clouddeckchromelaunchoptions'), os.environ.get('chrome_startdir'))
-create_new_entry(os.environ.get('chromedirectory'), 'Cloudy Pad', os.environ.get('cloudychromelaunchoptions'), os.environ.get('chrome_startdir'))
 create_new_entry(os.environ.get('chromedirectory'), 'JioGamesCloud', os.environ.get('jiochromelaunchoptions'), os.environ.get('chrome_startdir'))
 create_new_entry(os.environ.get('chromedirectory'), 'Plex', os.environ.get('plexchromelaunchoptions'), os.environ.get('chrome_startdir'))
 create_new_entry(os.environ.get('chromedirectory'), 'Apple TV+', os.environ.get('applechromelaunchoptions'), os.environ.get('chrome_startdir'))
@@ -3175,29 +3175,43 @@ else:
 
 
 
-# Geforce Now Flatpak Scanner
+#Flatpak Scanner
+flatpak_apps = [
+    {
+        "id": "com.nvidia.geforcenow",
+        "display_name": "NVIDIA GeForce NOW"
+    },
+    {
+        "id": "com.moonlight_stream.Moonlight",
+        "display_name": "Moonlight Game Streaming"
+    }
+]
 
-installed = False
 
-try:
-    subprocess.run(["flatpak", "info", "--user", "com.nvidia.geforcenow"],
-                   check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-    installed = True
-except (subprocess.CalledProcessError, FileNotFoundError):
+exe_path = "/usr/bin/flatpak"
+start_dir = "/usr/bin"
+
+def is_flatpak_installed(app_id):
     try:
-        subprocess.run(["flatpak", "info", "--system", "com.nvidia.geforcenow"],
+        subprocess.run(["flatpak", "info", "--user", app_id],
                        check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-        installed = True
+        return True
     except (subprocess.CalledProcessError, FileNotFoundError):
-        pass
+        try:
+            subprocess.run(["flatpak", "info", "--system", app_id],
+                           check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            return True
+        except (subprocess.CalledProcessError, FileNotFoundError):
+            return False
 
-if not installed:
-    print("Skipping NVIDIA GeForce NOW scanner — Flatpak not found or app not installed.")
-else:
-    exe_path = "/usr/bin/flatpak"
-    display_name = "NVIDIA GeForce NOW"
-    app_name = "run com.nvidia.geforcenow"
-    start_dir = "/usr/bin"
+for app in flatpak_apps:
+    app_id = app["id"]
+    display_name = app["display_name"]
+    if not is_flatpak_installed(app_id):
+        print(f"Skipping {display_name} scanner — Flatpak not found or app not installed.")
+        continue
+
+    app_name = f"run {app_id}"
 
     create_new_entry(
         shortcutdirectory=f'"{exe_path}"',
@@ -3206,7 +3220,7 @@ else:
         startingdir=f'"{start_dir}"'
     )
 
-# End of Geforce Now Flatpak Scanner
+#End of Flatpak Scanner
 
 
 
