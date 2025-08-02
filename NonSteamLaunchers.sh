@@ -96,7 +96,7 @@ fi
 exec > >(tee -a "$log_file") 2>&1
 
 # Version number (major.minor)
-version=v4.2.2
+version=v4.2.3
 #NSL Decky Plugin Latest Github Version
 deckyversion=$(curl -s https://raw.githubusercontent.com/moraroy/NonSteamLaunchersDecky/refs/heads/main/package.json | grep -o '"version": "[^"]*' | sed 's/"version": "//')
 
@@ -908,6 +908,7 @@ launcher_entries=(
   "$stove_value|$stove_text"
   "FALSE|RemotePlayWhatever"
   "FALSE|NVIDIA GeForce NOW"
+  "FALSE|Moonlight"
 )
 
 chrome_entries=(
@@ -920,6 +921,7 @@ chrome_entries=(
   "FALSE|Amazon Luna"
   "FALSE|Stim.io"
   "FALSE|Boosteroid Cloud Gaming"
+  "FALSE|Cloudy Pad"
   "FALSE|Rocketcrab"
   "FALSE|WebRcade"
   "FALSE|WebRcade Editor"
@@ -2015,6 +2017,17 @@ process_uninstall_options() {
             killall zenity
         fi
 
+
+        if [[ $uninstall_options == *"Uninstall Moonlight"* ]]; then
+
+            flatpak uninstall -y --force-remove --user com.moonlight_stream.Moonlight
+
+            zenity --info --text="Moonlight has been uninstalled." --width=250 --height=150 &
+            sleep 3
+            killall zenity
+        fi
+
+
         uninstall_launcher "$uninstall_options" "Uplay" "$uplay_path1" "$uplay_path2" "${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/Program Files (x86)/Ubisoft" "${logged_in_home}/.local/share/Steam/steamapps/compatdata/UplayLauncher" "uplay" "ubisoft"
         uninstall_launcher "$uninstall_options" "Battle.net" "$battlenet_path1" "$battlenet_path2" "${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/Program Files (x86)/Battle.net" "${logged_in_home}/.local/share/Steam/steamapps/compatdata/Battle.netLauncher" "battle" "bnet"
         uninstall_launcher "$uninstall_options" "Epic Games" "$epic_games_launcher_path1" "$epic_games_launcher_path2" "${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/Program Files (x86)/Epic Games" "${logged_in_home}/.local/share/Steam/steamapps/compatdata/EpicGamesLauncher" "epic"
@@ -2964,7 +2977,7 @@ echo "99"
 echo "# Checking if Chrome is installed...please wait..."
 
 # Check if user selected any of the options
-if [[ $options == *"Apple TV+"* ]] || [[ $options == *"Plex"* ]] || [[ $options == *"Crunchyroll"* ]] || [[ $options == *"WebRcade"* ]] || [[ $options == *"WebRcade Editor"* ]] || [[ $options == *"Netflix"* ]] || [[ $options == *"Fortnite"* ]] || [[ $options == *"Venge"* ]] || [[ $options == *"Xbox Game Pass"* ]] || [[ $options == *"Better xCloud"* ]] || [[ $options == *"Geforce Now"* ]] || [[ $options == *"Boosteroid Cloud Gaming"* ]] || [[ $options == *"Amazon Luna"* ]] || [[ $options == *"Hulu"* ]] || [[ $options == *"Tubi"* ]] || [[ $options == *"Disney+"* ]] || [[ $options == *"Amazon Prime Video"* ]] || [[ $options == *"Youtube"* ]] || [[ $options == *"Youtube TV"* ]] || [[ $options == *"Twitch"* ]] || [[ $options == *"Stim.io"* ]] || [[ $options == *"WatchParty"* ]] || [[ $options == *"PokéRogue"* ]] || [[ $options == *"Afterplay.io"* ]] || [[ $options == *"OnePlay"* ]] || [[ $options == *"AirGPU"* ]] || [[ $options == *"CloudDeck"* ]] || [[ $options == *"JioGamesCloud"* ]]; then
+if [[ $options == *"Apple TV+"* ]] || [[ $options == *"Plex"* ]] || [[ $options == *"Crunchyroll"* ]] || [[ $options == *"WebRcade"* ]] || [[ $options == *"WebRcade Editor"* ]] || [[ $options == *"Netflix"* ]] || [[ $options == *"Fortnite"* ]] || [[ $options == *"Venge"* ]] || [[ $options == *"Xbox Game Pass"* ]] || [[ $options == *"Better xCloud"* ]] || [[ $options == *"Geforce Now"* ]] || [[ $options == *"Boosteroid Cloud Gaming"* ]] || [[ $options == *"Amazon Luna"* ]] || [[ $options == *"Hulu"* ]] || [[ $options == *"Tubi"* ]] || [[ $options == *"Disney+"* ]] || [[ $options == *"Amazon Prime Video"* ]] || [[ $options == *"Youtube"* ]] || [[ $options == *"Youtube TV"* ]] || [[ $options == *"Twitch"* ]] || [[ $options == *"Stim.io"* ]] || [[ $options == *"WatchParty"* ]] || [[ $options == *"PokéRogue"* ]] || [[ $options == *"Afterplay.io"* ]] || [[ $options == *"OnePlay"* ]] || [[ $options == *"AirGPU"* ]] || [[ $options == *"CloudDeck"* ]] || [[ $options == *"JioGamesCloud"* ]] || [[ $options == *"Cloudy Pad"* ]]; then
 
     # User selected one of the options
     echo "User selected one of the options"
@@ -3016,6 +3029,38 @@ fi
 
 
 echo "99.2"
+echo "# Installing Moonlight...please wait..."
+
+if [[ $options == *"Moonlight"* ]]; then
+    if flatpak info --user com.moonlight_stream.Moonlight &>/dev/null || flatpak info --system com.moonlight_stream.Moonlight &>/dev/null; then
+        echo "Moonlight is already installed (user or system)."
+    else
+        echo "Installing Moonlight Flatpak app (user scope)..."
+        if flatpak install -y --user flathub com.moonlight_stream.Moonlight; then
+            echo "Moonlight installed successfully."
+        else
+            echo "Failed to install Moonlight."
+        fi
+    fi
+fi
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+echo "99.3"
 echo "# Checking if Ludusavi is installed...please wait..."
 
 # AutoInstall Ludusavi
@@ -3441,6 +3486,7 @@ declare -A services=(
     ["Apple TV+"]="apple|https://tv.apple.com"
     ["Stim.io"]="stimio|https://stim.io"
     ["Rocketcrab"]="rocketcrab|https://rocketcrab.com"
+    ["Cloudy Pad"]="cloudy|https://cloudypad.gg"
 )
 
 # Check user selection and call the function for each option
