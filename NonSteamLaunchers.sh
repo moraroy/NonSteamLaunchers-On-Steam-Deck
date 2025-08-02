@@ -908,7 +908,7 @@ launcher_entries=(
   "$stove_value|$stove_text"
   "FALSE|RemotePlayWhatever"
   "FALSE|NVIDIA GeForce NOW"
-  "FALSE|Moonlight"
+  "FALSE|Moonlight Game Streaming"
 )
 
 chrome_entries=(
@@ -2018,11 +2018,11 @@ process_uninstall_options() {
         fi
 
 
-        if [[ $uninstall_options == *"Uninstall Moonlight"* ]]; then
+        if [[ $uninstall_options == *"Uninstall Moonlight Game Streaming"* ]]; then
 
             flatpak uninstall -y --force-remove --user com.moonlight_stream.Moonlight
 
-            zenity --info --text="Moonlight has been uninstalled." --width=250 --height=150 &
+            zenity --info --text="Moonlight Game Streaming has been uninstalled." --width=250 --height=150 &
             sleep 3
             killall zenity
         fi
@@ -2116,6 +2116,7 @@ else
             FALSE "RemotePlayWhatever" \
             FALSE "NVIDIA GeForce NOW" \
             FALSE "STOVE Client" \
+            FALSE "Moonlight Game Streaming" \
         )
         # Convert the returned string to an array
         IFS='|' read -r -a uninstall_options_array <<< "$uninstall_options"
@@ -3029,11 +3030,11 @@ fi
 
 
 echo "99.2"
-echo "# Installing Moonlight...please wait..."
+echo "# Installing Moonlight Game Streaming...please wait..."
 
-if [[ $options == *"Moonlight"* ]]; then
+if [[ $options == *"Moonlight Game Streaming"* ]]; then
     if flatpak info --user com.moonlight_stream.Moonlight &>/dev/null || flatpak info --system com.moonlight_stream.Moonlight &>/dev/null; then
-        echo "Moonlight is already installed (user or system)."
+        echo "Moonlight Game Streaming is already installed (user or system)."
     else
         echo "Installing Moonlight Flatpak app (user scope)..."
         if flatpak install -y --user flathub com.moonlight_stream.Moonlight; then
