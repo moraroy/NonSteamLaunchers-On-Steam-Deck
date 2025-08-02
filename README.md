@@ -272,6 +272,7 @@ Finds Games Automatically
 - Minecraft Launcher 🎮
 - Waydroid Apps 🎮
 - Humble Games Collection 🎮 💾 Full SD Card Support
+- NVIDIA GeForce NOW (Native) - You must "Favorite" the game
 
 ## Chrome Bookmarks
 The scanner will pick these up automatically. But for Geforce Now only, change the name of the bookmark to your actual game name. Or you can press "Play" then Use "Ctrl + D". As long as the game name is in the Bookmark Name.
