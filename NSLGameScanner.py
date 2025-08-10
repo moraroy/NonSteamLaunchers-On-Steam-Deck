@@ -827,7 +827,6 @@ TARGET_TITLE = "SharedJSContext"
 
 
 # Embed the JS code as a string
-
 JS_CODE = """
 function detectImageFormat(base64String) {
   if (base64String.startsWith("iVBORw0KGgo")) return "png";  // PNG
@@ -912,19 +911,24 @@ window.createShortcut = async function(data) {
       if (!collectionStore) {
         console.error("No collection store found.");
       } else {
-        const collectionId = collectionStore.GetCollectionIDByUserTag(tag);
-        const collection = (typeof collectionId === "string")
-          ? collectionStore.GetCollection(collectionId)
-          : collectionStore.NewUnsavedCollection(tag, undefined, []);
+        // Check if collection with this tag already exists:
+        const existingCollectionId = collectionStore.GetCollectionIDByUserTag(tag);
+        let collection;
 
-        if (!collection) {
-          console.error("Could not get or create collection: " + tag);
+        if (existingCollectionId) {
+          collection = collectionStore.GetCollection(existingCollectionId);
+          console.log(`Collection for "${tag}" already exists with ID: ${existingCollectionId}`);
         } else {
-          if (!collectionId) {
+          collection = collectionStore.NewUnsavedCollection(tag, undefined, []);
+          if (collection) {
             await collection.Save();
             console.log("Created new collection: " + tag);
+          } else {
+            console.error("Could not create new collection: " + tag);
           }
+        }
 
+        if (collection) {
           if (!collection.m_setApps.has(appId)) {
             collection.m_setApps.add(appId);
             collection.m_setAddedManually.add(appId);
