@@ -3438,22 +3438,33 @@ else:
                 })
 
         for fav in favorites:
+            display_name = fav['fullGameName'] or fav['shortName']
+            exe_path = '"/usr/bin/flatpak"'
+            start_dir = '"/usr/bin/"'
+
             if fav["cmsId"]:
-                display_name = fav['fullGameName'] or fav['shortName']
-                exe_path = '"/usr/bin/flatpak"'
-                start_dir = '"/usr/bin/"'
-                launch_options = (
-                    f"run --command=sh com.nvidia.geforcenow -c "
-                    f"\"/app/cef/GeForceNOW --url-route='#?cmsId={fav['cmsId']}"
+                url_route = (
+                    f"#?cmsId={fav['cmsId']}"
                     f"&launchSource=External&shortName={fav['shortName']}"
-                    f"&parentGameId={fav['parentGameId']}'\""
+                    f"&parentGameId={fav['parentGameId']}"
                 )
-                print(f"Creating shortcut for: {display_name}")
-                create_new_entry(exe_path, display_name, launch_options, start_dir, "NVIDIA GeForce NOW")
-                #track_game(display_name, "NVIDIA GeForce NOW")
             else:
-                print(f"Missing cmsId for favorite game: {fav.get('fullGameName') or fav.get('shortName')}")
+                print(f"Missing cmsId for favorite game: {display_name}")
+                url_route = (
+                    f"#?launchSource=External&shortName={fav['shortName']}"
+                    f"&parentGameId={fav['parentGameId']}"
+                )
+
+            launch_options = (
+                f"run --command=sh com.nvidia.geforcenow -c "
+                f"\"/app/cef/GeForceNOW --url-route='{url_route}'\""
+            )
+
+            print(f"Creating shortcut for: {display_name}")
+            create_new_entry(exe_path, display_name, launch_options, start_dir, "NVIDIA GeForce NOW")
+            #track_game(display_name, "NVIDIA GeForce NOW")
 #End NVIDIA GeForce NOW Game Scanner
+
 
 
 
