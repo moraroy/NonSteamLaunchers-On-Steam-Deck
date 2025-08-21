@@ -1,0 +1,87 @@
+# Fix without reporting on leftover violations
+fix-only = true
+
+# Enumerate all fixed violations
+show-fixes = true
+
+# Indent width (default: 4)
+indent-width = 4
+
+# Black (default: 88)
+line-length = 130
+
+# Exclude a variety of commonly ignored directories.
+exclude = [
+    ".bzr",
+    ".direnv",
+    "dist",
+    ".eggs",
+    ".git",
+    ".git-rewrite",
+    ".hg",
+    ".mypy_cache",
+    ".nox",
+    ".pants.d",
+    "__pycache__",
+    ".pytype",
+    ".ruff_cache",
+    ".svn",
+    ".tox",
+    ".venv",
+    "__pypackages__",
+    "_build",
+    "buck-out",
+    "build",
+    "dist",
+    "node_modules",
+    "venv",
+]
+
+# Assume Python 3.13
+target-version = "py313"
+
+[format]
+# Use spaces instead of tabs
+indent-style = "space"
+
+# Use `\n` line endings for all files
+line-ending = "lf"
+
+# Set quote style for strings
+quote-style = "preserve"
+
+[lint]
+select = [
+    # pycodestyle
+    "E",
+    # Pyflakes
+    "F",
+    # pyupgrade
+    "UP",
+    # flake8-bugbear
+    "B",
+    # flake8-simplify
+    "SIM",
+    # isort
+    "I",
+]
+ignore = ["D203", "E203", "E251", "E266", "E401", "E402", "E501", "F401", "F403", "F841"]
+
+# Allow unused variables when underscore-prefixed.
+dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
+
+# Allow autofix for all enabled rules (when `--fix`) is provided.
+fixable = ["A", "B", "C", "D", "E", "F", "G", "I", "N", "Q", "S", "T", "W", "ANN", "ARG", "BLE", "COM", "DJ", "DTZ", "EM", "ERA", "EXE", "FBT", "ICN", "INP", "ISC", "NPY", "PD", "PGH", "PIE", "PL", "PT", "PTH", "PYI", "RET", "RSE", "RUF", "SIM", "SLF", "TID", "TRY", "UP", "YTT"]
+
+[lint.isort]
+combine-as-imports = true
+from-first = false
+no-sections = true
+order-by-type = true
+
+[lint.flake8-quotes]
+docstring-quotes = "double"
+
+[lint.mccabe]
+# Unlike Flake8, default to a complexity level of 10.
+max-complexity = 10

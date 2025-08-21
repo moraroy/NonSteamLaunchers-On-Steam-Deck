@@ -431,17 +431,13 @@ cz-cli@4.3.0, cz-conventional-changelog@3.3.0
 
 ### Additional tooling
 
-#### TODO
-
-* Add [devbox](https://www.jetpack.io/devbox/) 👌
-
+<!-- TODO: swap with mise -->
 #### asdf
 
 * Install [asdf](https://asdf-vm.com/guide/getting-started.html#_2-download-asdf)
 * Add plugins
     ```bash
     asdf plugin-add python
-    asdf plugin-add poetry https://github.com/asdf-community/asdf-poetry.git
     asdf plugin add nodejs https://github.com/asdf-vm/asdf-nodejs.git
     ```
 * Usage
@@ -457,6 +453,53 @@ cz-cli@4.3.0, cz-conventional-changelog@3.3.0
     # set stable to system python
     asdf global python latest
     ```
+
+#### uv
+
+[uv](https://docs.astral.sh/uv/) is a faster drop-in replacement for `poetry` among other dependency and virtual environment managers written in rust.
+
+Common operations after [installing](https://docs.astral.sh/uv/getting-started/installation/):
+
+```bash
+# create venv w/pinned python version
+uv venv --python ">=3.11,<3.13"
+
+# activate venv
+source .venv/bin/activate
+
+# add deps
+uv add redis
+uv add --optional dev ruff
+
+# install optional (extra) deps
+uv pip install -r pyproject.toml --all-extras
+
+# pip freeze
+uv pip freeze > requirements.txt
+```
+
+#### Ruff
+
+[Ruff](https://docs.astral.sh/ruff/) is a linter and formatter compatible with various other tools like black, flake8, isort, etc. Like [uv](#uv), it's by Astral and written in rust.
+
+Install is handled by `uv`. These are a few of my favorite things 🎵:
+
+```bash
+# run linter
+ruff check .
+
+# formatter
+ruff format .
+
+# run tests
+ruff
+
+# run tests with coverage
+ruff --coverage
+
+# run tests with coverage and open in browser
+ruff --coverage --open
+```
 
 #### shellcheck
 
