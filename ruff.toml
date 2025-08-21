@@ -37,8 +37,8 @@ exclude = [
     "venv",
 ]
 
-# Assume Python 3.13
-target-version = "py313"
+# Assume Python 3.12
+target-version = "py312"
 
 [format]
 # Use spaces instead of tabs
