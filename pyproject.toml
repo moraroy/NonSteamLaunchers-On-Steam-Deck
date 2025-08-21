@@ -23,7 +23,6 @@ dev = [
     "hypothesis[cli]>=6.88.4,<7",
     "icecream>=2.1.3,<3",
     "ipython>=9.0.2,<10",
-    "poetry-plugin-export>=1.6.0,<2",
     "pytest>=8.0.2,<9",
     "pytest-asyncio>=1.0.0,<2",
     "pytest-cov>=6.0.0,<7",
