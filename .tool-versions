@@ -1,3 +1,2 @@
-python 3.11.6
-poetry 1.7.1
-nodejs 21.4.0
+python 3.11.13
+uv     0.8.8

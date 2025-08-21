@@ -402,28 +402,25 @@ To reduce some of the non-essential tooling, it's been removed from the repo, bu
 
 ### Additional tooling
 
-<!-- TODO: swap with mise -->
-#### asdf
+#### mise
 
-* Install [asdf](https://asdf-vm.com/guide/getting-started.html#_2-download-asdf)
-* Add plugins
-    ```bash
-    asdf plugin-add python
-    asdf plugin add nodejs https://github.com/asdf-vm/asdf-nodejs.git
-    ```
+* Install [mise](https://mise.jdx.dev/getting-started.html)
+  * `curl https://mise.run | sh`
 * Usage
-  * Install local plugins in repo
-    ```bash
-    asdf install
-    ```
-  * Install specific plugins
-    ```bash
-    # install stable python
-    asdf install python <latest|3.11.4>
 
-    # set stable to system python
-    asdf global python latest
-    ```
+```bash
+# Install tools from repo
+mise install
+
+# List tools
+mise list uv
+
+# Install specific plugins
+mise use uv 0.8.8
+
+# set stable to system python
+mise use -g python
+```
 
 #### uv
 
