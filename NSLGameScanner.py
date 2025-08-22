@@ -2261,6 +2261,8 @@ flavor_mapping = {
     "WLBY": "Crash Bandicoot 4: It's About Time",
     "Aqua": "Avowed",
     "LBRA": "Tony Hawk's Pro Skater 3 + 4",
+    "SCOR": "Sea of Thieves",
+
 
 
 
@@ -2342,6 +2344,19 @@ if game_dict:
         elif game_key == "lbra":
             print("Handling 'lbra' as 'LBRA'")
             game_key = "LBRA"
+
+
+
+        
+        elif game_key == "seaofthieves":
+            print("Handling 'seaofthieves' as 'SCOR'")
+            game_key = "SCOR"
+        elif game_key == "sot":
+            print("Handling 'sot' as 'SCOR'")
+            game_key = "SCOR"
+        elif game_key == "scor":
+            game_key = "SCOR"
+
 
         game_name = flavor_mapping.get(game_key, "unknown")
 
