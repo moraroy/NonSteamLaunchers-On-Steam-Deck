@@ -283,7 +283,7 @@ The scanner will pick these up automatically. But for Geforce Now only, change t
 - GeForce Now
 - Amazon Luna
 
-To stop the NSLGameScanner.service, open up NSL and hit "Stop NSLGameScanner" it will then ask you if you want to restart it, click no, and that's it.
+To stop the NSLGameScanner.service, open up NSL and hit "🔍" it will then ask you if you want to restart it, click no, and that's it.
 
 
 
