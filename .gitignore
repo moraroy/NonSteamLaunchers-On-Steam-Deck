@@ -1,5 +1,7 @@
 # ETC
 *.out
+.serena/
+CLAUDE.md
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
@@ -292,3 +294,8 @@ dist
 .yarn/build-state.yml
 .yarn/install-state.gz
 .pnp.*
+
+# INCLUDE
+!**/.gitkeep
+!**/*.example
+!**/AGENTS.md
