@@ -180,7 +180,7 @@ Description=NSL Game Scanner
 [Service]
 ExecStart=/usr/bin/python3 '{logged_in_home}/.config/systemd/user/NSLGameScanner.py'
 Restart=always
-RestartSec=10
+RestartSec=300
 StartLimitBurst=40
 StartLimitInterval=240
 
