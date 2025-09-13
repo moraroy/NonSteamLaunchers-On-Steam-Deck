@@ -870,14 +870,31 @@ window.createShortcut = async function(data) {
     await SteamClient.Apps.SetAppLaunchOptions(shortcutId, data.LaunchOptions || "");
     console.log("Shortcut properties updated.");
 
+    // Set "Sort As" title to match the collection name (if present)
+    if (data.Launcher && typeof data.Launcher === "string" && data.Launcher.trim().length > 0) {
+    await SteamClient.Apps.SetShortcutSortAs(shortcutId, data.Launcher.trim());
+    console.log("Sort As title set to:", data.Launcher.trim());
+    }
+
+
+
+    if (data.Launcher && typeof data.Launcher === "string" && data.Launcher.trim().length > 0) {
+      await SteamClient.Apps.SetShortcutSortAs(shortcutId, data.Launcher.trim());
+      console.log("Sort As title set to:", data.Launcher.trim());
+    }
+
+
     if (data.CompatTool && data.CompatTool.trim() !== "") {
+      const compatTool = data.CompatTool.trim();
       const availableTools = await SteamClient.Apps.GetAvailableCompatTools(shortcutId);
-      const toolExists = availableTools.some(tool => tool.strToolName === data.CompatTool);
+      const toolExists = availableTools.some(tool => tool.strToolName === compatTool);
+
       if (toolExists) {
-        await SteamClient.Apps.SpecifyCompatTool(shortcutId, data.CompatTool);
-        console.log("Compat tool set to " + data.CompatTool);
+        await SteamClient.Apps.SpecifyCompatTool(shortcutId, compatTool);
+        console.log("Compat tool set to " + compatTool);
       } else {
-        console.log("Compat tool " + data.CompatTool + " not found.");
+        console.warn(`Compat tool '${compatTool}' not found. Falling back to 'proton_experimental'.`);
+        await SteamClient.Apps.SpecifyCompatTool(shortcutId, 'proton_experimental');
       }
     }
 
