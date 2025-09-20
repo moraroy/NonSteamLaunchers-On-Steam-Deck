@@ -1216,6 +1216,94 @@ def inject_and_create_shortcut(ws_socket, shortcut_data):
 
 
 
+###For Uninstall Notifications only
+def send_steam_notification(ws_socket, message_text):
+    notify_id = next(eval_id_counter)
+
+    js_notify = f"""
+    (function() {{
+        if (window.SteamClient && SteamClient.ClientNotifications) {{
+            const payload = {{
+                rawbody: {json.dumps(message_text)},
+                state: "ingame"
+            }};
+            const jsonStr = JSON.stringify(payload);
+            SteamClient.ClientNotifications.DisplayClientNotification(3, jsonStr, function(arg) {{
+                console.log("Notification callback", arg);
+            }});
+            return true;
+        }} else {{
+            console.warn("SteamClient.ClientNotifications not available");
+            return false;
+        }}
+    }})()
+    """
+
+    send_ws_text(ws_socket, json.dumps({
+        "id": notify_id,
+        "method": "Runtime.evaluate",
+        "params": {
+            "expression": js_notify,
+            "awaitPromise": False,
+            "returnByValue": True
+        }
+    }))
+
+    # Optional: wait for a response if needed
+    result = recv_ws_message_for_id(ws_socket, notify_id)
+    return result
+
+
+def inject_js_only(ws_socket):
+    try:
+        enable_id = next(eval_id_counter)
+        inject_check_id = next(eval_id_counter)
+
+        # Enable Runtime domain
+        send_ws_text(ws_socket, json.dumps({
+            "id": enable_id,
+            "method": "Runtime.enable"
+        }))
+        recv_ws_message_for_id(ws_socket, enable_id)
+
+        # Check if JS is already injected
+        send_ws_text(ws_socket, json.dumps({
+            "id": inject_check_id,
+            "method": "Runtime.evaluate",
+            "params": {
+                "expression": "window.__injectedSteamMod === true",
+                "returnByValue": True
+            }
+        }))
+        injected_check = recv_ws_message_for_id(ws_socket, inject_check_id)
+        already_injected = injected_check.get("result", {}).get("result", {}).get("value") is True
+
+        if not already_injected:
+            print("Re-injecting Steam JS...")
+            inject_id = next(eval_id_counter)
+            wrapped_code = f"(async () => {{ {JS_CODE}; window.__injectedSteamMod = true; return 'Injected'; }})()"
+            send_ws_text(ws_socket, json.dumps({
+                "id": inject_id,
+                "method": "Runtime.evaluate",
+                "params": {
+                    "expression": wrapped_code,
+                    "awaitPromise": True,
+                }
+            }))
+            result = recv_ws_message_for_id(ws_socket, inject_id)
+            print("Injection result:", result)
+        else:
+            print("JS already injected. No re-injection needed.")
+
+    except Exception as e:
+        print("Injection failed:", e)
+###End of Uninstall Notifcations
+
+
+
+
+
+
 # Create an empty dictionary to store the app IDs
 app_ids = {}
 
@@ -3520,16 +3608,6 @@ skip_games = {'Epic Games', 'GOG Galaxy', 'Ubisoft Connect', 'Battle.net', 'EA A
     'Plex', 'Apple TV+', 'Crunchyroll', 'PokéRogue', 'NonSteamLaunchers', 'Repair EA App'}
 
 
-# Function to send a notification with an optional icon
-def send_notification(message, icon_path=None, expire_time=5000):
-    """Send a notification with the message and optional icon."""
-    if icon_path and os.path.exists(icon_path):
-        subprocess.run(['notify-send', '-a', 'NonSteamLaunchers', message, '--icon', icon_path, f'--expire-time={expire_time}'])
-        subprocess.Popen(["paplay", "/usr/share/sounds/freedesktop/stereo/bell.oga"])
-    else:
-        subprocess.run(['notify-send', '-a', 'NonSteamLaunchers', message, f'--expire-time={expire_time}'])
-        subprocess.Popen(["paplay", "/usr/share/sounds/freedesktop/stereo/bell.oga"])
-
 
 
 # --- Game Descriptions Update Logic ---
@@ -3751,44 +3829,24 @@ def get_boot_video(game_name, logged_in_home):
 # --- End of Boot Video Logic ---
 
 
-
 # --- Main block (MUST remain untouched) ---
 if new_shortcuts_added or shortcuts_updated:
-    #print("Saving new config and shortcuts files")
-    #conf = vdf.dumps(config_data, pretty=True)
-    #try:
-        #with open(f"{logged_in_home}/.steam/root/config/config.vdf", 'w') as file:
-            #file.write(conf)
-    #except IOError as e:
-        #print(f"Error writing to config.vdf: {e}")
-    #try:
-        #with open(f"{logged_in_home}/.steam/root/userdata/{steamid3}/config/shortcuts.vdf", 'wb') as file:
-            #file.write(vdf.binary_dumps(shortcuts))
-    #except IOError as e:
-        #print(f"Error writing to shortcuts.vdf: {e}")
 
     # --- Additional Logic ---
     notified_games = set()
     if created_shortcuts:
         print("Created Shortcuts:")
 
-        # Process each newly created shortcut individually
         for name in created_shortcuts:
             print(name)
 
-            # Only fetch boot videos for games that aren't in the excluded list
             if name.lower() not in [app.lower() for app in skip_games]:
                 print(f"Fetching boot video for: {name}")
                 get_boot_video(name, logged_in_home)
 
-            # Update game details for this shortcut
             update_game_details([name], logged_in_home, skip_games)
 
-        notifications = []
-        num_notifications = len(created_shortcuts)
-
-        # Send notifications for the new shortcuts
-        for i, name in enumerate(created_shortcuts):
+        for name in created_shortcuts:
             if name in notified_games:
                 continue
 
@@ -3798,23 +3856,13 @@ if new_shortcuts_added or shortcuts_updated:
             )
 
             if shortcut_entry:
-                icon_path = shortcut_entry.get('icon')
                 message = f"A new game has been added to your library! {name}"
 
-                #Set the expire_time based on the number of notifications
-                if num_notifications <= 4:
-                    expire_time = 5000  # 5 seconds for small batches
-                else:
-                    expire_time = max(1000, 1000 + (i * 200))  # Gradient for larger batches
-
-                #notifications.append((message, icon_path, expire_time))
-                #notified_games.add(name)
+                # send_steam_notification(ws_socket, message)
+                notified_games.add(name)
+                time.sleep(0.1)  # Stagger notifications
             else:
                 print(f"Warning: Game '{name}' not found in shortcuts dictionary.")
-
-        for message, icon_path, expire_time in notifications:
-            send_notification(message, icon_path, expire_time)
-            time.sleep(0.1)
 
         print("All finished, Scanner was successful!")
 else:
@@ -3827,5 +3875,16 @@ if removed_apps:
     for launcher, apps in removed_apps.items():
         removed_game_names.extend([f"{app} ({launcher})" for app in apps])
 
-    removed_message = "Game(s) removed from library:\n" + "\n".join(removed_game_names)
-    send_notification(removed_message, icon_path=None, expire_time=7000)
+    removed_message = "Removed from library:\n" + "\n".join(removed_game_names)
+
+    try:
+        # Only connect & inject JS if a game was actually removed
+        ws_url = get_ws_url_by_title(WS_HOST, WS_PORT, TARGET_TITLE)
+        ws_socket = create_websocket_connection(ws_url)
+        inject_js_only(ws_socket)
+
+        send_steam_notification(ws_socket, removed_message)
+    except Exception as e:
+        print("Failed to send removal notification:", e)
+    finally:
+        ws_socket.close()
