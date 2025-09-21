@@ -4,35 +4,32 @@ set -x              # activate debugging (execution shown)
 set -o pipefail     # capture error from pipes
 
 # ENVIRONMENT VARIABLES
-# $USER
+# Get the logged-in user, fallback to whoami if needed
 logged_in_user=$(logname 2>/dev/null || whoami)
 
 # DBUS
-# Add the DBUS_SESSION_BUS_ADDRESS environment variable
+# Add the DBUS_SESSION_BUS_ADDRESS environment variable if missing
 if [[ -z "$DBUS_SESSION_BUS_ADDRESS" ]]; then
-  eval $(dbus-launch --sh-syntax)
-  export DBUS_SESSION_BUS_ADDRESS
+  eval "$(dbus-launch --sh-syntax)"
 fi
 
-
+# Try Zenity notification, fallback if it fails
 if ! zenity --notification --text="NonSteamLaunchers is running tests..." >/dev/null 2>&1; then
-    # If Zenity fails, fallback
     export GSK_RENDERER=cairo
     export GDK_BACKEND=x11
     export LIBGL_ALWAYS_SOFTWARE=1
 fi
 
-export LD_LIBRARY_PATH=$(pwd)
+# Set LD_LIBRARY_PATH to current directory (prepend if you want to keep existing)
+export LD_LIBRARY_PATH="$(pwd):${LD_LIBRARY_PATH:-}"
 
-# $UID
+# Get logged-in user's UID and HOME directory
 logged_in_uid=$(id -u "${logged_in_user}")
-
-# $HOME
 logged_in_home=$(eval echo "~${logged_in_user}")
 
-# Log
-download_dir=$(eval echo ~$user)/Downloads/NonSteamLaunchersInstallation
-log_file=$(eval echo ~$user)/Downloads/NonSteamLaunchers-install.log
+# Setup download directory and log file path
+download_dir="${logged_in_home}/Downloads/NonSteamLaunchersInstallation"
+log_file="${logged_in_home}/Downloads/NonSteamLaunchers-install.log"
 
 
 
