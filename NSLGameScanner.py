@@ -825,8 +825,6 @@ TARGET_TITLE = "SharedJSContext"
 
 
 
-
-# Embed the JS code as a string
 JS_CODE = """
 function detectImageFormat(base64String) {
   if (base64String.startsWith("iVBORw0KGgo")) return "png";  // PNG
@@ -848,17 +846,31 @@ window.createShortcut = async function(data) {
     return { success: false, message: "SteamClient API is unavailable." };
   }
 
-  let shortcutId;  // Declare here to access in catch block
+  let shortcutId;
 
   try {
-    shortcutId = await SteamClient.Apps.AddShortcut(
-      data.appname,
-      data.exe,
-      data.StartDir,
-      data.LaunchOptions || ""
+    // --- Check for existing shortcut ---
+    const allShortcuts = await SteamClient.Apps.GetAllShortcuts();
+    const existing = allShortcuts.find(s =>
+      s.strExe === data.exe &&
+      s.strAppName === data.appname
     );
-    console.log("Shortcut created with ID:", shortcutId);
 
+    if (existing) {
+      shortcutId = existing.nShortcutAppID;
+      console.log("Shortcut already exists. Reusing ID:", shortcutId);
+    } else {
+      // --- Create new shortcut ---
+      shortcutId = await SteamClient.Apps.AddShortcut(
+        data.appname,
+        data.exe,
+        data.StartDir,
+        data.LaunchOptions || ""
+      );
+      console.log("Shortcut created with ID:", shortcutId);
+    }
+
+    // --- Set properties ---
     if (data.icon) {
       await SteamClient.Apps.SetShortcutIcon(shortcutId, data.icon);
       console.log("Icon set successfully!");
@@ -870,20 +882,13 @@ window.createShortcut = async function(data) {
     await SteamClient.Apps.SetAppLaunchOptions(shortcutId, data.LaunchOptions || "");
     console.log("Shortcut properties updated.");
 
-    // Set "Sort As" title to match the collection name (if present)
-    if (data.Launcher && typeof data.Launcher === "string" && data.Launcher.trim().length > 0) {
-    await SteamClient.Apps.SetShortcutSortAs(shortcutId, data.Launcher.trim());
-    console.log("Sort As title set to:", data.Launcher.trim());
-    }
-
-
-
+    // --- Set "Sort As" title ---
     if (data.Launcher && typeof data.Launcher === "string" && data.Launcher.trim().length > 0) {
       await SteamClient.Apps.SetShortcutSortAs(shortcutId, data.Launcher.trim());
       console.log("Sort As title set to:", data.Launcher.trim());
     }
 
-
+    // --- Set Compat Tool ---
     if (data.CompatTool && data.CompatTool.trim() !== "") {
       const compatTool = data.CompatTool.trim();
       const availableTools = await SteamClient.Apps.GetAvailableCompatTools(shortcutId);
@@ -893,11 +898,12 @@ window.createShortcut = async function(data) {
         await SteamClient.Apps.SpecifyCompatTool(shortcutId, compatTool);
         console.log("Compat tool set to " + compatTool);
       } else {
-        console.warn(`Compat tool '${compatTool}' not found. Falling back to 'proton_experimental'.`);
+        console.warn("Compat tool '" + compatTool + "' not found. Falling back to 'proton_experimental'.");
         await SteamClient.Apps.SpecifyCompatTool(shortcutId, 'proton_experimental');
       }
     }
 
+    // --- Set custom artwork ---
     if (data.Hero) {
       const format = detectImageFormat(data.Hero);
       await SteamClient.Apps.SetCustomArtworkForApp(shortcutId, data.Hero, format, 1);
@@ -919,7 +925,7 @@ window.createShortcut = async function(data) {
       console.log("Wide Grid artwork set as " + format);
     }
 
-    // --- Add shortcut to launcher-specific collection ---
+    // --- Add to collection ---
     if (data.Launcher && typeof data.Launcher === "string" && data.Launcher.trim().length > 0) {
       const tag = data.Launcher.trim();
       const appId = shortcutId;
@@ -928,20 +934,19 @@ window.createShortcut = async function(data) {
       if (!collectionStore) {
         console.error("No collection store found.");
       } else {
-        // Check if collection with this tag already exists:
         const existingCollectionId = collectionStore.GetCollectionIDByUserTag(tag);
         let collection;
 
         if (existingCollectionId) {
           collection = collectionStore.GetCollection(existingCollectionId);
-          console.log(`Collection for "${tag}" already exists with ID: ${existingCollectionId}`);
+          console.log("Using existing collection:", tag);
         } else {
           collection = collectionStore.NewUnsavedCollection(tag, undefined, []);
           if (collection) {
             await collection.Save();
-            console.log("Created new collection: " + tag);
+            console.log("Created new collection:", tag);
           } else {
-            console.error("Could not create new collection: " + tag);
+            console.error("Failed to create collection:", tag);
           }
         }
 
@@ -950,9 +955,9 @@ window.createShortcut = async function(data) {
             collection.m_setApps.add(appId);
             collection.m_setAddedManually.add(appId);
             await collection.Save();
-            console.log("Added app " + appId + " to collection: " + tag);
+            console.log("Added app", appId, "to collection:", tag);
           } else {
-            console.log("App " + appId + " already in collection: " + tag);
+            console.log("App already in collection:", tag);
           }
         }
       }
@@ -965,10 +970,9 @@ window.createShortcut = async function(data) {
         rawbody: data.appname + " was added to your library!",
         state: "ingame"
       };
-      const jsonStr = JSON.stringify(notificationPayload);
 
       if (window.SteamClient && SteamClient.ClientNotifications) {
-        SteamClient.ClientNotifications.DisplayClientNotification(3, jsonStr, function(arg) {
+        SteamClient.ClientNotifications.DisplayClientNotification(3, JSON.stringify(notificationPayload), function(arg) {
           console.log("Notification callback", arg);
         });
       } else {
