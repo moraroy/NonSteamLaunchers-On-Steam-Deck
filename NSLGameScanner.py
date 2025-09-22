@@ -825,6 +825,11 @@ TARGET_TITLE = "SharedJSContext"
 
 
 
+# === CONFIGURATION ===
+WS_HOST = "localhost"
+WS_PORT = 8080
+TARGET_TITLE = "SharedJSContext"
+
 JS_CODE = """
 function detectImageFormat(base64String) {
   if (base64String.startsWith("iVBORw0KGgo")) return "png";  // PNG
@@ -833,7 +838,6 @@ function detectImageFormat(base64String) {
   return "png"; // fallback
 }
 
-// Simple delay
 function sleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
@@ -849,26 +853,14 @@ window.createShortcut = async function(data) {
   let shortcutId;
 
   try {
-    // --- Check for existing shortcut ---
-    const allShortcuts = await SteamClient.Apps.GetAllShortcuts();
-    const existing = allShortcuts.find(s =>
-      s.strExe === data.exe &&
-      s.strAppName === data.appname
+    // --- Always create new shortcut ---
+    shortcutId = await SteamClient.Apps.AddShortcut(
+      data.appname,
+      data.exe,
+      data.StartDir,
+      data.LaunchOptions || ""
     );
-
-    if (existing) {
-      shortcutId = existing.nShortcutAppID;
-      console.log("Shortcut already exists. Reusing ID:", shortcutId);
-    } else {
-      // --- Create new shortcut ---
-      shortcutId = await SteamClient.Apps.AddShortcut(
-        data.appname,
-        data.exe,
-        data.StartDir,
-        data.LaunchOptions || ""
-      );
-      console.log("Shortcut created with ID:", shortcutId);
-    }
+    console.log("Shortcut created with ID:", shortcutId);
 
     // --- Set properties ---
     if (data.icon) {
@@ -882,14 +874,14 @@ window.createShortcut = async function(data) {
     await SteamClient.Apps.SetAppLaunchOptions(shortcutId, data.LaunchOptions || "");
     console.log("Shortcut properties updated.");
 
-    // --- Set "Sort As" title ---
-    if (data.Launcher && typeof data.Launcher === "string" && data.Launcher.trim().length > 0) {
+    // --- Set 'Sort As' title ---
+    if (data.Launcher && typeof data.Launcher === "string" && data.Launcher.trim()) {
       await SteamClient.Apps.SetShortcutSortAs(shortcutId, data.Launcher.trim());
       console.log("Sort As title set to:", data.Launcher.trim());
     }
 
-    // --- Set Compat Tool ---
-    if (data.CompatTool && data.CompatTool.trim() !== "") {
+    // --- Set Compatibility Tool ---
+    if (data.CompatTool && data.CompatTool.trim()) {
       const compatTool = data.CompatTool.trim();
       const availableTools = await SteamClient.Apps.GetAvailableCompatTools(shortcutId);
       const toolExists = availableTools.some(tool => tool.strToolName === compatTool);
@@ -904,29 +896,23 @@ window.createShortcut = async function(data) {
     }
 
     // --- Set custom artwork ---
-    if (data.Hero) {
-      const format = detectImageFormat(data.Hero);
-      await SteamClient.Apps.SetCustomArtworkForApp(shortcutId, data.Hero, format, 1);
-      console.log("Hero artwork set as " + format);
-    }
-    if (data.Logo) {
-      const format = detectImageFormat(data.Logo);
-      await SteamClient.Apps.SetCustomArtworkForApp(shortcutId, data.Logo, format, 2);
-      console.log("Logo artwork set as " + format);
-    }
-    if (data.Grid) {
-      const format = detectImageFormat(data.Grid);
-      await SteamClient.Apps.SetCustomArtworkForApp(shortcutId, data.Grid, format, 0);
-      console.log("Grid artwork set as " + format);
-    }
-    if (data.WideGrid) {
-      const format = detectImageFormat(data.WideGrid);
-      await SteamClient.Apps.SetCustomArtworkForApp(shortcutId, data.WideGrid, format, 3);
-      console.log("Wide Grid artwork set as " + format);
+    const artworks = [
+      { key: "Hero", type: 1 },
+      { key: "Logo", type: 2 },
+      { key: "Grid", type: 0 },
+      { key: "WideGrid", type: 3 },
+    ];
+
+    for (const art of artworks) {
+      if (data[art.key]) {
+        const format = detectImageFormat(data[art.key]);
+        await SteamClient.Apps.SetCustomArtworkForApp(shortcutId, data[art.key], format, art.type);
+        console.log(`${art.key} artwork set as ${format}`);
+      }
     }
 
     // --- Add to collection ---
-    if (data.Launcher && typeof data.Launcher === "string" && data.Launcher.trim().length > 0) {
+    if (data.Launcher && typeof data.Launcher === "string" && data.Launcher.trim()) {
       const tag = data.Launcher.trim();
       const appId = shortcutId;
 
@@ -950,15 +936,13 @@ window.createShortcut = async function(data) {
           }
         }
 
-        if (collection) {
-          if (!collection.m_setApps.has(appId)) {
-            collection.m_setApps.add(appId);
-            collection.m_setAddedManually.add(appId);
-            await collection.Save();
-            console.log("Added app", appId, "to collection:", tag);
-          } else {
-            console.log("App already in collection:", tag);
-          }
+        if (collection && !collection.m_setApps.has(appId)) {
+          collection.m_setApps.add(appId);
+          collection.m_setAddedManually.add(appId);
+          await collection.Save();
+          console.log("Added app", appId, "to collection:", tag);
+        } else {
+          console.log("App already in collection or collection creation failed.");
         }
       }
     }
@@ -1000,6 +984,7 @@ window.createShortcut = async function(data) {
   }
 };
 """
+
 
 
 
