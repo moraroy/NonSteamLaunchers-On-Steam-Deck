@@ -1530,6 +1530,7 @@ def create_new_entry(shortcutdirectory, appname, launchoptions, startingdir, lau
     return new_entry
 
 
+
 # UMU-related functions
 umu_processed_shortcuts = {}
 CSV_URL = "https://raw.githubusercontent.com/Open-Wine-Components/umu-database/main/umu-database.csv"
@@ -1539,13 +1540,48 @@ csv_data = []
 
 def fetch_and_parse_csv():
     global csv_data
+
+    # Try local UMU database first
     try:
-        response = requests.get(CSV_URL)
-        response.raise_for_status()  # Raise an HTTPError for bad responses
+        dir_path = f"{logged_in_home}/.steam/root/compatibilitytools.d"
+        pattern = re.compile(r"(UMU|GE)-Proton-(\d+(?:\.\d+)*)(?:-(\d+(?:\.\d+)*))?")
+
+        def parse_version(m):
+            main, sub = m.groups()[1:]
+            return tuple(map(int, (main + '.' + (sub or '0')).split('.')))
+
+        compat_folders = [
+            (parse_version(m), name)
+            for name in os.listdir(dir_path)
+            if (m := pattern.match(name)) and os.path.isdir(os.path.join(dir_path, name))
+        ]
+
+        if not compat_folders:
+            print("No compatible UMU or GE-Proton folders found for local UMU database.")
+        else:
+            latest_folder = max(compat_folders)[1]
+            local_csv_path = os.path.join(
+                dir_path, latest_folder, "protonfixes", "umu-database.csv"
+            )
+
+            with open(local_csv_path, 'r', encoding='utf-8') as f:
+                csv_data = [row for row in csv.DictReader(f.readlines())]
+                print(f"Successfully loaded UMU data from local file: {local_csv_path}")
+                return csv_data
+
+    except Exception as local_e:
+        print(f"Failed to load local UMU database: {local_e}")
+
+    # Fallback to online if local fails
+    try:
+        response = requests.get(CSV_URL, timeout=5)
+        response.raise_for_status()
         csv_data = [row for row in csv.DictReader(response.text.splitlines())]
-        print("Successfully fetched and parsed CSV data.")
+        print("Fetched UMU database from online as fallback.")
     except requests.exceptions.RequestException as e:
-        print(f"Error fetching UMU data: {e}")
+        print(f"Failed to fetch UMU data from the internet: {e}")
+        csv_data = []
+
     return csv_data
 
 def list_all_entries():
