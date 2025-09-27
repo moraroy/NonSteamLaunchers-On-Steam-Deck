@@ -9,7 +9,7 @@ MAIN_PY_PATH="${PLUGIN_DIR}/main.py"
 YTDLP_PATH="${BIN_DIR}/yt-dlp"
 
 MAIN_PY_URL="https://raw.githubusercontent.com/moraroy/SDH-GameThemeMusic/main/main.py"
-YTDLP_URL="https://github.com/yt-dlp/yt-dlp/releases/download/2025.06.09/yt-dlp"
+YTDLP_URL="https://github.com/yt-dlp/yt-dlp/releases/download/2025.09.26/yt-dlp"
 
 switch_to_game_mode() {
   qdbus org.kde.Shutdown /Shutdown org.kde.Shutdown.logout
