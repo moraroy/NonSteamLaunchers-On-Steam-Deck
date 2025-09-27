@@ -2161,6 +2161,8 @@ def get_ea_app_game_info(installed_games, game_directory_path):
                 game_name = game
             if ea_ids:
                 game_dict[game_name] = ea_ids
+            else:
+                print(f"Skipping '{game_name}' - no OfferID found in installerdata.xml.")
         except Exception as e:
             print(f"Error parsing XML for {game}: {e}")
     return game_dict
@@ -2213,13 +2215,20 @@ def find_external_game_paths():
 if not ea_app_launcher:
     print("EA App launcher ID not set. Skipping EA App Scanner.")
 else:
-    # 1. Default Proton path
-    default_path = f"{logged_in_home}/.local/share/Steam/steamapps/compatdata/{ea_app_launcher}/pfx/drive_c/Program Files/EA Games/"
-    game_directory_path = default_path
+    # 1. Try default and legacy EA Games paths
+    default_paths = [
+        f"{logged_in_home}/.local/share/Steam/steamapps/compatdata/{ea_app_launcher}/pfx/drive_c/Program Files/EA Games/",
+        f"{logged_in_home}/.local/share/Steam/steamapps/compatdata/{ea_app_launcher}/pfx/drive_c/Program Files (x86)/EA Games/"
+    ]
 
-    # 2. Registry path
+    game_directory_path = None
+    for path in default_paths:
+        if os.path.isdir(path):
+            game_directory_path = path
+            break
+
     detected_path = find_ea_games_path_from_registry()
-    if detected_path:
+    if detected_path and os.path.isdir(detected_path):
         game_directory_path = detected_path
 
     # 3. Check external SD card folders
