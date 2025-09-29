@@ -2136,36 +2136,111 @@ else:
 
 # End of Ubisoft Game Scanner
 
-# EA App Game Scanner
-def get_ea_app_game_info(installed_games, game_directory_path):
+#EA App Scanner
+def fix_encoding(text):
+    # Encode as latin1 bytes, then decode as utf-8 to fix mojibake
+    return text.encode('latin1').decode('utf-8')
+
+def extract_games_fixed(filename):
+    games = {}
+
+    key_re = re.compile(r'\[Software\\\\Wow6432Node\\\\Origin Games\\\\(\d+)\]')
+    name_re = re.compile(r'"DisplayName"="(.+)"')
+
+    current_id = None
+
+    with open(filename, 'r', encoding='utf-8') as f:
+        for line in f:
+            key_match = key_re.search(line)
+            if key_match:
+                current_id = key_match.group(1)
+                continue
+
+            if current_id:
+                name_match = name_re.search(line)
+                if name_match:
+                    raw_name = name_match.group(1)
+                    # Replace \x2122 with trademark symbol
+                    raw_name = raw_name.replace(r'\x2122', '™')
+                    # Decode other escaped sequences like \x21 etc.
+                    name = bytes(raw_name, "utf-8").decode("unicode_escape")
+                    # Fix mojibake by re-encoding/decoding
+                    name = fix_encoding(name)
+                    games[current_id] = name
+                    current_id = None
+
+    return games
+
+def get_ea_app_game_info(installed_games, game_directory_path, sys_reg_file=None):
+    # If provided, parse the sys reg file once for fallback IDs
+    sys_reg_games = {}
+    if sys_reg_file and os.path.isfile(sys_reg_file):
+        try:
+            sys_reg_games = extract_games_fixed(sys_reg_file)
+            # Reverse mapping for lookup by game name:
+            sys_reg_name_to_id = {v: k for k, v in sys_reg_games.items()}
+        except Exception as e:
+            print(f"Error reading sys reg fallback file: {e}")
+            sys_reg_name_to_id = {}
+    else:
+        sys_reg_name_to_id = {}
+
     game_dict = {}
     for game in installed_games:
         try:
             xml_path = os.path.join(game_directory_path, game, "__Installer", "installerdata.xml")
             if not os.path.isfile(xml_path):
                 continue
+
             xml_file = ET.parse(xml_path)
             xml_root = xml_file.getroot()
+
             ea_ids = None
             game_name = None
+
             for content_id in xml_root.iter('contentID'):
                 ea_ids = content_id.text
                 break
+
             for game_title in xml_root.iter('gameTitle'):
                 if game_name is None:
                     game_name = game_title.text
+
             for game_title in xml_root.iter('title'):
                 if game_name is None:
                     game_name = game_title.text
+
             if game_name is None:
                 game_name = game
+
+            matched_id = None  # Track fallback match
+
+            # If no ID found in XML, fallback to sys reg lookup by matching name
+            if not ea_ids and sys_reg_name_to_id:
+                print(f"No ID found in XML for '{game_name}', looking in system registry fallback...")
+
+                # Match game_name exactly or case-insensitive if needed
+                for reg_name, reg_id in sys_reg_name_to_id.items():
+                    if reg_name == game_name:
+                        matched_id = reg_id
+                        break
+                if matched_id:
+                    ea_ids = matched_id
+
             if ea_ids:
+                if matched_id:
+                    print(f"Found ID in system registry fallback for '{game_name}': {ea_ids}")
+                else:
+                    print(f"Found ID in XML for '{game_name}': {ea_ids}")
                 game_dict[game_name] = ea_ids
             else:
-                print(f"Skipping '{game_name}' - no OfferID found in installerdata.xml.")
+                print(f"Skipping '{game_name}' - no OfferID found in installerdata.xml or sys reg fallback.")
+
         except Exception as e:
             print(f"Error parsing XML for {game}: {e}")
+
     return game_dict
+
 
 def find_ea_games_path_from_registry():
     registry_path = f"{logged_in_home}/.local/share/Steam/steamapps/compatdata/{ea_app_launcher}/pfx/system.reg"
@@ -2196,20 +2271,39 @@ def find_ea_games_path_from_registry():
 
 def find_external_game_paths():
     possible_paths = []
+    base_path = "/run/media/deck/"
 
-    # Common folders
+    # Replace glob: /run/media/deck/*/{folder_name}/
     for folder_name in ["EA Games", "Origin Games"]:
-        matches = glob.glob(f"/run/media/deck/*/{folder_name}/")
-        possible_paths.extend(matches)
+        if os.path.isdir(base_path):
+            for user_folder in os.listdir(base_path):
+                full_path = os.path.join(base_path, user_folder, folder_name)
+                if os.path.isdir(full_path):
+                    possible_paths.append(full_path)
 
-    # Also check top-level folders that look like game directories
-    top_level_dirs = glob.glob("/run/media/deck/*/*/")
+    # Replace glob: /run/media/deck/*/*/
+    top_level_dirs = []
+    if os.path.isdir(base_path):
+        for user_folder in os.listdir(base_path):
+            user_path = os.path.join(base_path, user_folder)
+            if os.path.isdir(user_path):
+                for subfolder in os.listdir(user_path):
+                    full_path = os.path.join(user_path, subfolder)
+                    if os.path.isdir(full_path):
+                        top_level_dirs.append(full_path + "/")
+
     for path in top_level_dirs:
-        if any(os.path.isdir(os.path.join(path, sub, "__Installer")) for sub in os.listdir(path)):
-            possible_paths.append(path)
-            break  # Use the first matching one
+        try:
+            for sub in os.listdir(path):
+                sub_path = os.path.join(path, sub)
+                if os.path.isdir(os.path.join(sub_path, "__Installer")):
+                    possible_paths.append(path)
+                    break
+        except Exception:
+            continue  # Permission errors etc.
 
     return [p for p in possible_paths if os.path.isdir(p)]
+
 
 
 if not ea_app_launcher:
@@ -2244,7 +2338,11 @@ else:
     else:
         try:
             installed_games = [g for g in os.listdir(game_directory_path) if os.path.isdir(os.path.join(game_directory_path, g))]
-            game_dict = get_ea_app_game_info(installed_games, game_directory_path)
+
+            # Pass sys reg file path here for fallback (adjust the path accordingly)
+            sys_reg_path = f"{logged_in_home}/.local/share/Steam/steamapps/compatdata/{ea_app_launcher}/pfx/system.reg"
+
+            game_dict = get_ea_app_game_info(installed_games, game_directory_path, sys_reg_file=sys_reg_path)
 
             for game, ea_ids in game_dict.items():
                 launch_options = f'STEAM_COMPAT_DATA_PATH="{logged_in_home}/.local/share/Steam/steamapps/compatdata/{ea_app_launcher}/" %command% "origin2://game/launch?offerIds={ea_ids}"'
@@ -2256,7 +2354,7 @@ else:
         except Exception as e:
             print(f"Error scanning EA App games: {e}")
 
-#End of EA App Scanner
+# End of EA App Scanner
 
 
 
