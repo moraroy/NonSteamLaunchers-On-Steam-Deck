@@ -2126,13 +2126,33 @@ if not os.path.exists(data_folder_path) or not os.path.exists(registry_file_path
 else:
     game_dict = getUplayGameInfo(data_folder_path, registry_file_path)
 
-    for game, uplay_id in game_dict.items():
-        if uplay_id:
-            launch_options = f"STEAM_COMPAT_DATA_PATH=\"{logged_in_home}/.local/share/Steam/steamapps/compatdata/{ubisoft_connect_launcher}/\" %command% \"uplay://launch/{uplay_id}/0\""
-            exe_path = f"\"{logged_in_home}/.local/share/Steam/steamapps/compatdata/{ubisoft_connect_launcher}/pfx/drive_c/Program Files (x86)/Ubisoft/Ubisoft Game Launcher/upc.exe\""
-            start_dir = f"\"{logged_in_home}/.local/share/Steam/steamapps/compatdata/{ubisoft_connect_launcher}/pfx/drive_c/Program Files (x86)/Ubisoft/Ubisoft Game Launcher/\""
-            create_new_entry(exe_path, game, launch_options, start_dir, launcher_name="Ubisoft Connect")
-            track_game(game, "Ubisoft Connect")
+    # Optional mapping for known sub-launch games
+    sublaunch_map = {
+        "Assassin's Creed III Remastered": {
+            "Assassin's Creed Liberation Remastered": "/1"
+        },
+        # Add more bundles here if needed
+    }
+
+    # Inject bundled sub-games based on known mappings
+    for parent, subs in sublaunch_map.items():
+        if parent in game_dict:
+            for sub_name, suffix in subs.items():
+                if sub_name not in game_dict:
+                    game_dict[sub_name] = (game_dict[parent], suffix)
+
+    for game, data in game_dict.items():
+        if isinstance(data, tuple):
+            uplay_id, suffix = data
+        else:
+            uplay_id = data
+            suffix = "/0"
+
+        launch_options = f'STEAM_COMPAT_DATA_PATH="{logged_in_home}/.local/share/Steam/steamapps/compatdata/{ubisoft_connect_launcher}/" %command% "uplay://launch/{uplay_id}{suffix}"'
+        exe_path = f'"{logged_in_home}/.local/share/Steam/steamapps/compatdata/{ubisoft_connect_launcher}/pfx/drive_c/Program Files (x86)/Ubisoft/Ubisoft Game Launcher/upc.exe"'
+        start_dir = f'"{logged_in_home}/.local/share/Steam/steamapps/compatdata/{ubisoft_connect_launcher}/pfx/drive_c/Program Files (x86)/Ubisoft/Ubisoft Game Launcher/"'
+        create_new_entry(exe_path, game, launch_options, start_dir, launcher_name="Ubisoft Connect")
+        track_game(game, "Ubisoft Connect")
 
 # End of Ubisoft Game Scanner
 
