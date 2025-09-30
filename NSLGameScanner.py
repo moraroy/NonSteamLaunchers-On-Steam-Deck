@@ -824,13 +824,36 @@ WS_PORT = 8080
 TARGET_TITLE = "SharedJSContext"
 
 
-
-# === CONFIGURATION ===
-WS_HOST = "localhost"
-WS_PORT = 8080
-TARGET_TITLE = "SharedJSContext"
-
 JS_CODE = """
+// Create shared audio context once
+window._sharedAudioCtx ??= new (window.AudioContext || window.webkitAudioContext)();
+const ctx = window._sharedAudioCtx;
+
+// Play a soft notification tone
+function playTone({ type = 'sine', frequency = 440, volume = 0.1, duration = 1, startTime = null }) {
+  const now = ctx.currentTime;
+  const start = startTime ?? now;
+  const osc = ctx.createOscillator();
+  const gain = ctx.createGain();
+
+  osc.type = type;
+  osc.frequency.setValueAtTime(frequency, start);
+
+  gain.gain.setValueAtTime(volume, start);
+  gain.gain.exponentialRampToValueAtTime(0.0005, start + duration);
+
+  osc.connect(gain);
+  gain.connect(ctx.destination);
+
+  osc.start(start);
+  osc.stop(start + duration);
+
+  osc.onended = () => {
+    osc.disconnect();
+    gain.disconnect();
+  };
+}
+
 function detectImageFormat(base64String) {
   if (base64String.startsWith("iVBORw0KGgo")) return "png";  // PNG
   if (base64String.startsWith("/9j/")) return "jpg";          // JPG
@@ -950,6 +973,11 @@ window.createShortcut = async function(data) {
     // --- Notification ---
     try {
       await sleep(300);
+
+      // Play your custom soft notification sound here:
+      playTone({ type: 'sine', frequency: 520, volume: 0.12, duration: 1.5 });
+      playTone({ type: 'sine', frequency: 660, volume: 0.06, duration: 0.8, startTime: ctx.currentTime + 0.1 });
+
       const notificationPayload = {
         rawbody: data.appname + " was added to your library!",
         state: "ingame"
@@ -1211,6 +1239,45 @@ def send_steam_notification(ws_socket, message_text):
 
     js_notify = f"""
     (function() {{
+        // Ensure shared audio context exists
+        if (!window._sharedAudioCtx) {{
+            window._sharedAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        }}
+        const ctx = window._sharedAudioCtx;
+
+        function playTone({{ type = 'sine', frequency = 440, frequencyEnd = null, volume = 0.1, duration = 1, startTime = null }}) {{
+            const now = ctx.currentTime;
+            const start = startTime ?? now;
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+
+            osc.type = type;
+            osc.frequency.setValueAtTime(frequency, start);
+
+            if (frequencyEnd !== null) {{
+                osc.frequency.exponentialRampToValueAtTime(frequencyEnd, start + duration);
+            }}
+
+            gain.gain.setValueAtTime(volume, start);
+            gain.gain.exponentialRampToValueAtTime(0.0005, start + duration);
+
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+
+            osc.start(start);
+            osc.stop(start + duration);
+
+            osc.onended = () => {{
+                osc.disconnect();
+                gain.disconnect();
+            }};
+        }}
+
+        // Play descending tones for uninstall notification (opposite of add)
+        playTone({{ type: 'sine', frequency: 660, frequencyEnd: 520, volume: 0.12, duration: 1.5 }});
+        playTone({{ type: 'sine', frequency: 520, frequencyEnd: 400, volume: 0.08, duration: 0.8, startTime: ctx.currentTime + 0.1 }});
+
+        // Show Steam notification
         if (window.SteamClient && SteamClient.ClientNotifications) {{
             const payload = {{
                 rawbody: {json.dumps(message_text)},
@@ -1233,12 +1300,11 @@ def send_steam_notification(ws_socket, message_text):
         "method": "Runtime.evaluate",
         "params": {
             "expression": js_notify,
-            "awaitPromise": False,
+            "awaitPromise": False,  # Do NOT await promise here
             "returnByValue": True
         }
     }))
 
-    # Optional: wait for a response if needed
     result = recv_ws_message_for_id(ws_socket, notify_id)
     return result
 
