@@ -13,7 +13,6 @@ import sqlite3
 import csv
 import configparser
 import certifi
-import glob
 import itertools
 from datetime import datetime
 
@@ -28,6 +27,7 @@ import base64
 
 from urllib.parse import urlparse
 import http.client
+
 
 
 # Check the value of the DBUS_SESSION_BUS_ADDRESS environment variable
@@ -2359,7 +2359,6 @@ def find_external_game_paths():
     possible_paths = []
     base_path = "/run/media/deck/"
 
-    # Replace glob: /run/media/deck/*/{folder_name}/
     for folder_name in ["EA Games", "Origin Games"]:
         if os.path.isdir(base_path):
             for user_folder in os.listdir(base_path):
@@ -2367,7 +2366,6 @@ def find_external_game_paths():
                 if os.path.isdir(full_path):
                     possible_paths.append(full_path)
 
-    # Replace glob: /run/media/deck/*/*/
     top_level_dirs = []
     if os.path.isdir(base_path):
         for user_folder in os.listdir(base_path):
@@ -2444,105 +2442,126 @@ else:
 
 
 
-# Gog Galaxy Scanner
-def getGogGameInfo(filePath):
-    # Check if the file contains any GOG entries
-    with open(filePath, 'r') as file:
-        if "GOG.com" not in file.read():
-            print("No GOG entries found in the registry file. Skipping GOG Galaxy Games Scanner.")
-            return {}
 
-    # If GOG entries exist, parse the registry file
+#GOG Galaxy Scanner
+def getGogGameInfoFromDB(db_path):
+    if not os.path.exists(db_path):
+        print(f"Database file not found at: {db_path}")
+        return {}
+
     game_dict = {}
-    with open(filePath, 'r') as file:
-        game_id = None
-        game_name = None
-        exe_path = None
-        depends_on = None
-        launch_command = None
-        start_menu_link = None
-        gog_entry = False
-        for line in file:
-            split_line = line.split("=")
-            if len(split_line) > 1:
-                if "gameid" in line.lower():
-                    game_id = re.findall(r'\"(.+?)\"', split_line[1])
-                    if game_id:
-                        game_id = game_id[0]
-                if "gamename" in line.lower():
-                    game_name = re.findall(r'\"(.+?)\"', split_line[1])
-                    if game_name:
-                        game_name = bytes(game_name[0], 'utf-8').decode('unicode_escape')
-                        game_name = game_name.replace('!22', '™')
-                if "exe" in line.lower() and not "unins000.exe" in line.lower():
-                    exe_path = re.findall(r'\"(.+?)\"', split_line[1])
-                    if exe_path:
-                        exe_path = exe_path[0].replace('\\\\', '\\')
-                if "dependson" in line.lower():
-                    depends_on = re.findall(r'\"(.+?)\"', split_line[1])
-                    if depends_on:
-                        depends_on = depends_on[0]
-                if "launchcommand" in line.lower():
-                    launch_command = re.findall(r'\"(.+?)\"', split_line[1])
-                    if launch_command:
-                        launch_command = launch_command[0]
-            if game_id and game_name and launch_command:
-                game_dict[game_name] = {'id': game_id, 'exe': exe_path}
-                game_id = None
-                game_name = None
-                exe_path = None
-                depends_on = None
-                launch_command = None
+
+    def get_executables(cursor, product_id):
+        cursor.execute("""
+            SELECT installPath FROM GameFiles
+            WHERE productId = ? AND installPath LIKE '%.exe'
+        """, (product_id,))
+        return [row[0] for row in cursor.fetchall()]
+
+    def filter_executables(executables, title, install_path):
+        junk = {
+            "unitycrashhandler64.exe", "unitycrashhandler32.exe",
+            "crashreportclient.exe", "ue4prereqsetup_x64.exe",
+            "ue4prereqsetup.exe", "dotnetfx.exe"
+        }
+        title_key = title.lower().translate(str.maketrans('', '', ' :-_'))
+        base = install_path.replace("\\", "/").lower()
+
+        def score(exe):
+            name = os.path.basename(exe).lower()
+            if name in junk or "win64" in name or "win32" in name:
+                return None
+            name_key = name.translate(str.maketrans('', '', ' :-_'))
+            if title_key in name_key:
+                return (1, exe)
+            path = os.path.dirname(exe).replace("\\", "/").lower()
+            if path.startswith(base):
+                rel = path[len(base):].strip("/")
+                if not rel or title_key in rel.replace(" ", "").replace("_", "").replace("-", ""):
+                    return (2, exe)
+            return (3, exe)
+
+        scored = filter(None, (score(e) for e in executables))
+        return [exe for _, exe in sorted(scored, key=lambda x: (x[0], len(x[1])))]
+
+    try:
+        with sqlite3.connect(db_path) as conn:
+            cursor = conn.cursor()
+            cursor.execute("""
+                SELECT ibp.productId, ld.title, ibp.installationPath, ptl.executablePath
+                FROM InstalledBaseProducts ibp
+                JOIN LimitedDetails ld ON ibp.productId = ld.productId
+                LEFT JOIN PlayTasks pt ON pt.gameReleaseKey = ld.id
+                LEFT JOIN PlayTaskLaunchParameters ptl ON ptl.playTaskId = pt.id
+                WHERE ld.is_production = 1
+            """)
+
+            for pid, title, path, ptl_exe in cursor.fetchall():
+                exes = []
+                if ptl_exe:
+                    exes.append(ptl_exe.replace("\\", "/"))
+                exes += [os.path.join(path, e).replace("\\", "/") for e in get_executables(cursor, pid)]
+                if not exes:
+                    continue
+
+                main_exes = filter_executables(set(exes), title, path)
+                if main_exes:
+                    game_dict[title] = {
+                        'id': pid,
+                        'exe': main_exes[0]  # Use the top-scoring .exe
+                    }
+
+    except sqlite3.Error as e:
+        print(f"SQLite error: {e}")
 
     return game_dict
-
 
 
 def adjust_dosbox_launch_options(launch_command, game_id):
     print(f"Adjusting launch options for command: {launch_command}")
     if "dosbox.exe" in launch_command.lower():
         try:
-            # Find the part of the command with DOSBox.exe and its arguments
             exe_part, args_part = launch_command.split("DOSBox.exe", 1)
             exe_path = exe_part.strip() + "DOSBox.exe"
             args = args_part.strip()
 
-            # Form the launch options string
-            launch_options = f'STEAM_COMPAT_DATA_PATH="{logged_in_home}/.local/share/Steam/steamapps/compatdata/{gog_galaxy_launcher}/" %command% /command=runGame /gameId={game_id} /path="{exe_path}" "{args}"'
+            launch_options = (
+                f'STEAM_COMPAT_DATA_PATH="{logged_in_home}/.local/share/Steam/steamapps/compatdata/{gog_galaxy_launcher}/" '
+                f'%command% /command=runGame /gameId={game_id} /path="{exe_path}" "{args}"'
+            )
             return launch_options
         except ValueError as e:
             print(f"Error adjusting launch options: {e}")
             return launch_command
     else:
-        # For non-DOSBox games, return the original launch command without trailing spaces
         launch_command = launch_command.strip()
-        return f'STEAM_COMPAT_DATA_PATH="{logged_in_home}/.local/share/Steam/steamapps/compatdata/{gog_galaxy_launcher}/" %command% /command=runGame /gameId={game_id} /path="{launch_command}"'
+        return (
+            f'STEAM_COMPAT_DATA_PATH="{logged_in_home}/.local/share/Steam/steamapps/compatdata/{gog_galaxy_launcher}/" '
+            f'%command% /command=runGame /gameId={game_id} /path="{launch_command}"'
+        )
 
-# Define your paths
+
 gog_games_directory = f"{logged_in_home}/.local/share/Steam/steamapps/compatdata/{gog_galaxy_launcher}/pfx/drive_c/Program Files (x86)/GOG Galaxy/Games"
-registry_file_path = f"{logged_in_home}/.local/share/Steam/steamapps/compatdata/{gog_galaxy_launcher}/pfx/system.reg"
+db_path = f"{logged_in_home}/.local/share/Steam/steamapps/compatdata/{gog_galaxy_launcher}/pfx/drive_c/ProgramData/GOG.com/Galaxy/storage/galaxy-2.0.db"
 
-# Check if the paths exist
-if not os.path.exists(gog_games_directory) or not os.path.exists(registry_file_path):
+if not os.path.exists(gog_games_directory) or not os.path.exists(db_path):
     print("One or more paths do not exist.")
     print("GOG Galaxy game data not found. Skipping GOG Galaxy Games Scanner.")
 else:
-    game_dict = getGogGameInfo(registry_file_path)
+    game_dict = getGogGameInfoFromDB(db_path)
 
     for game, game_info in game_dict.items():
         if game_info['id']:
-            # Adjust the launch options for DOSBox games
             launch_options = adjust_dosbox_launch_options(game_info['exe'], game_info['id'])
 
-            # Format the paths correctly
             exe_path = f"\"{logged_in_home}/.local/share/Steam/steamapps/compatdata/{gog_galaxy_launcher}/pfx/drive_c/Program Files (x86)/GOG Galaxy/GalaxyClient.exe\""
             start_dir = f"\"{logged_in_home}/.local/share/Steam/steamapps/compatdata/{gog_galaxy_launcher}/pfx/drive_c/Program Files (x86)/GOG Galaxy/\""
 
-            # Create the new entry
             create_new_entry(exe_path, game, launch_options, start_dir, launcher_name="GOG Galaxy")
             track_game(game, "GOG Galaxy")
 
-# End of Gog Galaxy Scanner
+#End of GOG Galaxy Scanner
+
 
 
 
@@ -3589,8 +3608,14 @@ else:
         if not os.path.isdir(linux_games_dir):
             print("Games directory not found at", linux_games_dir)
         else:
-            search_pattern = os.path.join(linux_games_dir, "*/combinedata_manifest/GameManifest_*.upf")
-            manifest_files = glob.glob(search_pattern)
+            manifest_files = []
+            for subdir_name in os.listdir(linux_games_dir):
+                subdir_path = os.path.join(linux_games_dir, subdir_name)
+                combinedata_path = os.path.join(subdir_path, "combinedata_manifest")
+                if os.path.isdir(combinedata_path):
+                    for filename in os.listdir(combinedata_path):
+                        if filename.startswith("GameManifest_") and filename.endswith(".upf"):
+                            manifest_files.append(os.path.join(combinedata_path, filename))
 
             if not manifest_files:
                 print("No game manifest files found")
