@@ -2686,6 +2686,10 @@ if game_dict:
         elif game_key == "lbra":
             print("Handling 'lbra' as 'LBRA'")
             game_key = "LBRA"
+        elif game_key == "wow_classic_era":
+            print("Handling 'wow_classic_era' as 'WoWC'")
+            game_key = "WoWC"
+
 
 
 
