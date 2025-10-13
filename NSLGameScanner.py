@@ -3375,12 +3375,55 @@ else:
 
 
 
-# chrome bookmark scanner for xbox and geforce
+#chrome bookmark scanner for xbox and geforce and amazon luna
 
 # Path to the Chrome Bookmarks file
 bookmarks_file_path = f"{logged_in_home}/.var/app/com.google.Chrome/config/google-chrome/Default/Bookmarks"
 
-# Check if the bookmarks file exists
+def process_bookmark_item(item):
+    if item['type'] == "url":
+        name = item['name'].strip()
+        url = item['url']
+
+        if not name:
+            return
+
+        # GeForce NOW
+        if "play.geforcenow.com/games" in url:
+            if name == "GeForce NOW":
+                return
+            game_name = name.replace(" on GeForce NOW", "").strip()
+            url = url.split("&")[0] if "&" in url else url
+            geforce_now_urls.append(("GeForce NOW", game_name, url))
+
+        # Xbox Cloud Gaming
+        elif "www.xbox.com/en-US/play/games/" in url:
+            if name.startswith("Play "):
+                game_name = name.replace("Play ", "").split(" |")[0].strip()
+            else:
+                game_name = name.split(" |")[0].strip()
+
+            if game_name:
+                xbox_urls.append(("Xbox", game_name, url))
+
+        # Amazon Luna
+        elif "luna.amazon.com/game/" in url:
+            if name.startswith("Play "):
+                game_name = name.replace("Play ", "").split(" |")[0].strip()
+            else:
+                game_name = name.split(" |")[0].strip()
+
+            if game_name:
+                luna_urls.append(("Amazon Luna", game_name, url))
+
+def scan_children(children):
+    for item in children:
+        if item['type'] == "folder":
+            scan_children(item.get('children', []))
+        else:
+            process_bookmark_item(item)
+
+# Main logic
 if not os.path.exists(bookmarks_file_path):
     print("Chrome Bookmarks not found. Skipping scanning for Bookmarks.")
 else:
@@ -3392,45 +3435,10 @@ else:
     with open(bookmarks_file_path, 'r') as f:
         data = json.load(f)
 
-    # Loop through the "Other bookmarks" folder
-    for item in data['roots']['other']['children']:
-        if item['type'] == "url":
-            name = item['name'].strip()
-            url = item['url']
-
-            if not name:
-                continue
-                
-            # GeForce NOW
-            if "play.geforcenow.com/games" in url:
-                if name == "GeForce NOW":
-                    continue
-                game_name = name.replace(" on GeForce NOW", "").strip()
-                url = url.split("&")[0] if "&" in url else url
-                geforce_now_urls.append(("GeForce NOW", game_name, url))
-
-
-            # Xbox Cloud Gaming
-            elif "www.xbox.com/en-US/play/games/" in url:
-                # Clean up the name
-                if name.startswith("Play "):
-                    game_name = name.replace("Play ", "").split(" |")[0].strip()
-                else:
-                    game_name = name.split(" |")[0].strip()
-
-                if game_name:
-                    xbox_urls.append(("Xbox", game_name, url))
-
-            # Amazon Luna
-            elif "luna.amazon.com/game/" in url:
-                # Clean up the name
-                if name.startswith("Play "):
-                    game_name = name.replace("Play ", "").split(" |")[0].strip()
-                else:
-                    game_name = name.split(" |")[0].strip()
-
-                if game_name:
-                    luna_urls.append(("Amazon Luna", game_name, url))
+    # Scan bookmarks in bookmark_bar, other, and synced folders recursively
+    scan_children(data['roots']['bookmark_bar']['children'])
+    scan_children(data['roots']['other']['children'])
+    scan_children(data['roots']['synced']['children'])
 
     # Merge all platforms' URLs into a single list for processing
     all_urls = geforce_now_urls + xbox_urls + luna_urls
@@ -3450,7 +3458,6 @@ else:
         chromedirectory = os.environ.get("chromedirectory", "/usr/bin/flatpak")
         chrome_startdir = os.environ.get("chrome_startdir", "/usr/bin")
 
-
         # Replace this with whatever function or method you're using to handle the entries
         create_new_entry(
             chromedirectory,
@@ -3461,7 +3468,7 @@ else:
         )
         track_game(game_name, "Google Chrome")
 
-#end of chrome scanner for xbox and geforce bookmarks
+# end of chrome scanner for xbox and geforce, amazon luna bookmarks
 
 
 
