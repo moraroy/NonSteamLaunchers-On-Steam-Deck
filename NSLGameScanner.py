@@ -3375,17 +3375,22 @@ else:
 
 
 
-#chrome bookmark scanner for xbox and geforce and amazon luna
 
-# Path to the Chrome Bookmarks file
+#chrome scanner for xbox, geforce now, and amazon luna bookmarks
 bookmarks_file_path = f"{logged_in_home}/.var/app/com.google.Chrome/config/google-chrome/Default/Bookmarks"
+
+# Lists to store results
+geforce_now_urls = []
+xbox_urls = []
+luna_urls = []
+seen_urls = set()
 
 def process_bookmark_item(item):
     if item['type'] == "url":
         name = item['name'].strip()
         url = item['url']
 
-        if not name:
+        if not name or url in seen_urls:
             return
 
         # GeForce NOW
@@ -3394,7 +3399,10 @@ def process_bookmark_item(item):
                 return
             game_name = name.replace(" on GeForce NOW", "").strip()
             url = url.split("&")[0] if "&" in url else url
+            if url in seen_urls:
+                return
             geforce_now_urls.append(("GeForce NOW", game_name, url))
+            seen_urls.add(url)
 
         # Xbox Cloud Gaming
         elif "www.xbox.com/en-US/play/games/" in url:
@@ -3403,8 +3411,9 @@ def process_bookmark_item(item):
             else:
                 game_name = name.split(" |")[0].strip()
 
-            if game_name:
+            if game_name and url not in seen_urls:
                 xbox_urls.append(("Xbox", game_name, url))
+                seen_urls.add(url)
 
         # Amazon Luna
         elif "luna.amazon.com/game/" in url:
@@ -3413,8 +3422,9 @@ def process_bookmark_item(item):
             else:
                 game_name = name.split(" |")[0].strip()
 
-            if game_name:
+            if game_name and url not in seen_urls:
                 luna_urls.append(("Amazon Luna", game_name, url))
+                seen_urls.add(url)
 
 def scan_children(children):
     for item in children:
@@ -3423,22 +3433,16 @@ def scan_children(children):
         else:
             process_bookmark_item(item)
 
-# Main logic
 if not os.path.exists(bookmarks_file_path):
     print("Chrome Bookmarks not found. Skipping scanning for Bookmarks.")
 else:
-    # Lists to store results
-    geforce_now_urls = []
-    xbox_urls = []
-    luna_urls = []
-
     with open(bookmarks_file_path, 'r') as f:
         data = json.load(f)
 
     # Scan bookmarks in bookmark_bar, other, and synced folders recursively
-    scan_children(data['roots']['bookmark_bar']['children'])
-    scan_children(data['roots']['other']['children'])
-    scan_children(data['roots']['synced']['children'])
+    scan_children(data['roots']['bookmark_bar'].get('children', []))
+    scan_children(data['roots']['other'].get('children', []))
+    scan_children(data['roots']['synced'].get('children', []))
 
     # Merge all platforms' URLs into a single list for processing
     all_urls = geforce_now_urls + xbox_urls + luna_urls
@@ -3458,7 +3462,7 @@ else:
         chromedirectory = os.environ.get("chromedirectory", "/usr/bin/flatpak")
         chrome_startdir = os.environ.get("chrome_startdir", "/usr/bin")
 
-        # Replace this with whatever function or method you're using to handle the entries
+        # Replace this with your existing method to handle the entries
         create_new_entry(
             chromedirectory,
             game_name,
@@ -3468,7 +3472,7 @@ else:
         )
         track_game(game_name, "Google Chrome")
 
-# end of chrome scanner for xbox and geforce, amazon luna bookmarks
+# end of chrome scanner for xbox, geforce now, and amazon luna bookmarks
 
 
 
