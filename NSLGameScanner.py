@@ -3405,24 +3405,24 @@ def process_bookmark_item(item):
             seen_urls.add(url)
 
         # Xbox Cloud Gaming
-        elif "www.xbox.com/en-US/play/games/" in url:
+        elif "xbox.com" in url and "/play/launch/" in url:
             if name.startswith("Play "):
                 game_name = name.replace("Play ", "").split(" |")[0].strip()
             else:
                 game_name = name.split(" |")[0].strip()
 
-            if game_name and url not in seen_urls:
+            if game_name:
                 xbox_urls.append(("Xbox", game_name, url))
                 seen_urls.add(url)
 
         # Amazon Luna
-        elif "luna.amazon.com/game/" in url:
+        elif "luna.amazon." in url and "/game/" in url:
             if name.startswith("Play "):
                 game_name = name.replace("Play ", "").split(" |")[0].strip()
             else:
                 game_name = name.split(" |")[0].strip()
 
-            if game_name and url not in seen_urls:
+            if game_name:
                 luna_urls.append(("Amazon Luna", game_name, url))
                 seen_urls.add(url)
 
