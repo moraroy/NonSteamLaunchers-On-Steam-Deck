@@ -3405,7 +3405,7 @@ def process_bookmark_item(item):
             seen_urls.add(url)
 
         # Xbox Cloud Gaming
-        elif "xbox.com" in url and "/play/launch/" in url:
+        elif "xbox.com/" in url and ("/play/launch/" in url or "/play/games/" in url):
             if name.startswith("Play "):
                 game_name = name.replace("Play ", "").split(" |")[0].strip()
             else:
