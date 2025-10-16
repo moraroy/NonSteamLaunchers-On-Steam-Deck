@@ -687,6 +687,25 @@ get_sd_path() {
     echo $sd_path
 }
 
+function patch_proton_script() {
+    proton_dir=$(find -L "${logged_in_home}/.steam/root/compatibilitytools.d" -maxdepth 1 -type d -name "GE-Proton*" | sort -V | tail -n1)
+    if [ -z "$proton_dir" ]; then
+        echo "No GE-Proton installation found to patch."
+        return
+    fi
+
+    proton_script="${proton_dir}/proton"
+    insert_line="os.environ['ENABLE_GAMESCOPE_WSI'] = '0'"
+
+    if [ -f "$proton_script" ] && ! grep -q "ENABLE_GAMESCOPE_WSI" "$proton_script"; then
+        echo "Patching Proton Python script to disable Gamescope WSI..."
+        sed -i "/^import protonfixes/a $insert_line" "$proton_script"
+    else
+        echo "Proton Python script already patched or not found."
+    fi
+}
+
+
 # Function For Updating Proton-GE
 function download_ge_proton() {
     echo "Downloading GE-Proton using the GitHub API"
@@ -731,17 +750,6 @@ function download_ge_proton() {
     fi
 
     proton_dir=$(find -L "${logged_in_home}/.steam/root/compatibilitytools.d" -maxdepth 1 -type d -name "GE-Proton*" | sort -V | tail -n1)
-
-    proton_script="${proton_dir}/proton"
-    insert_line="os.environ['ENABLE_GAMESCOPE_WSI'] = '0'"
-
-    if [ -f "$proton_script" ] && ! grep -q "ENABLE_GAMESCOPE_WSI" "$proton_script"; then
-        echo "Patching Proton Python script to disable Gamescope WSI..."
-        sed -i "/^import protonfixes/a $insert_line" "$proton_script"
-    else
-        echo "Proton Python script already patched or not found."
-    fi
-
     echo "All done :)"
 }
 
@@ -771,6 +779,8 @@ function update_proton() {
             download_ge_proton
         fi
     fi
+    # Patch regardless of whether Proton was updated or not
+    patch_proton_script
 }
 
 # Function For Updating UMU Launcher
