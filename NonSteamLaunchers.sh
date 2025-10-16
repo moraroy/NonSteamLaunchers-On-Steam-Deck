@@ -731,6 +731,17 @@ function download_ge_proton() {
     fi
 
     proton_dir=$(find -L "${logged_in_home}/.steam/root/compatibilitytools.d" -maxdepth 1 -type d -name "GE-Proton*" | sort -V | tail -n1)
+
+    proton_script="${proton_dir}/proton"
+    insert_line="os.environ['ENABLE_GAMESCOPE_WSI'] = '0'"
+
+    if [ -f "$proton_script" ] && ! grep -q "ENABLE_GAMESCOPE_WSI" "$proton_script"; then
+        echo "Patching Proton Python script to disable Gamescope WSI..."
+        sed -i "/^import protonfixes/a $insert_line" "$proton_script"
+    else
+        echo "Proton Python script already patched or not found."
+    fi
+
     echo "All done :)"
 }
 
