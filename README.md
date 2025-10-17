@@ -48,6 +48,9 @@ Features  ✅
 
 In both versions of NonSteamLaunchers, Desktop or Decky, NSL will back up your games saves here automatically ```/home/deck/NSLGameSaves``` The Desktop Version only does this once, at the start of when the script is opened and you see the main options list. The decky plugin version does this on every manual scan that you do.
 
+
+-Pressing "Update Proton GE" in both the Desktop version or the Decky Plugin version, will give you the latest version of Proton GE and UMU. A patch will also be applied to allow Game Streaming from Discord in Game Mode.
+
 - [UMU Launcher](https://github.com/Open-Wine-Components/umu-launcher) is automatically used and is processed for each game and Launcher. Proton GE will be used where necessary.
 
 ### Notes
