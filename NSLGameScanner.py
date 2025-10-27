@@ -1014,8 +1014,197 @@ window.createShortcut = async function(data) {
 """
 
 
+PLAYTIME_CODE = """
+const STORAGE_KEY = "realPlaytimeData";
 
+let memoryCache = null;
+const appliedSessions = {};
 
+function isValidPlaytimeDataEntry(entry) {
+    return (
+        typeof entry === "object" &&
+        entry !== null &&
+        typeof entry.total === "number" &&
+        typeof entry.lastSessionEnd === "number"
+    );
+}
+
+function sanitizePlaytimeData(data) {
+    if (typeof data !== "object" || data === null) return {};
+    const cleaned = {};
+    for (const key in data) {
+        if (isValidPlaytimeDataEntry(data[key])) {
+            cleaned[key] = data[key];
+        }
+    }
+    return cleaned;
+}
+
+function loadPlaytimeData() {
+    try {
+        if (memoryCache) return memoryCache;
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (!raw) {
+            memoryCache = {};
+            return memoryCache;
+        }
+        const parsed = JSON.parse(raw);
+        const cleaned = sanitizePlaytimeData(parsed);
+        if (Object.keys(cleaned).length !== Object.keys(parsed || {}).length) {
+            savePlaytimeData(cleaned);
+        }
+        memoryCache = cleaned;
+        return memoryCache;
+    } catch {
+        memoryCache = {};
+        return memoryCache;
+    }
+}
+
+function savePlaytimeData(data) {
+    try {
+        const latestFromStorage = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
+        const merged = { ...latestFromStorage, ...data };
+        memoryCache = merged;
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(merged));
+    } catch {
+        memoryCache = data;
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    }
+}
+
+function isEnvironmentReady() {
+    try {
+        localStorage.setItem("__rp_test__", "1");
+        localStorage.removeItem("__rp_test__");
+        if (!window.appStore || typeof window.appStore.GetAppOverviewByAppID !== "function") return false;
+        if (!window.appInfoStore) return false;
+        return true;
+    } catch {
+        return false;
+    }
+}
+
+function restoreSavedPlaytimes() {
+    const data = loadPlaytimeData();
+    if (!window.appStore?.GetAppOverviewByAppID) return;
+
+    let removedCount = 0;
+    for (const id in data) {
+        const entry = data[id];
+        const ov = appStore.GetAppOverviewByAppID(Number(id));
+        if (ov) {
+            ov.minutes_playtime_forever = Math.max(ov.minutes_playtime_forever || 0, entry.total);
+            ov.minutes_playtime_last_two_weeks = Math.max(ov.minutes_playtime_last_two_weeks || 0, entry.total);
+            ov.nPlaytimeForever = Math.max(ov.nPlaytimeForever || 0, entry.total);
+            ov.TriggerChange?.();
+        } else {
+            delete data[id];
+            removedCount++;
+        }
+    }
+    if (removedCount > 0) savePlaytimeData(data);
+}
+
+function applyRealSessionToOverview(appOverview) {
+    try {
+        if (!appOverview || appOverview.app_type !== 1073741824) return false;
+
+        const start = appOverview.rt_last_time_played;
+        const end = appOverview.rt_last_time_locally_played;
+        if (!start || !end || end <= start) return false;
+
+        const appId = String(appOverview.appid || (typeof appOverview.appid === "function" ? appOverview.appid() : appOverview.appId));
+        const sessionSeconds = end - start;
+        const sessionMinutes = Math.floor(sessionSeconds / 60);
+        if (sessionMinutes <= 0) return false;
+
+        const data = loadPlaytimeData();
+        const prevEntry = data[appId] || { total: 0, lastSessionEnd: 0 };
+
+        const effectiveEnd = Math.max(prevEntry.lastSessionEnd, end);
+        const addedMinutes = effectiveEnd > prevEntry.lastSessionEnd ? sessionMinutes : 0;
+        const newTotal = prevEntry.total + addedMinutes;
+        if (newTotal === prevEntry.total) return false;
+
+        data[appId] = { total: newTotal, lastSessionEnd: effectiveEnd };
+        savePlaytimeData(data);
+        appliedSessions[appId] = effectiveEnd;
+
+        appOverview.minutes_playtime_forever = newTotal;
+        appOverview.minutes_playtime_last_two_weeks = newTotal;
+        appOverview.nPlaytimeForever = newTotal;
+        appOverview.TriggerChange?.();
+
+        return true;
+    } catch {
+        return false;
+    }
+}
+
+function patchAppStore() {
+    if (!window.appStore?.m_mapApps) return;
+    if (appStore.m_mapApps._originalSet) return;
+
+    appStore.m_mapApps._originalSet = appStore.m_mapApps.set;
+    appStore.m_mapApps.set = function(appId, appOverview) {
+        const result = appStore.m_mapApps._originalSet.call(this, appId, appOverview);
+        restoreSavedPlaytimes();
+        applyRealSessionToOverview(appOverview);
+        return result;
+    };
+}
+
+function patchAppInfoStore() {
+    if (!window.appInfoStore) return;
+    if (appInfoStore._originalOnAppOverviewChange) return;
+
+    appInfoStore._originalOnAppOverviewChange = appInfoStore.OnAppOverviewChange;
+    appInfoStore.OnAppOverviewChange = function(apps) {
+        for (const a of apps || []) {
+            const id = typeof a?.appid === "function" ? a.appid() : a?.appid;
+            const overview = id && appStore?.GetAppOverviewByAppID ? appStore.GetAppOverviewByAppID(Number(id)) : a;
+            if (overview) {
+                restoreSavedPlaytimes();
+                applyRealSessionToOverview(overview);
+            }
+        }
+        return appInfoStore._originalOnAppOverviewChange.call(this, apps);
+    };
+}
+
+function manualPatch() {
+    try {
+        const m = location.pathname.match(/\\/library\\/app\\/(\\d+)/);
+        if (m) {
+            const id = Number(m[1]);
+            const ov = appStore.GetAppOverviewByAppID(id);
+            if (ov) {
+                restoreSavedPlaytimes();
+                applyRealSessionToOverview(ov);
+                appInfoStore?.OnAppOverviewChange?.([ov]);
+            }
+        }
+    } catch {}
+}
+
+(function initRealPlaytime(retryCount = 0) {
+    if (!isEnvironmentReady()) {
+        if (retryCount < 100) {
+            setTimeout(() => initRealPlaytime(retryCount + 1), 1000);
+        }
+        return;
+    }
+    try {
+        setTimeout(() => {
+            restoreSavedPlaytimes();
+            patchAppStore();
+            patchAppInfoStore();
+            manualPatch();
+        }, 100);
+    } catch {}
+})();
+"""
 
 
 
@@ -1354,8 +1543,35 @@ def inject_js_only(ws_socket):
         print("Injection failed:", e)
 ###End of Uninstall Notifcations
 
+###PLAYTIME ONLY
+def inject_playtime_code(ws_socket):
+    inject_id = next(eval_id_counter)
+
+    wrapped_code = f"(async () => {{ {PLAYTIME_CODE}; return 'Playtime injection done'; }})()"
+
+    send_ws_text(ws_socket, json.dumps({
+        "id": inject_id,
+        "method": "Runtime.evaluate",
+        "params": {
+            "expression": wrapped_code,
+            "awaitPromise": True
+        }
+    }))
+
+    response = recv_ws_message_for_id(ws_socket, inject_id)
+    print("Playtime injection response:", response)
+    return response
 
 
+ws_url = get_ws_url_by_title(WS_HOST, WS_PORT, TARGET_TITLE)
+
+ws_socket = create_websocket_connection(ws_url)
+
+send_ws_text(ws_socket, json.dumps({"id": 1, "method": "Runtime.enable"}))
+recv_ws_message_for_id(ws_socket, 1)
+
+inject_playtime_code(ws_socket)
+#END OF PLAYTIME
 
 
 
@@ -1391,7 +1607,6 @@ def get_compat_tool_if_needed(launchoptions):
     # If none of the exclusions apply, return the compat tool name
     print("No exclusions applied. Returning compat tool.")
     return compat_tool_name
-
 
 
 
