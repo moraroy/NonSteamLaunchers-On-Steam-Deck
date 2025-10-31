@@ -2819,6 +2819,8 @@ flavor_mapping = {
     "Aqua": "Avowed",
     "LBRA": "Tony Hawk's Pro Skater 3 + 4",
     "SCOR": "Sea of Thieves",
+    "ARK": "The Outer Worlds 2",
+
 
 
 
