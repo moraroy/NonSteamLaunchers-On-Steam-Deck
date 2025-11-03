@@ -1435,74 +1435,119 @@ THEMEMUSIC_CODE = r"""(function () {
   requestAnimationFrame(watchUrl);
 })();"""
 
-THEMEMUSIC_BUTTON = r"""(function() {
-    if (document.getElementById("themeMusicToggleButton")) return; // prevent reinjection
+THEMEMUSIC_BUTTON = r"""const THEMEMUSIC_BUTTON = (() => {
+    if (document.getElementById("themeMusicToggleButton")) return;
 
-    const LOCAL_STORAGE_KEY = "ThemeMusicData";
+    const KEY = "ThemeMusicData";
 
-    function loadThemeMusicData() {
+    const load = () => {
+        try { return JSON.parse(localStorage.getItem(KEY) || "{}"); }
+        catch { return {}; }
+    };
+
+    const save = (on) => {
         try {
-            return JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY) || "{}");
-        } catch {
-            return {};
+            const data = load();
+            data.themeMusic = on; // always save as boolean
+            localStorage.setItem(KEY, JSON.stringify(data));
+        } catch (e) { console.error("Save failed:", e); }
+    };
+
+    // Create button
+    const btn = document.createElement("button");
+    btn.id = "themeMusicToggleButton";
+    Object.assign(btn.style, {
+        position: "absolute",
+        top: "10px",
+        left: "10px",
+        padding: "6px 12px",
+        fontSize: "16px",
+        background: "#222",
+        color: "#fff",
+        border: "1px solid #555",
+        borderRadius: "5px",
+        cursor: "pointer",
+        zIndex: 99999,
+        opacity: "0",
+        transition: "opacity 0.4s ease, transform 0.3s ease, box-shadow 0.3s ease"
+    });
+
+    // CSS for hover
+    const style = document.createElement("style");
+    style.textContent = `
+        #themeMusicToggleButton:hover {
+            opacity: 0.6;
+            box-shadow: 0 0 8px rgba(0,180,255,0.5);
+            transform: scale(1.05);
         }
-    }
+    `;
+    document.head.appendChild(style);
 
-    function saveThemeMusicData(isOn) {
-        try {
-            const existingData = loadThemeMusicData();
-            existingData.themeMusic = isOn;
-            localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(existingData));
-        } catch (e) {
-            console.error("Failed to save ThemeMusicData:", e);
-        }
-    }
+    // Glow and float animations
+    let glowTimer, floatFrame, startTime;
 
-    function createToggleButton() {
-        const toggleButton = document.createElement("button");
-        toggleButton.id = "themeMusicToggleButton";
-        toggleButton.style.padding = "6px 12px";
-        toggleButton.style.fontSize = "14px";
-        toggleButton.style.background = "#222";
-        toggleButton.style.color = "#fff";
-        toggleButton.style.border = "1px solid #555";
-        toggleButton.style.borderRadius = "5px";
-        toggleButton.style.cursor = "pointer";
-        toggleButton.style.opacity = 0.8;
-        toggleButton.style.position = "absolute";
-        toggleButton.style.top = "10px";
-        toggleButton.style.left = "10px";
-        toggleButton.style.zIndex = 99999;
+    const startGlow = () => {
+        let g = 0, d = 1;
+        clearInterval(glowTimer);
+        glowTimer = setInterval(() => {
+            g += d * 0.1;
+            if (g > 1.5 || g < 0) d *= -1;
+            btn.style.boxShadow = `0 0 ${8 + g * 8}px rgba(0,180,255,0.8)`;
+        }, 60);
+    };
 
-        let musicOn = true;
-        const storedData = loadThemeMusicData();
-        if (storedData.themeMusic === false || storedData.themeMusic === "off") {
-            musicOn = false;
-        }
-        toggleButton.textContent = musicOn ? "🎵" : "🔇";
+    const stopGlow = () => { clearInterval(glowTimer); btn.style.boxShadow = "none"; };
 
-        toggleButton.addEventListener("click", () => {
-            musicOn = !musicOn;
-            toggleButton.textContent = musicOn ? "🎵" : "🔇";
-            saveThemeMusicData(musicOn);
-            console.log("Theme music toggled:", musicOn ? "ON" : "OFF");
-        });
+    const startFloat = () => {
+        cancelAnimationFrame(floatFrame);
+        startTime = performance.now();
+        const anim = (t) => {
+            const y = Math.sin((t - startTime) / 800) * 4;
+            btn.style.transform = `translateY(${y}px)`;
+            floatFrame = requestAnimationFrame(anim);
+        };
+        floatFrame = requestAnimationFrame(anim);
+    };
 
-        return toggleButton;
-    }
+    const stopFloat = () => { cancelAnimationFrame(floatFrame); btn.style.transform = "none"; };
 
-    function insertWhenReady() {
-        const gamePanel = document.querySelector("div.MediumRightPanel");
-        if (gamePanel) {
-            gamePanel.style.position = "relative";
-            gamePanel.appendChild(createToggleButton());
-            console.log("Theme music toggle button added inside MediumRightPanel.");
+    const showButton = () => { btn.style.opacity = "0.9"; };
+    const hideButton = () => { btn.style.opacity = "0"; };
+
+    // Initialize state based on saved themeMusic
+    const data = load();
+    let on = data.themeMusic === undefined ? true : !!data.themeMusic;
+
+    btn.textContent = on ? "🎵" : "🔇";
+    if (on) { showButton(); startGlow(); startFloat(); }
+
+    // Toggle behavior
+    btn.onclick = () => {
+        on = !on;
+        btn.textContent = on ? "🎵" : "🔇";
+        save(on);
+
+        if (on) {
+            showButton();
+            startGlow();
+            startFloat();
         } else {
-            requestAnimationFrame(insertWhenReady);
+            stopGlow();
+            stopFloat();
+            setTimeout(() => { if (!on) hideButton(); }, 3000);
         }
-    }
+    };
 
-    insertWhenReady();
+    // Insert button when panel exists
+    const insert = () => {
+        const panel = document.querySelector("div.MediumRightPanel") || document.body;
+        if (panel) {
+            panel.style.position = panel.style.position || "relative";
+            panel.appendChild(btn);
+        } else requestAnimationFrame(insert);
+    };
+    insert();
+
 })();"""
 
 
