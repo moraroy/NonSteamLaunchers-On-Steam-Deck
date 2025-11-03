@@ -822,6 +822,7 @@ track_game, finalize_tracking = scan_and_track_games(logged_in_home, steamid3)
 WS_HOST = "localhost"
 WS_PORT = 8080
 TARGET_TITLE = "SharedJSContext"
+TARGET_TITLE2 = "Steam"
 
 
 JS_CODE = """
@@ -1207,31 +1208,69 @@ function manualPatch() {
 """
 
 
+
 THEMEMUSIC_CODE = r"""(function () {
-  // --- Detect Steam Play click ---
-  let stoppingMusic = false; // flag to prevent multiple fadeOut calls
-  let pausedForGame = false;  // prevents music restart after Play
+  const LOCAL_STORAGE_KEY = "ThemeMusicData";
 
-  if (window.SteamClient && SteamClient.Apps && SteamClient.Apps.RegisterForGameActionStart) {
-      SteamClient.Apps.RegisterForGameActionStart((appID) => {
-          if (stoppingMusic) return; // ignore repeated clicks
-          stoppingMusic = true;
+  const themeMusicEvents = new EventTarget();
+  const originalSetItem = localStorage.setItem.bind(localStorage);
 
-          console.log("Play clicked! Game starting… AppID:", appID);
+  localStorage.setItem = function (key, value) {
+    originalSetItem(key, value);
+    if (key === LOCAL_STORAGE_KEY) {
+      let enabled = true;
+      try {
+        const data = JSON.parse(value || "{}");
+        enabled = !(data.themeMusic === false || data.themeMusic === "off");
+      } catch {}
+      themeMusicEvents.dispatchEvent(new CustomEvent("themeMusicToggle", { detail: { enabled } }));
+    }
+  };
 
-          fadeOutAndStop().finally(() => {
-              stoppingMusic = false;
-          });
+  themeMusicEvents.addEventListener("themeMusicToggle", (e) => {
+    console.log("Theme music toggled (same tab):", e.detail.enabled);
+    if (!e.detail.enabled && ytPlayer) fadeOutAndStop();
+  });
 
-          // --- NEW: switch Steam UI to Library to prevent music restart ---
-          var mgr = window.MainWindowBrowserManager;
-          if (mgr) {
-              mgr.LoadURL("/library");
-          }
-      });
+  // Listen to changes from other tabs
+  window.addEventListener("storage", (e) => {
+    if (e.key === LOCAL_STORAGE_KEY) {
+      let enabled = true;
+      try {
+        const data = JSON.parse(e.newValue || "{}");
+        enabled = !(data.themeMusic === false || data.themeMusic === "off");
+      } catch {}
+      console.log("Theme music toggled (other tab):", enabled);
+      if (!enabled && ytPlayer) fadeOutAndStop();
+    }
+  });
+
+  function isThemeMusicEnabled() {
+    try {
+      const data = JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY) || "{}");
+      return !(data.themeMusic === false || data.themeMusic === "off");
+    } catch {
+      return true; // default ON if parsing fails
+    }
   }
 
-  // --- Original Theme Music Code ---
+  let stoppingMusic = false;
+  let pausedForGame = false;
+
+  if (window.SteamClient && SteamClient.Apps && SteamClient.Apps.RegisterForGameActionStart) {
+    SteamClient.Apps.RegisterForGameActionStart((appID) => {
+      if (stoppingMusic) return;
+      stoppingMusic = true;
+
+      console.log("Play clicked! Game starting… AppID:", appID);
+
+      fadeOutAndStop().finally(() => { stoppingMusic = false; });
+
+      var mgr = window.MainWindowBrowserManager;
+      if (mgr) mgr.LoadURL("/library");
+    });
+  }
+
   var mgr = window.MainWindowBrowserManager;
   if (!mgr) return;
 
@@ -1245,21 +1284,12 @@ THEMEMUSIC_CODE = r"""(function () {
   var currentQuery = null;
 
   var sessionCache = new Map();
-  var CACHE_EXPIRATION = 7 * 24 * 60 * 60 * 1000; // 7 days
-  var LOCAL_STORAGE_KEY = "ThemeMusicData";
+  const CACHE_EXPIRATION = 7 * 24 * 60 * 60 * 1000;
 
   if (!window.YT) {
     var tag = document.createElement('script');
     tag.src = "https://www.youtube.com/iframe_api";
     document.head.appendChild(tag);
-  }
-
-  function debounce(fn, delay) {
-    var timer = null;
-    return function () {
-      if (timer) clearTimeout(timer);
-      timer = setTimeout(fn, delay);
-    };
   }
 
   function waitForYouTubeAPI() {
@@ -1302,9 +1332,7 @@ THEMEMUSIC_CODE = r"""(function () {
   function fadeOutAndStop() {
     return new Promise(function (resolve) {
       if (!ytPlayer) return resolve();
-
-      pausedForGame = true; // stop automatic restart
-
+      pausedForGame = true;
       var volume = 100;
       clearInterval(fadeInterval);
       fadeInterval = setInterval(function () {
@@ -1323,23 +1351,19 @@ THEMEMUSIC_CODE = r"""(function () {
         ytPlayer = null;
         ytPlayerReady = false;
         currentQuery = null;
-
-        // short delay before resuming normal auto-play
         setTimeout(() => { pausedForGame = false; }, 2000);
-
         resolve();
       }
     });
   }
 
   function createYTPlayer(videoId) {
+    if (!isThemeMusicEnabled()) return Promise.resolve();
     return waitForYouTubeAPI().then(function () {
       ytAudioIframe && ytAudioIframe.remove();
       ytAudioIframe = document.createElement("div");
       ytAudioIframe.id = "yt-audio-player";
-      Object.assign(ytAudioIframe.style, {
-        width: "0", height: "0", position: "absolute", opacity: "0", pointerEvents: "none"
-      });
+      Object.assign(ytAudioIframe.style, { width: "0", height: "0", position: "absolute", opacity: "0", pointerEvents: "none" });
       document.body.appendChild(ytAudioIframe);
       ytPlayerReady = false;
       ytPlayer = new YT.Player("yt-audio-player", {
@@ -1356,6 +1380,7 @@ THEMEMUSIC_CODE = r"""(function () {
   }
 
   function playYouTubeAudio(query) {
+    if (!isThemeMusicEnabled()) return;
     if (query === currentQuery) return;
     currentQuery = query;
 
@@ -1374,7 +1399,8 @@ THEMEMUSIC_CODE = r"""(function () {
   }
 
   function handleAppId(appId) {
-    if (pausedForGame) return; // skip auto-play while paused
+    if (!isThemeMusicEnabled()) return;
+    if (pausedForGame) return;
     if (!window.appStore || !window.appStore.m_mapApps) return;
     var appInfo = window.appStore.m_mapApps.get(appId);
     if (!appInfo || !appInfo.display_name) return;
@@ -1383,18 +1409,15 @@ THEMEMUSIC_CODE = r"""(function () {
   }
 
   function handleUrl(url) {
-      var decoded = decodeURIComponent(url);
-      var match = decoded.match(/\/library\/app\/(\d+)/);
-
-      if (!match) {
-          match = window.location.pathname.match(/\/routes?\/library\/app\/(\d+)/);
-      }
-
-      if (!match) return;
-      var appId = Number(match[1]);
-      if (appId === lastAppID) return;
-      lastAppID = appId;
-      handleAppId(appId);
+    if (!isThemeMusicEnabled()) return;
+    var decoded = decodeURIComponent(url);
+    var match = decoded.match(/\/library\/app\/(\d+)/);
+    if (!match) match = window.location.pathname.match(/\/routes?\/library\/app\/(\d+)/);
+    if (!match) return;
+    var appId = Number(match[1]);
+    if (appId === lastAppID) return;
+    lastAppID = appId;
+    handleAppId(appId);
   }
 
   lastUrl = mgr.m_URL;
@@ -1411,6 +1434,78 @@ THEMEMUSIC_CODE = r"""(function () {
 
   requestAnimationFrame(watchUrl);
 })();"""
+
+THEMEMUSIC_BUTTON = r"""(function() {
+    if (document.getElementById("themeMusicToggleButton")) return; // prevent reinjection
+
+    const LOCAL_STORAGE_KEY = "ThemeMusicData";
+
+    function loadThemeMusicData() {
+        try {
+            return JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY) || "{}");
+        } catch {
+            return {};
+        }
+    }
+
+    function saveThemeMusicData(isOn) {
+        try {
+            const existingData = loadThemeMusicData();
+            existingData.themeMusic = isOn;
+            localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(existingData));
+        } catch (e) {
+            console.error("Failed to save ThemeMusicData:", e);
+        }
+    }
+
+    function createToggleButton() {
+        const toggleButton = document.createElement("button");
+        toggleButton.id = "themeMusicToggleButton";
+        toggleButton.style.padding = "6px 12px";
+        toggleButton.style.fontSize = "14px";
+        toggleButton.style.background = "#222";
+        toggleButton.style.color = "#fff";
+        toggleButton.style.border = "1px solid #555";
+        toggleButton.style.borderRadius = "5px";
+        toggleButton.style.cursor = "pointer";
+        toggleButton.style.opacity = 0.8;
+        toggleButton.style.position = "absolute";
+        toggleButton.style.top = "10px";
+        toggleButton.style.left = "10px";
+        toggleButton.style.zIndex = 99999;
+
+        let musicOn = true;
+        const storedData = loadThemeMusicData();
+        if (storedData.themeMusic === false || storedData.themeMusic === "off") {
+            musicOn = false;
+        }
+        toggleButton.textContent = musicOn ? "🎵" : "🔇";
+
+        toggleButton.addEventListener("click", () => {
+            musicOn = !musicOn;
+            toggleButton.textContent = musicOn ? "🎵" : "🔇";
+            saveThemeMusicData(musicOn);
+            console.log("Theme music toggled:", musicOn ? "ON" : "OFF");
+        });
+
+        return toggleButton;
+    }
+
+    function insertWhenReady() {
+        const gamePanel = document.querySelector("div.MediumRightPanel");
+        if (gamePanel) {
+            gamePanel.style.position = "relative";
+            gamePanel.appendChild(createToggleButton());
+            console.log("Theme music toggle button added inside MediumRightPanel.");
+        } else {
+            requestAnimationFrame(insertWhenReady);
+        }
+    }
+
+    insertWhenReady();
+})();"""
+
+
 
 
 
@@ -1814,6 +1909,51 @@ recv_ws_message_for_id(ws_socket, 1)
 
 inject_thememusic_code(ws_socket)
 #END OF THEMEMUSIC
+
+
+
+###Theme Music Button
+# Connect to the Steam target
+ws_url_steam = get_ws_url_by_title(WS_HOST, WS_PORT, TARGET_TITLE2)
+ws_socket_steam = create_websocket_connection(ws_url_steam)
+
+# Enable Runtime
+send_ws_text(ws_socket_steam, json.dumps({"id": 1, "method": "Runtime.enable"}))
+recv_ws_message_for_id(ws_socket_steam, 1)
+
+# Inject ThemeMusic button JS into Steam
+inject_id = next(eval_id_counter)
+
+wrapped_code = f"(async () => {{ {THEMEMUSIC_BUTTON}; return 'ThemeMusic button injection done'; }})()"
+
+send_ws_text(ws_socket_steam, json.dumps({
+    "id": inject_id,
+    "method": "Runtime.evaluate",
+    "params": {
+        "expression": wrapped_code,
+        "awaitPromise": True
+    }
+}))
+
+response = recv_ws_message_for_id(ws_socket_steam, inject_id)
+print("ThemeMusic button injection response:", response)
+###End of theme music button
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
