@@ -1380,22 +1380,50 @@ THEMEMUSIC_CODE = r"""(function () {
   }
 
   function playYouTubeAudio(query) {
-    if (!isThemeMusicEnabled()) return;
-    if (query === currentQuery) return;
-    currentQuery = query;
+      if (!isThemeMusicEnabled()) return;
+      if (query === currentQuery) return;
+      currentQuery = query;
 
-    return fadeOutAndStop().then(function () {
-      var cachedId = getCachedVideo(query);
-      if (cachedId) return createYTPlayer(cachedId);
+      // Step 1: Immediately set currentlyPlaying with cached or placeholder
+      try {
+          const themeData = JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY) || "{}");
+          const cachedTrack = themeData[query] || {};
+          themeData.currentlyPlaying = {
+              name: query,
+              videoId: cachedTrack.videoId || "loading", // temporary placeholder
+              timestamp: cachedTrack.timestamp || Date.now()
+          };
+          originalSetItem(LOCAL_STORAGE_KEY, JSON.stringify(themeData));
+      } catch {}
 
-      return fetch("https://nonsteamlaunchers.onrender.com/api/x7a9/" + encodeURIComponent(query))
-        .then(function (res) { return res.json(); })
-        .then(function (data) {
-          if (!data || !data.videoId) return;
-          storeCachedVideo(query, data.videoId);
-          return createYTPlayer(data.videoId);
-        }).catch(function () { });
-    });
+      // Step 2: Stop current track
+      return fadeOutAndStop().then(function () {
+          var cachedId = getCachedVideo(query);
+          if (cachedId) return createYTPlayer(cachedId);
+
+          // Step 3: Fetch new track from API
+          return fetch("https://nonsteamlaunchers.onrender.com/api/x7a9/" + encodeURIComponent(query))
+              .then(function (res) { return res.json(); })
+              .then(function (data) {
+                  if (!data || !data.videoId) return;
+
+                  // Cache the track
+                  storeCachedVideo(query, data.videoId);
+
+                  // Step 4: Update currentlyPlaying with real videoId
+                  try {
+                      const themeData = JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY) || "{}");
+                      themeData.currentlyPlaying = {
+                          name: query,
+                          videoId: data.videoId,
+                          timestamp: Date.now()
+                      };
+                      originalSetItem(LOCAL_STORAGE_KEY, JSON.stringify(themeData));
+                  } catch {}
+
+                  return createYTPlayer(data.videoId);
+              }).catch(function () { });
+      });
   }
 
   function handleAppId(appId) {
@@ -1540,7 +1568,7 @@ THEMEMUSIC_BUTTON = r"""const THEMEMUSIC_BUTTON = (() => {
 
     // Insert button when panel exists
     const insert = () => {
-        const panel = document.querySelector("div.MediumRightPanel") || document.body;
+        const panel = document.querySelector("div.MediumRightPanel");
         if (panel) {
             panel.style.position = panel.style.position || "relative";
             panel.appendChild(btn);
