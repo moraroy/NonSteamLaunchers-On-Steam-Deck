@@ -1921,45 +1921,111 @@ def inject_js_only(ws_socket):
         print("Injection failed:", e)
 ###End of Uninstall Notifcations
 
+
+
+
+
 ###PLAYTIME ONLY
+# Ensure eval_id_counter exists
+eval_id_counter = iter(range(1, 1000000))
+
 def inject_playtime_code(ws_socket):
-    inject_id = next(eval_id_counter)
+    try:
+        inject_id = next(eval_id_counter)
 
-    wrapped_code = f"(async () => {{ {PLAYTIME_CODE}; return 'Playtime injection done'; }})()"
+        wrapped_code = f"(async () => {{ {PLAYTIME_CODE}; return 'Playtime injection done'; }})()"
 
-    send_ws_text(ws_socket, json.dumps({
-        "id": inject_id,
-        "method": "Runtime.evaluate",
-        "params": {
-            "expression": wrapped_code,
-            "awaitPromise": True
-        }
-    }))
+        send_ws_text(ws_socket, json.dumps({
+            "id": inject_id,
+            "method": "Runtime.evaluate",
+            "params": {
+                "expression": wrapped_code,
+                "awaitPromise": True
+            }
+        }))
 
-    response = recv_ws_message_for_id(ws_socket, inject_id)
-    print("Playtime injection response:", response)
-    return response
+        response = recv_ws_message_for_id(ws_socket, inject_id)
+        print("Playtime injection response:", response)
+        return response
+    except Exception as e:
+        print("Error during Playtime injection:", e)
+        return None
 
+# Usage
+try:
+    ws_url = get_ws_url_by_title(WS_HOST, WS_PORT, TARGET_TITLE)
+    ws_socket = create_websocket_connection(ws_url)
 
-ws_url = get_ws_url_by_title(WS_HOST, WS_PORT, TARGET_TITLE)
+    send_ws_text(ws_socket, json.dumps({"id": 1, "method": "Runtime.enable"}))
+    recv_ws_message_for_id(ws_socket, 1)
 
-ws_socket = create_websocket_connection(ws_url)
+    inject_playtime_code(ws_socket)
+except Exception as e:
+    print("Failed to connect or inject Playtime code:", e)
 
-send_ws_text(ws_socket, json.dumps({"id": 1, "method": "Runtime.enable"}))
-recv_ws_message_for_id(ws_socket, 1)
-
-inject_playtime_code(ws_socket)
 #END OF PLAYTIME
 
 
 
 ###THEMEMUSIC ONLY
+# Usage
+eval_id_counter = iter(range(1, 1000000))  # Ensure counter exists
+
 def inject_thememusic_code(ws_socket):
+    try:
+        inject_id = next(eval_id_counter)
+
+        wrapped_code = f"(async () => {{ {THEMEMUSIC_CODE}; return 'ThemeMusic injection done'; }})()"
+
+        send_ws_text(ws_socket, json.dumps({
+            "id": inject_id,
+            "method": "Runtime.evaluate",
+            "params": {
+                "expression": wrapped_code,
+                "awaitPromise": True
+            }
+        }))
+
+        response = recv_ws_message_for_id(ws_socket, inject_id)
+        print("ThemeMusic injection response:", response)
+        return response
+    except Exception as e:
+        print("Error during ThemeMusic injection:", e)
+        return None
+
+# Usage
+try:
+    ws_url = get_ws_url_by_title(WS_HOST, WS_PORT, TARGET_TITLE)
+    ws_socket = create_websocket_connection(ws_url)
+
+    send_ws_text(ws_socket, json.dumps({"id": 1, "method": "Runtime.enable"}))
+    recv_ws_message_for_id(ws_socket, 1)
+
+    inject_thememusic_code(ws_socket)
+except Exception as e:
+    print("Failed to connect or inject ThemeMusic code:", e)
+
+#END OF THEMEMUSIC
+
+
+
+###Theme Music Button# Ensure counter exists
+eval_id_counter = iter(range(1, 1000000))
+
+try:
+    # Connect to the Steam target
+    ws_url_steam = get_ws_url_by_title(WS_HOST, WS_PORT, TARGET_TITLE2)
+    ws_socket_steam = create_websocket_connection(ws_url_steam)
+
+    # Enable Runtime
+    send_ws_text(ws_socket_steam, json.dumps({"id": 1, "method": "Runtime.enable"}))
+    recv_ws_message_for_id(ws_socket_steam, 1)
+
+    # Inject ThemeMusic button JS into Steam
     inject_id = next(eval_id_counter)
+    wrapped_code = f"(async () => {{ {THEMEMUSIC_BUTTON}; return 'ThemeMusic button injection done'; }})()"
 
-    wrapped_code = f"(async () => {{ {THEMEMUSIC_CODE}; return 'ThemeMusic injection done'; }})()"
-
-    send_ws_text(ws_socket, json.dumps({
+    send_ws_text(ws_socket_steam, json.dumps({
         "id": inject_id,
         "method": "Runtime.evaluate",
         "params": {
@@ -1968,48 +2034,11 @@ def inject_thememusic_code(ws_socket):
         }
     }))
 
-    response = recv_ws_message_for_id(ws_socket, inject_id)
-    print("ThemeMusic injection response:", response)
-    return response
+    response = recv_ws_message_for_id(ws_socket_steam, inject_id)
+    print("ThemeMusic button injection response:", response)
+except Exception as e:
+    print("Failed to connect or inject ThemeMusic button:", e)
 
-
-# Usage
-ws_url = get_ws_url_by_title(WS_HOST, WS_PORT, TARGET_TITLE)
-ws_socket = create_websocket_connection(ws_url)
-
-send_ws_text(ws_socket, json.dumps({"id": 1, "method": "Runtime.enable"}))
-recv_ws_message_for_id(ws_socket, 1)
-
-inject_thememusic_code(ws_socket)
-#END OF THEMEMUSIC
-
-
-
-###Theme Music Button
-# Connect to the Steam target
-ws_url_steam = get_ws_url_by_title(WS_HOST, WS_PORT, TARGET_TITLE2)
-ws_socket_steam = create_websocket_connection(ws_url_steam)
-
-# Enable Runtime
-send_ws_text(ws_socket_steam, json.dumps({"id": 1, "method": "Runtime.enable"}))
-recv_ws_message_for_id(ws_socket_steam, 1)
-
-# Inject ThemeMusic button JS into Steam
-inject_id = next(eval_id_counter)
-
-wrapped_code = f"(async () => {{ {THEMEMUSIC_BUTTON}; return 'ThemeMusic button injection done'; }})()"
-
-send_ws_text(ws_socket_steam, json.dumps({
-    "id": inject_id,
-    "method": "Runtime.evaluate",
-    "params": {
-        "expression": wrapped_code,
-        "awaitPromise": True
-    }
-}))
-
-response = recv_ws_message_for_id(ws_socket_steam, inject_id)
-print("ThemeMusic button injection response:", response)
 ###End of theme music button
 
 
