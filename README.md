@@ -51,6 +51,8 @@ In both versions of NonSteamLaunchers, Desktop or Decky, NSL will back up your g
 
 -Pressing "Update Proton GE" in both the Desktop version or the Decky Plugin version, will give you the latest version of Proton GE and UMU. A patch will also be applied to allow Game Streaming from Discord in Game Mode.
 
+- Pressing the "Music Button" on the top left of your game page will enable/disble the Game Theme Feature. This simply attempts to play your games theme music in the client! You can even change the music if you dont like it with the paste button!. Clicking the button will hide and disable the feature.
+
 - [UMU Launcher](https://github.com/Open-Wine-Components/umu-launcher) is automatically used and is processed for each game and Launcher. Proton GE will be used where necessary.
 
 ### Notes
