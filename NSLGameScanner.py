@@ -1228,9 +1228,16 @@ THEMEMUSIC_CODE = r"""(function () {
   };
 
   themeMusicEvents.addEventListener("themeMusicToggle", (e) => {
-    console.log("Theme music toggled (same tab):", e.detail.enabled);
-    if (!e.detail.enabled && ytPlayer) fadeOutAndStop();
+      console.log("Theme music toggled (same tab):", e.detail.enabled);
+      if (!e.detail.enabled && ytPlayer) {
+          // Stop the music first
+          fadeOutAndStop().then(() => {
+              // Clear the currently playing music data after it has stopped
+              clearCurrentlyPlaying();
+          });
+      }
   });
+
 
   // Listen to changes from other tabs
   window.addEventListener("storage", (e) => {
@@ -1309,18 +1316,33 @@ THEMEMUSIC_CODE = r"""(function () {
   }
 
   function getCachedVideo(query) {
-    if (sessionCache.has(query)) return sessionCache.get(query);
-    var cache = loadCache();
-    var entry = cache[query];
-    if (!entry) return null;
-    if (Date.now() - entry.timestamp > CACHE_EXPIRATION) {
-      delete cache[query];
-      saveCache(cache);
-      return null;
-    }
-    sessionCache.set(query, entry.videoId);
-    return entry.videoId;
+      // First, check if there's a cached video ID in the session cache
+      if (sessionCache.has(query)) {
+          // Retrieve the session cache entry
+          const sessionEntry = sessionCache.get(query);
+          const cache = loadCache();  // Load the localStorage cache
+          const localStorageEntry = cache[query];
+
+          if (localStorageEntry && localStorageEntry.timestamp > sessionEntry.timestamp) {
+              // If the timestamp in localStorage is newer, use the localStorage entry
+              sessionCache.set(query, localStorageEntry);  // Update the session cache with the newer entry
+              return localStorageEntry.videoId;
+          }
+
+          // If session cache is newer or no localStorage entry, return session cache ID
+          return sessionEntry.videoId;
+      }
+
+      // If no session cache, check the localStorage cache
+      var cache = loadCache();
+      var entry = cache[query];
+      if (!entry) return null;
+
+      // If the entry exists in localStorage and it's not expired, use it
+      sessionCache.set(query, entry);  // Store the localStorage entry in session cache
+      return entry.videoId;
   }
+
 
   function storeCachedVideo(query, videoId) {
     var cache = loadCache();
@@ -1352,6 +1374,7 @@ THEMEMUSIC_CODE = r"""(function () {
         ytPlayerReady = false;
         currentQuery = null;
         setTimeout(() => { pausedForGame = false; }, 2000);
+
         resolve();
       }
     });
@@ -1379,29 +1402,42 @@ THEMEMUSIC_CODE = r"""(function () {
     });
   }
 
+
+
+
+  function updateCurrentlyPlaying(query, videoId) {
+      try {
+          const themeData = JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY) || "{}");
+          themeData.currentlyPlaying = {
+              name: query,
+              videoId: videoId || "loading",  // Temporary placeholder while loading
+              timestamp: Date.now()
+          };
+          localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(themeData));
+
+          // Dispatch an event to notify the update
+          themeMusicEvents.dispatchEvent(new CustomEvent("currentlyPlayingUpdated", {
+              detail: { name: query, videoId: videoId }
+          }));
+      } catch (e) {
+          console.error("Error updating currentlyPlaying:", e);
+      }
+  }
+
   function playYouTubeAudio(query) {
       if (!isThemeMusicEnabled()) return;
       if (query === currentQuery) return;
       currentQuery = query;
 
-      // Step 1: Immediately set currentlyPlaying with cached or placeholder
-      try {
-          const themeData = JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY) || "{}");
-          const cachedTrack = themeData[query] || {};
-          themeData.currentlyPlaying = {
-              name: query,
-              videoId: cachedTrack.videoId || "loading", // temporary placeholder
-              timestamp: cachedTrack.timestamp || Date.now()
-          };
-          originalSetItem(LOCAL_STORAGE_KEY, JSON.stringify(themeData));
-      } catch {}
+      // Update "currentlyPlaying" state in localStorage immediately
+      updateCurrentlyPlaying(query, "loading"); // Temporary placeholder for the videoId
 
-      // Step 2: Stop current track
+      // Stop current track
       return fadeOutAndStop().then(function () {
           var cachedId = getCachedVideo(query);
           if (cachedId) return createYTPlayer(cachedId);
 
-          // Step 3: Fetch new track from API
+          // Fetch new track from API
           return fetch("https://nonsteamlaunchers.onrender.com/api/x7a9/" + encodeURIComponent(query))
               .then(function (res) { return res.json(); })
               .then(function (data) {
@@ -1410,21 +1446,32 @@ THEMEMUSIC_CODE = r"""(function () {
                   // Cache the track
                   storeCachedVideo(query, data.videoId);
 
-                  // Step 4: Update currentlyPlaying with real videoId
-                  try {
-                      const themeData = JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY) || "{}");
-                      themeData.currentlyPlaying = {
-                          name: query,
-                          videoId: data.videoId,
-                          timestamp: Date.now()
-                      };
-                      originalSetItem(LOCAL_STORAGE_KEY, JSON.stringify(themeData));
-                  } catch {}
+                  // Update "currentlyPlaying" state with the actual videoId
+                  updateCurrentlyPlaying(query, data.videoId);
 
                   return createYTPlayer(data.videoId);
               }).catch(function () { });
       });
   }
+
+  // Handle the event when "currentlyPlaying" changes
+  themeMusicEvents.addEventListener("currentlyPlayingUpdated", (e) => {
+      const { name, videoId } = e.detail;
+      console.log("Currently Playing:", name, videoId);
+      // You can trigger UI updates or any other logic that depends on the new state here.
+  });
+
+  function clearCurrentlyPlaying() {
+      try {
+          const themeData = JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY) || "{}");
+          themeData.currentlyPlaying = null;
+          localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(themeData));
+          console.log("Currently playing data cleared");
+      } catch (e) {
+          console.error("Error clearing currentlyPlaying:", e);
+      }
+  }
+
 
   function handleAppId(appId) {
     if (!isThemeMusicEnabled()) return;
@@ -1463,7 +1510,10 @@ THEMEMUSIC_CODE = r"""(function () {
   requestAnimationFrame(watchUrl);
 })();"""
 
-THEMEMUSIC_BUTTON = r"""const THEMEMUSIC_BUTTON = (() => {
+
+
+THEMEMUSIC_BUTTON = r"""
+const THEMEMUSIC_BUTTON = (() => {
     if (document.getElementById("themeMusicToggleButton")) return;
 
     const KEY = "ThemeMusicData";
@@ -1473,48 +1523,40 @@ THEMEMUSIC_BUTTON = r"""const THEMEMUSIC_BUTTON = (() => {
         catch { return {}; }
     };
 
-    const save = (on) => {
-        try {
-            const data = load();
-            data.themeMusic = on; // always save as boolean
-            localStorage.setItem(KEY, JSON.stringify(data));
-        } catch (e) { console.error("Save failed:", e); }
+    const save = (data) => {
+        try { localStorage.setItem(KEY, JSON.stringify(data)); }
+        catch(e){ console.error(e); }
     };
 
-    // Create button
-    const btn = document.createElement("button");
-    btn.id = "themeMusicToggleButton";
-    Object.assign(btn.style, {
+    // Container for buttons
+    const container = document.createElement("div");
+    Object.assign(container.style, {
         position: "absolute",
         top: "10px",
         left: "10px",
-        padding: "6px 12px",
-        fontSize: "16px",
-        background: "#222",
-        color: "#fff",
-        border: "1px solid #555",
-        borderRadius: "5px",
-        cursor: "pointer",
-        zIndex: 99999,
-        opacity: "0",
-        transition: "opacity 0.4s ease, transform 0.3s ease, box-shadow 0.3s ease"
+        display: "flex",
+        alignItems: "center",
+        gap: "6px",
+        zIndex: "99999"
     });
 
-    // CSS for hover
-    const style = document.createElement("style");
-    style.textContent = `
-        #themeMusicToggleButton:hover {
-            opacity: 0.6;
-            box-shadow: 0 0 8px rgba(0,180,255,0.5);
-            transform: scale(1.05);
-        }
-    `;
-    document.head.appendChild(style);
+    // Shared button styling
+    const styleButton = (btn) => {
+        Object.assign(btn.style, {
+            padding: "6px 12px",
+            fontSize: "16px",
+            background: "#222",
+            color: "#fff",
+            border: "1px solid #555",
+            borderRadius: "5px",
+            cursor: "pointer",
+            transition: "transform 0.3s ease, box-shadow 0.3s ease, opacity 0.3s ease"
+        });
+    };
 
-    // Glow and float animations
+    // Glow & float helpers
     let glowTimer, floatFrame, startTime;
-
-    const startGlow = () => {
+    const startGlow = (btn) => {
         let g = 0, d = 1;
         clearInterval(glowTimer);
         glowTimer = setInterval(() => {
@@ -1523,62 +1565,193 @@ THEMEMUSIC_BUTTON = r"""const THEMEMUSIC_BUTTON = (() => {
             btn.style.boxShadow = `0 0 ${8 + g * 8}px rgba(0,180,255,0.8)`;
         }, 60);
     };
+    const stopGlow = (btn) => { clearInterval(glowTimer); btn.style.boxShadow = "none"; };
 
-    const stopGlow = () => { clearInterval(glowTimer); btn.style.boxShadow = "none"; };
-
-    const startFloat = () => {
+    const startFloat = (btns) => {
         cancelAnimationFrame(floatFrame);
         startTime = performance.now();
         const anim = (t) => {
             const y = Math.sin((t - startTime) / 800) * 4;
-            btn.style.transform = `translateY(${y}px)`;
+            btns.forEach(btn => btn.style.transform = `translateY(${y}px)`);
             floatFrame = requestAnimationFrame(anim);
         };
         floatFrame = requestAnimationFrame(anim);
     };
+    const stopFloat = (btns) => { cancelAnimationFrame(floatFrame); btns.forEach(btn => btn.style.transform = "none"); };
 
-    const stopFloat = () => { cancelAnimationFrame(floatFrame); btn.style.transform = "none"; };
+    const showButton = (btn) => { btn.style.opacity = "0.9"; };
+    const hideButton = (btn) => { btn.style.opacity = "0"; };
 
-    const showButton = () => { btn.style.opacity = "0.9"; };
-    const hideButton = () => { btn.style.opacity = "0"; };
+    // Music toggle button
+    const musicBtn = document.createElement("button");
+    musicBtn.id = "themeMusicToggleButton";
+    styleButton(musicBtn);
 
-    // Initialize state based on saved themeMusic
     const data = load();
     let on = data.themeMusic === undefined ? true : !!data.themeMusic;
+    musicBtn.textContent = on ? "🎵" : "🔇";
 
-    btn.textContent = on ? "🎵" : "🔇";
-    if (on) { showButton(); startGlow(); startFloat(); }
+    // Paste button
+    const pasteBtn = document.createElement("button");
+    pasteBtn.textContent = "📋";
+    styleButton(pasteBtn);
+    Object.assign(pasteBtn.style, {
+        position: "absolute",
+        top: "0px",
+        left: "100%",
+        marginLeft: "6px",
+        opacity: "0",
+        transform: "translateX(0px)"
+    });
 
-    // Toggle behavior
-    btn.onclick = () => {
-        on = !on;
-        btn.textContent = on ? "🎵" : "🔇";
-        save(on);
+    // Feedback bubble
+    const bubble = document.createElement("div");
+    bubble.id = "themeMusicHoverBubble";
+    bubble.textContent = "Don't like what you hear? Then paste it yo!";
+    Object.assign(bubble.style, {
+        position: "absolute",
+        top: "40px",
+        left: "0",
+        background: "#222",
+        color: "#fff",
+        border: "1px solid #555",
+        borderRadius: "5px",
+        padding: "8px 12px",
+        fontSize: "14px",
+        zIndex: "100000",
+        whiteSpace: "nowrap",
+        opacity: "0",
+        transform: "translateY(-10px)",
+        transition: "opacity 0.3s ease, transform 0.3s ease",
+        pointerEvents: "none"
+    });
 
-        if (on) {
-            showButton();
-            startGlow();
-            startFloat();
+    const showBubble = (text, isError = false) => {
+        bubble.textContent = text || "Don't like what you hear? Change it with paste!";
+        bubble.style.opacity = "1";
+        bubble.style.transform = "translateY(0)";
+
+        // Set color based on whether it's an error or success
+        if (isError) {
+            bubble.style.backgroundColor = "#F44336";  // Invalid YouTube link -> red
+        } else if (text && text.startsWith("Updated")) {
+            bubble.style.backgroundColor = "#4CAF50";  // Updated theme message -> green
         } else {
-            stopGlow();
-            stopFloat();
-            setTimeout(() => { if (!on) hideButton(); }, 3000);
+            bubble.style.backgroundColor = "#222";  // Default bubble
+        }
+    };
+    const hideBubble = () => { bubble.style.opacity = "0"; bubble.style.transform = "translateY(-10px)"; };
+    const showPaste = () => { pasteBtn.style.opacity = "1"; pasteBtn.style.pointerEvents = "auto"; };
+    const hidePaste = () => { pasteBtn.style.opacity = "0"; pasteBtn.style.pointerEvents = "none"; };
+
+    pasteBtn.onclick = async () => {
+        try {
+            const text = await navigator.clipboard.readText();
+            const match = text.match(/(?:youtube\.com\/.*v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
+            if (!match) return showBubble("Invalid YouTube link!", true);  // Pass true for error (red)
+
+            const newVideoId = match[1];
+            const themeData = load();
+            const currentThemeName = themeData.currentlyPlaying?.name;
+            if (!currentThemeName || !themeData[currentThemeName]) {
+                return showBubble("No theme currently playing!");
+            }
+
+            // Update stored entry with videoId and timestamp
+            themeData[currentThemeName].videoId = newVideoId;
+            themeData[currentThemeName].timestamp = Date.now(); // Add the current timestamp
+            save(themeData);
+
+            // UI feedback
+            musicBtn.textContent = "🎵";
+            showButton(musicBtn);
+            startGlow(musicBtn);
+            startFloat([musicBtn]);
+
+            showBubble(`Updated "${currentThemeName}"!`);
+
+            // Delay hiding the paste button so the hover state stays active briefly
+            setTimeout(() => {
+                hidePaste();
+            }, 3000);
+
+        } catch (e) {
+            console.error(e);
+            showBubble("Failed to read clipboard.", true);
         }
     };
 
-    // Insert button when panel exists
+    // Append buttons and bubble
+    container.appendChild(musicBtn);
+    container.appendChild(bubble);
+    container.appendChild(pasteBtn);
+
+    // Hide button if music is off
+    if(!on){
+        hideButton(musicBtn);
+        hidePaste();
+    }
+
+    // Insert container into page
     const insert = () => {
         const panel = document.querySelector("div.MediumRightPanel");
         if (panel) {
             panel.style.position = panel.style.position || "relative";
-            panel.appendChild(btn);
+            if (!container.parentNode) panel.appendChild(container);
         } else requestAnimationFrame(insert);
     };
     insert();
 
-})();"""
+    // Start glow & float only if music is on
+    if(on){
+        showButton(musicBtn);
+        startGlow(musicBtn);
+        startFloat([musicBtn]);
+    }
 
+    // Hover logic
+    [musicBtn, pasteBtn, bubble].forEach(el => {
+        el.addEventListener("mouseenter", () => { if(on) { showBubble(); showPaste(); } });
+        el.addEventListener("mouseleave", () => {
+            setTimeout(() => {
+                if (![musicBtn, pasteBtn, bubble].some(el => el.matches(':hover'))) {
+                    hideBubble(); hidePaste();
+                }
+            }, 150);
+        });
+    });
 
+    // Toggle music on/off
+    musicBtn.onclick = () => {
+        on = !on;
+        musicBtn.textContent = on ? "🎵" : "🔇";
+        const savedData = load();
+        savedData.themeMusic = on;
+        save(savedData);
+
+        if (on) {
+            showButton(musicBtn);
+            startGlow(musicBtn);
+            startFloat([musicBtn]);
+        } else {
+            // Show the 🔇 icon first and keep it visible for 3 seconds
+            musicBtn.textContent = "🔇";
+            showButton(musicBtn);
+            stopGlow(musicBtn);
+            stopFloat([musicBtn]);
+
+            // After 3 seconds, resume normal hide logic
+            setTimeout(() => {
+
+                hideButton(musicBtn);
+                hideBubble();
+                hidePaste();
+            }, 2000);
+        }
+    };
+
+})();
+"""
 
 
 
