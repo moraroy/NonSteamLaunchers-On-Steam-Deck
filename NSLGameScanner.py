@@ -1634,23 +1634,49 @@ const THEMEMUSIC_BUTTON = (() => {
         opacity: "0",
         transform: "translateY(-10px)",
         transition: "opacity 0.3s ease, transform 0.3s ease",
-        pointerEvents: "none"
+        // FIX 1: Allow clicks & hover inside bubble
+        pointerEvents: "auto"
+    });
+
+    // FIX 2: Make link inside bubble clickable and bubble hoverable
+    bubble.addEventListener("mouseenter", () => {
+        bubble.style.opacity = "1";
+    });
+    bubble.addEventListener("mouseleave", () => {
+        setTimeout(() => {
+            if (![musicBtn, pasteBtn, bubble].some(el => el.matches(':hover'))) {
+                hideBubble(); hidePaste();
+            }
+        }, 150);
     });
 
     const showBubble = (text, isError = false) => {
-        bubble.textContent = text || "Don't like what you hear? Change it with paste!";
+        const themeData = load();
+        const current = themeData.currentlyPlaying;
+
+        let linkHTML = "hear"; // default plain word
+
+        // Make “hear” clickable if a video is playing
+        if (current?.videoId) {
+            const videoUrl = `https://youtu.be/${current.videoId}`;
+            linkHTML = `<a href="${videoUrl}" target="_blank" style="color:#0af;text-decoration:underline;cursor:pointer;">hear</a>`;
+        }
+
+        const msg = text || `Don't like what you ${linkHTML}? Change it with paste!`;
+        bubble.innerHTML = msg;
+
         bubble.style.opacity = "1";
         bubble.style.transform = "translateY(0)";
 
-        // Set color based on whether it's an error or success
         if (isError) {
-            bubble.style.backgroundColor = "#F44336";  // Invalid YouTube link -> red
+            bubble.style.backgroundColor = "#F44336"; // red
         } else if (text && text.startsWith("Updated")) {
-            bubble.style.backgroundColor = "#4CAF50";  // Updated theme message -> green
+            bubble.style.backgroundColor = "#4CAF50"; // green
         } else {
-            bubble.style.backgroundColor = "#222";  // Default bubble
+            bubble.style.backgroundColor = "#222"; // default
         }
     };
+
     const hideBubble = () => { bubble.style.opacity = "0"; bubble.style.transform = "translateY(-10px)"; };
     const showPaste = () => { pasteBtn.style.opacity = "1"; pasteBtn.style.pointerEvents = "auto"; };
     const hidePaste = () => { pasteBtn.style.opacity = "0"; pasteBtn.style.pointerEvents = "none"; };
@@ -1659,7 +1685,7 @@ const THEMEMUSIC_BUTTON = (() => {
         try {
             const text = await navigator.clipboard.readText();
             const match = text.match(/(?:youtube\.com\/.*v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
-            if (!match) return showBubble("Invalid YouTube link!", true);  // Pass true for error (red)
+            if (!match) return showBubble("Invalid YouTube link!", true);
 
             const newVideoId = match[1];
             const themeData = load();
@@ -1668,12 +1694,10 @@ const THEMEMUSIC_BUTTON = (() => {
                 return showBubble("No theme currently playing!");
             }
 
-            // Update stored entry with videoId and timestamp
             themeData[currentThemeName].videoId = newVideoId;
-            themeData[currentThemeName].timestamp = Date.now(); // Add the current timestamp
+            themeData[currentThemeName].timestamp = Date.now();
             save(themeData);
 
-            // UI feedback
             musicBtn.textContent = "🎵";
             showButton(musicBtn);
             startGlow(musicBtn);
@@ -1681,7 +1705,6 @@ const THEMEMUSIC_BUTTON = (() => {
 
             showBubble(`Updated "${currentThemeName}"!`);
 
-            // Delay hiding the paste button so the hover state stays active briefly
             setTimeout(() => {
                 hidePaste();
             }, 3000);
@@ -1692,18 +1715,15 @@ const THEMEMUSIC_BUTTON = (() => {
         }
     };
 
-    // Append buttons and bubble
     container.appendChild(musicBtn);
     container.appendChild(bubble);
     container.appendChild(pasteBtn);
 
-    // Hide button if music is off
     if(!on){
         hideButton(musicBtn);
         hidePaste();
     }
 
-    // Insert container into page
     const insert = () => {
         const panel = document.querySelector("div.MediumRightPanel");
         if (panel) {
@@ -1713,15 +1733,14 @@ const THEMEMUSIC_BUTTON = (() => {
     };
     insert();
 
-    // Start glow & float only if music is on
     if(on){
         showButton(musicBtn);
         startGlow(musicBtn);
         startFloat([musicBtn]);
     }
 
-    // Hover logic
-    [musicBtn, pasteBtn, bubble].forEach(el => {
+    // Hover logic for buttons
+    [musicBtn, pasteBtn].forEach(el => {
         el.addEventListener("mouseenter", () => { if(on) { showBubble(); showPaste(); } });
         el.addEventListener("mouseleave", () => {
             setTimeout(() => {
@@ -1745,15 +1764,11 @@ const THEMEMUSIC_BUTTON = (() => {
             startGlow(musicBtn);
             startFloat([musicBtn]);
         } else {
-            // Show the 🔇 icon first and keep it visible for 3 seconds
             musicBtn.textContent = "🔇";
             showButton(musicBtn);
             stopGlow(musicBtn);
             stopFloat([musicBtn]);
-
-            // After 3 seconds, resume normal hide logic
             setTimeout(() => {
-
                 hideButton(musicBtn);
                 hideBubble();
                 hidePaste();
