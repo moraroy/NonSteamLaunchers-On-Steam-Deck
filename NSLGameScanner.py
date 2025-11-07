@@ -1634,53 +1634,43 @@ const THEMEMUSIC_BUTTON = (() => {
         opacity: "0",
         transform: "translateY(-10px)",
         transition: "opacity 0.3s ease, transform 0.3s ease",
-        // FIX 1: Allow clicks & hover inside bubble
         pointerEvents: "auto"
     });
 
-    // FIX 2: Make link inside bubble clickable and bubble hoverable
-    bubble.addEventListener("mouseenter", () => {
-        bubble.style.opacity = "1";
-    });
+    // Bubble hover
+    bubble.addEventListener("mouseenter", () => { if(on) bubble.style.opacity = "1"; });
     bubble.addEventListener("mouseleave", () => {
         setTimeout(() => {
-            if (![musicBtn, pasteBtn, bubble].some(el => el.matches(':hover'))) {
+            if (!on || ![musicBtn, pasteBtn, bubble].some(el => el.matches(':hover'))) {
                 hideBubble(); hidePaste();
             }
         }, 150);
     });
 
     const showBubble = (text, isError = false) => {
+        if(!on) return; // Only show if music is ON
         const themeData = load();
         const current = themeData.currentlyPlaying;
-
-        let linkHTML = "hear"; // default plain word
-
-        // Make “hear” clickable if a video is playing
+        let linkHTML = "hear";
         if (current?.videoId) {
             const videoUrl = `https://youtu.be/${current.videoId}`;
             linkHTML = `<a href="${videoUrl}" target="_blank" style="color:#0af;text-decoration:underline;cursor:pointer;">hear</a>`;
         }
-
         const msg = text || `Don't like what you ${linkHTML}? Change it with paste!`;
         bubble.innerHTML = msg;
 
         bubble.style.opacity = "1";
         bubble.style.transform = "translateY(0)";
-
-        if (isError) {
-            bubble.style.backgroundColor = "#F44336"; // red
-        } else if (text && text.startsWith("Updated")) {
-            bubble.style.backgroundColor = "#4CAF50"; // green
-        } else {
-            bubble.style.backgroundColor = "#222"; // default
-        }
+        if (isError) bubble.style.backgroundColor = "#F44336";
+        else if (text && text.startsWith("Updated")) bubble.style.backgroundColor = "#4CAF50";
+        else bubble.style.backgroundColor = "#222";
     };
 
     const hideBubble = () => { bubble.style.opacity = "0"; bubble.style.transform = "translateY(-10px)"; };
     const showPaste = () => { pasteBtn.style.opacity = "1"; pasteBtn.style.pointerEvents = "auto"; };
     const hidePaste = () => { pasteBtn.style.opacity = "0"; pasteBtn.style.pointerEvents = "none"; };
 
+    // Paste button logic
     pasteBtn.onclick = async () => {
         try {
             const text = await navigator.clipboard.readText();
@@ -1690,9 +1680,7 @@ const THEMEMUSIC_BUTTON = (() => {
             const newVideoId = match[1];
             const themeData = load();
             const currentThemeName = themeData.currentlyPlaying?.name;
-            if (!currentThemeName || !themeData[currentThemeName]) {
-                return showBubble("No theme currently playing!");
-            }
+            if (!currentThemeName || !themeData[currentThemeName]) return showBubble("No theme currently playing!");
 
             themeData[currentThemeName].videoId = newVideoId;
             themeData[currentThemeName].timestamp = Date.now();
@@ -1704,11 +1692,7 @@ const THEMEMUSIC_BUTTON = (() => {
             startFloat([musicBtn]);
 
             showBubble(`Updated "${currentThemeName}"!`);
-
-            setTimeout(() => {
-                hidePaste();
-            }, 3000);
-
+            setTimeout(() => { hidePaste(); }, 3000);
         } catch (e) {
             console.error(e);
             showBubble("Failed to read clipboard.", true);
@@ -1722,6 +1706,10 @@ const THEMEMUSIC_BUTTON = (() => {
     if(!on){
         hideButton(musicBtn);
         hidePaste();
+    } else {
+        showButton(musicBtn);
+        startGlow(musicBtn);
+        startFloat([musicBtn]);
     }
 
     const insert = () => {
@@ -1733,18 +1721,12 @@ const THEMEMUSIC_BUTTON = (() => {
     };
     insert();
 
-    if(on){
-        showButton(musicBtn);
-        startGlow(musicBtn);
-        startFloat([musicBtn]);
-    }
-
-    // Hover logic for buttons
+    // Hover logic
     [musicBtn, pasteBtn].forEach(el => {
         el.addEventListener("mouseenter", () => { if(on) { showBubble(); showPaste(); } });
         el.addEventListener("mouseleave", () => {
             setTimeout(() => {
-                if (![musicBtn, pasteBtn, bubble].some(el => el.matches(':hover'))) {
+                if (!on || ![musicBtn, pasteBtn, bubble].some(el => el.matches(':hover'))) {
                     hideBubble(); hidePaste();
                 }
             }, 150);
@@ -1759,27 +1741,20 @@ const THEMEMUSIC_BUTTON = (() => {
         savedData.themeMusic = on;
         save(savedData);
 
-        if (on) {
+        if(on){
             showButton(musicBtn);
             startGlow(musicBtn);
             startFloat([musicBtn]);
         } else {
-            musicBtn.textContent = "🔇";
-            showButton(musicBtn);
             stopGlow(musicBtn);
             stopFloat([musicBtn]);
-            setTimeout(() => {
-                hideButton(musicBtn);
-                hideBubble();
-                hidePaste();
-            }, 2000);
+            hideButton(musicBtn);
+            hideBubble();
+            hidePaste();
         }
     };
-
 })();
 """
-
-
 
 
 
