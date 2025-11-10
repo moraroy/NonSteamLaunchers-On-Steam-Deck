@@ -2923,67 +2923,7 @@ install_launcher "STOVE Client" "STOVELauncher" "$stove_file" "$stove_url" "$sto
 
 #End of Launcher Installations
 
-# Temporary fix for Epic
-if [[ $options == *"Epic Games"* ]]; then
 
-    function install_epic {
-
-        pkill -f wineserver
-
-        # Check if the first path exists, otherwise use the second one
-        if [[ -f "${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/Program Files (x86)/Epic Games/Launcher/Portal/Binaries/Win64/EpicGamesLauncher.exe" ]]; then
-            echo "Starting first installation of Epic Games Launcher"
-            "$STEAM_RUNTIME" "$proton_dir/proton" run "${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/Program Files (x86)/Epic Games/Launcher/Portal/Binaries/Win64/EpicGamesLauncher.exe" &
-            first_install_pid=$!
-        elif [[ -f "${logged_in_home}/.local/share/Steam/steamapps/compatdata/EpicGamesLauncher/pfx/drive_c/Program Files (x86)/Epic Games/Launcher/Portal/Binaries/Win64/EpicGamesLauncher.exe" ]]; then
-            echo "First path doesn't exist, trying the alternative path"
-            "$STEAM_RUNTIME" "$proton_dir/proton" run "${logged_in_home}/.local/share/Steam/steamapps/compatdata/EpicGamesLauncher/pfx/drive_c/Program Files (x86)/Epic Games/Launcher/Portal/Binaries/Win64/EpicGamesLauncher.exe" &
-            first_install_pid=$!
-        else
-            echo "Neither of the expected paths exist. Exiting."
-            exit 1
-        fi
-
-        # Wait for the installation to complete
-        wait $first_install_pid
-        sleep 5
-
-        # Rsync for syncing engine files (using logged_in_home)
-        rsync -av --progress \
-          "${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/ProgramData/Epic/EpicGamesLauncher/Data/Update/Install/Engine/" \
-          "${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/Program Files (x86)/Epic Games/Launcher/Engine/"
-
-        # Rsync for syncing portal files (using logged_in_home)
-        rsync -av --progress \
-          "${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/ProgramData/Epic/EpicGamesLauncher/Data/Update/Install/Portal/" \
-          "${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/Program Files (x86)/Epic Games/Launcher/Portal/"
-
-
-        rsync -av --progress \
-          "${logged_in_home}/.local/share/Steam/steamapps/compatdata/EpicGamesLauncher/pfx/drive_c/ProgramData/Epic/EpicGamesLauncher/Data/Update/Install/Engine/" \
-          "${logged_in_home}/.local/share/Steam/steamapps/compatdata/EpicGamesLauncher/pfx/drive_c/Program Files (x86)/Epic Games/Launcher/Engine/"
-
-        # Rsync for syncing portal files (using logged_in_home)
-        rsync -av --progress \
-          "${logged_in_home}/.local/share/Steam/steamapps/compatdata/EpicGamesLauncher/pfx/drive_c/ProgramData/Epic/EpicGamesLauncher/Data/Update/Install/Portal/" \
-          "${logged_in_home}/.local/share/Steam/steamapps/compatdata/EpicGamesLauncher/pfx/drive_c/Program Files (x86)/Epic Games/Launcher/Portal/"
-
-        # Download and run Epic Online Services installer
-        eos_dir="${logged_in_home}/Downloads/NonSteamLaunchersInstallation"
-        eos_file="${eos_dir}/EpicOnlineServicesInstaller.exe"
-        eos_url="https://tinyurl.com/mt8bce8k"
-
-        echo "Downloading Epic Online Services installer..."
-        mkdir -p "$eos_dir"
-        wget -L -O "$eos_file" "$eos_url"
-
-        echo "Running Epic Online Services installer with Proton..."
-        "$STEAM_RUNTIME" "$proton_dir/proton" run "$eos_file"
-    }
-
-    # Call the install_epic function
-    install_epic
-fi
 
 
 
