@@ -2077,7 +2077,7 @@ def inject_js_only(ws_socket):
         if not already_injected:
             print("Re-injecting Steam JS...")
             inject_id = next(eval_id_counter)
-            wrapped_code = f"(async () => {{ {JS_CODE}; window.__injectedSteamMod = true; return 'Injected'; }})()"
+            wrapped_code = f"(async () => {{ {JS_notify}; window.__injectedSteamMod = true; return 'Injected Successfully'; }})()"
             send_ws_text(ws_socket, json.dumps({
                 "id": inject_id,
                 "method": "Runtime.evaluate",
