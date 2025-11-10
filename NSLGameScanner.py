@@ -1895,9 +1895,31 @@ def recv_ws_message_for_id(sock, expected_id):
 
 
 
+
+
+
+###SHORTCUT JS ONLY
+# Counter for unique eval IDs
 eval_id_counter = itertools.count(1000)
+
+# Wait for a specific WebSocket message ID
+def recv_ws_message_for_id(sock, expected_id):
+    while True:
+        message = recv_ws_message(sock)
+        if message is None:
+            return None
+        try:
+            data = json.loads(message)
+            if data.get("id") == expected_id:
+                return data
+        except Exception:
+            continue
+
+# Inject JS and create a shortcut
 def inject_and_create_shortcut(ws_socket, shortcut_data):
     try:
+        global JS_CODE
+
         # Generate unique IDs
         enable_id = next(eval_id_counter)
         injected_check_id = next(eval_id_counter)
@@ -1911,7 +1933,7 @@ def inject_and_create_shortcut(ws_socket, shortcut_data):
         }))
         recv_ws_message_for_id(ws_socket, enable_id)
 
-        # Step 0: Check if JS is already injected
+        # Check if JS already injected
         send_ws_text(ws_socket, json.dumps({
             "id": injected_check_id,
             "method": "Runtime.evaluate",
@@ -1924,9 +1946,8 @@ def inject_and_create_shortcut(ws_socket, shortcut_data):
         already_injected = injected_check.get("result", {}).get("result", {}).get("value") is True
 
         if not already_injected:
-            # Step 1: Inject JS
+            # Inject JS
             wrapped_code = f"(async () => {{ {JS_CODE}; window.__injectedSteamMod = true; return 'Injection successful!'; }})()"
-
             send_ws_text(ws_socket, json.dumps({
                 "id": inject_js_id,
                 "method": "Runtime.evaluate",
@@ -1937,16 +1958,15 @@ def inject_and_create_shortcut(ws_socket, shortcut_data):
             }))
             injection_response = recv_ws_message_for_id(ws_socket, inject_js_id)
             if not injection_response or injection_response.get("result", {}).get("result", {}).get("value") != "Injection successful!":
-                print("JS injection failed or response invalid:")
-                print(injection_response)
+                print("JS injection failed or response invalid:", injection_response)
                 return None
             print("JS injected successfully.")
         else:
             print("JS already injected. Skipping re-injection.")
 
-        # Step 2: Call createShortcut with shortcut_data
+        # Call createNonSteamShortcut with shortcut_data
         shortcut_json_str = json.dumps(shortcut_data)
-        eval_expression = f"window.createShortcut({shortcut_json_str})"
+        eval_expression = f"createNonSteamShortcut({shortcut_json_str})"
 
         send_ws_text(ws_socket, json.dumps({
             "id": create_shortcut_id,
@@ -1957,10 +1977,9 @@ def inject_and_create_shortcut(ws_socket, shortcut_data):
                 "returnByValue": True
             }
         }))
-
         shortcut_result = recv_ws_message_for_id(ws_socket, create_shortcut_id)
         if not shortcut_result:
-            print("No response from createShortcut call.")
+            print("No response from createNonSteamShortcut call.")
             return None
 
         return shortcut_result
@@ -1968,7 +1987,7 @@ def inject_and_create_shortcut(ws_socket, shortcut_data):
     except Exception as e:
         print(f"Exception during shortcut injection or creation: {e}")
         return None
-
+###END of Shortcut JS call
 
 
 
