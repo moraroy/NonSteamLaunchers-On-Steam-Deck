@@ -350,6 +350,21 @@ else
 fi
 #End of First Run Env_vars
 
+    # Stop the service
+systemctl --user stop nslgamescanner.service
+
+    # Delete the NSLGameScanner.py
+rm -rf ${logged_in_home}/.config/systemd/user/NSLGameScanner.py
+
+    # Delete the service file
+rm -rf ${logged_in_home}/.config/systemd/user/nslgamescanner.service
+
+    # Remove the symlink
+unlink ${logged_in_home}/.config/systemd/user/default.target.wants/nslgamescanner.service
+
+    # Reload the systemd user instance
+systemctl --user daemon-reload
+systemctl --user reset-failed
 
 
 
