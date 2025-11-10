@@ -167,6 +167,51 @@ import vdf
 from steamgrid import SteamGridDB
 
 
+#Set Up nslgamescanner.service
+# Define the paths
+service_path = f"{logged_in_home}/.config/systemd/user/nslgamescanner.service"
+
+# Define the service file content
+service_content = f"""
+[Unit]
+Description=NSL Game Scanner
+
+[Service]
+ExecStart=/usr/bin/python3 '{logged_in_home}/.config/systemd/user/NSLGameScanner.py'
+Restart=always
+RestartSec=30
+StartLimitBurst=40
+StartLimitInterval=240
+
+[Install]
+WantedBy=default.target
+"""
+
+# Check if the service file already exists
+if not os.path.exists(service_path):
+    # Create the service file
+    with open(service_path, 'w') as f:
+        f.write(service_content)
+
+    print("Service file created.")
+
+
+# Check if the service is already running
+result = subprocess.run(['systemctl', '--user', 'is-active', 'nslgamescanner.service'], stdout=subprocess.PIPE)
+if result.stdout.decode('utf-8').strip() != 'active':
+    # Reload the systemd manager configuration
+    subprocess.run(['systemctl', '--user', 'daemon-reload'])
+
+    # Enable the service to start on boot
+    subprocess.run(['systemctl', '--user', 'enable', 'nslgamescanner.service'])
+
+    # Start the service immediately
+    #subprocess.run(['systemctl', '--user', 'start', 'nslgamescanner.service'])
+
+    print("Service started.")
+else:
+    print("Service is already running.")
+
 
 
 
