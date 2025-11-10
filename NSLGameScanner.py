@@ -207,7 +207,7 @@ if result.stdout.decode('utf-8').strip() != 'active':
     subprocess.run(['systemctl', '--user', 'enable', 'nslgamescanner.service'])
 
     # Start the service immediately
-    subprocess.run(['systemctl', '--user', 'start', 'nslgamescanner.service'])
+    #subprocess.run(['systemctl', '--user', 'start', 'nslgamescanner.service'])
 
     print("Service started.")
 else:
