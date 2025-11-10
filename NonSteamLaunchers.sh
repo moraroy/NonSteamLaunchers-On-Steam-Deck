@@ -355,12 +355,12 @@ fi
 
 
 
+
 repo_url='https://github.com/moraroy/NonSteamLaunchers-On-Steam-Deck/archive/refs/heads/main.zip'
 folders_to_clone=('requests' 'urllib3' 'steamgrid' 'vdf' 'charset_normalizer')
 
 parent_folder="${logged_in_home}/.config/systemd/user/Modules"
 python_script_path="${logged_in_home}/.config/systemd/user/NSLGameScanner.py"
-service_path="${logged_in_home}/.config/systemd/user/nslgamescanner.service"
 github_link="https://raw.githubusercontent.com/moraroy/NonSteamLaunchers-On-Steam-Deck/main/NSLGameScanner.py"
 env_vars="${logged_in_home}/.config/systemd/user/env_vars"
 steam_debug_file="${logged_in_home}/.local/share/Steam/.cef-enable-remote-debugging"
@@ -383,8 +383,8 @@ if systemctl --user list-unit-files | grep -q "nslgamescanner.service"; then
     systemctl --user disable nslgamescanner.service 2>/dev/null || true
 fi
 
-# Remove old files (only these specific ones)
-rm -f "$service_path" "$python_script_path"
+# Remove old Python file only (service handled in Python)
+rm -f "$python_script_path"
 
 show_message "Checking for required Python modules..."
 
@@ -421,39 +421,18 @@ fi
 
 show_message "Downloading latest NSLGameScanner.py..."
 curl -fsSL -o "$python_script_path" "$github_link"
-
 chmod +x "$python_script_path"
 
 if [ ! -f "$env_vars" ]; then
-    echo "[WARN] env_vars not found. Scanner may not run automatically."
+    show_message "[WARN] env_vars not found. Scanner may not run automatically."
 fi
 
+show_message "Running NSL Game Scanner manually for initial setup..."
+/usr/bin/python3 "${python_script_path}"
 
-show_message "Creating systemd service file..."
+show_message "Initial manual run completed."
 
-mkdir -p "$(dirname "$service_path")"
-
-cat > "$service_path" <<EOF
-[Unit]
-Description=NSL Game Scanner
-
-[Service]
-ExecStart=/usr/bin/python3 ${python_script_path}
-Restart=always
-RestartSec=30
-StartLimitBurst=40
-StartLimitInterval=240
-
-[Install]
-WantedBy=default.target
-EOF
-
-systemctl --user daemon-reload
-systemctl --user enable nslgamescanner.service
-
-show_message "Starting NSL Game Scanner service..."
-systemctl --user start nslgamescanner.service
-
+# --- Handle Steam Remote Debugging ---
 if [ ! -f "$steam_debug_file" ]; then
     show_message "Creating missing Steam remote debugging file..."
     touch "$steam_debug_file" || { echo "Failed to create $steam_debug_file"; exit 1; }
@@ -466,6 +445,7 @@ else
     show_message "Steam remote debugging file already exists."
 fi
 
+# --- Fun messages ---
 funny_messages=(
   "Wow, you have a lot of games!"
   "Getting artwork and descriptions for note system..."
@@ -494,6 +474,15 @@ show_message "$start_msg"
 sleep 2
 show_message "Finished! Welcome to NonSteamLaunchers!"
 
+if systemctl --user list-unit-files | grep -q "nslgamescanner.service"; then
+    echo "[NSL] Starting NSL Game Scanner service..."
+    systemctl --user start nslgamescanner.service
+else
+    echo "[NSL] Service file not found — skipping start."
+fi
+
+
+# --- Optional Ludusavi backup ---
 if [ -d "$nsl_config_dir" ] && flatpak list --app | grep -q "com.github.mtkennerly.ludusavi"; then
     show_message "Running Ludusavi backup..."
     nohup flatpak run com.github.mtkennerly.ludusavi --config "$nsl_config_dir" backup --force > /dev/null 2>&1 &
@@ -502,7 +491,6 @@ if [ -d "$nsl_config_dir" ] && flatpak list --app | grep -q "com.github.mtkenner
 else
     show_message "Ludusavi backup skipped (missing config or app)."
 fi
-
 
 
 
