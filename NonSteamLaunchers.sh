@@ -355,207 +355,154 @@ fi
 
 
 
+repo_url='https://github.com/moraroy/NonSteamLaunchers-On-Steam-Deck/archive/refs/heads/main.zip'
+folders_to_clone=('requests' 'urllib3' 'steamgrid' 'vdf' 'charset_normalizer')
 
-if [ "${deckyplugin}" = false ]; then
-	# Download Modules
-	repo_url='https://github.com/moraroy/NonSteamLaunchers-On-Steam-Deck/archive/refs/heads/main.zip'
-	folders_to_clone=('requests' 'urllib3' 'steamgrid' 'vdf' 'charset_normalizer')
+parent_folder="${logged_in_home}/.config/systemd/user/Modules"
+python_script_path="${logged_in_home}/.config/systemd/user/NSLGameScanner.py"
+service_path="${logged_in_home}/.config/systemd/user/nslgamescanner.service"
+github_link="https://raw.githubusercontent.com/moraroy/NonSteamLaunchers-On-Steam-Deck/main/NSLGameScanner.py"
+env_vars="${logged_in_home}/.config/systemd/user/env_vars"
+steam_debug_file="${logged_in_home}/.local/share/Steam/.cef-enable-remote-debugging"
+nsl_config_dir="${logged_in_home}/.var/app/com.github.mtkennerly.ludusavi/config/ludusavi/NSLconfig"
 
-	logged_in_home=$(eval echo ~$user)
-	parent_folder="${logged_in_home}/.config/systemd/user/Modules"
-	mkdir -p "${parent_folder}"
+# ---------- FUNCTION ----------
+show_message() {
+    echo "[NSL] $1"
+}
 
-	folders_exist=true
-	for folder in "${folders_to_clone[@]}"; do
-	  if [ ! -d "${parent_folder}/${folder}" ]; then
-	    folders_exist=false
-	    break
-	  fi
-	done
+show_message "Checking for existing NSL Game Scanner service..."
 
-	if [ "${folders_exist}" = false ]; then
-	  zip_file_path="${parent_folder}/repo.zip"
-	  wget -O "${zip_file_path}" "${repo_url}" || { echo 'Download failed with error code: $?'; exit 1; }
-	  unzip -d "${parent_folder}" "${zip_file_path}" || { echo 'Unzip failed with error code: $?'; exit 1; }
+if systemctl --user list-unit-files | grep -q "nslgamescanner.service"; then
+    if systemctl --user is-active --quiet nslgamescanner.service; then
+        show_message "Stopping running NSL Game Scanner..."
+        systemctl --user stop nslgamescanner.service
+    fi
 
-	  for folder in "${folders_to_clone[@]}"; do
-	    destination_path="${parent_folder}/${folder}"
-	    source_path="${parent_folder}/NonSteamLaunchers-On-Steam-Deck-main/Modules/${folder}"
-	    if [ ! -d "${destination_path}" ]; then
-	      mv "${source_path}" "${destination_path}" || { echo 'Move failed with error code: $?'; exit 1; }
-	    fi
-	  done
-
-	  rm "${zip_file_path}"
-	  rm -r "${parent_folder}/NonSteamLaunchers-On-Steam-Deck-main"
-	fi
-
-	# Service File rough update
-	rm -rf ${logged_in_home}/.config/systemd/user/NSLGameScanner.py
-	rm -rf ${logged_in_home}/.config/systemd/user/nslgamescanner.service
-	unlink ${logged_in_home}/.config/systemd/user/default.target.wants/nslgamescanner.service
-	systemctl --user daemon-reload
-    systemctl --user reset-failed
-
-	python_script_path="${logged_in_home}/.config/systemd/user/NSLGameScanner.py"
-	github_link="https://raw.githubusercontent.com/moraroy/NonSteamLaunchers-On-Steam-Deck/main/NSLGameScanner.py"
-	curl -o $python_script_path $github_link
-
-	env_vars="${logged_in_home}/.config/systemd/user/env_vars"
-
-	if [ -f "$env_vars" ]; then
-	    echo "env_vars file found. Running the .py file."
-	    live="and is LIVE. Latest NSL Decky Plugin Version on Github: $deckyversion"
-	else
-	    echo "env_vars file not found. Not Running the .py file."
-	    live="and is not LIVE. Latest NSL Decky Plugin Version on Github: $deckyversion"
-	fi
-
-	decky_plugin=false
-	for arg in "${args[@]}"; do
-	  if [ "$arg" = "Decky Plugin" ]; then
-	    decky_plugin=true
-	    break
-	  fi
-	done
-
-	funny_messages=(
-	  "Wow, you have a lot of games!"
-	  "Getting artwork and descriptions for note system..."
-	  "So many launchers, so little time..."
-	  "Much game. Very library. Wow."
-	  "Looking under the Steam Deck couch cushions..."
-	  "Injecting metadata directly into your eyeballs..."
-	  "Downloading more RAM... just kidding."
-	  "Scanning your games like a barcode at checkout!"
-	  "Adding +10 charm to your launcher list..."
-	  "Man this is taking a long time..."
-	  "Removing NSL from Decky Loader Store... jk that happend in real life."
-	  "Learning your game choices and judging you for them..."
-	  "But why is that game in here!!??"
-	  "Downloading any boot videos for your enjoyment..."
-	  "Thank you for being patient..."
-	  "This may take a while..."
-	  "You may need to grab a coffee..."
-	  "If you see this notification, I'm still working dont worry..."
-	  "Getting Descriptions, Artwork and Boot Videos if applicable..."
-	)
-
-	if [ "$decky_plugin" = true ]; then
-	    if [ -f "$env_vars" ]; then
-	        echo "Decky Plugin argument set and env_vars file found. Running the .py file..."
-
-	        start_msg="${funny_messages[$RANDOM % ${#funny_messages[@]}]}"
-	        show_message "Starting Scanner... looking for any games..."
-
-	        (
-	          while true; do
-	            sleep 15
-	            loop_msg="${funny_messages[$RANDOM % ${#funny_messages[@]}]}"
-	            show_message "Still scanning... ${loop_msg}"
-	          done
-	        ) &
-	        message_pid=$!
-
-	        # Check Steam debug file before running Python
-	        steam_debug_file="${logged_in_home}/.local/share/Steam/.cef-enable-remote-debugging"
-	        if [ ! -f "$steam_debug_file" ]; then
-	            echo "Creating missing Steam remote debugging file: $steam_debug_file"
-	            touch "$steam_debug_file" || { echo "Failed to create file: $steam_debug_file"; exit 1; }
-
-	            steam_pid() { pgrep -x steam; }
-	            echo "File created successfully. Restarting Steam..."
-	            steam_running=$(steam_pid)
-	            if [[ -n "$steam_running" ]]; then
-	                echo "Closing Steam..."
-	                killall steam
-	            fi
-
-	            while steam_pid > /dev/null; do sleep 1; done
-
-	            echo "Relaunching Steam..."
-	            nohup /usr/bin/steam -silent %U &>/dev/null &
-	        else
-	            echo "Steam remote debugging file already exists: $steam_debug_file"
-	        fi
-
-	        python3 $python_script_path
-
-	        kill $message_pid
-	        show_message "Scanning complete! Your game library looks good!"
-
-	        echo "Python script ran. Continuing with the script..."
-	    else
-	        echo "Decky Plugin argument set but env_vars file not found. Exiting the script."
-	        exit 0
-	    fi
-	else
-	    echo "Decky Plugin argument not set. Continuing with the script..."
-
-	    start_msg="${funny_messages[$RANDOM % ${#funny_messages[@]}]}"
-	    show_message "Starting Scanner... looking for any games..."
-
-	    (
-	      while true; do
-	        sleep 15
-	        loop_msg="${funny_messages[$RANDOM % ${#funny_messages[@]}]}"
-	        show_message "Still scanning... ${loop_msg}"
-	      done
-	    ) &
-	    message_pid=$!
-
-	    # Check Steam debug file before running Python
-	    steam_debug_file="${logged_in_home}/.local/share/Steam/.cef-enable-remote-debugging"
-	    if [ ! -f "$steam_debug_file" ]; then
-	        echo "Creating missing Steam remote debugging file: $steam_debug_file"
-	        touch "$steam_debug_file" || { echo "Failed to create file: $steam_debug_file"; exit 1; }
-
-	        steam_pid() { pgrep -x steam; }
-	        echo "File created successfully. Restarting Steam..."
-	        steam_running=$(steam_pid)
-	        if [[ -n "$steam_running" ]]; then
-	            echo "Closing Steam..."
-	            killall steam
-	        fi
-
-	        while steam_pid > /dev/null; do sleep 1; done
-
-	        echo "Relaunching Steam..."
-	        nohup /usr/bin/steam -silent %U &>/dev/null &
-	    else
-	        echo "Steam remote debugging file already exists: $steam_debug_file"
-	    fi
-
-	    python3 $python_script_path
-
-	    kill $message_pid
-        show_message "Scanning complete! Your game library looks good!"
-	    sleep 2
-
-	    echo "env_vars file found. Running the .py file."
-	    live="successfully. Decky Plugin Version on Github is: $deckyversion"
-	fi
-
-	nsl_config_dir="${logged_in_home}/.var/app/com.github.mtkennerly.ludusavi/config/ludusavi/NSLconfig"
-
-	if [ -d "$nsl_config_dir" ]; then
-	    if flatpak list --app | grep -q "com.github.mtkennerly.ludusavi"; then
-	        echo "Running backup..."
-	        nohup flatpak run com.github.mtkennerly.ludusavi --config "$nsl_config_dir" backup --force > /dev/null 2>&1 &
-	        wait $!
-	        echo "Backup completed"
-	        show_message "Game Saves have been backed up! Please check here: /home/deck/NSLGameSaves"
-	        sleep 2
-	    else
-	        echo "Flatpak com.github.mtkennerly.ludusavi not found. Skipping backup."
-	    fi
-	else
-	    echo "Config directory $nsl_config_dir does not exist. Skipping backup."
-	fi
+    show_message "Disabling old NSL Game Scanner service..."
+    systemctl --user disable nslgamescanner.service 2>/dev/null || true
 fi
-sleep 1
-show_message "Finished! Welcome to NonSteamLaunchers!"
+
+# Remove old files (only these specific ones)
+rm -f "$service_path" "$python_script_path"
+
+show_message "Checking for required Python modules..."
+
+mkdir -p "${parent_folder}"
+folders_exist=true
+for folder in "${folders_to_clone[@]}"; do
+  if [ ! -d "${parent_folder}/${folder}" ]; then
+    folders_exist=false
+    break
+  fi
+done
+
+if [ "${folders_exist}" = false ]; then
+  zip_file_path="${parent_folder}/repo.zip"
+  show_message "Downloading Python modules..."
+  wget -O "${zip_file_path}" "${repo_url}" || { echo 'Download failed'; exit 1; }
+
+  unzip -d "${parent_folder}" "${zip_file_path}" || { echo 'Unzip failed'; exit 1; }
+
+  for folder in "${folders_to_clone[@]}"; do
+    destination_path="${parent_folder}/${folder}"
+    source_path="${parent_folder}/NonSteamLaunchers-On-Steam-Deck-main/Modules/${folder}"
+    if [ -d "${source_path}" ]; then
+      mv "${source_path}" "${destination_path}" || { echo "Move failed for ${folder}"; exit 1; }
+    fi
+  done
+
+  rm -f "${zip_file_path}"
+  rm -rf "${parent_folder}/NonSteamLaunchers-On-Steam-Deck-main"
+  show_message "Modules installed successfully."
+else
+  show_message "All required modules already installed."
+fi
+
+show_message "Downloading latest NSLGameScanner.py..."
+curl -fsSL -o "$python_script_path" "$github_link"
+
+chmod +x "$python_script_path"
+
+if [ ! -f "$env_vars" ]; then
+    echo "[WARN] env_vars not found. Scanner may not run automatically."
+fi
+
+
+show_message "Creating systemd service file..."
+
+mkdir -p "$(dirname "$service_path")"
+
+cat > "$service_path" <<EOF
+[Unit]
+Description=NSL Game Scanner
+
+[Service]
+ExecStart=/usr/bin/python3 ${python_script_path}
+Restart=always
+RestartSec=30
+StartLimitBurst=40
+StartLimitInterval=240
+
+[Install]
+WantedBy=default.target
+EOF
+
+systemctl --user daemon-reload
+systemctl --user enable nslgamescanner.service
+
+show_message "Starting NSL Game Scanner service..."
 systemctl --user start nslgamescanner.service
+
+if [ ! -f "$steam_debug_file" ]; then
+    show_message "Creating missing Steam remote debugging file..."
+    touch "$steam_debug_file" || { echo "Failed to create $steam_debug_file"; exit 1; }
+
+    echo "Restarting Steam..."
+    killall steam 2>/dev/null || true
+    while pgrep -x steam >/dev/null; do sleep 1; done
+    nohup /usr/bin/steam -silent %U &>/dev/null &
+else
+    show_message "Steam remote debugging file already exists."
+fi
+
+funny_messages=(
+  "Wow, you have a lot of games!"
+  "Getting artwork and descriptions for note system..."
+  "So many launchers, so little time..."
+  "Much game. Very library. Wow."
+  "Looking under the Steam Deck couch cushions..."
+  "Injecting metadata directly into your eyeballs..."
+  "Downloading more RAM... just kidding."
+  "Scanning your games like a barcode at checkout!"
+  "Adding +10 charm to your launcher list..."
+  "Man this is taking a long time..."
+  "Removing NSL from Decky Loader Store... jk that happened in real life."
+  "Learning your game choices and judging you for them..."
+  "But why is that game in here!!??"
+  "Downloading any boot videos for your enjoyment..."
+  "Thank you for being patient..."
+  "This may take a while..."
+  "You may need to grab a coffee..."
+  "If you see this notification, I'm still working don't worry..."
+  "Getting Descriptions, Artwork and Boot Videos if applicable..."
+)
+
+start_msg="${funny_messages[$RANDOM % ${#funny_messages[@]}]}"
+show_message "$start_msg"
+
+sleep 2
+show_message "Finished! Welcome to NonSteamLaunchers!"
+
+if [ -d "$nsl_config_dir" ] && flatpak list --app | grep -q "com.github.mtkennerly.ludusavi"; then
+    show_message "Running Ludusavi backup..."
+    nohup flatpak run com.github.mtkennerly.ludusavi --config "$nsl_config_dir" backup --force > /dev/null 2>&1 &
+    wait $!
+    show_message "Backup completed! Check /home/deck/NSLGameSaves"
+else
+    show_message "Ludusavi backup skipped (missing config or app)."
+fi
+
 
 
 
