@@ -2675,12 +2675,13 @@ def modify_shortcut_for_umu(appname, exe, launchoptions, startingdir):
 
 
 
-def track_create_entry(directory, name, launch_options, starting_dir):
+def track_create_entry(directory, name, launch_options, starting_dir, launcher_name="NonSteamLaunchers"):
     if not any([directory, launch_options, starting_dir]):
         return  # Skip if not installed
 
-    create_new_entry(directory, name, launch_options, starting_dir)
+    create_new_entry(directory, name, launch_options, starting_dir, launcher_name)
     track_game(name, "Launcher")
+
 
 
 track_create_entry(os.environ.get('epicshortcutdirectory'), 'Epic Games', os.environ.get('epiclaunchoptions'), os.environ.get('epicstartingdir'))
@@ -4476,7 +4477,8 @@ for app in flatpak_apps:
         shortcutdirectory=f'"{exe_path}"',
         appname=display_name,
         launchoptions=app_launch_options,
-        startingdir=f'"{start_dir}"'
+        startingdir=f'"{start_dir}"',
+        launcher_name="NonSteamLaunchers"
     )
 
 # End of Flatpak Scanner
