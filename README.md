@@ -115,19 +115,15 @@ Currently Working On 👷‍♂️
 
 **Windows Installation Steps**:
 
-1. **Sign in to GitHub** and go to this [link](https://github.com/SteamDeckHomebrew/decky-loader/actions/workflows/build-win.yml).
+1. Download the current Windows version of Decky Loader here [link](https://nightly.link/SteamDeckHomebrew/decky-loader/workflows/build-win/main/PluginLoader%20Win.zip)
 
-2. Choose the latest link or whichever version works for you.
+2. Download **NSLPluginWindows.exe** from [here](https://github.com/moraroy/NonSteamLaunchersDecky/releases).
 
-3. Scroll down to **"Artifacts"** and download **"PluginLoader Win"**. This is a zip file that you need to extract on your Windows machine. Make sure you're signed in to see the download link.
+3. Run **NSLPluginWindows.exe** first. This will also create the necessary cef debugging file for Decky Loader.
 
-4. Download **NSLPluginWindows.exe** from [here](https://github.com/moraroy/NonSteamLaunchersDecky/releases).
+4. Run either **No_console.exe** or **Plugin Loader.exe**, depending on your preference.
 
-5. Run **NSLPluginWindows.exe** first. This will also create the necessary cef debugging file for Decky Loader.
-
-6. Run either **No_console.exe** or **Plugin Loader.exe**, depending on your preference.
-
-7. Go into **Game Mode** or **Big Picture Mode** to see the Decky Loader plugin and NonSteamLaunchers.
+5. Go into **Game Mode** or **Big Picture Mode** to see the Decky Loader plugin and NonSteamLaunchers.
 
 
 This setup will automatically add all your non-Steam games with artwork, correctly formatted for Windows. Only scanning will work; nothing else will function, so you can either auto-scan or manually scan your games.
@@ -155,7 +151,7 @@ How to Run 🏃‍♂️
 + Select your launchers and hit OK. This will install your selected launchers. (Optionally, check "separate app ids", to install each launcher in its own prefix)
 + ❤️ = this will send and recieves any notes you have created to the community using the ```#nsl``` tag at the beginning of your note.
 + Uninstall = uninstalls the specific launchers and possibly its games too, each launcher uninstallation is different.
-+ 🔍 = Pressing the magnifying glass will stop the NSL Sanner and prompt you to restart it if needed. When you open NSL the scanner only runs once. So restarting it activates the real time service file for active scanning.
++ 🔍 = Pressing the magnifying glass will stop the NSL Scanner and prompt you to restart it if needed. When you open NSL the scanner will update from online then auto scan. So restarting it activates the real time service file for active scanning.
 + Start Fresh = Wipes all of NSL, all the preixes, launchers, games, etc. Shortcuts will remain, and your game save backups, if any, at ```/home/deck/NSLGameSaves``` will not be deleted.
 + Move to SD Card = moves each prefix to your SD Card, this is legacy code and probably still needs work.
 + Update Proton GE = this will update and install Proton GE and UMU if you dont have it already, the script attempts to do this on each launcher install but you can do it manually and help the script before hand if you want.
