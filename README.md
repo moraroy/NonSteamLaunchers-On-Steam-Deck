@@ -152,7 +152,7 @@ How to Run 🏃‍♂️
 + ❤️ = this will send and recieves any notes you have created to the community using the ```#nsl``` tag at the beginning of your note.
 + Uninstall = uninstalls the specific launchers and possibly its games too, each launcher uninstallation is different.
 + 🔍 = Pressing the magnifying glass will stop the NSL Scanner and prompt you to restart it if needed. When you open NSL the scanner will update from online then auto scan. So restarting it activates the real time service file for active scanning.
-+ Start Fresh = Wipes all of NSL, all the preixes, launchers, games, etc. Shortcuts will remain, and your game save backups, if any, at ```/home/deck/NSLGameSaves``` will not be deleted.
++ Start Fresh = Wipes all of NSL, all the prefixes, launchers, games, etc. Shortcuts will remain, and your game save backups, if any, at ```/home/deck/NSLGameSaves``` will not be deleted. This essentially "Uninstalls" NonSteamLaunchers.
 + Move to SD Card = moves each prefix to your SD Card, this is legacy code and probably still needs work.
 + Update Proton GE = this will update and install Proton GE and UMU if you dont have it already, the script attempts to do this on each launcher install but you can do it manually and help the script before hand if you want.
 + 🖥️ Off = this simply turns off your screen, useful if your doing long downloads to save battery.
