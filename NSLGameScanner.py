@@ -4480,7 +4480,7 @@ for app in flatpak_apps:
         startingdir=f'"{start_dir}"',
         launcher_name="NonSteamLaunchers"
     )
-
+    track_game(display_name, "Launcher")
 # End of Flatpak Scanner
 
 
