@@ -28,7 +28,7 @@ Local Saves and Cloud saves are supported, as well as multiplayer/online support
 Features  ✅
 </h1>
 
-- Automatic installation of the most popular launchers for your Steam Deck and Steam Machine (SteamOS) 🎮
+- Automatic installation of the most popular launchers for your Steam Deck and Steam Machine on SteamOS 🎮
 
 - Handle automatically the download and installation of your chosen launchers and the games, artwork included! ⌚️ 
 
