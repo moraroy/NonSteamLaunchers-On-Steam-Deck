@@ -36,7 +36,7 @@ show_update_message() {
 
 # Set URLs and paths
 REPO_URL="https://github.com/moraroy/NonSteamLaunchersDecky/archive/refs/heads/main.zip"
-GITHUB_URL="https://raw.githubusercontent.com/moraroy/NonSteamLaunchersDecky/refs/heads/main/package.json"
+GITHUB_URL="https://raw.githubusercontent.com/moraroy/NonSteamLaunchersDecky/main/package.json"
 LOCAL_DIR="${logged_in_home}/homebrew/plugins/NonSteamLaunchers"
 
 # Ask the user
