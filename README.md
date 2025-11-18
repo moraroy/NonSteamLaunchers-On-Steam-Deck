@@ -156,7 +156,7 @@ How to Run 🏃‍♂️
 + Move to SD Card = moves each prefix to your SD Card, this is legacy code and probably still needs work.
 + Update Proton GE = this will update and install Proton GE and UMU if you dont have it already, the script attempts to do this on each launcher install but you can do it manually and help the script before hand if you want.
 + 🖥️ Off = this simply turns off your screen, useful if your doing long downloads to save battery.
-+ NSLGameSaves = this will inject your game saves from ```/home/eck/NSLGameSaves``` into its correct locations using ludusavi into your launchers. Use this if you pressed "Start Fresh" and have downloaded your launchers again, dont download your games until you have pressed this button.
++ NSLGameSaves = this will inject your game saves from ```/home/deck/NSLGameSaves``` into its correct locations using ludusavi into your launchers. Use this if you pressed "Start Fresh" and have downloaded your launchers again, dont download your games until you have pressed this button.
 + README = opens up this read me file.
 
 
@@ -276,7 +276,7 @@ Finds Games Automatically
 - Minecraft Launcher 🎮
 - Waydroid Apps 🎮
 - Humble Games Collection 🎮 💾 Full SD Card Support
-- NVIDIA GeForce NOW (Native) - You must "Favorite" the game
+- NVIDIA GeForce NOW (Native Linux App) - You must "Favorite" the game with the heart. Old favorites will not be picked up, you need to re-favorite.
 
 ## Chrome Bookmarks
 The scanner will pick these up automatically. But for Geforce Now only, change the name of the bookmark to your actual game name. Or you can press "Play" then Use "Ctrl + D". As long as the game name is in the Bookmark Name.
