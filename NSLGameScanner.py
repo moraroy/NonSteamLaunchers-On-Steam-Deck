@@ -901,8 +901,9 @@ window.createShortcut = async function(data) {
 
     // --- Set 'Sort As' title ---
     if (data.Launcher && typeof data.Launcher === "string" && data.Launcher.trim()) {
-      await SteamClient.Apps.SetShortcutSortAs(shortcutId, data.Launcher.trim());
-      console.log("Sort As title set to:", data.Launcher.trim());
+    const sortName = `${data.appname} ${data.Launcher.trim()}`;
+    await SteamClient.Apps.SetShortcutSortAs(shortcutId, sortName);
+    console.log("Sort As title set to:", sortName);
     }
 
     // --- Set Compatibility Tool ---
