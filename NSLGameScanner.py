@@ -3323,6 +3323,8 @@ else:
 
 
 
+
+
 #GOG Galaxy Scanner
 def getGogGameInfoFromDB(db_path):
     if not os.path.exists(db_path):
@@ -3386,27 +3388,27 @@ def getGogGameInfoFromDB(db_path):
 
                 main_exes = filter_executables(set(exes), title, path)
                 if main_exes:
-                    exe_full_path = main_exes[0]
-
+                    win_exe_path = main_exes[0] 
 
                     proton_root = f"{logged_in_home}/.local/share/Steam/steamapps/compatdata/{gog_galaxy_launcher}/pfx"
-                    win_path = exe_full_path.replace("\\", "/")
-                    win_path_no_drive = re.sub(r"^[A-Za-z]:/", "", win_path)
-                    exe_full_path = os.path.join(proton_root, "drive_c", win_path_no_drive)
+                    linux_exe_path = win_exe_path.replace("\\", "/")
+                    linux_exe_path = re.sub(r"^[A-Za-z]:/", "", linux_exe_path)
+                    linux_exe_path = os.path.join(proton_root, "drive_c", linux_exe_path)
 
-                    if not os.path.exists(exe_full_path):
-                        print(f"Skipping {title}: EXE not found -> {exe_full_path}")
+                    if not os.path.exists(linux_exe_path):
+                        print(f"Skipping {title}: EXE not found -> {linux_exe_path}")
                         continue
 
                     game_dict[title] = {
                         'id': pid,
-                        'exe': exe_full_path
+                        'exe': win_exe_path
                     }
 
     except sqlite3.Error as e:
         print(f"SQLite error: {e}")
 
     return game_dict
+
 
 
 def adjust_dosbox_launch_options(launch_command, game_id):
@@ -3453,6 +3455,7 @@ else:
             track_game(game, "GOG Galaxy")
 
 #End of GOG Galaxy Scanner
+
 
 
 
