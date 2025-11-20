@@ -44,7 +44,7 @@ Features  ✅
 
 - RemotePlayWhatever is also bundled with NSL to allow for local and co-op play between non steam games, this is created by m4Engi, here is the repo [here](https://github.com/m4dEngi/RemotePlayWhatever)
 
-- Ludusavi is also pre-installed and setup for NSL for your games save backups. Not all games will work with this yet so bare this in mind when deleted or uninstalling games that are arent backed up yet, here is the repo [here](https://github.com/mtkennerly/ludusavi)
+- Ludusavi is also pre-installed and setup for NSL for your games save backups. Not all games will work with this yet so bear this in mind when deleted or uninstalling games that are arent backed up yet, here is the repo [here](https://github.com/mtkennerly/ludusavi)
 
 In both versions of NonSteamLaunchers, Desktop or Decky, NSL will back up your games saves here automatically ```/home/deck/NSLGameSaves``` The Desktop Version only does this once, at the start of when the script is opened and you see the main options list. The decky plugin version does this on every manual scan that you do.
 
