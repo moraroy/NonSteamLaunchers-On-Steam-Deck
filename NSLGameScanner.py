@@ -3386,9 +3386,21 @@ def getGogGameInfoFromDB(db_path):
 
                 main_exes = filter_executables(set(exes), title, path)
                 if main_exes:
+                    exe_full_path = main_exes[0]
+
+
+                    proton_root = f"{logged_in_home}/.local/share/Steam/steamapps/compatdata/{gog_galaxy_launcher}/pfx"
+                    win_path = exe_full_path.replace("\\", "/")
+                    win_path_no_drive = re.sub(r"^[A-Za-z]:/", "", win_path)
+                    exe_full_path = os.path.join(proton_root, "drive_c", win_path_no_drive)
+
+                    if not os.path.exists(exe_full_path):
+                        print(f"Skipping {title}: EXE not found -> {exe_full_path}")
+                        continue
+
                     game_dict[title] = {
                         'id': pid,
-                        'exe': main_exes[0]  # Use the top-scoring .exe
+                        'exe': exe_full_path
                     }
 
     except sqlite3.Error as e:
