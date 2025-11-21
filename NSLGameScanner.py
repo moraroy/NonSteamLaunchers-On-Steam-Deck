@@ -4375,7 +4375,6 @@ else:
 
 
 
-
 # Waydroid scanner
 # Check for Waydroid
 if shutil.which("waydroid") is None:
@@ -4400,11 +4399,51 @@ else:
         "waydroid.org.lineageos.aperture.desktop",
     }
 
-    exe_path = f'{logged_in_home}/Android_Waydroid/Android_Waydroid_Cage.sh'
-    start_dir = f'{logged_in_home}/Android_Waydroid/'
+    # Possible cage launchers
+    possible_launchers = [
+        f"{logged_in_home}/Android_Waydroid/Android_Waydroid_Cage.sh",
+        f"{logged_in_home}/bin/waydroid-cage.sh",
+        f"{logged_in_home}/.local/bin/waydroid-cage.sh",
+    ]
+
+    launcher_path = None
+
+
+    for path in possible_launchers:
+        if os.path.isfile(path):
+            launcher_path = path
+            break
+
+    if launcher_path is None:
+        search_dirs = [logged_in_home, "/run/media", "/mnt", "/media"]
+        print("Fast-searching for custom waydroid-cage.sh...")
+        for base in search_dirs:
+            if not os.path.isdir(base):
+                continue
+            for root, dirs, files in os.walk(base, topdown=True):
+                dirs[:] = [d for d in dirs if d not in ("proc", "dev", "sys", "lost+found", "var", "boot", "etc", "run", "tmp")]
+                if "waydroid-cage.sh" in files:
+                    launcher_path = os.path.join(root, "waydroid-cage.sh")
+                    print(f"Found Waydroid launcher: {launcher_path}")
+                    break
+            if launcher_path:
+                break
+
+    if launcher_path:
+        use_cage = True
+        exe_path = launcher_path
+        start_dir = os.path.dirname(launcher_path)
+    else:
+        use_cage = False
+        exe_path = "waydroid"
+        start_dir = "./"
+
+    print(f"Waydroid Cage Detected: {use_cage}")
+    print(f"Launcher Path: {exe_path}")
 
     if os.path.isdir(applications_dir):
         for file_name in os.listdir(applications_dir):
+            time.sleep(0.1)
             if not file_name.endswith(".desktop") or file_name in ignored_files:
                 continue
 
@@ -4429,11 +4468,20 @@ else:
                 if not app_name:
                     continue
 
+                if use_cage:
+                    target = f'"{exe_path}"'
+                    launch_opts = f'"{app_name}"'
+                    start_in = start_dir
+                else:
+                    target = '"waydroid"'
+                    launch_opts = f'"app" "launch" "{app_name}"'
+                    start_in = start_dir
+
                 create_new_entry(
-                    shortcutdirectory=f'"{exe_path}"',
+                    shortcutdirectory=target,
                     appname=display_name,
-                    launchoptions=f'"{app_name}"',
-                    startingdir=start_dir,
+                    launchoptions=launch_opts,
+                    startingdir=start_in,
                     launcher_name="Waydroid"
                 )
                 track_game(display_name, "Waydroid")
@@ -4442,7 +4490,8 @@ else:
                 print(f"Failed to process {file_name}: {e}")
     else:
         print(f"Applications directory not found: {applications_dir}")
-#end of waydroid scanner
+# End of Waydroid scanner
+
 
 
 
