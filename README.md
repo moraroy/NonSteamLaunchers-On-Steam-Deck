@@ -274,7 +274,7 @@ Finds Games Automatically
 - HoYoPlay 🎮            💾 Full SD Card Support
 - Game Jolt Client 🎮    💾 Full SD Card Support
 - Minecraft Launcher 🎮
-- Waydroid Apps 🎮
+- Waydroid Apps 🎮       📜 Your own script Support
 - Humble Games Collection 🎮 💾 Full SD Card Support
 - NVIDIA GeForce NOW (Native Linux App) - You must "Favorite" the game with the heart. Old favorites will not be picked up, you need to re-favorite.
 
@@ -283,6 +283,9 @@ The scanner will pick these up automatically. But for Geforce Now only, change t
 - Xbox Game Pass
 - GeForce Now
 - Amazon Luna
+
+## Waydroid Detection
+If you're not in Official SteamOS or not using [this script](https://github.com/ryanrudolfoba/SteamOS-Waydroid-Installer) to install your Waydroid, you can put your own script for the App launch with the name "waydroid-cage.sh" in your own home directory and the scanner will do the rest. A good references for writing your own Script is in [here](https://github.com/SwallowKOR/cachyos-waydroid-gamemode).
 
 To stop the NSLGameScanner.service, open up NSL and hit "🔍" it will then ask you if you want to restart it, click no, and that's it.
 
