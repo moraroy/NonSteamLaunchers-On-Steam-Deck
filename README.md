@@ -221,6 +221,7 @@ Supported Stores 🛍
 - RemotePlayWhatever ✔️
 - NVIDIA GeForce NOW (Native Linux) ✔️
 - STOVE Client ✔️
+- Moonlight Game Streaming
 
 <h1 align="center">
 Supported Streaming Sites for games and as well as any website. 🌐
