@@ -983,7 +983,8 @@ window.createShortcut = async function(data) {
 
       const notificationPayload = {
         rawbody: data.appname + " was added to your library!",
-        state: "ingame"
+        state: "ingame",
+        steamid: "",
       };
 
       if (window.SteamClient && SteamClient.ClientNotifications) {
