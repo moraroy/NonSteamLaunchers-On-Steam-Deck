@@ -366,12 +366,7 @@ env_vars="${logged_in_home}/.config/systemd/user/env_vars"
 steam_debug_file="${logged_in_home}/.local/share/Steam/.cef-enable-remote-debugging"
 nsl_config_dir="${logged_in_home}/.var/app/com.github.mtkennerly.ludusavi/config/ludusavi/NSLconfig"
 
-# ---------- FUNCTION ----------
-show_message() {
-    echo "[NSL] $1"
-}
 
-show_message "Checking for existing NSL Game Scanner service..."
 
 if systemctl --user list-unit-files | grep -q "nslgamescanner.service"; then
     if systemctl --user is-active --quiet nslgamescanner.service; then
