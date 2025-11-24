@@ -370,18 +370,15 @@ nsl_config_dir="${logged_in_home}/.var/app/com.github.mtkennerly.ludusavi/config
 
 if systemctl --user list-unit-files | grep -q "nslgamescanner.service"; then
     if systemctl --user is-active --quiet nslgamescanner.service; then
-        show_message "Stopping running NSL Game Scanner..."
         systemctl --user stop nslgamescanner.service
     fi
 
-    show_message "Disabling old NSL Game Scanner service..."
     systemctl --user disable nslgamescanner.service 2>/dev/null || true
 fi
 
 # Remove old Python file only (service handled in Python)
 rm -f "$python_script_path"
 
-show_message "Checking for required Python modules..."
 
 mkdir -p "${parent_folder}"
 folders_exist=true
@@ -394,7 +391,6 @@ done
 
 if [ "${folders_exist}" = false ]; then
   zip_file_path="${parent_folder}/repo.zip"
-  show_message "Downloading Python modules..."
   wget -O "${zip_file_path}" "${repo_url}" || { echo 'Download failed'; exit 1; }
 
   unzip -d "${parent_folder}" "${zip_file_path}" || { echo 'Unzip failed'; exit 1; }
@@ -409,23 +405,17 @@ if [ "${folders_exist}" = false ]; then
 
   rm -f "${zip_file_path}"
   rm -rf "${parent_folder}/NonSteamLaunchers-On-Steam-Deck-main"
-  show_message "Modules installed successfully."
 else
   show_message "All required modules already installed."
 fi
 
-show_message "Downloading latest NSLGameScanner.py..."
 curl -fsSL -o "$python_script_path" "$github_link"
 chmod +x "$python_script_path"
 
-if [ ! -f "$env_vars" ]; then
-    show_message "[WARN] env_vars not found. Scanner may not run automatically."
-fi
 
 show_message "Running NSL Game Scanner manually for initial setup..."
 /usr/bin/python3 "${python_script_path}"
 
-show_message "Initial manual run completed."
 
 # --- Handle Steam Remote Debugging ---
 if [ ! -f "$steam_debug_file" ]; then
