@@ -376,7 +376,6 @@ if systemctl --user list-unit-files | grep -q "nslgamescanner.service"; then
     systemctl --user disable nslgamescanner.service 2>/dev/null || true
 fi
 
-# Remove old Python file only (service handled in Python)
 rm -f "$python_script_path"
 
 
@@ -405,32 +404,25 @@ if [ "${folders_exist}" = false ]; then
 
   rm -f "${zip_file_path}"
   rm -rf "${parent_folder}/NonSteamLaunchers-On-Steam-Deck-main"
-else
-  show_message "All required modules already installed."
 fi
 
 curl -fsSL -o "$python_script_path" "$github_link"
 chmod +x "$python_script_path"
 
 
-show_message "Running NSL Game Scanner manually for initial setup..."
+show_message "Scanning for any games..."
 /usr/bin/python3 "${python_script_path}"
 
 
-# --- Handle Steam Remote Debugging ---
 if [ ! -f "$steam_debug_file" ]; then
-    show_message "Creating missing Steam remote debugging file..."
     touch "$steam_debug_file" || { echo "Failed to create $steam_debug_file"; exit 1; }
 
     echo "Restarting Steam..."
     killall steam 2>/dev/null || true
     while pgrep -x steam >/dev/null; do sleep 1; done
     nohup /usr/bin/steam -silent %U &>/dev/null &
-else
-    show_message "Steam remote debugging file already exists."
 fi
 
-# --- Fun messages ---
 funny_messages=(
   "Wow, you have a lot of games!"
   "Getting artwork and descriptions for note system..."
@@ -456,8 +448,6 @@ funny_messages=(
 start_msg="${funny_messages[$RANDOM % ${#funny_messages[@]}]}"
 show_message "$start_msg"
 
-sleep 2
-show_message "Finished! Welcome to NonSteamLaunchers!"
 
 if systemctl --user list-unit-files | grep -q "nslgamescanner.service"; then
     echo "[NSL] Starting NSL Game Scanner service..."
@@ -467,16 +457,16 @@ else
 fi
 
 
-# --- Optional Ludusavi backup ---
 if [ -d "$nsl_config_dir" ] && flatpak list --app | grep -q "com.github.mtkennerly.ludusavi"; then
     show_message "Running Ludusavi backup..."
     nohup flatpak run com.github.mtkennerly.ludusavi --config "$nsl_config_dir" backup --force > /dev/null 2>&1 &
     wait $!
-    show_message "Backup completed! Check /home/deck/NSLGameSaves"
-else
-    show_message "Ludusavi backup skipped (missing config or app)."
+    show_message "Game Saves have been backed up! Please check here: /home/deck/NSLGameSaves"
+	sleep 3
 fi
-
+show_message "Finished! Welcome to NonSteamLaunchers!"
+sleep 3
+###End of NSL Game Scanner update
 
 
 # Check if any command line arguments were provided
