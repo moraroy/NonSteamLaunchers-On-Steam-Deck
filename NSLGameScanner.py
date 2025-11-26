@@ -973,6 +973,21 @@ window.createShortcut = async function(data) {
       }
     }
 
+
+    await SteamClient.Apps.CreateDesktopShortcutForApp(shortcutId);
+    console.log("Desktop shortcut created for shortcut:", shortcutId);
+
+    const appDetails = appStore.m_mapApps.get(shortcutId);
+    if (appDetails) {
+      const m_gameid = appDetails.m_gameid;
+      console.log("Found m_gameid:", m_gameid);
+
+      return { success: true, shortcutId, m_gameid };
+    } else {
+      console.warn("No app details found in appStore for shortcutId:", shortcutId);
+      return { success: false, message: "App details not found in appStore." };
+    }
+
     // --- Notification ---
     try {
       await sleep(300);
@@ -2439,11 +2454,15 @@ def create_new_entry(shortcutdirectory, appname, launchoptions, startingdir, lau
         print("Shortcut creation result:", result)
 
         shortcut_id = None
+        m_gameid = None
         if result and 'result' in result:
             value = result['result']['result'].get('value')
             if isinstance(value, dict) and value.get('success'):
                 shortcut_id = value.get('shortcutId')
+                m_gameid = value.get('m_gameid')
                 print("App ID returned from JS:", shortcut_id)
+                print(f"Found m_gameid: {m_gameid}")
+
 
 
 
@@ -5090,6 +5109,31 @@ if removed_apps:
         inject_js_only(ws_socket)
 
         send_steam_notification(ws_socket, removed_message)
+
+        # Check for removed games' .desktop files
+        for game_name in removed_game_names:
+            base_game_name = game_name.split(' (')[0].strip().lower()
+            desktop_filename = f"{base_game_name}.desktop"
+            desktop_file_path = os.path.join(logged_in_home, 'Desktop', desktop_filename)
+
+            desktop_files = os.listdir(os.path.join(logged_in_home, 'Desktop'))
+            found_file = False
+            for f in desktop_files:
+                if f.lower() == desktop_filename:
+                    desktop_file_path = os.path.join(logged_in_home, 'Desktop', f)
+                    found_file = True
+                    break
+
+            if found_file:
+                try:
+                    os.remove(desktop_file_path)
+                    print(f"Deleted the .desktop file for removed game: {game_name}")
+                except Exception as e:
+                    print(f"Failed to delete .desktop file for {game_name}: {e}")
+            else:
+                print(f"No .desktop file found for removed game: {game_name}")
+
+
     except Exception as e:
         print("Failed to send removal notification:", e)
     finally:
