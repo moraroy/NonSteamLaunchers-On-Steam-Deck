@@ -3346,11 +3346,11 @@ else:
 
 
 #GOG Galaxy Scanner
+
 def getGogGameInfoDB(db_path, logged_in_home, gog_galaxy_launcher):
     if not os.path.exists(db_path):
         print(f"GOG Galaxy DB not found, skipping GOG Scanner: {db_path}")
         return {}
-
 
     game_dict = {}
 
@@ -3382,6 +3382,7 @@ def getGogGameInfoDB(db_path, logged_in_home, gog_galaxy_launcher):
                     continue
 
                 exe_win_path = ptl_exe.replace("/", "\\").strip()
+
                 proton_root = f"{logged_in_home}/.local/share/Steam/steamapps/compatdata/{gog_galaxy_launcher}/pfx"
                 win_no_drive = re.sub(r"^[A-Za-z]:/", "", exe_win_path.replace("\\", "/"))
                 exe_proton_path = os.path.join(proton_root, "drive_c", win_no_drive)
@@ -3393,7 +3394,7 @@ def getGogGameInfoDB(db_path, logged_in_home, gog_galaxy_launcher):
                 game_dict[title] = {
                     "id": pid,
                     "exe": exe_win_path,
-                    "launchParams": ptl_args
+                    "launchParams": ptl_args or ""
                 }
 
     except sqlite3.Error as e:
@@ -3402,22 +3403,22 @@ def getGogGameInfoDB(db_path, logged_in_home, gog_galaxy_launcher):
     return game_dict
 
 
-def adjust_dosbox_launch_options(launch_command, game_id, logged_in_home, gog_galaxy_launcher):
+def adjust_dosbox_launch_options(launch_command, game_id, logged_in_home, gog_galaxy_launcher, launch_args=""):
+    """Build Steam launch string, including DOSBox arguments if present."""
     launch_lower = launch_command.lower()
+
+    exe_path = launch_command
+
     if "dosbox.exe" in launch_lower:
-        try:
-            idx = launch_lower.index("dosbox.exe")
-            exe_path = launch_command[:idx] + "DOSBox.exe"
-            args = launch_command[idx + len("dosbox.exe"):].strip()
-            return (
-                f'STEAM_COMPAT_DATA_PATH="{logged_in_home}/.local/share/Steam/steamapps/compatdata/{gog_galaxy_launcher}/" '
-                f'%command% /command=runGame /gameId={game_id} /path="{exe_path}" "{args}"'
-            )
-        except Exception:
-            return launch_command
+        args = launch_args.strip()
+        return (
+            f'STEAM_COMPAT_DATA_PATH="{logged_in_home}/.local/share/Steam/steamapps/compatdata/{gog_galaxy_launcher}/" '
+            f'%command% /command=runGame /gameId={game_id} /path="{exe_path}" {args}'
+        )
+
     return (
         f'STEAM_COMPAT_DATA_PATH="{logged_in_home}/.local/share/Steam/steamapps/compatdata/{gog_galaxy_launcher}/" '
-        f'%command% /command=runGame /gameId={game_id} /path="{launch_command}"'
+        f'%command% /command=runGame /gameId={game_id} /path="{exe_path}"'
     )
 
 
@@ -3428,7 +3429,10 @@ if os.path.exists(db_path):
     game_dict = getGogGameInfoDB(db_path, logged_in_home, gog_galaxy_launcher)
 
     for game, info in game_dict.items():
-        launch_options = adjust_dosbox_launch_options(info['exe'], info['id'], logged_in_home, gog_galaxy_launcher)
+        launch_options = adjust_dosbox_launch_options(
+            info['exe'], info['id'], logged_in_home, gog_galaxy_launcher, launch_args=info['launchParams']
+        )
+
         exe_path = f"\"{logged_in_home}/.local/share/Steam/steamapps/compatdata/{gog_galaxy_launcher}/pfx/drive_c/Program Files (x86)/GOG Galaxy/GalaxyClient.exe\""
         start_dir = f"\"{logged_in_home}/.local/share/Steam/steamapps/compatdata/{gog_galaxy_launcher}/pfx/drive_c/Program Files (x86)/GOG Galaxy/\""
 
