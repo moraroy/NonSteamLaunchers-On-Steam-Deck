@@ -3413,7 +3413,7 @@ def adjust_dosbox_launch_options(launch_command, game_id, logged_in_home, gog_ga
         args = launch_args.strip()
         return (
             f'STEAM_COMPAT_DATA_PATH="{logged_in_home}/.local/share/Steam/steamapps/compatdata/{gog_galaxy_launcher}/" '
-            f'%command% /command=runGame /gameId={game_id} /path="{exe_path}" {args}'
+            f'%command% /command=runGame /gameId={game_id} /path="{exe_path}" "{args}"'
         )
 
     return (
