@@ -3346,83 +3346,55 @@ else:
 
 
 #GOG Galaxy Scanner
-def getGogGameInfoFromDB(db_path):
+def getGogGameInfoDB(db_path, logged_in_home, gog_galaxy_launcher):
     if not os.path.exists(db_path):
-        print(f"Database file not found at: {db_path}")
+        print(f"GOG Galaxy DB not found, skipping GOG Scanner: {db_path}")
         return {}
 
+
     game_dict = {}
-
-    def get_executables(cursor, product_id):
-        cursor.execute("""
-            SELECT installPath FROM GameFiles
-            WHERE productId = ? AND installPath LIKE '%.exe'
-        """, (product_id,))
-        return [row[0] for row in cursor.fetchall()]
-
-    def filter_executables(executables, title, install_path):
-        junk = {
-            "unitycrashhandler64.exe", "unitycrashhandler32.exe",
-            "crashreportclient.exe", "ue4prereqsetup_x64.exe",
-            "ue4prereqsetup.exe", "dotnetfx.exe"
-        }
-        title_key = title.lower().translate(str.maketrans('', '', ' :-_'))
-        base = install_path.replace("\\", "/").lower()
-
-        def score(exe):
-            name = os.path.basename(exe).lower()
-            if name in junk or "win64" in name or "win32" in name:
-                return None
-            name_key = name.translate(str.maketrans('', '', ' :-_'))
-            if title_key in name_key:
-                return (1, exe)
-            path = os.path.dirname(exe).replace("\\", "/").lower()
-            if path.startswith(base):
-                rel = path[len(base):].strip("/")
-                if not rel or title_key in rel.replace(" ", "").replace("_", "").replace("-", ""):
-                    return (2, exe)
-            return (3, exe)
-
-        scored = filter(None, (score(e) for e in executables))
-        return [exe for _, exe in sorted(scored, key=lambda x: (x[0], len(x[1])))]
 
     try:
         with sqlite3.connect(db_path) as conn:
             cursor = conn.cursor()
+
+            # Pull only the *default* PlayTask using isPrimary = 1
             cursor.execute("""
-                SELECT ibp.productId, ld.title, ibp.installationPath, ptl.executablePath
+                SELECT
+                    ibp.productId,
+                    ld.title,
+                    ibp.installationPath,
+                    ptl.executablePath,
+                    ptl.commandLineArgs
                 FROM InstalledBaseProducts ibp
-                JOIN LimitedDetails ld ON ibp.productId = ld.productId
-                LEFT JOIN PlayTasks pt ON pt.gameReleaseKey = ld.id
-                LEFT JOIN PlayTaskLaunchParameters ptl ON ptl.playTaskId = pt.id
+                JOIN LimitedDetails ld
+                    ON ibp.productId = ld.productId
+                LEFT JOIN PlayTasks pt
+                    ON pt.gameReleaseKey = 'gog_' || ibp.productId
+                   AND pt.isPrimary = 1
+                LEFT JOIN PlayTaskLaunchParameters ptl
+                    ON ptl.playTaskId = pt.id
                 WHERE ld.is_production = 1
             """)
 
-            for pid, title, path, ptl_exe in cursor.fetchall():
-                exes = []
-                if ptl_exe:
-                    exes.append(ptl_exe.replace("\\", "/"))
-                exes += [os.path.join(path, e).replace("\\", "/") for e in get_executables(cursor, pid)]
-                if not exes:
+            for pid, title, install_path, ptl_exe, ptl_args in cursor.fetchall():
+                if not ptl_exe:
                     continue
 
-                main_exes = filter_executables(set(exes), title, path)
-                if main_exes:
-                    win_exe_path = main_exes[0] 
+                exe_win_path = ptl_exe.replace("/", "\\").strip()
+                proton_root = f"{logged_in_home}/.local/share/Steam/steamapps/compatdata/{gog_galaxy_launcher}/pfx"
+                win_no_drive = re.sub(r"^[A-Za-z]:/", "", exe_win_path.replace("\\", "/"))
+                exe_proton_path = os.path.join(proton_root, "drive_c", win_no_drive)
 
-                    proton_root = f"{logged_in_home}/.local/share/Steam/steamapps/compatdata/{gog_galaxy_launcher}/pfx"
-                    linux_exe_path = win_exe_path.replace("\\", "/")
-                    linux_exe_path = re.sub(r"^[A-Za-z]:/", "", linux_exe_path)
-                    linux_exe_path = os.path.join(proton_root, "drive_c", linux_exe_path)
+                if not os.path.exists(exe_proton_path):
+                    print(f"Skipping {title}: EXE not on disk -> {exe_proton_path}")
+                    continue
 
-                    if not os.path.exists(linux_exe_path):
-                        print(f"Skipping {title}: EXE not found -> {linux_exe_path}")
-                        continue
-
-                    game_dict[title] = {
-                        'id': pid,
-                        'exe': win_exe_path
-                    }
+                game_dict[title] = {
+                    "id": pid,
+                    "exe": exe_win_path,
+                    "launchParams": ptl_args
+                }
 
     except sqlite3.Error as e:
         print(f"SQLite error: {e}")
@@ -3430,49 +3402,41 @@ def getGogGameInfoFromDB(db_path):
     return game_dict
 
 
-
-def adjust_dosbox_launch_options(launch_command, game_id):
-    print(f"Adjusting launch options for command: {launch_command}")
-    if "dosbox.exe" in launch_command.lower():
+def adjust_dosbox_launch_options(launch_command, game_id, logged_in_home, gog_galaxy_launcher):
+    launch_lower = launch_command.lower()
+    if "dosbox.exe" in launch_lower:
         try:
-            exe_part, args_part = launch_command.split("DOSBox.exe", 1)
-            exe_path = exe_part.strip() + "DOSBox.exe"
-            args = args_part.strip()
-
-            launch_options = (
+            idx = launch_lower.index("dosbox.exe")
+            exe_path = launch_command[:idx] + "DOSBox.exe"
+            args = launch_command[idx + len("dosbox.exe"):].strip()
+            return (
                 f'STEAM_COMPAT_DATA_PATH="{logged_in_home}/.local/share/Steam/steamapps/compatdata/{gog_galaxy_launcher}/" '
                 f'%command% /command=runGame /gameId={game_id} /path="{exe_path}" "{args}"'
             )
-            return launch_options
-        except ValueError as e:
-            print(f"Error adjusting launch options: {e}")
+        except Exception:
             return launch_command
-    else:
-        launch_command = launch_command.strip()
-        return (
-            f'STEAM_COMPAT_DATA_PATH="{logged_in_home}/.local/share/Steam/steamapps/compatdata/{gog_galaxy_launcher}/" '
-            f'%command% /command=runGame /gameId={game_id} /path="{launch_command}"'
-        )
+    return (
+        f'STEAM_COMPAT_DATA_PATH="{logged_in_home}/.local/share/Steam/steamapps/compatdata/{gog_galaxy_launcher}/" '
+        f'%command% /command=runGame /gameId={game_id} /path="{launch_command}"'
+    )
 
 
-gog_games_directory = f"{logged_in_home}/.local/share/Steam/steamapps/compatdata/{gog_galaxy_launcher}/pfx/drive_c/Program Files (x86)/GOG Galaxy/Games"
+
 db_path = f"{logged_in_home}/.local/share/Steam/steamapps/compatdata/{gog_galaxy_launcher}/pfx/drive_c/ProgramData/GOG.com/Galaxy/storage/galaxy-2.0.db"
 
-if not os.path.exists(gog_games_directory) or not os.path.exists(db_path):
-    print("One or more paths do not exist.")
-    print("GOG Galaxy game data not found. Skipping GOG Galaxy Games Scanner.")
+if os.path.exists(db_path):
+    game_dict = getGogGameInfoDB(db_path, logged_in_home, gog_galaxy_launcher)
+
+    for game, info in game_dict.items():
+        launch_options = adjust_dosbox_launch_options(info['exe'], info['id'], logged_in_home, gog_galaxy_launcher)
+        exe_path = f"\"{logged_in_home}/.local/share/Steam/steamapps/compatdata/{gog_galaxy_launcher}/pfx/drive_c/Program Files (x86)/GOG Galaxy/GalaxyClient.exe\""
+        start_dir = f"\"{logged_in_home}/.local/share/Steam/steamapps/compatdata/{gog_galaxy_launcher}/pfx/drive_c/Program Files (x86)/GOG Galaxy/\""
+
+        create_new_entry(exe_path, game, launch_options, start_dir, launcher_name="GOG Galaxy")
+        track_game(game, "GOG Galaxy")
 else:
-    game_dict = getGogGameInfoFromDB(db_path)
+    print(f"GOG Galaxy DB not found at {db_path}")
 
-    for game, game_info in game_dict.items():
-        if game_info['id']:
-            launch_options = adjust_dosbox_launch_options(game_info['exe'], game_info['id'])
-
-            exe_path = f"\"{logged_in_home}/.local/share/Steam/steamapps/compatdata/{gog_galaxy_launcher}/pfx/drive_c/Program Files (x86)/GOG Galaxy/GalaxyClient.exe\""
-            start_dir = f"\"{logged_in_home}/.local/share/Steam/steamapps/compatdata/{gog_galaxy_launcher}/pfx/drive_c/Program Files (x86)/GOG Galaxy/\""
-
-            create_new_entry(exe_path, game, launch_options, start_dir, launcher_name="GOG Galaxy")
-            track_game(game, "GOG Galaxy")
 
 #End of GOG Galaxy Scanner
 
