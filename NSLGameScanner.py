@@ -4396,22 +4396,18 @@ else:
         f"{logged_in_home}/.local/bin/waydroid-cage.sh",
     ]
 
-    launcher_path = None
-
-
-    for path in possible_launchers:
-        if os.path.isfile(path):
-            launcher_path = path
-            break
+    launcher_path = next((p for p in possible_launchers if os.path.isfile(p)), None)
 
     if launcher_path is None:
         search_dirs = [logged_in_home, "/run/media", "/mnt", "/media"]
-        print("Fast-searching for custom waydroid-cage.sh...")
         for base in search_dirs:
             if not os.path.isdir(base):
                 continue
-            for root, dirs, files in os.walk(base, topdown=True):
-                dirs[:] = [d for d in dirs if d not in ("proc", "dev", "sys", "lost+found", "var", "boot", "etc", "run", "tmp")]
+            for root, dirs, files in os.walk(base):
+                # Limit recursion to 2 levels deep
+                if root[len(base):].count(os.sep) > 2:
+                    dirs[:] = []
+                    continue
                 if "waydroid-cage.sh" in files:
                     launcher_path = os.path.join(root, "waydroid-cage.sh")
                     print(f"Found Waydroid launcher: {launcher_path}")
@@ -4419,36 +4415,28 @@ else:
             if launcher_path:
                 break
 
-    if launcher_path:
-        use_cage = True
-        exe_path = launcher_path
-        start_dir = os.path.dirname(launcher_path)
-    else:
-        use_cage = False
-        exe_path = "waydroid"
-        start_dir = "./"
+    use_cage = bool(launcher_path)
+    exe_path = launcher_path if use_cage else "waydroid"
+    start_dir = os.path.dirname(launcher_path) if use_cage else "./"
 
     print(f"Waydroid Cage Detected: {use_cage}")
     print(f"Launcher Path: {exe_path}")
 
     if os.path.isdir(applications_dir):
         for file_name in os.listdir(applications_dir):
-            time.sleep(0.1)
             if not file_name.endswith(".desktop") or file_name in ignored_files:
                 continue
 
             file_path = os.path.join(applications_dir, file_name)
             try:
-                with open(file_path, "r", encoding="utf-8") as f:
-                    content = f.read().lower()
-                    if "waydroid" not in content:
-                        continue
-
-                parser = configparser.ConfigParser(strict=False)
+                parser = configparser.RawConfigParser(strict=False)
                 parser.read(file_path)
 
+                if "Desktop Entry" not in parser:
+                    continue
+
                 display_name = parser.get("Desktop Entry", "Name", fallback=None)
-                exec_cmd = parser.get("Desktop Entry", "Exec", fallback="")
+                exec_cmd = parser.get("Desktop Entry", "Exec", fallback="").lower()
 
                 if not display_name or "waydroid app launch" not in exec_cmd:
                     continue
