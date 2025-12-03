@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.2.4](https://github.com/moraroy/NonSteamLaunchers-On-Steam-Deck/compare/v4.2.3...v4.2.4) (2025-12-03)
+
+
+### Bug Fixes
+
+* **epic:** update install path ([6090a8e](https://github.com/moraroy/NonSteamLaunchers-On-Steam-Deck/commit/6090a8e97eb254bb785e0b6a680efe0b93e19c09))
+
 ## [3.8.2](https://github.com/moraroy/NonSteamLaunchers-On-Steam-Deck/compare/v3.8.1...v3.8.2) (2024-08-06)
 
 
