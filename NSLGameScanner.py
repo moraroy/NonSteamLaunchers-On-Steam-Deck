@@ -973,19 +973,17 @@ window.createShortcut = async function(data) {
       }
     }
 
-
     await SteamClient.Apps.CreateDesktopShortcutForApp(shortcutId);
     console.log("Desktop shortcut created for shortcut:", shortcutId);
 
     const appDetails = appStore.m_mapApps.get(shortcutId);
-    if (appDetails) {
-      const m_gameid = appDetails.m_gameid;
-      console.log("Found m_gameid:", m_gameid);
+    let m_gameid = null;
 
-      return { success: true, shortcutId, m_gameid };
+    if (appDetails) {
+      m_gameid = appDetails.m_gameid;
+      console.log("Found m_gameid:", m_gameid);
     } else {
       console.warn("No app details found in appStore for shortcutId:", shortcutId);
-      return { success: false, message: "App details not found in appStore." };
     }
 
     // --- Notification ---
@@ -1013,7 +1011,11 @@ window.createShortcut = async function(data) {
       console.warn("Failed to send notification:", notifyErr);
     }
 
-    return { success: true, shortcutId };
+    if (m_gameid !== null) {
+      return { success: true, shortcutId, m_gameid };
+    }
+
+    return { success: false, message: "App details not found in appStore." };
 
   } catch (e) {
     console.error("Failed to create shortcut:", e);
