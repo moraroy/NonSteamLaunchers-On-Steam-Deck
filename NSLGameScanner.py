@@ -1997,95 +1997,80 @@ def inject_and_create_shortcut(ws_socket, shortcut_data):
 
 
 
-### For Uninstall Notifications + remove empty collections
-def send_steam_notification(ws_socket, message_text, removed_apps):
+###For Uninstall Notifications only
+def send_steam_notification(ws_socket, message_text):
     notify_id = next(eval_id_counter)
-    launcher_list = list(removed_apps.keys())
-    js_launchers = json.dumps(launcher_list)
-    js_message = json.dumps(message_text)
 
-    JS_notify = f"""
+    js_notify = f"""
     (function() {{
-        try {{
-            if (!window._sharedAudioCtx)
-                window._sharedAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
-            const ctx = window._sharedAudioCtx;
-
-            function playTone({{type='sine', frequency=440, frequencyEnd=null, volume=0.1, duration=1, startTime=null}}) {{
-                const now = ctx.currentTime;
-                const start = startTime ?? now;
-                const osc = ctx.createOscillator();
-                const gain = ctx.createGain();
-                osc.type = type;
-                osc.frequency.setValueAtTime(frequency, start);
-                if (frequencyEnd !== null)
-                    osc.frequency.exponentialRampToValueAtTime(frequencyEnd, start + duration);
-                gain.gain.setValueAtTime(volume, start);
-                gain.gain.exponentialRampToValueAtTime(0.0005, start + duration);
-                osc.connect(gain);
-                gain.connect(ctx.destination);
-                osc.start(start);
-                osc.stop(start + duration);
-                osc.onended = () => {{ osc.disconnect(); gain.disconnect(); }};
-            }}
-
-            playTone({{type:'sine', frequency:660, frequencyEnd:520, volume:0.12, duration:1.5}});
-            playTone({{type:'sine', frequency:520, frequencyEnd:400, volume:0.08, duration:0.8, startTime: ctx.currentTime+0.1}});
-
-            if (window.SteamClient && SteamClient.ClientNotifications) {{
-                const payload = {{ rawbody: {js_message}, state: "ingame" }};
-                SteamClient.ClientNotifications.DisplayClientNotification(3, JSON.stringify(payload));
-            }}
-
-            const launcherNames = {js_launchers};
-            const collectionStore = window.g_CollectionStore || window.collectionStore;
-            const appStore = window.g_AppStore || window.appStore;
-
-            if (!collectionStore || !appStore)
-                return;
-
-            for (const launcher of launcherNames) {{
-                try {{
-                    const collectionId = collectionStore.GetCollectionIDByUserTag(launcher);
-                    if (!collectionId)
-                        continue;
-
-                    const collection = collectionStore.GetCollection(collectionId);
-                    if (!collection)
-                        continue;
-
-                    const currentApps = Array.from(collection.allApps || collection.m_setApps);
-
-                    const realApps = currentApps.filter(appId => {{
-                        return !!appStore.m_mapApps.get(appId);
-                    }});
-
-                    if (realApps.length === 0)
-                        collection.Delete();
-
-                }} catch (e) {{
-                    /* suppress errors */
-                }}
-            }}
-
-        }} catch (e) {{
-            /* suppress outer errors */
+        // Ensure shared audio context exists
+        if (!window._sharedAudioCtx) {{
+            window._sharedAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
         }}
-    }})();
+        const ctx = window._sharedAudioCtx;
+
+        function playTone({{ type = 'sine', frequency = 440, frequencyEnd = null, volume = 0.1, duration = 1, startTime = null }}) {{
+            const now = ctx.currentTime;
+            const start = startTime ?? now;
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+
+            osc.type = type;
+            osc.frequency.setValueAtTime(frequency, start);
+
+            if (frequencyEnd !== null) {{
+                osc.frequency.exponentialRampToValueAtTime(frequencyEnd, start + duration);
+            }}
+
+            gain.gain.setValueAtTime(volume, start);
+            gain.gain.exponentialRampToValueAtTime(0.0005, start + duration);
+
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+
+            osc.start(start);
+            osc.stop(start + duration);
+
+            osc.onended = () => {{
+                osc.disconnect();
+                gain.disconnect();
+            }};
+        }}
+
+        // Play descending tones for uninstall notification (opposite of add)
+        playTone({{ type: 'sine', frequency: 660, frequencyEnd: 520, volume: 0.12, duration: 1.5 }});
+        playTone({{ type: 'sine', frequency: 520, frequencyEnd: 400, volume: 0.08, duration: 0.8, startTime: ctx.currentTime + 0.1 }});
+
+        // Show Steam notification
+        if (window.SteamClient && SteamClient.ClientNotifications) {{
+            const payload = {{
+                rawbody: {json.dumps(message_text)},
+                state: "ingame"
+            }};
+            const jsonStr = JSON.stringify(payload);
+            SteamClient.ClientNotifications.DisplayClientNotification(3, jsonStr, function(arg) {{
+                console.log("Notification callback", arg);
+            }});
+            return true;
+        }} else {{
+            console.warn("SteamClient.ClientNotifications not available");
+            return false;
+        }}
+    }})()
     """
 
     send_ws_text(ws_socket, json.dumps({
         "id": notify_id,
         "method": "Runtime.evaluate",
         "params": {
-            "expression": JS_notify,
-            "awaitPromise": False,
+            "expression": js_notify,
+            "awaitPromise": False,  # Do NOT await promise here
             "returnByValue": True
         }
     }))
 
-    return recv_ws_message_for_id(ws_socket, notify_id)
-
+    result = recv_ws_message_for_id(ws_socket, notify_id)
+    return result
 
 
 def inject_js_only(ws_socket):
@@ -5075,42 +5060,39 @@ if removed_apps:
 
     removed_message = "Removed from library:\n" + "\n".join(removed_game_names)
 
-    ws_socket = None
     try:
         # Only connect & inject JS if a game was actually removed
         ws_url = get_ws_url_by_title(WS_HOST, WS_PORT, TARGET_TITLE)
-        print(f"[DEBUG] Connecting to WebSocket URL: {ws_url}")
         ws_socket = create_websocket_connection(ws_url)
         inject_js_only(ws_socket)
 
-        result = send_steam_notification(ws_socket, removed_message, removed_apps)
-
+        send_steam_notification(ws_socket, removed_message)
 
         # Check for removed games' .desktop files
         for game_name in removed_game_names:
             base_game_name = game_name.split(' (')[0].strip().lower()
             desktop_filename = f"{base_game_name}.desktop"
-            desktop_path = os.path.join(logged_in_home, 'Desktop')
-            desktop_files = os.listdir(desktop_path)
+            desktop_file_path = os.path.join(logged_in_home, 'Desktop', desktop_filename)
 
+            desktop_files = os.listdir(os.path.join(logged_in_home, 'Desktop'))
             found_file = False
             for f in desktop_files:
                 if f.lower() == desktop_filename:
-                    full_path = os.path.join(desktop_path, f)
-                    try:
-                        os.remove(full_path)
-                        print(f"[DEBUG] Deleted .desktop file for removed game: {game_name}")
-                    except Exception as e:
-                        print(f"[ERROR] Failed to delete .desktop file for {game_name}: {e}")
+                    desktop_file_path = os.path.join(logged_in_home, 'Desktop', f)
                     found_file = True
                     break
 
-            if not found_file:
-                print(f"[DEBUG] No .desktop file found for removed game: {game_name}")
+            if found_file:
+                try:
+                    os.remove(desktop_file_path)
+                    print(f"Deleted the .desktop file for removed game: {game_name}")
+                except Exception as e:
+                    print(f"Failed to delete .desktop file for {game_name}: {e}")
+            else:
+                print(f"No .desktop file found for removed game: {game_name}")
+
 
     except Exception as e:
-        print(f"[ERROR] Failed to send removal notification or cleanup collections: {e}")
-
+        print("Failed to send removal notification:", e)
     finally:
-        if ws_socket:
-            ws_socket.close()
+        ws_socket.close()
