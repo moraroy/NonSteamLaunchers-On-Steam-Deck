@@ -2029,11 +2029,9 @@ def send_launcher_notification(ws_socket, message_text, removed_apps):
                 osc.onended = () => {{ osc.disconnect(); gain.disconnect(); }};
             }}
 
-            // Play notification tones
             playTone({{ type:'sine', frequency:660, frequencyEnd:520, volume:0.12, duration:1.5 }});
             playTone({{ type:'sine', frequency:520, frequencyEnd:400, volume:0.08, duration:0.8, startTime: ctx.currentTime + 0.1 }});
 
-            // Steam client notification
             if (window.SteamClient && SteamClient.ClientNotifications) {{
                 const payload = {{ rawbody: {js_message}, state: "ingame" }};
                 SteamClient.ClientNotifications.DisplayClientNotification(
@@ -2043,7 +2041,6 @@ def send_launcher_notification(ws_socket, message_text, removed_apps):
                 );
             }}
 
-            // Delay removal to avoid race condition with MobX updates
             setTimeout(() => {{
                 const launcherNames = {js_launchers};
                 Array.from(collectionStore.collectionsFromStorage.values())
