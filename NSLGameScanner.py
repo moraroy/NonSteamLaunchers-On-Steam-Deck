@@ -14,6 +14,7 @@ import csv
 import configparser
 import certifi
 import itertools
+import urllib
 from datetime import datetime
 
 from urllib.request import urlopen
