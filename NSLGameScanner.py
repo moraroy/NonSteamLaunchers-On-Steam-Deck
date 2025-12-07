@@ -434,12 +434,13 @@ def is_match(name1, name2):
 
 
 
+
 steam_applist_cache = None
 
 def get_steam_store_appid(steam_store_game_name):
     search_url = f"{BASE_URL}/search/{steam_store_game_name}"
     try:
-        response = requests.get(search_url)
+        response = requests.get(search_url, timeout=10)
         response.raise_for_status()
         data = response.json()
         if 'data' in data and data['data']:
@@ -450,27 +451,26 @@ def get_steam_store_appid(steam_store_game_name):
     except requests.exceptions.RequestException as e:
         print(f"Primary store App ID lookup failed for {steam_store_game_name}: {e}")
 
-    # Fallback using Steam AppList (cached)
-    global steam_applist_cache
-    if steam_applist_cache is None:
-        try:
-            STEAM_BASE_URL = "https://api.steampowered.com"
-            app_list_url = f"{STEAM_BASE_URL}/ISteamApps/GetAppList/v2/"
-            response = requests.get(app_list_url)
-            response.raise_for_status()
-            steam_applist_cache = response.json()['applist']['apps']
-            print("Cached Steam app list from Steam API.")
-        except requests.exceptions.RequestException as e:
-            print(f"Steam AppList fallback failed for {steam_store_game_name}: {e}")
-            return None
+    try:
+        safe_name = urllib.parse.quote_plus(steam_store_game_name)
+        fallback_url = f"https://store.steampowered.com/search/?term={safe_name}"
+        response = requests.get(fallback_url, timeout=10)
+        response.raise_for_status()
+        html = response.text
 
-    for app in steam_applist_cache:
-        if steam_store_game_name.lower() in app['name'].lower():
-            print(f"Found App ID for {steam_store_game_name} via cached Steam AppList: {app['appid']}")
-            return app['appid']
+        match = re.search(r'data-ds-appid="(\d+)"', html)
+        if match:
+            appid = match.group(1)
+            print(f"Found App ID for {steam_store_game_name} via Steam store search fallback: {appid}")
+            return appid
 
-    print(f"No App ID found for {steam_store_game_name} in cached Steam AppList.")
-    return None
+        print(f"No App ID found for {steam_store_game_name} via Steam store search fallback.")
+        return None
+
+    except requests.exceptions.RequestException as e:
+        print(f"Steam store search fallback failed for {steam_store_game_name}: {e}")
+        return None
+
 
 
 def create_steam_store_app_manifest_file(steam_store_appid, steam_store_game_name):
