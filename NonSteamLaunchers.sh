@@ -3772,6 +3772,7 @@ update_notes_in_file() {
     nsl_content=""
 
     # Loop through the filtered notes for this game
+    # Loop through the filtered notes for this game
     for note in $(echo "$filtered_notes" | jq -r '@base64'); do
         # Decode the note
         note_decoded=$(echo "$note" | base64 --decode)
@@ -3781,12 +3782,19 @@ update_notes_in_file() {
         content=$(echo "$note_decoded" | jq -r '."Content"')
         time_created=$(echo "$note_decoded" | jq -r '."Time Created"')
 
-        # Clean up content by replacing newline characters with <br> tags
-        content_cleaned=$(echo "$content" | sed 's/\n/<br>/g')
+        # Sanitize content: remove any existing [p] tags
+        content_sanitized=$(echo "$content" | sed 's/\[\/\?p\]//g')
 
-        # Construct the content block for this note
-        nsl_content+=$"[p][i]A note called \"$user\" says,[/i][/p][p][b]$content_cleaned[/b][/p][p]$time_created[/p][p][/p]"
+        # Replace newlines with Steam-friendly line breaks (or leave as plain text)
+        content_sanitized=$(echo "$content_sanitized" | sed 's/\n/<br>/g')
+
+        # Construct the content block for this note using **only [p]…[/p]**
+        nsl_content+=$"[p][i]A note called \"$user\" says,[/i][/p]"
+        nsl_content+=$"[p]$content_sanitized[/p]"
+        nsl_content+=$"[p]$time_created[/p]"
     done
+
+
 
     # Generate the current timestamp
     local current_time=$(get_current_timestamp)
