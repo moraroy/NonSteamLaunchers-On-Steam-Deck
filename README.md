@@ -199,7 +199,7 @@ Supported Stores 🛍
 - GOG Galaxy ✔️
 - Humble Games Collection ✔️
 - IndieGala ✔️
-- Itch.io ✔️
+- itch.io ✔️
 - Legacy Games ✔️
 - Rockstar Games Launcher ✔️
 - Ubisoft Connect ✔️
