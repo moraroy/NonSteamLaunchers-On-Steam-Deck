@@ -844,12 +844,11 @@ def create_exec_line_from_entry(logged_in_home, new_entry, m_gameid):
             if m:
                 game_id = m.group(1)
                 print(f"Found Origin gameId: {game_id}")
-
+                
         if not game_id:
-            print(f"ERROR: No gameId found in launch_options")
-            return None
-
-        print(f"Final game_id: {game_id}")
+            print("No gameId found, skipping game ID-related steps.")
+        else:
+            print(f"Final game_id: {game_id}")
 
         # UMU GAMEID
         m = re.search(r'GAMEID="(\d+)"', launch_options)
