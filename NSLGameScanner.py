@@ -14,6 +14,7 @@ import csv
 import configparser
 import certifi
 import itertools
+import shlex
 import urllib
 from datetime import datetime
 
@@ -796,6 +797,229 @@ def scan_and_track_games(logged_in_home, steamid3):
 
     load_master_list()
     return track_game, finalize_game_tracking
+
+
+
+
+
+
+#.desktop file logic
+def create_exec_line_from_entry(logged_in_home, new_entry, m_gameid):
+    try:
+        appname = new_entry.get('appname')
+        exe_path = new_entry.get('exe')  # full quoted command
+        launch_options = new_entry.get('LaunchOptions')
+        launcher_name = new_entry.get('Launcher')
+        compattool = new_entry.get('CompatTool')
+
+        print(f"Launch Options: {launch_options}")
+        print(f"App Name: {appname}")
+        print(f"Exe Path: {exe_path}")
+        print(f"Launcher Name: {launcher_name}")
+        print(f"Compat Tool: {compattool}")
+        print(f"m_gameid: {m_gameid}")
+
+        # Extract GOG/Epic/Origin/Amazon game_id
+        game_id = None
+
+        m = re.search(r'/gameId=(\d+)', launch_options)
+        if m:
+            game_id = m.group(1)
+            print(f"Found GOG gameId: {game_id}")
+
+        if not game_id:
+            m = re.search(r'com\.epicgames\.launcher://apps/([^/?&]+)', launch_options)
+            if m:
+                game_id = m.group(1)
+                print(f"Found Epic gameId: {game_id}")
+
+        if not game_id:
+            m = re.search(r'amazon-games://play/([a-zA-Z0-9\-\.]+)', launch_options)
+            if m:
+                game_id = m.group(1)
+                print(f"Found Amazon gameId: {game_id}")
+
+        if not game_id:
+            m = re.search(r'origin2://game/launch\?offerIds=([a-zA-Z0-9\-]+)', launch_options)
+            if m:
+                game_id = m.group(1)
+                print(f"Found Origin gameId: {game_id}")
+
+        if not game_id:
+            print(f"ERROR: No gameId found in launch_options")
+            return None
+
+        print(f"Final game_id: {game_id}")
+
+        # UMU GAMEID
+        m = re.search(r'GAMEID="(\d+)"', launch_options)
+        umugameid = m.group(1) if m else None
+        print(f"UMU GameID: {umugameid}")
+
+        # STEAM_COMPAT_DATA_PATH prefix
+        compat_match = re.search(r'STEAM_COMPAT_DATA_PATH="([^"]+)"', launch_options)
+        if not compat_match:
+            print("ERROR: no STEAM_COMPAT_DATA_PATH")
+            return None
+        compat_data_prefix = os.path.basename(compat_match.group(1).rstrip("/"))
+        print(f"Compat prefix: {compat_data_prefix}")
+
+
+        dir_path = os.path.expanduser("~/.steam/root/compatibilitytools.d")
+        pattern = re.compile(r"UMU-Proton-(\d+(?:\.\d+)*)(?:-(\d+(?:\.\d+)*))?")
+
+        try:
+            umu_folders = [
+                (tuple(map(int, (m.group(1) + '.' + (m.group(2) or '0')).split('.'))), name)
+                for name in os.listdir(dir_path)
+                if (m := pattern.match(name)) and os.path.isdir(os.path.join(dir_path, name))
+            ]
+            if umu_folders:
+                compat_tool_name = max(umu_folders)[1]  # Most recent version
+                print(f"Found UMU Proton: {compat_tool_name}")
+            else:
+                print("No valid UMU Proton compatibility tool folders found.")
+                compat_tool_name = None
+        except Exception as e:
+            print(f"Error reading UMU Proton folders: {e}")
+            compat_tool_name = None
+
+        if compat_tool_name:
+            proton_path = os.path.join(logged_in_home, f".local/share/Steam/compatibilitytools.d/{compat_tool_name}")
+        else:
+            proton_path = f"{logged_in_home}/.local/share/Steam/compatibilitytools.d/{compattool}"
+
+        print(f"Final Proton Path: {proton_path}")
+
+        desktop_dir = os.path.join(logged_in_home, "Desktop")
+        if not os.path.isdir(desktop_dir):
+            print("Desktop not found")
+            return None
+
+        for filename in os.listdir(desktop_dir):
+            if not filename.endswith(".desktop"):
+                continue
+
+            path = os.path.join(desktop_dir, filename)
+
+            try:
+                content = open(path).read()
+            except:
+                continue
+
+            if f"steam://rungameid/{m_gameid}" not in content:
+                continue
+
+            print(f"Found .desktop: {path}")
+
+            UMU = f"{logged_in_home}/bin/umu-run"
+
+            tokens = shlex.split(exe_path)
+            first = os.path.basename(tokens[0])
+
+            if first == "umu-run":
+                final_exe_path = exe_path
+            else:
+                # Prefix umu-run without quotes
+                final_exe_path = f'{UMU} {exe_path}'
+
+            # Remove quotes around umu-run only
+            final_exe_path = re.sub(r'^"(/.*?umu-run)"', r'\1', final_exe_path)
+            print(f"Final Exe Path: {final_exe_path}")
+
+            env_vars = (
+                f'STEAM_COMPAT_DATA_PATH="{logged_in_home}/.local/share/Steam/steamapps/compatdata/{compat_data_prefix}/" '
+                f'WINEPREFIX="{logged_in_home}/.local/share/Steam/steamapps/compatdata/{compat_data_prefix}/pfx"'
+            )
+
+            if umugameid:
+                env_vars += f' GAMEID={umugameid}'
+                proton_path = f"{logged_in_home}/.local/share/Steam/compatibilitytools.d/{compat_tool_name}"
+            else:
+                proton_path = f"{logged_in_home}/.local/share/Steam/compatibilitytools.d/{compattool}"
+
+            env_vars += f' PROTONPATH="{proton_path}"'
+            print(f"Env Vars: {env_vars}")
+
+            # Build runner command (GOG, UMU, Epic, Origin, Amazon)
+
+            # Extract the path directly from the launch_options for gog only
+            m = re.search(r'/path="([^"]+)"', launch_options)
+            if m:
+                gog_game_path = m.group(1)
+                print(f"Extracted GOG Game Path: {gog_game_path}")
+            else:
+                gog_game_path = None
+                print("ERROR: No game path found in launch_options")
+
+            if "com.epicgames.launcher://" in launch_options:
+                runner_cmd = f'{final_exe_path} -com.epicgames.launcher://apps/{game_id}?action=launch&silent=true'
+            elif "origin2://" in launch_options:
+                runner_cmd = f'{final_exe_path} origin2://game/launch?offerIds={game_id}'
+            elif "amazon-games://" in launch_options:
+                runner_cmd = f'{final_exe_path} -amazon-games://play/{game_id}'
+            elif gog_game_path:
+                runner_cmd = (
+                    f'{final_exe_path} '
+                    f'/command=runGame /gameId={game_id} '
+                    f'/path="{gog_game_path}"'
+                )
+            else:
+                print("ERROR: No valid GOG game path found")
+                runner_cmd = None
+
+            print(f"Runner Cmd: {runner_cmd}")
+
+            exec_line = (
+                f"Exec=sh -c '"
+                f"if command -v kdialog >/dev/null; then "
+                f"CHOICE=$(kdialog --yesno \"Standalone or with Steam? You can also edit this .desktop file by right clicking.\" "
+                f"--yes-label \"UMU + {launcher_name}\" --no-label \"Steam\"); "
+                f"exit_code=$?; "
+                f"if [ $exit_code -eq 2 ]; then exit 0; fi; "
+                f"if [ $exit_code -eq 0 ]; then "
+                f"CHOICE={launcher_name.lower()}; "
+                f"elif [ $exit_code -eq 1 ]; then "
+                f"CHOICE=steam; "
+                f"fi; "
+                f"else CHOICE=steam; fi; "
+                f"if [ \"$CHOICE\" = \"steam\" ]; then steam steam://rungameid/{m_gameid}; "
+                f"else \"pkill -9 -f wineserver\"; {env_vars} {runner_cmd}; fi'"
+            )
+
+
+
+            print("Updated Exec line:")
+            print(exec_line)
+
+
+            content = content.replace(f"Exec=steam steam://rungameid/{m_gameid}", exec_line)
+
+            # Update the comment line
+            content = content.replace("Comment=Play this game on Steam", "Comment=Play this game on Steam or Standalone")
+
+            # Write the modified content back to the .desktop file
+            with open(path, "w") as file:
+                file.write(content)
+
+            print(f"Updated Exec line in {path}")
+
+            applications_dir = os.path.join(logged_in_home, ".local/share/applications/")
+            if not os.path.exists(applications_dir):
+                os.makedirs(applications_dir)
+
+            shutil.copy(path, applications_dir)
+            print(f"Copied {path} to {applications_dir}")
+
+            return
+
+        print("No matching .desktop file")
+        return None
+
+    except Exception as e:
+        print(f"Error creating Exec line: {e}")
+        return None
+#End of .desktop file logic
 
 
 
@@ -2486,6 +2710,10 @@ def create_new_entry(shortcutdirectory, appname, launchoptions, startingdir, lau
                 print("App ID returned from JS:", shortcut_id)
                 print(f"Found m_gameid: {m_gameid}")
 
+
+
+
+                create_exec_line_from_entry(logged_in_home, new_entry, m_gameid)
 
 
 
@@ -5097,29 +5325,37 @@ if removed_apps:
         if ws_socket:
             ws_socket.close()
 
+    directories = [
+        os.path.join(logged_in_home, 'Desktop'),
+        os.path.join(logged_in_home, '.local', 'share', 'applications')
+    ]
+
     for game_name in removed_game_names:
         base_game_name = game_name.split(' (')[0].strip().lower()
         desktop_filename = f"{base_game_name}.desktop"
-        desktop_path = os.path.join(logged_in_home, 'Desktop')
-
-        try:
-            desktop_files = os.listdir(desktop_path)
-        except Exception as e:
-            print(f"Failed to list Desktop directory: {e}")
-            desktop_files = []
 
         found_file = False
-        for f in desktop_files:
-            if f.lower() == desktop_filename:
-                full_path = os.path.join(desktop_path, f)
-                try:
-                    os.remove(full_path)
-                    print(f"Deleted .desktop file for removed game: {game_name}")
-                except Exception as e:
-                    print(f"Failed to delete .desktop file for {game_name}: {e}")
-                found_file = True
+
+        for directory in directories:
+            try:
+                files_in_directory = os.listdir(directory)
+            except Exception as e:
+                print(f"Failed to list directory {directory}: {e}")
+                continue
+
+            for f in files_in_directory:
+                if f.lower() == desktop_filename:
+                    full_path = os.path.join(directory, f)
+                    try:
+                        os.remove(full_path)
+                        print(f"Deleted .desktop file for removed game: {game_name} from {directory}")
+                    except Exception as e:
+                        print(f"Failed to delete .desktop file for {game_name} from {directory}: {e}")
+                    found_file = True
+                    break
+
+            if found_file:
                 break
 
         if not found_file:
             print(f"No .desktop file found for removed game: {game_name}")
-
