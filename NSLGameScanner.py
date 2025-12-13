@@ -973,7 +973,7 @@ def create_exec_line_from_entry(logged_in_home, new_entry, m_gameid):
             exec_line = (
                 f"Exec=sh -c '"
                 f"if command -v kdialog >/dev/null; then "
-                f"CHOICE=$(kdialog --yesno \"Standalone or with Steam? You can also edit this .desktop file by right clicking.\" "
+                f"CHOICE=$(kdialog --yesno \"Standalone or with Steam?\" "
                 f"--yes-label \"UMU + {launcher_name}\" --no-label \"Steam\"); "
                 f"exit_code=$?; "
                 f"if [ $exit_code -eq 2 ]; then exit 0; fi; "
