@@ -5334,11 +5334,12 @@ if removed_apps:
 
         found_file = False
 
+        print(f"Looking for .desktop file for: {game_name}")
+
         for directory in directories:
             try:
                 files_in_directory = os.listdir(directory)
             except Exception as e:
-                print(f"Failed to list directory {directory}: {e}")
                 continue
 
             for f in files_in_directory:
@@ -5346,14 +5347,14 @@ if removed_apps:
                     full_path = os.path.join(directory, f)
                     try:
                         os.remove(full_path)
-                        print(f"Deleted .desktop file for removed game: {game_name} from {directory}")
+                        print(f"Deleted .desktop file for: {game_name} from {directory}")
                     except Exception as e:
-                        print(f"Failed to delete .desktop file for {game_name} from {directory}: {e}")
+                        print(f"Failed to delete {full_path} due to: {e}")
+                        continue
                     found_file = True
-                    break
 
-            if found_file:
-                break
 
         if not found_file:
-            print(f"No .desktop file found for removed game: {game_name}")
+            print(f"No .desktop file found for: {game_name}")
+
+
