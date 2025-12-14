@@ -964,8 +964,7 @@ def create_exec_line_from_entry(logged_in_home, new_entry, m_gameid):
                     f'/path="{gog_game_path}"'
                 )
             else:
-                print("ERROR: No valid GOG game path found")
-                runner_cmd = None
+                runner_cmd = f'{final_exe_path}'
 
             print(f"Runner Cmd: {runner_cmd}")
 
