@@ -1006,8 +1006,11 @@ def create_exec_line_from_entry(logged_in_home, new_entry, m_gameid):
             if not os.path.exists(applications_dir):
                 os.makedirs(applications_dir)
 
-            shutil.copy(path, applications_dir)
-            print(f"Copied {path} to {applications_dir}")
+            symlink_path = os.path.join(applications_dir, filename)
+            if os.path.exists(symlink_path):
+                os.remove(symlink_path)
+            os.symlink(path, symlink_path)
+            print(f"Created symlink {symlink_path} -> {path}")
 
             return
 
