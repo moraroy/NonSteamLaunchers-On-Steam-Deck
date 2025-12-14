@@ -352,76 +352,69 @@ fi
 
 
 
+### NSL Game Scanner.py Update/Scan
+update_nsl_game_scanner() {
+    repo_url='https://github.com/moraroy/NonSteamLaunchers-On-Steam-Deck/archive/refs/heads/main.zip'
+    folders_to_clone=('requests' 'urllib3' 'steamgrid' 'vdf' 'charset_normalizer')
 
+    parent_folder="${logged_in_home}/.config/systemd/user/Modules"
+    python_script_path="${logged_in_home}/.config/systemd/user/NSLGameScanner.py"
+    github_link="https://raw.githubusercontent.com/moraroy/NonSteamLaunchers-On-Steam-Deck/main/NSLGameScanner.py"
+    env_vars="${logged_in_home}/.config/systemd/user/env_vars"
+    steam_debug_file="${logged_in_home}/.local/share/Steam/.cef-enable-remote-debugging"
+    nsl_config_dir="${logged_in_home}/.var/app/com.github.mtkennerly.ludusavi/config/ludusavi/NSLconfig"
 
+    # Stop and disable the service if it exists
+    if systemctl --user list-unit-files | grep -q "nslgamescanner.service"; then
+        if systemctl --user is-active --quiet nslgamescanner.service; then
+            systemctl --user stop nslgamescanner.service
+        fi
 
-
-repo_url='https://github.com/moraroy/NonSteamLaunchers-On-Steam-Deck/archive/refs/heads/main.zip'
-folders_to_clone=('requests' 'urllib3' 'steamgrid' 'vdf' 'charset_normalizer')
-
-parent_folder="${logged_in_home}/.config/systemd/user/Modules"
-python_script_path="${logged_in_home}/.config/systemd/user/NSLGameScanner.py"
-github_link="https://raw.githubusercontent.com/moraroy/NonSteamLaunchers-On-Steam-Deck/main/NSLGameScanner.py"
-env_vars="${logged_in_home}/.config/systemd/user/env_vars"
-steam_debug_file="${logged_in_home}/.local/share/Steam/.cef-enable-remote-debugging"
-nsl_config_dir="${logged_in_home}/.var/app/com.github.mtkennerly.ludusavi/config/ludusavi/NSLconfig"
-
-
-
-if systemctl --user list-unit-files | grep -q "nslgamescanner.service"; then
-    if systemctl --user is-active --quiet nslgamescanner.service; then
-        systemctl --user stop nslgamescanner.service
+        systemctl --user disable nslgamescanner.service 2>/dev/null || true
     fi
 
-    systemctl --user disable nslgamescanner.service 2>/dev/null || true
-fi
+    # Remove the old python script if it exists
+    rm -f "$python_script_path"
 
-rm -f "$python_script_path"
+    # Create the parent folder if it doesn't exist
+    mkdir -p "${parent_folder}"
 
+    folders_exist=true
+    for folder in "${folders_to_clone[@]}"; do
+        if [ ! -d "${parent_folder}/${folder}" ]; then
+            folders_exist=false
+            break
+        fi
+    done
 
-mkdir -p "${parent_folder}"
-folders_exist=true
-for folder in "${folders_to_clone[@]}"; do
-  if [ ! -d "${parent_folder}/${folder}" ]; then
-    folders_exist=false
-    break
-  fi
-done
+    # Download and unzip the repo if necessary
+    if [ "${folders_exist}" = false ]; then
+        zip_file_path="${parent_folder}/repo.zip"
 
-if [ "${folders_exist}" = false ]; then
-  zip_file_path="${parent_folder}/repo.zip"
-  wget -O "${zip_file_path}" "${repo_url}" || { echo 'Download failed'; exit 1; }
+        wget -O "${zip_file_path}" "${repo_url}" || { echo 'Download failed'; exit 1; }
 
-  unzip -d "${parent_folder}" "${zip_file_path}" || { echo 'Unzip failed'; exit 1; }
+        unzip -d "${parent_folder}" "${zip_file_path}" || { echo 'Unzip failed'; exit 1; }
 
-  for folder in "${folders_to_clone[@]}"; do
-    destination_path="${parent_folder}/${folder}"
-    source_path="${parent_folder}/NonSteamLaunchers-On-Steam-Deck-main/Modules/${folder}"
-    if [ -d "${source_path}" ]; then
-      mv "${source_path}" "${destination_path}" || { echo "Move failed for ${folder}"; exit 1; }
+        for folder in "${folders_to_clone[@]}"; do
+            destination_path="${parent_folder}/${folder}"
+            source_path="${parent_folder}/NonSteamLaunchers-On-Steam-Deck-main/Modules/${folder}"
+            if [ -d "${source_path}" ]; then
+                mv "${source_path}" "${destination_path}" || { echo "Move failed for ${folder}"; exit 1; }
+            fi
+        done
+
+        rm -f "${zip_file_path}"
+        rm -rf "${parent_folder}/NonSteamLaunchers-On-Steam-Deck-main"
     fi
-  done
 
-  rm -f "${zip_file_path}"
-  rm -rf "${parent_folder}/NonSteamLaunchers-On-Steam-Deck-main"
-fi
+    # Download the latest Python script
+    curl -fsSL -o "$python_script_path" "$github_link"
+    chmod +x "$python_script_path"
+}
 
-curl -fsSL -o "$python_script_path" "$github_link"
-chmod +x "$python_script_path"
-
-
-show_message "Scanning for any games..."
-/usr/bin/python3 "${python_script_path}"
+update_nsl_game_scanner
 
 
-if [ ! -f "$steam_debug_file" ]; then
-    touch "$steam_debug_file" || { echo "Failed to create $steam_debug_file"; exit 1; }
-
-    echo "Restarting Steam..."
-    killall steam 2>/dev/null || true
-    while pgrep -x steam >/dev/null; do sleep 1; done
-    nohup /usr/bin/steam -silent %U &>/dev/null &
-fi
 
 funny_messages=(
   "Wow, you have a lot of games!"
@@ -445,9 +438,28 @@ funny_messages=(
   "Getting Descriptions, Artwork and Boot Videos if applicable..."
 )
 
-start_msg="${funny_messages[$RANDOM % ${#funny_messages[@]}]}"
-show_message "$start_msg"
+(
+  while true; do
+    sleep 2
+    loop_msg="${funny_messages[$RANDOM % ${#funny_messages[@]}]}"
+    show_message "Still scanning... ${loop_msg}"
+    sleep 15
+  done
+) &
+message_pid=$!
+python3 "$python_script_path"
 
+kill $message_pid 2>/dev/null
+show_message "Scanning complete! Your game library looks good!"
+
+if [ ! -f "$steam_debug_file" ]; then
+    touch "$steam_debug_file" || { echo "Failed to create $steam_debug_file"; exit 1; }
+
+    echo "Restarting Steam..."
+    killall steam 2>/dev/null || true
+    while pgrep -x steam >/dev/null; do sleep 1; done
+    nohup /usr/bin/steam -silent %U &>/dev/null &
+fi
 
 if systemctl --user list-unit-files | grep -q "nslgamescanner.service"; then
     echo "[NSL] Starting NSL Game Scanner service..."
@@ -456,17 +468,18 @@ else
     echo "[NSL] Service file not found — skipping start."
 fi
 
-
 if [ -d "$nsl_config_dir" ] && flatpak list --app | grep -q "com.github.mtkennerly.ludusavi"; then
-    show_message "Running Ludusavi backup..."
     nohup flatpak run com.github.mtkennerly.ludusavi --config "$nsl_config_dir" backup --force > /dev/null 2>&1 &
     wait $!
     show_message "Game Saves have been backed up! Please check here: /home/deck/NSLGameSaves"
-	sleep 3
+    sleep 3
 fi
+
 show_message "Finished! Welcome to NonSteamLaunchers!"
 sleep 3
 ###End of NSL Game Scanner update
+
+
 
 
 # Check if any command line arguments were provided
@@ -1058,7 +1071,7 @@ else
         fi
     done
 
-    # ✅ Add this line after building the custom_websites array
+
     custom_websites_str=$(IFS=', '; echo "${custom_websites[*]}")
 
     extra_button="OK"
@@ -2122,6 +2135,7 @@ else
 
 fi
 
+#Stop Scanner
 function stop_service {
     # Stop the service
     systemctl --user stop nslgamescanner.service
@@ -2138,6 +2152,66 @@ function stop_service {
     # Reload the systemd user instance
     systemctl --user daemon-reload
     systemctl --user reset-failed
+}
+
+update_nsl_game_scanner() {
+    repo_url='https://github.com/moraroy/NonSteamLaunchers-On-Steam-Deck/archive/refs/heads/main.zip'
+    folders_to_clone=('requests' 'urllib3' 'steamgrid' 'vdf' 'charset_normalizer')
+
+    parent_folder="${logged_in_home}/.config/systemd/user/Modules"
+    python_script_path="${logged_in_home}/.config/systemd/user/NSLGameScanner.py"
+    github_link="https://raw.githubusercontent.com/moraroy/NonSteamLaunchers-On-Steam-Deck/main/NSLGameScanner.py"
+    env_vars="${logged_in_home}/.config/systemd/user/env_vars"
+    steam_debug_file="${logged_in_home}/.local/share/Steam/.cef-enable-remote-debugging"
+    nsl_config_dir="${logged_in_home}/.var/app/com.github.mtkennerly.ludusavi/config/ludusavi/NSLconfig"
+
+    # Stop and disable the service if it exists
+    if systemctl --user list-unit-files | grep -q "nslgamescanner.service"; then
+        if systemctl --user is-active --quiet nslgamescanner.service; then
+            systemctl --user stop nslgamescanner.service
+        fi
+
+        systemctl --user disable nslgamescanner.service 2>/dev/null || true
+    fi
+
+    # Remove the old python script if it exists
+    rm -f "$python_script_path"
+
+    # Create the parent folder if it doesn't exist
+    mkdir -p "${parent_folder}"
+
+    folders_exist=true
+    for folder in "${folders_to_clone[@]}"; do
+        if [ ! -d "${parent_folder}/${folder}" ]; then
+            folders_exist=false
+            break
+        fi
+    done
+
+    # Download and unzip the repo if necessary
+    if [ "${folders_exist}" = false ]; then
+        zip_file_path="${parent_folder}/repo.zip"
+
+        wget -O "${zip_file_path}" "${repo_url}" || { echo 'Download failed'; exit 1; }
+
+        unzip -d "${parent_folder}" "${zip_file_path}" || { echo 'Unzip failed'; exit 1; }
+
+        for folder in "${folders_to_clone[@]}"; do
+            destination_path="${parent_folder}/${folder}"
+            source_path="${parent_folder}/NonSteamLaunchers-On-Steam-Deck-main/Modules/${folder}"
+            if [ -d "${source_path}" ]; then
+                mv "${source_path}" "${destination_path}" || { echo "Move failed for ${folder}"; exit 1; }
+            fi
+        done
+
+        rm -f "${zip_file_path}"
+        rm -rf "${parent_folder}/NonSteamLaunchers-On-Steam-Deck-main"
+    fi
+
+    # Download the latest Python script
+    curl -fsSL -o "$python_script_path" "$github_link"
+    chmod +x "$python_script_path"
+    python3 "$python_script_path"
 }
 
 # Get the command line arguments
@@ -2157,14 +2231,21 @@ if [[ " ${args[@]} " =~ " 🔍 " ]] || [[ $options == "🔍" ]]; then
     zenity --question --text="NSLGameScanner has been stopped and is no longer scanning for games. Do you want to run it again? Pressing 'Yes' will turn on 'Auto Scan' until you stop it again." --width=200 --height=150
     if [ $? = 0 ]; then
         # User wants to run NSLGameScanner again
-        python3 $python_script_path
         show_message "NSLGameScanner is now restarting!"
+        update_nsl_game_scanner
+        if systemctl --user list-unit-files | grep -q "nslgamescanner.service"; then
+            echo "[NSL] Starting NSL Game Scanner service..."
+            systemctl --user start nslgamescanner.service
+        else
+            echo "[NSL] Service file not found — skipping start."
+        fi
     else
         # User does not want to run NSLGameScanner again
         stop_service
 		exit 0
     fi
 fi
+# Stop Scanner
 
 
 # TODO: probably better to break this subshell into a function that can then be redirected to zenity
