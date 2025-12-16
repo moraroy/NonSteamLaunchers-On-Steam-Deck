@@ -237,13 +237,7 @@ fi
 
 
 
-
-
-
-# --------------------------
 # First Run: VARIABLE SETUP
-# --------------------------
-
 # Function to extract steamid3 from Steam config
 get_steam_user_info() {
     if [[ -f "${logged_in_home}/.steam/root/config/loginusers.vdf" ]] || [[ -f "${logged_in_home}/.local/share/Steam/config/loginusers.vdf" ]]; then
@@ -259,7 +253,7 @@ get_steam_user_info() {
         current_user=""
         current_steamid=""
 
-        while IFS="," read steamid account timestamp; do
+        while IFS="," read -r steamid account timestamp; do
             if (( timestamp > max_timestamp )); then
                 max_timestamp=$timestamp
                 current_user=$account
@@ -268,15 +262,9 @@ get_steam_user_info() {
         done < <(echo "$most_recent_user" | awk -v RS='}\n' -F'\n' '
         {
             for(i=1;i<=NF;i++){
-                if($i ~ /[0-9]{17}/){
-                    split($i,a, "\""); steamid=a[2];
-                }
-                if($i ~ /"AccountName"/){
-                    split($i,b, "\""); account=b[4];
-                }
-                if($i ~ /"Timestamp"/){
-                    split($i,c, "\""); timestamp=c[4];
-                }
+                if($i ~ /[0-9]{17}/){ split($i,a, "\""); steamid=a[2]; }
+                if($i ~ /"AccountName"/){ split($i,b, "\""); account=b[4]; }
+                if($i ~ /"Timestamp"/){ split($i,c, "\""); timestamp=c[4]; }
             }
             print steamid "," account "," timestamp
         }')
@@ -284,7 +272,7 @@ get_steam_user_info() {
         steamid3=$((current_steamid - 76561197960265728))
         echo "$steamid3"
     else
-        return 0  # Graceful return if file not found
+        return 0
     fi
 }
 
@@ -304,18 +292,14 @@ else
 fi
 
 # Get Python version
-python_version=$(python -c 'import sys; print(f"{sys.version_info.major}.{sys.version_info.minor}")' 2>/dev/null)
-
-# Just check if Chrome is installed via Flatpak — don't use its path
-if flatpak list --app | grep -q com.google.Chrome; then
-    echo "Google Chrome is installed via Flatpak."
-else
-    echo "Google Chrome is not installed via Flatpak."
-fi
+python_version=$(python3 -c 'import sys; print(f"{sys.version_info.major}.{sys.version_info.minor}")' 2>/dev/null)
 
 # Always assign these for Steam shortcut compatibility
 chromedirectory="/usr/bin/flatpak"
 chrome_startdir="/usr/bin"
+
+# Optional extra variables
+separate_appids=false
 
 # Write to env_vars
 env_file="${logged_in_home}/.config/systemd/user/env_vars"
@@ -323,33 +307,48 @@ mkdir -p "$(dirname "$env_file")"
 
 # Declare vars to check and write
 declare -A vars_to_set
-[[ -n "$steamid3" ]] && vars_to_set["steamid3"]="$steamid3"
-vars_to_set["logged_in_home"]="$logged_in_home"
-vars_to_set["compat_tool_name"]="$compat_tool_name"
-[[ -n "$python_version" ]] && vars_to_set["python_version"]="$python_version"
-vars_to_set["chromedirectory"]="$chromedirectory"
-vars_to_set["chrome_startdir"]="$chrome_startdir"
+vars_to_set["separate_appids"]=$separate_appids
+[[ -n "$steamid3" ]] && vars_to_set["steamid3"]=$steamid3
+vars_to_set["logged_in_home"]=$logged_in_home
+vars_to_set["compat_tool_name"]=$compat_tool_name
+[[ -n "$python_version" ]] && vars_to_set["python_version"]=$python_version
+vars_to_set["chromedirectory"]=$chromedirectory
+vars_to_set["chrome_startdir"]=$chrome_startdir
+
+# Variables that should be quoted
+declare -A quote_vars
+quote_vars["chromedirectory"]=1
+quote_vars["chrome_startdir"]=1
 
 # If file is missing or empty, write everything at once
 if [[ ! -s "$env_file" ]]; then
     {
         for key in "${!vars_to_set[@]}"; do
-            echo "export $key=\"${vars_to_set[$key]}\""
+            value="${vars_to_set[$key]}"
+            if [[ -n "${quote_vars[$key]:-}" ]]; then
+                echo "export $key=\"$value\""
+            else
+                echo "export $key=$value"
+            fi
         done
     } > "$env_file"
-    echo "Environment variables written to $env_file (new or empty file)."
+    echo "Environment variables written to $env_file (new file)."
 else
-    # File exists with content: append only missing exports
+    # Append only missing variables
     for key in "${!vars_to_set[@]}"; do
         if ! grep -qE "^export $key=" "$env_file"; then
-            echo "export $key=\"${vars_to_set[$key]}\"" >> "$env_file"
-            echo "Added: export $key=\"${vars_to_set[$key]}\""
+            value="${vars_to_set[$key]}"
+            if [[ -n "${quote_vars[$key]:-}" ]]; then
+                echo "export $key=\"$value\"" >> "$env_file"
+            else
+                echo "export $key=$value" >> "$env_file"
+            fi
+            echo "Added: export $key=$value"
         fi
     done
     echo "Environment variables updated in $env_file (if needed)."
 fi
 #End of First Run Env_vars
-
 
 
 ### NSL Game Scanner.py Update/Scan
