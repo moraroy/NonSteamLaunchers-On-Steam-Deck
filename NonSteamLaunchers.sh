@@ -615,8 +615,14 @@ get_sd_path() {
     echo $sd_path
 }
 
+
+
+### update proton ge
+
 function patch_proton_script() {
-    proton_dir=$(find -L "${logged_in_home}/.steam/root/compatibilitytools.d" -maxdepth 1 -type d -name "GE-Proton*" | sort -V | tail -n1)
+    proton_dir=$(find -L "${logged_in_home}/.steam/root/compatibilitytools.d" \
+        -maxdepth 1 -type d -name "GE-Proton*" | sort -V | tail -n1)
+
     if [ -z "$proton_dir" ]; then
         echo "No GE-Proton installation found to patch."
         return
@@ -633,51 +639,58 @@ function patch_proton_script() {
     fi
 }
 
-
 # Function For Updating Proton-GE
 function download_ge_proton() {
     echo "Downloading GE-Proton using the GitHub API"
-    cd "${logged_in_home}/Downloads/NonSteamLaunchersInstallation" || { echo "Failed to change directory. Exiting."; exit 1; }
+    cd "${logged_in_home}/Downloads/NonSteamLaunchersInstallation" || {
+        echo "Failed to change directory. Exiting."
+        exit 1
+    }
 
-    # Download tarball
-    tarball_url=$(curl -s https://api.github.com/repos/GloriousEggroll/proton-ge-custom/releases/latest | grep browser_download_url | cut -d\" -f4 | grep .tar.gz)
+    tarball_url=$(curl -s https://api.github.com/repos/GloriousEggroll/proton-ge-custom/releases/latest \
+        | grep browser_download_url | cut -d\" -f4 | grep .tar.gz)
+
     if [ -z "$tarball_url" ]; then
         echo "Failed to get tarball URL. Exiting."
         exit 1
     fi
-    curl --retry 5 --retry-delay 0 --retry-max-time 60 -sLOJ "$tarball_url"
-    if [ $? -ne 0 ]; then
+
+    curl --retry 5 --retry-delay 0 --retry-max-time 60 -sLOJ "$tarball_url" || {
         echo "Curl failed to download tarball. Exiting."
         exit 1
-    fi
+    }
 
-    # Download checksum
-    checksum_url=$(curl -s https://api.github.com/repos/GloriousEggroll/proton-ge-custom/releases/latest | grep browser_download_url | cut -d\" -f4 | grep .sha512sum)
+    checksum_url=$(curl -s https://api.github.com/repos/GloriousEggroll/proton-ge-custom/releases/latest \
+        | grep browser_download_url | cut -d\" -f4 | grep .sha512sum)
+
     if [ -z "$checksum_url" ]; then
         echo "Failed to get checksum URL. Exiting."
         exit 1
     fi
-    curl --retry 5 --retry-delay 0 --retry-max-time 60 -sLOJ "$checksum_url"
-    if [ $? -ne 0 ]; then
+
+    curl --retry 5 --retry-delay 0 --retry-max-time 60 -sLOJ "$checksum_url" || {
         echo "Curl failed to download checksum. Exiting."
         exit 1
-    fi
+    }
 
-    # Verify checksum
-    sha512sum -c ./*.sha512sum
-    if [ $? -ne 0 ]; then
+    sha512sum -c ./*.sha512sum || {
         echo "Checksum verification failed. Exiting."
         exit 1
+    }
+
+    ge_folder_name=$(tar -tf GE-Proton*.tar.gz | head -n1 | cut -d/ -f1)
+    target_dir="${logged_in_home}/.steam/root/compatibilitytools.d/${ge_folder_name}"
+
+    if [ -d "$target_dir" ]; then
+        echo "Removing existing ${ge_folder_name} for clean replacement..."
+        rm -rf "$target_dir"
     fi
 
-    # Extract tarball
-    tar -xf GE-Proton*.tar.gz -C "${logged_in_home}/.steam/root/compatibilitytools.d/"
-    if [ $? -ne 0 ]; then
+    tar -xf GE-Proton*.tar.gz -C "${logged_in_home}/.steam/root/compatibilitytools.d/" || {
         echo "Tar extraction failed. Exiting."
         exit 1
-    fi
+    }
 
-    proton_dir=$(find -L "${logged_in_home}/.steam/root/compatibilitytools.d" -maxdepth 1 -type d -name "GE-Proton*" | sort -V | tail -n1)
     echo "All done :)"
 }
 
@@ -685,31 +698,39 @@ function update_proton() {
     echo "0"
     echo "# Detecting, Updating and Installing GE-Proton...please wait..."
 
-    # Check if compatibilitytools.d exists and create it if it doesn't
     if [ ! -d "${logged_in_home}/.steam/root/compatibilitytools.d" ]; then
-        mkdir -p "${logged_in_home}/.steam/root/compatibilitytools.d" || { echo "Failed to create directory. Exiting."; exit 1; }
+        mkdir -p "${logged_in_home}/.steam/root/compatibilitytools.d" || {
+            echo "Failed to create directory. Exiting."
+            exit 1
+        }
     fi
 
-    # Create NonSteamLaunchersInstallation subfolder in Downloads folder
-    mkdir -p "${logged_in_home}/Downloads/NonSteamLaunchersInstallation" || { echo "Failed to create directory. Exiting."; exit 1; }
+    mkdir -p "${logged_in_home}/Downloads/NonSteamLaunchersInstallation" || {
+        echo "Failed to create directory. Exiting."
+        exit 1
+    }
 
-    # Set the path to the Proton directory
-    proton_dir=$(find -L "${logged_in_home}/.steam/root/compatibilitytools.d" -maxdepth 1 -type d -name "GE-Proton*" | sort -V | tail -n1)
+    proton_dir=$(find -L "${logged_in_home}/.steam/root/compatibilitytools.d" \
+        -maxdepth 1 -type d -name "GE-Proton*" | sort -V | tail -n1)
 
-    # Check if GE-Proton is installed
     if [ -z "$proton_dir" ]; then
         download_ge_proton
     else
-        # Check if installed version is the latest version
         installed_version=$(basename "$proton_dir" | sed 's/GE-Proton-//')
-        latest_version=$(curl -s https://api.github.com/repos/GloriousEggroll/proton-ge-custom/releases/latest | grep tag_name | cut -d '"' -f 4)
+        latest_version=$(curl -s https://api.github.com/repos/GloriousEggroll/proton-ge-custom/releases/latest \
+            | grep tag_name | cut -d '"' -f 4)
+
         if [ "$installed_version" != "$latest_version" ]; then
             download_ge_proton
         fi
     fi
-    # Patch regardless of whether Proton was updated or not
+
     patch_proton_script
 }
+
+### End of updating proton ge
+
+
 
 # Function For Updating UMU Launcher
 function download_umu_launcher() {
