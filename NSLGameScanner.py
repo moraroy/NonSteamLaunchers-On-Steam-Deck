@@ -155,7 +155,7 @@ custom_websites = websites_str.split(', ') if websites_str else []
 
 
 
-# Fix sys.path insertion to avoid duplicates
+logged_in_home = os.environ["logged_in_home"].strip('"')
 parent_folder = os.path.expanduser(f"{logged_in_home}/.config/systemd/user/Modules")
 
 if parent_folder not in sys.path:
