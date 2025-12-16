@@ -1219,6 +1219,19 @@ window.createShortcut = async function(data) {
     await SteamClient.Apps.CreateDesktopShortcutForApp(shortcutId);
     console.log("Desktop shortcut created for shortcut:", shortcutId);
 
+    if (data.appname !== "NonSteamLaunchers") {
+      await SteamClient.Apps.CreateDesktopShortcutForApp(shortcutId);
+      console.log("Desktop shortcut created for shortcut:", shortcutId);
+    } else {
+      const collectionStoreRef = window.g_CollectionStore || window.collectionStore;
+      if (collectionStoreRef) {
+        collectionStoreRef.SetAppsAsHidden([shortcutId], true);
+        console.log("Shortcut 'NonSteamLaunchers' has been hidden instead of creating desktop shortcut.");
+      } else {
+        console.warn("Collection store not available. Cannot hide 'NonSteamLaunchers'.");
+      }
+    }
+
     const appDetails = appStore.m_mapApps.get(shortcutId);
     let m_gameid = null;
 
@@ -3374,6 +3387,8 @@ else:
 
 # End of Ubisoft Game Scanner
 
+
+
 #EA App Scanner
 def fix_encoding(text):
     # Encode as latin1 bytes, then decode as utf-8 to fix mojibake
@@ -3381,10 +3396,8 @@ def fix_encoding(text):
 
 def extract_games_fixed(filename):
     games = {}
-
     key_re = re.compile(r'\[Software\\\\Wow6432Node\\\\Origin Games\\\\(\d+)\]')
     name_re = re.compile(r'"DisplayName"="(.+)"')
-
     current_id = None
 
     with open(filename, 'r', encoding='utf-8') as f:
@@ -3398,11 +3411,8 @@ def extract_games_fixed(filename):
                 name_match = name_re.search(line)
                 if name_match:
                     raw_name = name_match.group(1)
-                    # Replace \x2122 with trademark symbol
                     raw_name = raw_name.replace(r'\x2122', '™')
-                    # Decode other escaped sequences like \x21 etc.
                     name = bytes(raw_name, "utf-8").decode("unicode_escape")
-                    # Fix mojibake by re-encoding/decoding
                     name = fix_encoding(name)
                     games[current_id] = name
                     current_id = None
@@ -3410,12 +3420,10 @@ def extract_games_fixed(filename):
     return games
 
 def get_ea_app_game_info(installed_games, game_directory_path, sys_reg_file=None):
-    # If provided, parse the sys reg file once for fallback IDs
     sys_reg_games = {}
     if sys_reg_file and os.path.isfile(sys_reg_file):
         try:
             sys_reg_games = extract_games_fixed(sys_reg_file)
-            # Reverse mapping for lookup by game name:
             sys_reg_name_to_id = {v: k for k, v in sys_reg_games.items()}
         except Exception as e:
             print(f"Error reading sys reg fallback file: {e}")
@@ -3451,13 +3459,10 @@ def get_ea_app_game_info(installed_games, game_directory_path, sys_reg_file=None
             if game_name is None:
                 game_name = game
 
-            matched_id = None  # Track fallback match
+            matched_id = None
 
-            # If no ID found in XML, fallback to sys reg lookup by matching name
             if not ea_ids and sys_reg_name_to_id:
-                print(f"No ID found in XML for '{game_name}', looking in system registry fallback...")
-
-                # Match game_name exactly or case-insensitive if needed
+                print(f"No ID found in XML for '{game_name}', checking registry fallback...")
                 for reg_name, reg_id in sys_reg_name_to_id.items():
                     if reg_name == game_name:
                         matched_id = reg_id
@@ -3467,22 +3472,20 @@ def get_ea_app_game_info(installed_games, game_directory_path, sys_reg_file=None
 
             if ea_ids:
                 if matched_id:
-                    print(f"Found ID in system registry fallback for '{game_name}': {ea_ids}")
+                    print(f"Found ID in registry fallback for '{game_name}': {ea_ids}")
                 else:
                     print(f"Found ID in XML for '{game_name}': {ea_ids}")
                 game_dict[game_name] = ea_ids
             else:
-                print(f"Skipping '{game_name}' - no OfferID found in installerdata.xml or sys reg fallback.")
+                print(f"Skipping '{game_name}' - no OfferID found in XML or registry.")
 
         except Exception as e:
             print(f"Error parsing XML for {game}: {e}")
 
     return game_dict
 
-
 def find_ea_games_path_from_registry():
     registry_path = f"{logged_in_home}/.local/share/Steam/steamapps/compatdata/{ea_app_launcher}/pfx/system.reg"
-
     if not os.path.isfile(registry_path):
         print("EA App registry file not found. Skipping registry check.")
         return None
@@ -3536,60 +3539,69 @@ def find_external_game_paths():
                     possible_paths.append(path)
                     break
         except Exception:
-            continue  # Permission errors etc.
+            continue
 
     return [p for p in possible_paths if os.path.isdir(p)]
 
-
-
+# --- Main EA App Scanner ---
 if not ea_app_launcher:
     print("EA App launcher ID not set. Skipping EA App Scanner.")
 else:
-    # 1. Try default and legacy EA Games paths
+    game_directory_path = None
+
+    # 1. Default paths
     default_paths = [
         f"{logged_in_home}/.local/share/Steam/steamapps/compatdata/{ea_app_launcher}/pfx/drive_c/Program Files/EA Games/",
         f"{logged_in_home}/.local/share/Steam/steamapps/compatdata/{ea_app_launcher}/pfx/drive_c/Program Files (x86)/EA Games/"
     ]
-
-    game_directory_path = None
     for path in default_paths:
         if os.path.isdir(path):
             game_directory_path = path
+            print(f"Found EA App games in default path: {path}")
             break
 
-    detected_path = find_ea_games_path_from_registry()
-    if detected_path and os.path.isdir(detected_path):
-        game_directory_path = detected_path
+    # 2. Registry fallback
+    if not game_directory_path:
+        detected_path = find_ea_games_path_from_registry()
+        if detected_path and os.path.isdir(detected_path):
+            game_directory_path = detected_path
+            print(f"Found EA App games via registry: {detected_path}")
 
-    # 3. Check external SD card folders
-    if not os.path.isdir(game_directory_path):
+    # 3. External drives
+    if not game_directory_path:
         external_paths = find_external_game_paths()
         if external_paths:
             game_directory_path = external_paths[0]
             print(f"Using external EA App game path: {game_directory_path}")
 
-    # Final scan
-    if not os.path.isdir(game_directory_path):
+    # 4. Validate path
+    if not game_directory_path or not os.path.isdir(game_directory_path):
         print("EA App game data not found. Skipping EA App Scanner.")
+        print("Paths tried:", default_paths)
+        print("Registry detected path:", detected_path if 'detected_path' in locals() else None)
+        print("External paths:", external_paths if 'external_paths' in locals() else None)
     else:
         try:
-            installed_games = [g for g in os.listdir(game_directory_path) if os.path.isdir(os.path.join(game_directory_path, g))]
+            installed_games = [g for g in os.listdir(game_directory_path)
+                               if os.path.isdir(os.path.join(game_directory_path, g))]
 
-            # Pass sys reg file path here for fallback (adjust the path accordingly)
             sys_reg_path = f"{logged_in_home}/.local/share/Steam/steamapps/compatdata/{ea_app_launcher}/pfx/system.reg"
 
             game_dict = get_ea_app_game_info(installed_games, game_directory_path, sys_reg_file=sys_reg_path)
 
-            for game, ea_ids in game_dict.items():
-                launch_options = f'STEAM_COMPAT_DATA_PATH="{logged_in_home}/.local/share/Steam/steamapps/compatdata/{ea_app_launcher}/" %command% "origin2://game/launch?offerIds={ea_ids}"'
-                exe_path = f'"{logged_in_home}/.local/share/Steam/steamapps/compatdata/{ea_app_launcher}/pfx/drive_c/Program Files/Electronic Arts/EA Desktop/EA Desktop/EALaunchHelper.exe"'
-                start_dir = f'"{logged_in_home}/.local/share/Steam/steamapps/compatdata/{ea_app_launcher}/pfx/drive_c/Program Files/Electronic Arts/EA Desktop/EA Desktop/"'
+            if not game_dict:
+                print("No EA App games found in scanned directories.")
+            else:
+                for game, ea_ids in game_dict.items():
+                    launch_options = f'STEAM_COMPAT_DATA_PATH="{logged_in_home}/.local/share/Steam/steamapps/compatdata/{ea_app_launcher}/" %command% "origin2://game/launch?offerIds={ea_ids}"'
+                    exe_path = f'"{logged_in_home}/.local/share/Steam/steamapps/compatdata/{ea_app_launcher}/pfx/drive_c/Program Files/Electronic Arts/EA Desktop/EA Desktop/EALaunchHelper.exe"'
+                    start_dir = f'"{logged_in_home}/.local/share/Steam/steamapps/compatdata/{ea_app_launcher}/pfx/drive_c/Program Files/Electronic Arts/EA Desktop/EA Desktop/"'
 
-                create_new_entry(exe_path, game, launch_options, start_dir, launcher_name="EA App")
-                track_game(game, "EA App")
+                    create_new_entry(exe_path, game, launch_options, start_dir, launcher_name="EA App")
+                    track_game(game, "EA App")
+
         except Exception as e:
             print(f"Error scanning EA App games: {e}")
-
 # End of EA App Scanner
 
 
