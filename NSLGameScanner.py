@@ -5177,11 +5177,13 @@ def update_game_details(games_to_check, logged_in_home, skip_games):
 
 # --- Boot Video Logic ---
 def get_boot_video(game_name, logged_in_home):
-    # Dynamically build the list of app names to exclude from API requests
     excluded_apps = skip_games
 
     OVERRIDE_PATH = os.path.expanduser(f'{logged_in_home}/.steam/root/config/uioverrides/movies')
     REQUEST_RETRIES = 5
+    API_URL = "https://steamdeckrepo.com/api/posts/all"
+    DOWNLOAD_BASE = "https://steamdeckrepo.com/post/download"
+    ssl_ctx = ssl.create_default_context()
 
     def sanitize_filename(filename):
         return re.sub(r'[<>:"/\\|?*]', '_', filename)
@@ -5200,43 +5202,49 @@ def get_boot_video(game_name, logged_in_home):
         download_url = video.get('download_url')
         if download_url:
             try:
-                response = requests.get(download_url)
-                if response.status_code == 200:
-                    with open(file_path, 'wb') as f:
-                        f.write(response.content)
-                    print(f"Downloaded {file_path}")
-                else:
-                    print(f"Failed to download {file_path}, status code: {response.status_code}")
-            except requests.exceptions.RequestException as e:
+                with urllib.request.urlopen(download_url, context=ssl_ctx, timeout=60) as response:
+                    if response.status == 200:
+                        with open(file_path, 'wb') as f:
+                            while True:
+                                chunk = response.read(8192)
+                                if not chunk:
+                                    break
+                                f.write(chunk)
+                        print(f"Downloaded {file_path}")
+                    else:
+                        print(f"Failed to download {file_path}, status code: {response.status}")
+            except urllib.error.URLError as e:
                 print(f"Download failed for {file_path}: {e}")
         else:
             print("No download URL found for video.")
 
     try:
-        # Check if the game_name is in the excluded list and skip if so
+        # Skip if game is in excluded list
         if game_name.lower() in [app.lower() for app in excluded_apps]:
             print(f"Skipping boot video for {game_name}, as it's in the excluded apps list.")
-            return  # Skip downloading this video
+            return
 
-        for _ in range(REQUEST_RETRIES):
+        data = []
+        for attempt in range(REQUEST_RETRIES):
             try:
-                response = requests.get('https://steamdeckrepo.com/api/posts/all', verify=certifi.where())
-                if response.status_code == 200:
-                    data = response.json().get('posts', [])
-                    break
-                elif response.status_code == 429:
-                    raise Exception('Rate limit exceeded, try again in a minute')
-                else:
-                    print(f'steamdeckrepo fetch failed, status={response.status_code}')
-            except requests.exceptions.RequestException as e:
+                req = urllib.request.Request(API_URL, headers={"User-Agent": "SteamDeckBootFetcher/1.0"})
+                with urllib.request.urlopen(req, context=ssl_ctx, timeout=20) as response:
+                    if response.status == 200:
+                        data = json.loads(response.read().decode('utf-8')).get('posts', [])
+                        break
+                    elif response.status == 429:
+                        raise Exception('Rate limit exceeded, try again in a minute')
+                    else:
+                        print(f"steamdeckrepo fetch failed, status={response.status}")
+            except urllib.error.URLError as e:
                 print(f"Request failed: {e}")
+            time.sleep(2)  # brief wait before retry
         else:
-            raise Exception(f'Retry attempts exceeded')
+            raise Exception("Retry attempts exceeded")
 
-        # Use the game_name directly instead of splitting it into words
         search_terms = [game_name.lower()]
 
-        # Attempt to find a matching boot video for the full game name
+        # First try full game name
         for term in search_terms:
             filtered_videos = sorted(
                 (
@@ -5244,40 +5252,37 @@ def get_boot_video(game_name, logged_in_home):
                         'id': entry['id'],
                         'name': entry['title'],
                         'preview_video': entry['video'],
-                        'download_url': f'https://steamdeckrepo.com/post/download/{entry["id"]}',
+                        'download_url': f"{DOWNLOAD_BASE}/{entry['id']}",
                         'target': 'boot',
                         'likes': entry['likes'],
                     }
                     for entry in data
-                    if term in entry['title'].lower() and
-                    entry['type'] == 'boot_video'
+                    if term in entry['title'].lower() and entry['type'] == 'boot_video'
                 ),
                 key=lambda x: x['likes'], reverse=True
             )
 
             if filtered_videos:
                 video = filtered_videos[0]
-                print(f"🎬 Downloading boot video: {video['name']}")
+                print(f"Downloading boot video: {video['name']}")
                 download_video(video, OVERRIDE_PATH)
-                return  # Exit after downloading the first matching video
+                return
 
-        # If no video was found, check if the game_name has more than one word and use the first two words
+        # If no video, try first two words of game name
         if len(game_name.split()) > 1:
             first_two_words = ' '.join(game_name.split()[:2]).lower()
-
             filtered_videos = sorted(
                 (
                     {
                         'id': entry['id'],
                         'name': entry['title'],
                         'preview_video': entry['video'],
-                        'download_url': f'https://steamdeckrepo.com/post/download/{entry["id"]}',
+                        'download_url': f"{DOWNLOAD_BASE}/{entry['id']}",
                         'target': 'boot',
                         'likes': entry['likes'],
                     }
                     for entry in data
-                    if first_two_words in entry['title'].lower() and
-                    entry['type'] == 'boot_video'
+                    if first_two_words in entry['title'].lower() and entry['type'] == 'boot_video'
                 ),
                 key=lambda x: x['likes'], reverse=True
             )
@@ -5285,15 +5290,14 @@ def get_boot_video(game_name, logged_in_home):
             if filtered_videos:
                 video = filtered_videos[0]
                 download_video(video, OVERRIDE_PATH)
-                return  # Exit after downloading the first matching video
+                return
 
-        # If no video was found at all
+        # No video found
         print(f"No top boot video found for {game_name}.")
 
     except Exception as e:
         print(f"Failed to fetch steamdeckrepo: {e}")
 # --- End of Boot Video Logic ---
-
 
 # --- Main block (MUST remain untouched) ---
 if new_shortcuts_added or shortcuts_updated:
