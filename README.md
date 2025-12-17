@@ -79,6 +79,7 @@ just to name a few!...there are much more videos and articles out there just wan
 - [Goldenoptic Gaming](https://www.youtube.com/watch?v=dMnUn3U0dPE)
 - [Deck Ready](https://www.youtube.com/watch?v=9Ap_suofBV8&t=196s) (starting at 3:16)
 - [Steam Deck Checker](https://www.youtube.com/watch?v=vFRllG15jjs)
+-[SteamDeckHQ](https://www.tiktok.com/@steamdeckhq/video/7579970230265384223)
 
 ## Articles
 - [Gaming On Linux - Non-Steam Launchers Tool for Installing Popular Game Stores](https://www.gamingonlinux.com/2025/01/nonsteamlaunchers-tool-for-installing-popular-game-stores-working-on-better-desktop-linux-support/)
