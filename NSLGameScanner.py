@@ -826,6 +826,13 @@ def create_exec_line_from_entry(logged_in_home, new_entry, m_gameid):
             game_id = m.group(1)
             print(f"Found GOG gameId: {game_id}")
 
+            # Optional DOSBox / extra GOG args (quoted block after /path)
+            extra_gog_args = None
+            m = re.search(r'/path="[^"]+"\s+"([^"]+)"', launch_options)
+            if m:
+                extra_gog_args = m.group(1)
+                print(f"desktopC: GOG Extra Args: {extra_gog_args}")
+
         if not game_id:
             m = re.search(r'com\.epicgames\.launcher://apps/([^/?&]+)', launch_options)
             if m:
@@ -843,6 +850,15 @@ def create_exec_line_from_entry(logged_in_home, new_entry, m_gameid):
             if m:
                 game_id = m.group(1)
                 print(f"Found Origin gameId: {game_id}")
+
+        # Ubisoft Connect
+        if not game_id:
+            m = re.search(r'uplay://launch/(\d+)', launch_options)
+            if m:
+                game_id = m.group(1)
+                print(f"desktopC: Found Ubisoft gameId: {game_id}")
+
+
                 
         if not game_id:
             print("No gameId found, skipping game ID-related steps.")
@@ -956,12 +972,18 @@ def create_exec_line_from_entry(logged_in_home, new_entry, m_gameid):
                 runner_cmd = f'{final_exe_path} origin2://game/launch?offerIds={game_id}'
             elif "amazon-games://" in launch_options:
                 runner_cmd = f'{final_exe_path} -amazon-games://play/{game_id}'
+            elif "uplay://" in launch_options and game_id:
+                runner_cmd = f'{final_exe_path} uplay://launch/{game_id}/0'
+
             elif gog_game_path:
                 runner_cmd = (
                     f'{final_exe_path} '
                     f'/command=runGame /gameId={game_id} '
                     f'/path="{gog_game_path}"'
                 )
+                if extra_gog_args:
+                    runner_cmd += f' "{extra_gog_args}"'
+
             else:
                 runner_cmd = f'{final_exe_path}'
 
