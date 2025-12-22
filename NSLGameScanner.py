@@ -2400,6 +2400,108 @@ def inject_js_only(ws_socket):
 
 
 
+#Watch only
+ws_url = get_ws_url_by_title(WS_HOST, WS_PORT, TARGET_TITLE)
+
+ws_socket = create_websocket_connection(ws_url)
+
+eval_id_counter = itertools.count(1)
+enable_id = next(eval_id_counter)
+
+# Enable Runtime
+send_ws_text(ws_socket, json.dumps({
+    "id": enable_id,
+    "method": "Runtime.enable"
+}))
+recv_ws_message_for_id(ws_socket, enable_id)
+
+watch_code = r'''if (!window.__watcherInjected) {
+    window.__watcherInjected = true;
+
+    let gameRunning = false;
+    let currentAppId = null;
+
+    (function() {
+        const originalLog = console.log;
+
+        console.log = function(...args) {
+            originalLog.apply(console, args);
+
+            try {
+                const line = args.join(' ');
+
+                if (line.includes("OnGameActionUserRequest") &&
+                    line.includes("LaunchApp CreatingProcess")) {
+
+                    const match = line.match(/OnGameActionUserRequest:\s*(\d+)/);
+                    if (match) {
+                        const appId = match[1];
+                        if (appId.length >= 18 && appId.length <= 20) {
+                            gameRunning = true;
+                            currentAppId = appId;
+                            console.log("[Watcher] Game launch detected:", currentAppId);
+                        }
+                    }
+                }
+
+                if (gameRunning &&
+                   (line.includes("Removing overlay browser window") ||
+                    line.includes("NetworkDiagnosticsStore - unregistering for detailed connection state updates"))) {
+
+                    gameRunning = false;
+
+                    if (currentAppId) {
+                        setTimeout(() => {
+                            try {
+                                SteamClient.Apps.TerminateApp(currentAppId, false);
+                                console.log("[Watcher] App terminated:", currentAppId);
+                                currentAppId = null;
+                            } catch (e) {
+                                console.error("[Watcher] Termination error:", e);
+                            }
+                        }, 10000);
+                    }
+                }
+            } catch (e) {
+                originalLog("[Watcher] Watcher error:", e);
+            }
+        };
+    })();
+}'''
+
+def inject_watcher_once(ws_socket, watch_code):
+    inject_id = next(eval_id_counter)
+    check_id = next(eval_id_counter)
+
+    # Check if watcher already injected
+    send_ws_text(ws_socket, json.dumps({
+        "id": check_id,
+        "method": "Runtime.evaluate",
+        "params": {
+            "expression": "window.__watcherInjected === true",
+            "returnByValue": True
+        }
+    }))
+    result = recv_ws_message_for_id(ws_socket, check_id)
+    if result.get("result", {}).get("result", {}).get("value") is True:
+        print("Watcher already running. No reinjection.")
+        return
+
+    # Inject watcher
+    send_ws_text(ws_socket, json.dumps({
+        "id": inject_id,
+        "method": "Runtime.evaluate",
+        "params": {
+            "expression": watch_code,
+        }
+    }))
+    recv_ws_message_for_id(ws_socket, inject_id)
+    print("Watcher injected and running.")
+inject_watcher_once(ws_socket, watch_code)
+###end of watch
+
+
+
 
 
 ###PLAYTIME ONLY
