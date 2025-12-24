@@ -17,6 +17,7 @@ import itertools
 import shlex
 import urllib
 import ssl
+
 from datetime import datetime
 
 from urllib.request import urlopen
@@ -164,9 +165,8 @@ if parent_folder not in sys.path:
 print(sys.path)
 
 # Now import your modules after the single insert
-import requests
 import vdf
-from steamgrid import SteamGridDB
+
 
 
 #Set Up nslgamescanner.service
@@ -304,6 +304,7 @@ def get_sgdb_art(game_id, app_id):
     print("Downloading grids artwork of size 920x430...")
     grid64 = download_artwork(game_id, "grids", app_id, "920x430")
 
+
 def download_artwork(game_id, art_type, shortcut_id, dimensions=None):
     if game_id is None:
         print("Invalid game ID. Skipping download.")
@@ -314,25 +315,23 @@ def download_artwork(game_id, art_type, shortcut_id, dimensions=None):
         filename = get_file_name(art_type, shortcut_id, dimensions)
     else:
         filename = get_file_name(art_type, shortcut_id)
+
+    # Define the full path where artwork should be stored
     file_path = f"{logged_in_home}/.steam/root/userdata/{steamid3}/config/grid/{filename}"
+    grid_folder_path = os.path.dirname(file_path)  # Get the parent directory (grid folder)
 
-    directory = os.path.dirname(file_path)
-    if not os.path.exists(directory):
-        os.makedirs(directory)
+    # Ensure the grid folder exists
+    if not os.path.exists(grid_folder_path):
+        os.makedirs(grid_folder_path, exist_ok=True)  # Create grid folder if it doesn't exist
+        print(f"Created grid folder at: {grid_folder_path}")
 
+    # Check if the file already exists
+    if file_exists_with_any_ext(file_path):
+        print(f"Artwork for {art_type} already exists. Skipping download.")
+        with open(file_path, 'rb') as image_file:
+            return b64encode(image_file.read()).decode('utf-8')
 
-
-
-
-    if os.path.exists(file_path):
-        if art_type == 'icons':
-            print(f"Icon artwork for {game_id} already exists. Skipping download.")
-            with open(file_path, 'rb') as image_file:
-                return b64encode(image_file.read()).decode('utf-8')
-        else:
-            print(f"{art_type} artwork already exists, but skipping file read. Will redownload for base64.")
-
-
+    # If the artwork is not found locally, proceed with the download process
     if cache_key in api_cache:
         data = api_cache[cache_key]
     else:
@@ -342,11 +341,13 @@ def download_artwork(game_id, art_type, shortcut_id, dimensions=None):
             if dimensions:
                 url += f"?dimensions={dimensions}"
             print(f"Request URL: {url}")
-            response = requests.get(url)
-            response.raise_for_status()
-            data = response.json()
+
+            with urllib.request.urlopen(url) as response:
+                if response.status != 200:
+                    raise Exception(f"Failed to fetch data, status code {response.status}")
+                data = json.load(response)
             api_cache[cache_key] = data
-        except Exception as e:
+        except (urllib.error.URLError, Exception) as e:
             print(f"Error making API call: {e}")
             api_cache[cache_key] = None
             return
@@ -355,6 +356,7 @@ def download_artwork(game_id, art_type, shortcut_id, dimensions=None):
         print(f"No data available for {game_id}. Skipping download.")
         return
 
+    # If no local file and no cache, start downloading artwork
     for artwork in data['data']:
         image_url = artwork['thumb']
         print(f"Downloading image from: {image_url}")
@@ -363,48 +365,52 @@ def download_artwork(game_id, art_type, shortcut_id, dimensions=None):
         for ext in ['png', 'ico']:
             try:
                 alt_file_path = file_path.replace('.png', f'.{ext}')
-                response = requests.get(image_url, stream=True)
-                response.raise_for_status()
+                # Use urllib to download the image
+                with urllib.request.urlopen(image_url) as response:
+                    if response.status == 200:
+                        image_data = response.read()
 
-                if response.status_code == 200:
-
-
-
-                    if art_type == 'icons':
+                        # Save the image data to local file
                         with open(alt_file_path, 'wb') as file:
-                            file.write(response.content)
-                        print(f"Downloaded and saved icon to: {alt_file_path}")
-                    else:
-                        print(f"Downloaded {art_type} artwork as base64 (not saved to disk)")
-                    return b64encode(response.content).decode('utf-8')
+                            file.write(image_data)
+                        print(f"Downloaded and saved {art_type} to: {alt_file_path}")
 
-
-
-            except requests.exceptions.RequestException as e:
+                        # Return base64 encoded image data
+                        return b64encode(image_data).decode('utf-8')
+            except (urllib.error.URLError, Exception) as e:
                 print(f"Error downloading image in {ext}: {e}")
 
     print(f"Artwork download failed for {game_id}. Neither PNG nor ICO was available.")
     return None
 
+
+
 def get_game_id(game_name):
     print(f"Searching for game ID for: {game_name}")
     try:
-        encoded_game_name = quote(game_name)
+        encoded_game_name = urllib.parse.quote(game_name)
         url = f"{BASE_URL}/search/{encoded_game_name}"
         print(f"Encoded game name: {encoded_game_name}")
         print(f"Request URL: {url}")
-        response = requests.get(url)
-        response.raise_for_status()
-        data = response.json()
-        if data['data']:
-            game_id = data['data'][0]['id']
-            print(f"Found game ID: {game_id}")
-            return game_id
-        print(f"No game ID found for game name: {game_name}")
+
+        # Open the URL and get the response
+        with urllib.request.urlopen(url) as response:
+            # Manually check if the status code is 200
+            if response.status == 200:
+                data = json.load(response)
+                if data.get('data'):
+                    game_id = data['data'][0]['id']
+                    print(f"Found game ID: {game_id}")
+                    return game_id
+                else:
+                    print(f"No game ID found for game name: {game_name}")
+            else:
+                print(f"Error: Unexpected status code {response.status}")
         return None
     except Exception as e:
         print(f"Error searching for game ID: {e}")
         return None
+
 
 def get_file_name(art_type, shortcut_id, dimensions=None):
     singular_art_type = art_type.rstrip('s')
@@ -437,18 +443,18 @@ def is_match(name1, name2):
 
 steam_applist_cache = None
 
+
 def get_steam_store_appid(steam_store_game_name):
     search_url = f"{BASE_URL}/search/{steam_store_game_name}"
     try:
-        response = requests.get(search_url)
-        response.raise_for_status()
-        data = response.json()
-        if 'data' in data and data['data']:
-            steam_store_appid = data['data'][0].get('steam_store_appid')
-            if steam_store_appid:
-                print(f"Found App ID for {steam_store_game_name} via primary source: {steam_store_appid}")
-                return steam_store_appid
-    except requests.exceptions.RequestException as e:
+        with urllib.request.urlopen(search_url) as response:
+            data = json.load(response)
+            if 'data' in data and data['data']:
+                steam_store_appid = data['data'][0].get('steam_store_appid')
+                if steam_store_appid:
+                    print(f"Found App ID for {steam_store_game_name} via primary source: {steam_store_appid}")
+                    return steam_store_appid
+    except (urllib.error.URLError, Exception) as e:
         print(f"Primary store App ID lookup failed for {steam_store_game_name}: {e}")
 
     # Fallback using Steam AppList (cached)
@@ -467,10 +473,9 @@ def get_steam_store_appid(steam_store_game_name):
         query = urllib.parse.quote(steam_store_game_name)
         url = f"https://store.steampowered.com/api/storesearch/?term={query}&l=english&cc=US"
         try:
-            response = requests.get(url, timeout=10)
-            response.raise_for_status()
-            data = response.json()
-        except requests.exceptions.RequestException as e:
+            with urllib.request.urlopen(url, timeout=10) as response:
+                data = json.load(response)
+        except (urllib.error.URLError, Exception) as e:
             print(f"Fallback Steam lookup failed for {steam_store_game_name}: {e}")
             return None
 
@@ -523,6 +528,8 @@ def create_steam_store_app_manifest_file(steam_store_appid, steam_store_game_nam
 
 
 
+
+
 def get_steam_fallback_url(steam_store_appid, art_type):
     base_url = f"https://shared.steamstatic.com/store_item_assets/steam/apps/{steam_store_appid}/"
 
@@ -542,13 +549,14 @@ def get_steam_fallback_url(steam_store_appid, art_type):
 
     for url in candidates:
         try:
-            response = requests.head(url, timeout=3)
-            if response.status_code == 200:
-                return url
-        except requests.RequestException as e:
+            with urllib.request.urlopen(url) as response:
+                if response.status == 200:
+                    return url
+        except (urllib.error.URLError, Exception) as e:
             print(f"Error checking fallback URL: {url} — {e}")
             continue
     return None
+
 
 
 def file_exists_with_any_ext(base_path):
@@ -2738,48 +2746,51 @@ def create_new_entry(shortcutdirectory, appname, launchoptions, startingdir, lau
                 continue
 
             try:
-                response = requests.head(url)
-                if response.status_code == 200:
-                    ext = url.split('.')[-1]
+                # Use urllib to perform a HEAD request (check URL status)
+                req = urllib.request.Request(url, method='HEAD')
+                with urllib.request.urlopen(req) as response:
+                    if response.status == 200:
+                        ext = url.split('.')[-1]
 
-                    if art_type == "icons":
-                        filename = get_file_name("icons", unsigned_shortcut_id)
-                    elif art_type == "logos":
-                        filename = f"{unsigned_shortcut_id}_logo.{ext}"
-                    elif art_type == "heroes":
-                        filename = f"{unsigned_shortcut_id}_hero.{ext}"
-                    elif art_type == "grids_600x900":
-                        filename = f"{unsigned_shortcut_id}p.{ext}"
-                    elif art_type == "grids_920x430":
-                        filename = f"{unsigned_shortcut_id}.{ext}"
+                        if art_type == "icons":
+                            filename = get_file_name("icons", unsigned_shortcut_id)
+                        elif art_type == "logos":
+                            filename = f"{unsigned_shortcut_id}_logo.{ext}"
+                        elif art_type == "heroes":
+                            filename = f"{unsigned_shortcut_id}_hero.{ext}"
+                        elif art_type == "grids_600x900":
+                            filename = f"{unsigned_shortcut_id}p.{ext}"
+                        elif art_type == "grids_920x430":
+                            filename = f"{unsigned_shortcut_id}.{ext}"
+                        else:
+                            continue
+
+                        file_path = f"{logged_in_home}/.steam/root/userdata/{steamid3}/config/grid/{filename}"
+
+                        # Download and use artwork directly — no file existence checks
+                        with urllib.request.urlopen(url) as img_response:
+                            img_data = img_response.read()
+
+                            if art_type == "icons":
+                                with open(file_path, 'wb') as f:
+                                    f.write(img_data)
+                                print(f"Downloaded and saved fallback icon: {filename}")
+                            else:
+                                encoded = b64encode(img_data).decode('utf-8')
+                                print(f"Downloaded fallback {art_type} as base64")
+
+                                if art_type == "logos" and not logo64:
+                                    logo64 = encoded
+                                elif art_type == "heroes" and not hero64:
+                                    hero64 = encoded
+                                elif art_type == "grids_600x900" and not gridp64:
+                                    gridp64 = encoded
+                                elif art_type == "grids_920x430" and not grid64:
+                                    grid64 = encoded
                     else:
-                        continue
-
-                    file_path = f"{logged_in_home}/.steam/root/userdata/{steamid3}/config/grid/{filename}"
-
-                    # Download and use artwork directly — no file existence checks
-                    img_data = requests.get(url).content
-                    if art_type == "icons":
-                        with open(file_path, 'wb') as f:
-                            f.write(img_data)
-                        print(f"Downloaded and saved fallback icon: {filename}")
-                    else:
-                        encoded = b64encode(img_data).decode('utf-8')
-                        print(f"Downloaded fallback {art_type} as base64")
-
-                        if art_type == "logos" and not logo64:
-                            logo64 = encoded
-                        elif art_type == "heroes" and not hero64:
-                            hero64 = encoded
-                        elif art_type == "grids_600x900" and not gridp64:
-                            gridp64 = encoded
-                        elif art_type == "grids_920x430" and not grid64:
-                            grid64 = encoded
-                else:
-                    print(f"Fallback URL invalid for {art_type} - {url}")
+                        print(f"Fallback URL invalid for {art_type} - {url}")
             except Exception as e:
                 print(f"Error downloading fallback artwork for {art_type}: {e}")
-
 
 
 
@@ -2928,7 +2939,7 @@ def fetch_and_parse_csv():
 
     # Fallback to online if local fails
     try:
-        response = requests.get(CSV_URL, timeout=5)
+        response = urllib.request.urlopen(CSV_URL, timeout=5)
         response.raise_for_status()
         csv_data = [row for row in csv.DictReader(response.text.splitlines())]
         print("Fetched UMU database from online as fallback.")
@@ -5177,8 +5188,6 @@ skip_games = {'Epic Games', 'GOG Galaxy', 'Ubisoft Connect', 'Battle.net', 'EA A
     'Plex', 'Apple TV+', 'Crunchyroll', 'PokéRogue', 'NonSteamLaunchers', 'Repair EA App'}
 
 
-
-
 # --- Game Descriptions Update Logic ---
 def update_game_details(games_to_check, logged_in_home, skip_games):
     descriptions_file_path = os.path.join(logged_in_home, '.config/systemd/user/descriptions.json')
@@ -5204,12 +5213,19 @@ def update_game_details(games_to_check, logged_in_home, skip_games):
         return any(game['game_name'] == game_name for game in existing_data)
 
     def get_game_details(game_name):
-        url = f"https://nonsteamlaunchers.onrender.com/api/details/{game_name}"
-        response = requests.get(url)
-        if response.status_code == 200:
-            return response.json()
-        else:
-            print(f"Error: Unable to retrieve data for {game_name}. Status code {response.status_code}")
+        # URL-encode the game name to handle spaces and special characters
+        encoded_game_name = urllib.parse.quote(game_name)
+        url = f"https://nonsteamlaunchers.onrender.com/api/details/{encoded_game_name}"
+
+        try:
+            with urllib.request.urlopen(url) as response:
+                if response.status == 200:
+                    return json.load(response)
+                else:
+                    print(f"Error: Unable to retrieve data for {game_name}. Status code {response.status}")
+                    return None
+        except urllib.error.URLError as e:
+            print(f"Error fetching details for {game_name}: {e}")
             return None
 
     def strip_html_tags(text):
