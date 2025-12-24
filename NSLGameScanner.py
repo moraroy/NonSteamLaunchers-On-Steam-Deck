@@ -16,6 +16,7 @@ import certifi
 import itertools
 import shlex
 import urllib
+import ssl
 from datetime import datetime
 
 from urllib.request import urlopen
