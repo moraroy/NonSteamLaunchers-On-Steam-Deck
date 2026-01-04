@@ -93,7 +93,7 @@ fi
 exec > >(tee -a "$log_file") 2>&1
 
 # Version number (major.minor)
-version=v4.2.82
+version=v4.2.83
 #NSL Decky Plugin Latest Github Version
 deckyversion=$(curl -s https://raw.githubusercontent.com/moraroy/NonSteamLaunchersDecky/refs/heads/main/package.json | grep -o '"version": "[^"]*' | sed 's/"version": "//')
 
@@ -200,39 +200,6 @@ fi
 # Get the command line arguments
 args=("$@")
 echo "Arguments passed: ${args[@]}"  # Debugging the passed arguments
-deckyplugin=false
-installchrome=false
-
-for arg in "${args[@]}"; do
-  if [ "$arg" = "DeckyPlugin" ]; then
-    deckyplugin=true
-  elif [ "$arg" = "Chrome" ]; then
-    installchrome=true
-  fi
-done
-
-# Check if the user wants to install Chrome
-if $installchrome; then
-  # Check if Google Chrome is already installed for the current user
-  if flatpak list --user | grep com.google.Chrome &> /dev/null; then
-    echo "Google Chrome is already installed for the current user"
-    flatpak --user override --filesystem=/run/udev:ro com.google.Chrome
-  else
-    # Check if the Flathub repository exists for the current user
-    if flatpak remote-list --user | grep flathub &> /dev/null; then
-      echo "Flathub repository exists for the current user"
-    else
-      # Add the Flathub repository for the current user
-      flatpak remote-add --user --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
-    fi
-
-    # Install Google Chrome for the current user
-    flatpak install --user flathub com.google.Chrome -y
-
-    # Run the flatpak --user override command
-    flatpak --user override --filesystem=/run/udev:ro com.google.Chrome
-  fi
-fi
 
 
 
@@ -926,14 +893,9 @@ custom_websites=()
 separate_appids=false
 
 # --- Handle command line arguments or fallback to GTK UI ---
-
 if [ $# -eq 0 ]; then
-    # No CLI args — show GTK UI
-
     readarray -t gtk_output < <(python3 - <<'EOF'
-import gi, os, sys
-import subprocess
-import re
+import gi, os, sys, subprocess, re
 
 gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk
@@ -941,11 +903,11 @@ from gi.repository import Gtk
 def get_screen_resolution():
     xrandr_output = subprocess.check_output(["xrandr"]).decode("utf-8")
     resolutions = re.findall(r"(\d+)x(\d+)\s*\*+", xrandr_output)
-    return map(int, resolutions[0]) if resolutions else (1920, 1080)
+    return map(int, resolutions[0]) if resolutions else (1920,1080)
 
 def is_multiple_monitors():
     xrandr_output = subprocess.check_output(["xrandr"]).decode("utf-8")
-    return len(re.findall(r" connected", xrandr_output)) > 1
+    return len(re.findall(r" connected", xrandr_output))>1
 
 screen_width, screen_height = get_screen_resolution()
 if is_multiple_monitors():
@@ -954,14 +916,14 @@ if is_multiple_monitors():
     if match:
         screen_width, screen_height = map(int, match.groups())
 
-zenity_width = screen_width * 80 // 100
-zenity_height = screen_height * 80 // 100
+zenity_width = screen_width*80//100
+zenity_height = screen_height*80//100
 
-version = os.environ.get("UI_VERSION", "NSL")
-live = os.environ.get("UI_LIVE", "")
+version = os.environ.get("UI_VERSION","NSL")
+live = os.environ.get("UI_LIVE","")
 
-launcher_lines = os.environ.get("LAUNCHER_DATA", "").splitlines()
-chrome_lines = os.environ.get("CHROME_DATA", "").splitlines()
+launcher_lines = os.environ.get("LAUNCHER_DATA","").splitlines()
+chrome_lines = os.environ.get("CHROME_DATA","").splitlines()
 
 class LauncherUI(Gtk.Window):
     def __init__(self):
@@ -970,81 +932,123 @@ class LauncherUI(Gtk.Window):
 
         self.store_launchers = Gtk.ListStore(bool, str)
         self.store_chrome = Gtk.ListStore(bool, str)
-
         for line in launcher_lines:
             if "|" in line:
-                value, label = line.split("|", 1)
-                active = value == "TRUE"
-                self.store_launchers.append([active, label])
-
+                value,label = line.split("|",1)
+                self.store_launchers.append([value=="TRUE", label])
         for line in chrome_lines:
             if "|" in line:
-                value, label = line.split("|", 1)
-                active = value == "TRUE"
-                self.store_chrome.append([active, label])
+                value,label = line.split("|",1)
+                self.store_chrome.append([value=="TRUE", label])
 
         main_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6, margin=10)
         self.add(main_box)
 
         header_label = Gtk.Label()
-        header_label.set_markup(f"<b>{version}</b> — Default = one App ID Installation, One Prefix, NonSteamLaunchers - updated the NSLGameScanner.py {live}")
+        header_label.set_markup(
+            f"<b>{version}</b> — Default = one App ID Installation, One Prefix, "
+            f"NonSteamLaunchers - updated the NSLGameScanner.py {live}"
+        )
+
+
         header_label.set_line_wrap(True)
         header_label.set_xalign(0)
         main_box.pack_start(header_label, False, False, 0)
 
-        def create_tree(model, toggle_callback):
+        # Helper for toggles
+        def create_tree(model,toggle_callback):
             tree = Gtk.TreeView(model=model)
             toggle = Gtk.CellRendererToggle()
-            toggle.connect("toggled", toggle_callback)
-            tree.append_column(Gtk.TreeViewColumn("Select", toggle, active=0))
-            tree.append_column(Gtk.TreeViewColumn("Launcher", Gtk.CellRendererText(), text=1))
+            toggle.connect("toggled",toggle_callback)
+            tree.append_column(Gtk.TreeViewColumn("Select",toggle,active=0))
+            tree.append_column(Gtk.TreeViewColumn("Name",Gtk.CellRendererText(),text=1))
             return tree
 
-        launcher_label = Gtk.Label(label="Launchers:")
-        launcher_label.set_xalign(0)
-        main_box.pack_start(launcher_label, False, False, 0)
-
-        launcher_tree = create_tree(self.store_launchers, self.on_toggle_launcher)
+        # Launchers Tree
+        main_box.pack_start(Gtk.Label(label="Launchers:", xalign=0), False, False, 0)
+        launcher_tree = create_tree(self.store_launchers,self.on_toggle_launcher)
         scrolled1 = Gtk.ScrolledWindow()
         scrolled1.set_vexpand(True)
         scrolled1.add(launcher_tree)
         main_box.pack_start(scrolled1, True, True, 0)
 
-        chrome_label = Gtk.Label(label="Google Chrome-based Services:")
-        chrome_label.set_xalign(0)
-        main_box.pack_start(chrome_label, False, False, 0)
-
-        chrome_tree = create_tree(self.store_chrome, self.on_toggle_chrome)
+        # Chrome Tree
+        main_box.pack_start(Gtk.Label(label="Browser-based Services:", xalign=0), False, False,0)
+        chrome_tree = create_tree(self.store_chrome,self.on_toggle_chrome)
         scrolled2 = Gtk.ScrolledWindow()
         scrolled2.set_vexpand(True)
         scrolled2.add(chrome_tree)
         main_box.pack_start(scrolled2, True, True, 0)
 
+        # Horizontal browser checkboxes
+        main_box.pack_start(Gtk.Label(label="Select a browser (required for web services or websites & will attempt to be installed if needed):", xalign=0), False, False,0)
+        self.browser_names = ["Google Chrome","Mozilla Firefox","Brave","Microsoft Edge"]
+        self.browser_checks = {}
+        hbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=20, margin=5)
+        for name in self.browser_names:
+            check = Gtk.CheckButton(label=name)
+            check.connect("toggled", self.on_browser_checked, name)
+            self.browser_checks[name] = check
+            hbox.pack_start(check, False, False, 5)
+        main_box.pack_start(hbox, False, False, 0)
+
+        # Custom website names entry
+        self.entry_names = Gtk.Entry()
+        self.entry_names.set_placeholder_text("Enter the names for each site, separated by commas. E.g. Myspace, Limewire, AOL")
+        main_box.pack_start(self.entry_names, False, False, 0)
+
+        # Custom websites entry
         self.entry = Gtk.Entry()
         self.entry.set_placeholder_text("Enter custom websites that you want shortcuts for, separated by commas. Leave blank and press ok if you don't want any. E.g. myspace.com, limewire.com, my.screenname.aol.com")
         main_box.pack_start(self.entry, False, False, 0)
 
+        # Buttons
         button_box = Gtk.Box(spacing=6)
         self.button_result = None
-        for label in ["Cancel", "OK", "❤️", "Uninstall", "🔍", "Start Fresh", "Move to SD Card", "Update Proton-GE", "🖥️ Off", "NSLGameSaves", "README"]:
+        for label in ["Cancel","OK","❤️","Uninstall","🔍","Start Fresh","Move to SD Card","Update Proton-GE","🖥️ Off","NSLGameSaves","README"]:
             btn = Gtk.Button(label=label)
             btn.connect("clicked", self.on_button_clicked, label)
             button_box.pack_start(btn, True, True, 0)
-
         main_box.pack_start(button_box, False, False, 0)
 
+    # Toggle handlers
     def on_toggle_launcher(self, widget, path):
         self.store_launchers[path][0] = not self.store_launchers[path][0]
 
     def on_toggle_chrome(self, widget, path):
         self.store_chrome[path][0] = not self.store_chrome[path][0]
 
+    # Only one browser can be selected
+    def on_browser_checked(self, widget, name):
+        if widget.get_active():
+            for other_name, other_check in self.browser_checks.items():
+                if other_name != name:
+                    other_check.set_active(False)
+
+    # Button click
     def on_button_clicked(self, button, label):
-        selected = [row[1] for row in self.store_launchers if row[0]] + [row[1] for row in self.store_chrome if row[0]]
+        selected_launchers = [row[1] for row in self.store_launchers if row[0]]
+        selected_chrome = [row[1] for row in self.store_chrome if row[0]]
+        selected_browser = [name for name, check in self.browser_checks.items() if check.get_active()]
+        website_names = self.entry_names.get_text().strip()
         websites = self.entry.get_text().strip()
+
+
+        # Enforce browser selection if needed
+        if (selected_chrome or websites) and not selected_browser:
+            dlg = Gtk.MessageDialog(parent=self, flags=0, message_type=Gtk.MessageType.WARNING,
+                                    buttons=Gtk.ButtonsType.OK,
+                                    text="You must select a browser if you chose a web service or entered a website.")
+            dlg.run()
+            dlg.destroy()
+            return
+
+        selected = selected_launchers + selected_chrome + selected_browser
         print("|".join(selected))
+        print(website_names)
         print(websites)
         print(label)
+        print("|".join(selected_browser))
         sys.stdout.flush()
         Gtk.main_quit()
 
@@ -1059,10 +1063,17 @@ EOF
 
 
 
-    selected_launchers_str="${gtk_output[0]}"
-    custom_websites_str="${gtk_output[1]}"
-    extra_button="${gtk_output[2]}"
 
+
+
+
+    selected_launchers_str="${gtk_output[0]}"
+    custom_website_names_str="${gtk_output[1]}"
+    custom_websites_str="${gtk_output[2]}"
+    extra_button="${gtk_output[3]}"
+    selected_browser="${gtk_output[4]}"
+
+    IFS=',' read -ra custom_website_names <<< "$custom_website_names_str"
     IFS=',' read -ra custom_websites <<< "$custom_websites_str"
     IFS='|' read -ra selected_launchers <<< "$selected_launchers_str"
 
@@ -1157,6 +1168,7 @@ echo "Custom websites: ${custom_websites[*]}"
 echo "Separate App IDs: $separate_appids"
 echo "Extra button: $extra_button"
 echo "Options: $options"
+
 
 
 
@@ -2946,37 +2958,58 @@ install_launcher "STOVE Client" "STOVELauncher" "$stove_file" "$stove_url" "$sto
 
 
 
-
-
 echo "99"
-echo "# Checking if Chrome is installed...please wait..."
+echo "# Checking if a browser is needed...please wait..."
 
-# Check if user selected any of the options
-if [[ $options == *"Apple TV+"* ]] || [[ $options == *"Plex"* ]] || [[ $options == *"Crunchyroll"* ]] || [[ $options == *"WebRcade"* ]] || [[ $options == *"WebRcade Editor"* ]] || [[ $options == *"Netflix"* ]] || [[ $options == *"Fortnite"* ]] || [[ $options == *"Venge"* ]] || [[ $options == *"Xbox Game Pass"* ]] || [[ $options == *"Better xCloud"* ]] || [[ $options == *"Geforce Now"* ]] || [[ $options == *"Boosteroid Cloud Gaming"* ]] || [[ $options == *"Amazon Luna"* ]] || [[ $options == *"Hulu"* ]] || [[ $options == *"Tubi"* ]] || [[ $options == *"Disney+"* ]] || [[ $options == *"Amazon Prime Video"* ]] || [[ $options == *"Youtube"* ]] || [[ $options == *"Youtube TV"* ]] || [[ $options == *"Twitch"* ]] || [[ $options == *"Stim.io"* ]] || [[ $options == *"WatchParty"* ]] || [[ $options == *"PokéRogue"* ]] || [[ $options == *"Afterplay.io"* ]] || [[ $options == *"OnePlay"* ]] || [[ $options == *"AirGPU"* ]] || [[ $options == *"CloudDeck"* ]] || [[ $options == *"JioGamesCloud"* ]] || [[ $options == *"Cloudy Pad"* ]]; then
+# Check if user selected any browser-based service or entered a website
+if [[ $options == *"Apple TV+"* ]] || [[ $options == *"Plex"* ]] || [[ $options == *"Crunchyroll"* ]] || \
+   [[ $options == *"WebRcade"* ]] || [[ $options == *"WebRcade Editor"* ]] || [[ $options == *"Netflix"* ]] || \
+   [[ $options == *"Fortnite"* ]] || [[ $options == *"Venge"* ]] || [[ $options == *"Xbox Game Pass"* ]] || \
+   [[ $options == *"Better xCloud"* ]] || [[ $options == *"Geforce Now"* ]] || [[ $options == *"Boosteroid Cloud Gaming"* ]] || \
+   [[ $options == *"Amazon Luna"* ]] || [[ $options == *"Hulu"* ]] || [[ $options == *"Tubi"* ]] || \
+   [[ $options == *"Disney+"* ]] || [[ $options == *"Amazon Prime Video"* ]] || [[ $options == *"Youtube"* ]] || \
+   [[ $options == *"Youtube TV"* ]] || [[ $options == *"Twitch"* ]] || [[ $options == *"Stim.io"* ]] || \
+   [[ $options == *"WatchParty"* ]] || [[ $options == *"PokéRogue"* ]] || [[ $options == *"Afterplay.io"* ]] || \
+   [[ $options == *"OnePlay"* ]] || [[ $options == *"AirGPU"* ]] || [[ $options == *"CloudDeck"* ]] || \
+   [[ $options == *"JioGamesCloud"* ]] || [[ $options == *"Cloudy Pad"* ]] || [[ -n "$custom_websites_str" ]]; then
 
-    # User selected one of the options
-    echo "User selected one of the options"
+    echo "User selected a Browser-based service or entered a website"
 
-    # Check if Google Chrome is already installed
-    if flatpak list | grep com.google.Chrome &> /dev/null; then
-        echo "Google Chrome is already installed"
-        flatpak --user override --filesystem=/run/udev:ro com.google.Chrome
-    else
-        # Check if the Flathub repository exists
-        if flatpak remote-list | grep flathub &> /dev/null; then
-            echo "Flathub repository exists"
-        else
-            # Add the Flathub repository
+    # Determine which browser the user selected (correct Flatpak IDs)
+    selected_browser=""
+    if [[ "$options" == *"Google Chrome"* ]]; then
+        selected_browser="com.google.Chrome"
+    elif [[ "$options" == *"Mozilla Firefox"* ]]; then
+        selected_browser="org.mozilla.firefox"
+    elif [[ "$options" == *"Brave"* ]]; then
+        selected_browser="com.brave.Browser"
+    elif [[ "$options" == *"Microsoft Edge"* ]]; then
+        selected_browser="com.microsoft.Edge"
+    fi
+
+    # Install the selected browser if any
+    if [[ -n "$selected_browser" ]]; then
+        echo "User selected browser: $selected_browser"
+
+        # Ensure Flathub repository exists
+        if ! flatpak remote-list | grep flathub &> /dev/null; then
+            echo "Adding Flathub repository..."
             flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
         fi
 
-        # Install Google Chrome
-        flatpak install --user flathub com.google.Chrome -y
+        # Install the browser if not already installed
+        if flatpak list | grep "$selected_browser" &> /dev/null; then
+            echo "$selected_browser is already installed"
+        else
+            echo "Installing $selected_browser..."
+            flatpak install --user flathub "$selected_browser" -y
+        fi
 
-        # Run the flatpak --user override command
-        flatpak --user override --filesystem=/run/udev:ro com.google.Chrome
+        # Apply the override (if applicable)
+        flatpak --user override --filesystem=/run/udev:ro "$selected_browser"
     fi
 fi
+
 
 
 
@@ -3421,13 +3454,44 @@ fi
 
 
 # Set Chrome options based on user's selection
-# Function to set Chrome launch options for a given service
-set_chrome_launch_options() {
-    local option_var="${1}chromelaunchoptions"
-    local launch_options="run --branch=stable --arch=x86_64 --command=/app/bin/chrome --file-forwarding com.google.Chrome @@u @@ --window-size=1280,800 --force-device-scale-factor=1.00 --device-scale-factor=1.00 --start-fullscreen $2 --no-first-run --enable-features=OverlayScrollbar"
+ENV_FILE="${logged_in_home}/.config/systemd/user/env_vars"
 
-    # Write to environment variables file
-    echo $option_var=$launch_options >> ${logged_in_home}/.config/systemd/user/env_vars
+set_browser_launch_options() {
+    local key="$1"        # netflix, xbox, custom
+    local website="$2"    # optional
+    local option_var="${key}chromelaunchoptions"
+    local launch_options=""
+
+    if [[ "$options" == *"Google Chrome"* ]]; then
+        launch_options="run --branch=stable --arch=x86_64 \
+--command=/app/bin/chrome --file-forwarding com.google.Chrome @@u @@ \
+--window-size=1280,800 --force-device-scale-factor=1.00 \
+--device-scale-factor=1.00 --start-fullscreen --no-first-run \
+--enable-features=OverlayScrollbar"
+
+    elif [[ "$options" == *"Mozilla Firefox"* ]]; then
+        launch_options="run --branch=stable --arch=x86_64 \
+org.mozilla.firefox --kiosk"
+
+    elif [[ "$options" == *"Microsoft Edge"* ]]; then
+        launch_options="run --arch=x86_64 com.microsoft.Edge \
+--window-size=1280,800 --force-device-scale-factor=1.00 \
+--device-scale-factor=1.00 --start-fullscreen --no-first-run"
+
+    elif [[ "$options" == *"Brave"* ]]; then
+        launch_options="run --arch=x86_64 com.brave.Browser \
+--start-fullscreen --window-size=1280,800 \
+--force-device-scale-factor=1.00 --no-first-run \
+--no-default-browser-check \
+--enable-features=OverlayScrollbar,HardwareMediaKeyHandling"
+    fi
+
+    # Append URL only if provided
+    if [[ -n "$website" ]]; then
+        launch_options="$launch_options $website"
+    fi
+
+    echo "$option_var=$launch_options" >> "$ENV_FILE"
 }
 
 # Array of options, command names, and corresponding URLs
@@ -3464,46 +3528,44 @@ declare -A services=(
     ["Cloudy Pad"]="cloudy|https://cloudypad.gg"
 )
 
-# Check user selection and call the function for each option
+
 for option in "${!services[@]}"; do
-    if [[ $options == *"$option"* ]]; then
+    if [[ "$options" == *"$option"* ]]; then
         IFS='|' read -r name url <<< "${services[$option]}"
-        set_chrome_launch_options "$name" "$url"
+        set_browser_launch_options "$name" "$url"
     fi
 done
 
+if [ "${#custom_websites[@]}" -gt 0 ]; then
 
-# Check if any custom websites were provided
-if [ ${#custom_websites[@]} -gt 0 ]; then
-    echo "DEBUG: custom_websites array content: ${custom_websites[@]}"
-    echo "DEBUG: custom_websites array length: ${#custom_websites[@]}"
-
-    # Sanity check: try to split any single string containing commas into multiple array items
-    if [ ${#custom_websites[@]} -eq 1 ] && [[ "${custom_websites[0]}" == *,* ]]; then
+    # Split if comma-separated (legacy safety)
+    if [ "${#custom_websites[@]}" -eq 1 ] && [[ "${custom_websites[0]}" == *,* ]]; then
         IFS=',' read -ra custom_websites <<< "${custom_websites[0]}"
-        echo "DEBUG: Re-split single comma string into array: ${custom_websites[@]}"
+        IFS=',' read -ra custom_website_names <<< "${custom_website_names[0]}"
     fi
 
-    # Strip leading/trailing whitespace from each website
+    # Trim whitespace (URLs)
     for i in "${!custom_websites[@]}"; do
-        # Remove leading/trailing whitespace from each entry
         custom_websites[$i]=$(echo "${custom_websites[$i]}" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
     done
 
-    # Join array with ', ' separator
-    custom_websites_str=""
-    for i in "${!custom_websites[@]}"; do
-        if [ "$i" -gt 0 ]; then
-            custom_websites_str+=", "
-        fi
-        custom_websites_str+="${custom_websites[$i]}"
+    # Trim whitespace (Names)
+    for i in "${!custom_website_names[@]}"; do
+        custom_website_names[$i]=$(echo "${custom_website_names[$i]}" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
     done
 
-    echo "DEBUG: Final custom_websites_str = $custom_websites_str"
+    # Join into strings
+    custom_websites_str=$(IFS=', '; echo "${custom_websites[*]}")
+    custom_website_names_str=$(IFS=', '; echo "${custom_website_names[*]}")
 
-    # Export the properly formatted value to env_vars
-    echo "export custom_websites_str=$custom_websites_str" >> "${logged_in_home}/.config/systemd/user/env_vars"
+    # Export both
+    echo "export custom_websites_str=$custom_websites_str" >> "$ENV_FILE"
+    echo "export custom_website_names_str=$custom_website_names_str" >> "$ENV_FILE"
+
+    set_browser_launch_options "custom"
 fi
+
+
 
 
 
