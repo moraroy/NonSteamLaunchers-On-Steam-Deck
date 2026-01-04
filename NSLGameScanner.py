@@ -2661,6 +2661,7 @@ def get_next_available_key(shortcuts):
         key += 1
     return str(key)
 
+
 def get_compat_tool_if_needed(launchoptions):
     steam_compat_marker = 'STEAM_COMPAT_DATA_PATH'
     # Check for UMU-related Proton (UMU-Proton) and return None immediately if found
@@ -2668,19 +2669,20 @@ def get_compat_tool_if_needed(launchoptions):
         print("Exclusion: UMU-related shortcut detected.")
         return None
 
-    # Exclude Chrome and AppID 0
-    if 'chrome' in launchoptions or '--appid 0' in launchoptions:
-        print("Exclusion: Chrome or AppID 0 detected.")
+    if ('chrome' in launchoptions or
+        'brave' in launchoptions or
+        'edge' in launchoptions or
+        'firefox' in launchoptions or
+        '--appid 0' in launchoptions):
+        print("Exclusion: Chrome, Brave, Edge, Firefox, or AppID 0 detected.")
         return None
 
-    # Exclude based on app regions like jp., com., online.
     if any(x in launchoptions for x in ['jp.', 'com.', 'online.']):
         print("Exclusion: App region detected.")
         if steam_compat_marker not in launchoptions:
             print(f"Exclusion: {steam_compat_marker} not in launch options.")
             return None
 
-    # If none of the exclusions apply, return the compat tool name
     print("No exclusions applied. Returning compat tool.")
     return compat_tool_name
 
