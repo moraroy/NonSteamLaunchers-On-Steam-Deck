@@ -65,7 +65,7 @@ separate_appids = None
 lines_to_keep = []
 
 # Lines to remove
-remove_lines = {'chromelaunchoptions', 'websites_str'}
+remove_lines = {'chromelaunchoptions', 'websites_str', 'custom_website_names_str'}
 
 for line in lines:
     original_line = line  # Keep the original line for writing later
@@ -150,8 +150,11 @@ stoveshortcutdirectory = os.environ.get('stoveshortcutdirectory')
 repaireaappshortcutdirectory = os.environ.get('repaireaappshortcutdirectory')
 #Streaming
 chromedirectory = os.environ.get('chromedirectory')
-websites_str = os.environ.get('custom_websites_str')
-custom_websites = websites_str.split(', ') if websites_str else []
+names_str = os.environ.get("custom_website_names_str", "")
+websites_str = os.environ.get("custom_websites_str", "")
+custom_names = [n.strip() for n in names_str.split(",") if n.strip()]
+custom_websites = [w.strip() for w in websites_str.split(",") if w.strip()]
+base_launch_options = os.environ.get("customchromelaunchoptions")
 
 
 
@@ -3170,41 +3173,39 @@ create_new_entry(os.environ.get('chromedirectory'), 'Crunchyroll', os.environ.ge
 create_new_entry(os.environ.get('chromedirectory'), 'PokéRogue', os.environ.get('pokeroguechromelaunchoptions'), os.environ.get('chrome_startdir'))
 
 # Iterate over each custom website
-for custom_website in custom_websites:
-    # Check if the custom website is not an empty string
-    if custom_website:
-        # Remove any leading or trailing spaces from the custom website URL
-        custom_website = custom_website.strip()
+for i, website in enumerate(custom_websites):
+    # Ensure usable URL
+    if not website.startswith(("http://", "https://")):
+        url = f"https://{website}"
+    else:
+        url = website
 
-        # Remove the 'http://' or 'https://' prefix and the 'www.' prefix, if present
-        clean_website = custom_website.replace('http://', '').replace('https://', '').replace('www.', '')
+    # Use custom name if provided
+    if i < len(custom_names) and custom_names[i]:
+        game_name = custom_names[i]
+    else:
+        # Clean display name fallback
+        clean = (
+            website.replace("http://", "")
+                   .replace("https://", "")
+                   .replace("www.", "")
+                   .rstrip("/")
+        )
 
-        # Define a regular expression pattern to extract the game name from the URL
-        pattern = r'/games/([\w-]+)'
-
-        # Use the regular expression to search for the game name in the custom website URL
-        match = re.search(pattern, custom_website)
-
-        # Check if a match was found
+        match = re.search(r"/games/([\w-]+)", website)
         if match:
-            # Extract the game name from the match object
-            game_name = match.group(1)
-
-            # Replace hyphens with spaces
-            game_name = game_name.replace('-', ' ')
-
-            # Capitalize the first letter of each word in the game name
-            game_name = game_name.title()
+            game_name = match.group(1).replace("-", " ").title()
         else:
-            # Use the entire URL as the entry name
-            game_name = clean_website
+            game_name = clean.split("/")[0].title()
 
-        # Define the launch options for this website
-        chromelaunch_options = f'run --branch=stable --arch=x86_64 --command=/app/bin/chrome --file-forwarding com.google.Chrome @@u @@ --window-size=1280,800 --force-device-scale-factor=1.00 --device-scale-factor=1.00 --start-fullscreen https://{clean_website}/ --no-first-run --enable-features=OverlayScrollbar'
+    launch_options = f"{base_launch_options} {url}"
 
-        # Call the create_new_entry function for this website
-        create_new_entry(os.environ['chromedirectory'], game_name, chromelaunch_options, os.environ['chrome_startdir'])
-
+    create_new_entry(
+        os.environ["chromedirectory"],
+        game_name,
+        launch_options,
+        os.environ["chrome_startdir"]
+    )
 #End of Creating Launcher Shortcuts
 
 
