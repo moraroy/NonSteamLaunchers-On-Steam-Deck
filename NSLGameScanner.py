@@ -44,13 +44,14 @@ if not dbus_address or not dbus_address.startswith('unix:path='):
 # Path to the env_vars file
 env_vars_path = f"{os.environ['HOME']}/.config/systemd/user/env_vars"
 env_vars_dir = os.path.dirname(env_vars_path)
+
 if not os.path.exists(env_vars_dir):
     os.makedirs(env_vars_dir)
 
 # Check if the env_vars file exists
 if not os.path.exists(env_vars_path):
     # If it doesn't exist, create it as an empty file
-    with open(env_vars_path, 'w') as f:
+    with open(env_vars_path, 'w'):
         pass
 
 print(f"Env vars file path is: {env_vars_path}")
@@ -59,16 +60,9 @@ print(f"Env vars file path is: {env_vars_path}")
 with open(env_vars_path, 'r') as f:
     lines = f.readlines()
 
-# Determine which lines to keep
-modified = False
 separate_appids = None
-lines_to_keep = []
-
-# Lines to remove
-remove_lines = {'chromelaunchoptions', 'websites_str', 'custom_website_names_str'}
 
 for line in lines:
-    original_line = line  # Keep the original line for writing later
     if line.startswith('export '):
         line = line[7:]  # Remove 'export '
 
@@ -80,17 +74,6 @@ for line in lines:
         # Track separate_appids if explicitly set to false
         if name == 'separate_appids' and value.strip().lower() == 'false':
             separate_appids = value.strip()
-
-    # Only keep lines that do not contain the unwanted keys
-    if not any(remove_key in original_line for remove_key in remove_lines):
-        lines_to_keep.append(original_line)
-    else:
-        modified = True  # Mark as modified if a line is removed
-
-# If there were changes, write the cleaned-up lines back to the file
-if modified:
-    with open(env_vars_path, 'w') as f:
-        f.writelines(lines_to_keep)
 
 
 
@@ -3176,17 +3159,14 @@ create_new_entry(os.environ.get('chromedirectory'), 'PokéRogue', os.environ.get
 
 # Iterate over each custom website
 for i, website in enumerate(custom_websites):
-    # Ensure usable URL
     if not website.startswith(("http://", "https://")):
         url = f"https://{website}"
     else:
         url = website
 
-    # Use custom name if provided
     if i < len(custom_names) and custom_names[i]:
         game_name = custom_names[i]
     else:
-        # Clean display name fallback
         clean = (
             website.replace("http://", "")
                    .replace("https://", "")
@@ -3208,7 +3188,34 @@ for i, website in enumerate(custom_websites):
         launch_options,
         os.environ["chrome_startdir"]
     )
+
+def remove_unwanted_lines(lines, remove_keys):
+    lines_to_keep = []
+    modified = False
+
+    for line in lines:
+        if not any(key in line for key in remove_keys):
+            lines_to_keep.append(line)
+        else:
+            modified = True
+
+    return lines_to_keep, modified
+
+
+remove_lines = {
+    'chromelaunchoptions',
+    'websites_str',
+    'custom_website_names_str'
+}
+
+lines_to_keep, modified = remove_unwanted_lines(lines, remove_lines)
+
+if modified:
+    with open(env_vars_path, 'w') as f:
+        f.writelines(lines_to_keep)
+
 #End of Creating Launcher Shortcuts
+
 
 
 #Custom Shortcut for NSL
