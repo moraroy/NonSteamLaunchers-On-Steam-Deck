@@ -1232,9 +1232,6 @@ window.createShortcut = async function(data) {
       }
     }
 
-    await SteamClient.Apps.CreateDesktopShortcutForApp(shortcutId);
-    console.log("Desktop shortcut created for shortcut:", shortcutId);
-
     if (data.appname !== "NonSteamLaunchers") {
       await SteamClient.Apps.CreateDesktopShortcutForApp(shortcutId);
       console.log("Desktop shortcut created for shortcut:", shortcutId);
