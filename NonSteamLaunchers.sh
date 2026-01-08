@@ -321,7 +321,7 @@ fi
 ### NSL Game Scanner.py Update/Scan
 update_nsl_game_scanner() {
     repo_url='https://github.com/moraroy/NonSteamLaunchers-On-Steam-Deck/archive/refs/heads/main.zip'
-    folders_to_clone=('requests' 'urllib3' 'steamgrid' 'vdf' 'charset_normalizer')
+    folders_to_clone=('urllib3' 'vdf' 'charset_normalizer')
 
     parent_folder="${logged_in_home}/.config/systemd/user/Modules"
     python_script_path="${logged_in_home}/.config/systemd/user/NSLGameScanner.py"
