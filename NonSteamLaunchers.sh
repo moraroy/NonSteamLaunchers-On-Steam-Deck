@@ -2005,6 +2005,44 @@ process_uninstall_options() {
             killall zenity
         fi
 
+        if [[ $uninstall_options == *"Uninstall Google Chrome"* ]]; then
+
+            flatpak uninstall -y --force-remove --user com.google.Chrome
+
+            zenity --info --text="Google Chrome has been uninstalled." --width=250 --height=150 &
+            sleep 3
+            killall zenity
+        fi
+
+
+        if [[ $uninstall_options == *"Uninstall Mozilla Firefox"* ]]; then
+
+            flatpak uninstall -y --force-remove --user org.mozilla.firefox
+
+            zenity --info --text="Mozilla Firefox has been uninstalled." --width=250 --height=150 &
+            sleep 3
+            killall zenity
+        fi
+
+
+        if [[ $uninstall_options == *"Uninstall Brave"* ]]; then
+
+            flatpak uninstall -y --force-remove --user com.brave.Browser
+
+            zenity --info --text="Brave has been uninstalled." --width=250 --height=150 &
+            sleep 3
+            killall zenity
+        fi
+
+
+        if [[ $uninstall_options == *"Uninstall Microsoft Edge"* ]]; then
+
+            flatpak uninstall -y --force-remove --user com.microsoft.Edge
+
+            zenity --info --text="Microsoft Edge has been uninstalled." --width=250 --height=150 &
+            sleep 3
+            killall zenity
+        fi
 
         uninstall_launcher "$uninstall_options" "Uplay" "$uplay_path1" "$uplay_path2" "${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/Program Files (x86)/Ubisoft" "${logged_in_home}/.local/share/Steam/steamapps/compatdata/UplayLauncher" "uplay" "ubisoft"
         uninstall_launcher "$uninstall_options" "Battle.net" "$battlenet_path1" "$battlenet_path2" "${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/Program Files (x86)/Battle.net" "${logged_in_home}/.local/share/Steam/steamapps/compatdata/Battle.netLauncher" "battle" "bnet"
@@ -2095,6 +2133,10 @@ else
             FALSE "NVIDIA GeForce NOW" \
             FALSE "STOVE Client" \
             FALSE "Moonlight Game Streaming" \
+            FALSE "Google Chrome" \
+            FALSE "Mozilla Firefox" \
+            FALSE "Brave" \
+            FALSE "Microsoft Edge" \
         )
         # Convert the returned string to an array
         IFS='|' read -r -a uninstall_options_array <<< "$uninstall_options"
