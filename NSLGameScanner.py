@@ -487,30 +487,66 @@ def create_steam_store_app_manifest_file(steam_store_appid, steam_store_game_nam
     steamapps_dir = f"{logged_in_home}/.steam/root/steamapps/"
     appmanifest_path = os.path.join(steamapps_dir, f"appmanifest_{steam_store_appid}.acf")
 
-    # Ensure the directory exists
     os.makedirs(steamapps_dir, exist_ok=True)
-
-    # Check if the file already exists
+    
     if os.path.exists(appmanifest_path):
         print(f"Manifest file for {steam_store_appid} already exists.")
         return
 
-    # Prepare the appmanifest data
-    app_manifest_data = {
-        "AppState": {
-            "AppID": str(steam_store_appid),
-            "Universe": "1",
-            "installdir": steam_store_game_name,
-            "StateFlags": "0"
-        }
-    }
+    vdf_content = "\n".join([
+        '"AppState"',
+        "{",
+        f'\t"appid"\t\t"{steam_store_appid}"',
+        '\t"Universe"\t\t"1"',
+        f'\t"name"\t\t"{steam_store_game_name}"',
+        '\t"StateFlags"\t\t"0"',
+        f'\t"installdir"\t\t"{steam_store_game_name}"',
+        '\t"LastUpdated"\t\t""',
+        '\t"LastPlayed"\t\t""',
+        '\t"SizeOnDisk"\t\t""',
+        '\t"StagingSize"\t\t""',
+        '\t"buildid"\t\t""',
+        '\t"LastOwner"\t\t""',
+        '\t"DownloadType"\t\t""',
+        '\t"UpdateResult"\t\t""',
+        '\t"BytesToDownload"\t\t""',
+        '\t"BytesDownloaded"\t\t""',
+        '\t"BytesToStage"\t\t""',
+        '\t"BytesStaged"\t\t""',
+        '\t"TargetBuildID"\t\t""',
+        '\t"AutoUpdateBehavior"\t\t""',
+        '\t"AllowOtherDownloadsWhileRunning"\t\t""',
+        '\t"ScheduledAutoUpdate"\t\t""',
+        "",
+        '\t"InstalledDepots"',
+        "\t{",
+        "\t}",
+        "",
+        '\t"InstallScripts"',
+        "\t{",
+        "\t}",
+        "",
+        '\t"SharedDepots"',
+        "\t{",
+        "\t}",
+        "",
+        '\t"UserConfig"',
+        "\t{",
+        "\t}",
+        "",
+        '\t"MountedConfig"',
+        "\t{",
+        "\t}",
+        "}",
+        ""
+    ])
 
-    # Write the manifest to the file
-    with open(appmanifest_path, 'w') as file:
-        json.dump(app_manifest_data, file, indent=2)
-
-    print(f"Created appmanifest file at: {appmanifest_path}")
-
+    try:
+        with open(appmanifest_path, 'w', encoding='utf-8') as file:
+            file.write(vdf_content)
+        print(f"Created appmanifest file at: {appmanifest_path}")
+    except Exception as e:
+        print(f"Failed to write manifest for '{steam_store_game_name}': {e}")
 
 
 
