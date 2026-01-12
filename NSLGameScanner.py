@@ -3256,10 +3256,10 @@ for i, website in enumerate(custom_websites):
     launch_options = f"{base_launch_options} {url}"
 
     create_new_entry(
-        chromedirectory,
+        os.environ["chromedirectory"],
         game_name,
         launch_options,
-        chrome_startdir,
+        os.environ["chrome_startdir"],
         launcher_name=browser_for_env('customchromelaunchoptions')
     )
 
