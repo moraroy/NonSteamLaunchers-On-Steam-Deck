@@ -3167,7 +3167,7 @@ track_create_entry(os.environ.get('repaireaappshortcutdirectory'), 'Repair EA Ap
 
 
 def detect_browser_name(chromedir: str, launch_opts: str) -> str:
-    combined = f"{chromedir} {launch_opts}".lower()
+    combined = f"{chromedir} {launch_opts}"
     if "com.google.Chrome" in combined:
         return "Google Chrome"
     elif "org.mozilla.firefox" in combined:
