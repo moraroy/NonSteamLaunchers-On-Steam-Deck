@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
-import os, re
+import os
+import re
 import json
 import shutil
 import binascii
@@ -15,22 +16,24 @@ import configparser
 import certifi
 import itertools
 import shlex
-import urllib
 import ssl
-
-from datetime import datetime
-
-from urllib.request import urlopen
-from urllib.request import urlretrieve
-from urllib.parse import quote
-from base64 import b64encode
-import xml.etree.ElementTree as ET
-
 import socket
 import base64
-
-from urllib.parse import urlparse
 import http.client
+
+from datetime import datetime
+from base64 import b64encode
+
+import xml.etree.ElementTree as ET
+
+from urllib.request import urlopen, urlretrieve
+from urllib.parse import (
+    urlparse,
+    urlsplit,
+    urlunsplit,
+    quote
+)
+
 
 
 
@@ -3190,12 +3193,21 @@ create_new_entry(os.environ.get('chromedirectory'), 'Apple TV+', os.environ.get(
 create_new_entry(os.environ.get('chromedirectory'), 'Crunchyroll', os.environ.get('crunchychromelaunchoptions'), os.environ.get('chrome_startdir'))
 create_new_entry(os.environ.get('chromedirectory'), 'PokéRogue', os.environ.get('pokeroguechromelaunchoptions'), os.environ.get('chrome_startdir'))
 
+
 # Iterate over each custom website
 for i, website in enumerate(custom_websites):
     if not website.startswith(("http://", "https://")):
-        url = f"https://{website}"
-    else:
-        url = website
+        website = f"https://{website}"
+
+    parts = urlsplit(website)
+    encoded_path = quote(parts.path, safe="/")
+    url = urlunsplit((
+        parts.scheme,
+        parts.netloc,
+        encoded_path,
+        parts.query,
+        parts.fragment
+    ))
 
     if i < len(custom_names) and custom_names[i]:
         game_name = custom_names[i]
@@ -3207,9 +3219,14 @@ for i, website in enumerate(custom_websites):
                    .rstrip("/")
         )
 
-        match = re.search(r"/games/([\w-]+)", website)
+        match = re.search(r"/games/([^/]+)", website)
         if match:
-            game_name = match.group(1).replace("-", " ").title()
+            game_name = (
+                match.group(1)
+                .replace("-", " ")
+                .replace("%27", "'")
+                .title()
+            )
         else:
             game_name = clean.split("/")[0].title()
 
@@ -3221,6 +3238,7 @@ for i, website in enumerate(custom_websites):
         launch_options,
         os.environ["chrome_startdir"]
     )
+    
 
 def remove_unwanted_lines(lines, remove_keys):
     lines_to_keep = []
