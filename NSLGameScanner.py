@@ -3260,8 +3260,9 @@ for i, website in enumerate(custom_websites):
         game_name,
         launch_options,
         chrome_startdir,
-        launcher_name=browser_name
+        launcher_name=browser_for_env('customchromelaunchoptions')
     )
+
     
 
 def remove_unwanted_lines(lines, remove_keys):
