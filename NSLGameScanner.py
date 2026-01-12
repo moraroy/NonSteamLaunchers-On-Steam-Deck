@@ -3166,36 +3166,52 @@ track_create_entry(os.environ.get('repaireaappshortcutdirectory'), 'Repair EA Ap
 
 
 
-create_new_entry(os.environ.get('chromedirectory'), 'Xbox Game Pass', os.environ.get('xboxchromelaunchoptions'), os.environ.get('chrome_startdir'))
-create_new_entry(os.environ.get('chromedirectory'), 'Better xCloud', os.environ.get('xcloudchromelaunchoptions'), os.environ.get('chrome_startdir'))
-create_new_entry(os.environ.get('chromedirectory'), 'GeForce Now', os.environ.get('geforcechromelaunchoptions'), os.environ.get('chrome_startdir'))
-create_new_entry(os.environ.get('chromedirectory'), 'Boosteroid Cloud Gaming', os.environ.get('boosteroidchromelaunchoptions'), os.environ.get('chrome_startdir'))
-create_new_entry(os.environ.get('chromedirectory'), 'Stim.io', os.environ.get('stimiochromelaunchoptions'), os.environ.get('chrome_startdir'))
-create_new_entry(os.environ.get('chromedirectory'), 'WatchParty', os.environ.get('watchpartychromelaunchoptions'), os.environ.get('chrome_startdir'))
-create_new_entry(os.environ.get('chromedirectory'), 'Netflix', os.environ.get('netflixchromelaunchoptions'), os.environ.get('chrome_startdir'))
-create_new_entry(os.environ.get('chromedirectory'), 'Hulu', os.environ.get('huluchromelaunchoptions'), os.environ.get('chrome_startdir'))
-create_new_entry(os.environ.get('chromedirectory'), 'Tubi', os.environ.get('tubichromelaunchoptions'), os.environ.get('chrome_startdir'))
-create_new_entry(os.environ.get('chromedirectory'), 'Disney+', os.environ.get('disneychromelaunchoptions'), os.environ.get('chrome_startdir'))
-create_new_entry(os.environ.get('chromedirectory'), 'Amazon Prime Video', os.environ.get('amazonchromelaunchoptions'), os.environ.get('chrome_startdir'))
-create_new_entry(os.environ.get('chromedirectory'), 'Youtube', os.environ.get('youtubechromelaunchoptions'), os.environ.get('chrome_startdir'))
-create_new_entry(os.environ.get('chromedirectory'), 'Youtube TV', os.environ.get('youtubetvchromelaunchoptions'), os.environ.get('chrome_startdir'))
-create_new_entry(os.environ.get('chromedirectory'), 'Amazon Luna', os.environ.get('lunachromelaunchoptions'), os.environ.get('chrome_startdir'))
-create_new_entry(os.environ.get('chromedirectory'), 'Twitch', os.environ.get('twitchchromelaunchoptions'), os.environ.get('chrome_startdir'))
-create_new_entry(os.environ.get('chromedirectory'), 'Venge', os.environ.get('vengechromelaunchoptions'), os.environ.get('chrome_startdir'))
-create_new_entry(os.environ.get('chromedirectory'), 'Rocketcrab', os.environ.get('rocketcrabchromelaunchoptions'), os.environ.get('chrome_startdir'))
-create_new_entry(os.environ.get('chromedirectory'), 'Fortnite', os.environ.get('fortnitechromelaunchoptions'), os.environ.get('chrome_startdir'))
-create_new_entry(os.environ.get('chromedirectory'), 'Cloudy Pad', os.environ.get('cloudychromelaunchoptions'), os.environ.get('chrome_startdir'))
-create_new_entry(os.environ.get('chromedirectory'), 'WebRcade', os.environ.get('webrcadechromelaunchoptions'), os.environ.get('chrome_startdir'))
-create_new_entry(os.environ.get('chromedirectory'), 'WebRcade Editor', os.environ.get('webrcadeeditchromelaunchoptions'), os.environ.get('chrome_startdir'))
-create_new_entry(os.environ.get('chromedirectory'), 'Afterplay.io', os.environ.get('afterplayiochromelaunchoptions'), os.environ.get('chrome_startdir'))
-create_new_entry(os.environ.get('chromedirectory'), 'OnePlay', os.environ.get('oneplaychromelaunchoptions'), os.environ.get('chrome_startdir'))
-create_new_entry(os.environ.get('chromedirectory'), 'AirGPU', os.environ.get('airgpuchromelaunchoptions'), os.environ.get('chrome_startdir'))
-create_new_entry(os.environ.get('chromedirectory'), 'CloudDeck', os.environ.get('clouddeckchromelaunchoptions'), os.environ.get('chrome_startdir'))
-create_new_entry(os.environ.get('chromedirectory'), 'JioGamesCloud', os.environ.get('jiochromelaunchoptions'), os.environ.get('chrome_startdir'))
-create_new_entry(os.environ.get('chromedirectory'), 'Plex', os.environ.get('plexchromelaunchoptions'), os.environ.get('chrome_startdir'))
-create_new_entry(os.environ.get('chromedirectory'), 'Apple TV+', os.environ.get('applechromelaunchoptions'), os.environ.get('chrome_startdir'))
-create_new_entry(os.environ.get('chromedirectory'), 'Crunchyroll', os.environ.get('crunchychromelaunchoptions'), os.environ.get('chrome_startdir'))
-create_new_entry(os.environ.get('chromedirectory'), 'PokéRogue', os.environ.get('pokeroguechromelaunchoptions'), os.environ.get('chrome_startdir'))
+def detect_browser_name(chromedir: str, launch_opts: str) -> str:
+    combined = f"{chromedir} {launch_opts}".lower()
+    if "com.google.chrome" in combined:
+        return "Google Chrome"
+    elif "org.mozilla.firefox" in combined:
+        return "Mozilla Firefox"
+    elif "com.microsoft.edge" in combined:
+        return "Microsoft Edge"
+    elif "com.brave.browser" in combined:
+        return "Brave"
+    else:
+        return "Unknown"
+
+browser_name = detect_browser_name(chromedirectory, base_launch_options)
+
+create_new_entry(chromedirectory, 'Xbox Game Pass', os.environ.get('xboxchromelaunchoptions'), os.environ.get('chrome_startdir'), launcher_name=browser_name)
+create_new_entry(chromedirectory, 'Better xCloud', os.environ.get('xcloudchromelaunchoptions'), os.environ.get('chrome_startdir'), launcher_name=browser_name)
+create_new_entry(chromedirectory, 'GeForce Now', os.environ.get('geforcechromelaunchoptions'), os.environ.get('chrome_startdir'), launcher_name=browser_name)
+create_new_entry(chromedirectory, 'Boosteroid Cloud Gaming', os.environ.get('boosteroidchromelaunchoptions'), os.environ.get('chrome_startdir'), launcher_name=browser_name)
+create_new_entry(chromedirectory, 'Stim.io', os.environ.get('stimiochromelaunchoptions'), os.environ.get('chrome_startdir'), launcher_name=browser_name)
+create_new_entry(chromedirectory, 'WatchParty', os.environ.get('watchpartychromelaunchoptions'), os.environ.get('chrome_startdir'), launcher_name=browser_name)
+create_new_entry(chromedirectory, 'Netflix', os.environ.get('netflixchromelaunchoptions'), os.environ.get('chrome_startdir'), launcher_name=browser_name)
+create_new_entry(chromedirectory, 'Hulu', os.environ.get('huluchromelaunchoptions'), os.environ.get('chrome_startdir'), launcher_name=browser_name)
+create_new_entry(chromedirectory, 'Tubi', os.environ.get('tubichromelaunchoptions'), os.environ.get('chrome_startdir'), launcher_name=browser_name)
+create_new_entry(chromedirectory, 'Disney+', os.environ.get('disneychromelaunchoptions'), os.environ.get('chrome_startdir'), launcher_name=browser_name)
+create_new_entry(chromedirectory, 'Amazon Prime Video', os.environ.get('amazonchromelaunchoptions'), os.environ.get('chrome_startdir'), launcher_name=browser_name)
+create_new_entry(chromedirectory, 'Youtube', os.environ.get('youtubechromelaunchoptions'), os.environ.get('chrome_startdir'), launcher_name=browser_name)
+create_new_entry(chromedirectory, 'Youtube TV', os.environ.get('youtubetvchromelaunchoptions'), os.environ.get('chrome_startdir'), launcher_name=browser_name)
+create_new_entry(chromedirectory, 'Amazon Luna', os.environ.get('lunachromelaunchoptions'), os.environ.get('chrome_startdir'), launcher_name=browser_name)
+create_new_entry(chromedirectory, 'Twitch', os.environ.get('twitchchromelaunchoptions'), os.environ.get('chrome_startdir'), launcher_name=browser_name)
+create_new_entry(chromedirectory, 'Venge', os.environ.get('vengechromelaunchoptions'), os.environ.get('chrome_startdir'), launcher_name=browser_name)
+create_new_entry(chromedirectory, 'Rocketcrab', os.environ.get('rocketcrabchromelaunchoptions'), os.environ.get('chrome_startdir'), launcher_name=browser_name)
+create_new_entry(chromedirectory, 'Fortnite', os.environ.get('fortnitechromelaunchoptions'), os.environ.get('chrome_startdir'), launcher_name=browser_name)
+create_new_entry(chromedirectory, 'Cloudy Pad', os.environ.get('cloudychromelaunchoptions'), os.environ.get('chrome_startdir'), launcher_name=browser_name)
+create_new_entry(chromedirectory, 'WebRcade', os.environ.get('webrcadechromelaunchoptions'), os.environ.get('chrome_startdir'), launcher_name=browser_name)
+create_new_entry(chromedirectory, 'WebRcade Editor', os.environ.get('webrcadeeditchromelaunchoptions'), os.environ.get('chrome_startdir'), launcher_name=browser_name)
+create_new_entry(chromedirectory, 'Afterplay.io', os.environ.get('afterplayiochromelaunchoptions'), os.environ.get('chrome_startdir'), launcher_name=browser_name)
+create_new_entry(chromedirectory, 'OnePlay', os.environ.get('oneplaychromelaunchoptions'), os.environ.get('chrome_startdir'), launcher_name=browser_name)
+create_new_entry(chromedirectory, 'AirGPU', os.environ.get('airgpuchromelaunchoptions'), os.environ.get('chrome_startdir'), launcher_name=browser_name)
+create_new_entry(chromedirectory, 'CloudDeck', os.environ.get('clouddeckchromelaunchoptions'), os.environ.get('chrome_startdir'), launcher_name=browser_name)
+create_new_entry(chromedirectory, 'JioGamesCloud', os.environ.get('jiochromelaunchoptions'), os.environ.get('chrome_startdir'), launcher_name=browser_name)
+create_new_entry(chromedirectory, 'Plex', os.environ.get('plexchromelaunchoptions'), os.environ.get('chrome_startdir'), launcher_name=browser_name)
+create_new_entry(chromedirectory, 'Apple TV+', os.environ.get('applechromelaunchoptions'), os.environ.get('chrome_startdir'), launcher_name=browser_name)
+create_new_entry(chromedirectory, 'Crunchyroll', os.environ.get('crunchychromelaunchoptions'), os.environ.get('chrome_startdir'), launcher_name=browser_name)
+create_new_entry(chromedirectory, 'PokéRogue', os.environ.get('pokeroguechromelaunchoptions'), os.environ.get('chrome_startdir'), launcher_name=browser_name)
+
 
 
 # Iterate over each custom website
@@ -3237,10 +3253,11 @@ for i, website in enumerate(custom_websites):
     launch_options = f"{base_launch_options} {url}"
 
     create_new_entry(
-        os.environ["chromedirectory"],
+        chromedirectory,
         game_name,
         launch_options,
-        os.environ["chrome_startdir"]
+        chrome_startdir,
+        launcher_name=browser_name
     )
     
 
