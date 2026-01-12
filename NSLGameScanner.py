@@ -26,6 +26,10 @@ from base64 import b64encode
 
 import xml.etree.ElementTree as ET
 
+import urllib
+import urllib.request
+import urllib.error
+
 from urllib.request import urlopen, urlretrieve
 from urllib.parse import (
     urlparse,
