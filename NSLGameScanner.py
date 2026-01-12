@@ -3179,7 +3179,10 @@ def detect_browser_name(chromedir: str, launch_opts: str) -> str:
     else:
         return "Unknown"
 
-browser_name = detect_browser_name(chromedirectory, base_launch_options)
+
+def browser_for_env(envvar: str) -> str:
+    opts = os.environ.get(envvar, "")
+    return detect_browser_name(chromedirectory, opts)
 
 create_new_entry(chromedirectory, 'Xbox Game Pass', os.environ.get('xboxchromelaunchoptions'), os.environ.get('chrome_startdir'), launcher_name=browser_name)
 create_new_entry(chromedirectory, 'Better xCloud', os.environ.get('xcloudchromelaunchoptions'), os.environ.get('chrome_startdir'), launcher_name=browser_name)
