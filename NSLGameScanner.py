@@ -4967,6 +4967,10 @@ flatpak_apps = [
     {
         "id": "com.moonlight_stream.Moonlight",
         "display_name": "Moonlight Game Streaming"
+    },
+    {
+        "id": "com.hypixel.HytaleLauncher",
+        "display_name": "Hytale"
     }
 ]
 
@@ -4993,9 +4997,11 @@ for app in flatpak_apps:
         print(f"Skipping {display_name} scanner — Flatpak not found or app not installed.")
         continue
 
-    # Custom launch options for Moonlight
+    # Custom launch options for specific apps
     if app_id == "com.moonlight_stream.Moonlight":
         app_launch_options = '"run" "--branch=stable" "--arch=x86_64" "--command=moonlight" "com.moonlight_stream.Moonlight"'
+    elif app_id == "com.hypixel.HytaleLauncher":
+        app_launch_options = '"run" "--branch=master" "--arch=x86_64" "--command=hytale-launcher-wrapper" "com.hypixel.HytaleLauncher"'
     else:
         app_launch_options = f"run {app_id}"
 
@@ -5008,6 +5014,7 @@ for app in flatpak_apps:
     )
     track_game(display_name, "Launcher")
 # End of Flatpak Scanner
+
 
 
 
