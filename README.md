@@ -20,7 +20,7 @@
 NonSteamLaunchers 🚀
 </h1>
 
-This script installs the latest UMU & GE-Proton and installs NonSteamLaunchers under one unique Proton prefix folder in your compatdata folder path called "NonSteamLaunchers" and adds them to your Steam Library. It will also add the games automatically in real time and will attempt to remove the games from your library in real time when you uninstall a game from a launcher. Collections for your games,launchers and web shortcuts will also be created/removed per launcher. Play time is tracked for all non steam games as well as boot videos downloaded per shortcut if any exist. Non-Downloadable Game theme music is also applied to your library.
+This script installs the latest UMU & GE-Proton and installs NonSteamLaunchers under one unique Proton prefix folder in your compatdata folder path called "NonSteamLaunchers" and adds them to your Steam Library. It will also add the games automatically in real time and will attempt to remove the games from your library in real time when you uninstall a game from a launcher. Collections for your games, launchers and web shortcuts will also be created/removed per launcher. Play time is tracked for all non steam games as well as boot videos downloaded per shortcut if any exist. Non-Downloadable Game theme music is also applied to your library.
 Special ".desktop" files will be created per shortcut allowing you to run the games and launchers outside of Steam as well.
 NSL can be used on Desktop or in Game Mode, and don't you worry,
 Local Saves and Cloud saves are supported, as well as multiplayer/online support (because you're using the launchers). Obviously, certain anticheat games will not work on linux enviroments; this is on a game to game basis.
