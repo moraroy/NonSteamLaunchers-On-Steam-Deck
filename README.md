@@ -222,6 +222,7 @@ Supported Stores 🛍
 - VFUN Launcher ✔️
 - Tempo Launcher ✔️
 - Antstream Arcade ✔️
+- Hytale ✔️
 - RemotePlayWhatever ✔️
 - NVIDIA GeForce NOW (Native Linux) ✔️
 - STOVE Client ✔️
