@@ -3085,8 +3085,7 @@ if [[ $options == *"Apple TV+"* ]] || [[ $options == *"Plex"* ]] || [[ $options 
             flatpak install --user flathub "$selected_browser" -y
         fi
 
-        # Apply the override (if applicable)
-        flatpak --user override --filesystem=/run/udev:ro "$selected_browser"
+		flatpak --user override --filesystem=/run/udev:ro "$selected_browser"
     fi
 fi
 
