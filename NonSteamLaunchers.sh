@@ -983,7 +983,7 @@ class LauncherUI(Gtk.Window):
 
         # Horizontal browser checkboxes
         main_box.pack_start(Gtk.Label(label="Select a browser (required for web services or websites & will attempt to be installed if needed):", xalign=0), False, False,0)
-        self.browser_names = ["Google Chrome","Mozilla Firefox","Brave","Microsoft Edge"]
+        self.browser_names = ["Google Chrome","Mozilla Firefox","Brave","Microsoft Edge", "Vivaldi", "LibreWolf"]
         self.browser_checks = {}
         hbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=20, margin=5)
         for name in self.browser_names:
@@ -2053,6 +2053,28 @@ process_uninstall_options() {
             killall zenity
         fi
 
+
+        if [[ $uninstall_options == *"Uninstall Vivaldi"* ]]; then
+
+            flatpak uninstall -y --force-remove --user com.vivaldi.Vivaldi
+
+            zenity --info --text="Vivaldi has been uninstalled." --width=250 --height=150 &
+            sleep 3
+            killall zenity
+        fi
+
+
+        if [[ $uninstall_options == *"Uninstall LibreWolf"* ]]; then
+
+            flatpak uninstall -y --force-remove --user io.gitlab.librewolf-community
+
+            zenity --info --text="LibreWolf has been uninstalled." --width=250 --height=150 &
+            sleep 3
+            killall zenity
+        fi
+
+
+
         uninstall_launcher "$uninstall_options" "Uplay" "$uplay_path1" "$uplay_path2" "${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/Program Files (x86)/Ubisoft" "${logged_in_home}/.local/share/Steam/steamapps/compatdata/UplayLauncher" "uplay" "ubisoft"
         uninstall_launcher "$uninstall_options" "Battle.net" "$battlenet_path1" "$battlenet_path2" "${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/Program Files (x86)/Battle.net" "${logged_in_home}/.local/share/Steam/steamapps/compatdata/Battle.netLauncher" "battle" "bnet"
         uninstall_launcher "$uninstall_options" "Epic Games" "$epic_games_launcher_path1" "$epic_games_launcher_path2" "${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/Program Files/Epic Games" "${logged_in_home}/.local/share/Steam/steamapps/compatdata/EpicGamesLauncher" "epic"
@@ -2146,6 +2168,8 @@ else
             FALSE "Mozilla Firefox" \
             FALSE "Brave" \
             FALSE "Microsoft Edge" \
+            FALSE "Vivaldi" \
+            FALSE "LibreWolf" \
 			FALSE "Hytale" \
         )
         # Convert the returned string to an array
@@ -3037,6 +3061,10 @@ if [[ $options == *"Apple TV+"* ]] || [[ $options == *"Plex"* ]] || [[ $options 
         selected_browser="com.brave.Browser"
     elif [[ "$options" == *"Microsoft Edge"* ]]; then
         selected_browser="com.microsoft.Edge"
+    elif [[ "$options" == *"Vivaldi"* ]]; then
+        selected_browser="com.vivaldi.Vivaldi"
+    elif [[ "$options" == *"LibreWolf"* ]]; then
+        selected_browser="io.gitlab.librewolf-community"
     fi
 
     # Install the selected browser if any
@@ -3555,6 +3583,15 @@ org.mozilla.firefox --kiosk"
 --force-device-scale-factor=1.00 --no-first-run \
 --no-default-browser-check \
 --enable-features=OverlayScrollbar,HardwareMediaKeyHandling"
+
+    elif [[ "$options" == *"LibreWolf"* ]]; then
+        launch_options="run --branch=stable --arch=x86_64 \
+io.gitlab.librewolf-community --kiosk"
+
+    elif [[ "$options" == *"Vivaldi"* ]]; then
+        launch_options="run --branch=stable --arch=x86_64 \
+--command=vivaldi com.vivaldi.Vivaldi \
+--start-fullscreen"
     fi
 
     # Append URL only if provided
