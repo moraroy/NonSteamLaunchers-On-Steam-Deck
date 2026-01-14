@@ -2696,8 +2696,10 @@ def get_compat_tool_if_needed(launchoptions):
         'brave' in launchoptions or
         'edge' in launchoptions or
         'firefox' in launchoptions or
+        'librewolf' in launchoptions or
+        'vivaldi' in launchoptions or
         '--appid 0' in launchoptions):
-        print("Exclusion: Chrome, Brave, Edge, Firefox, or AppID 0 detected.")
+        print("Exclusion: Chrome, Brave, Edge, Firefox, LibreWolf, Vivaldi or AppID 0 detected.")
         return None
 
     if any(x in launchoptions for x in ['jp.', 'com.', 'online.']):
@@ -3176,6 +3178,10 @@ def detect_browser_name(chromedir: str, launch_opts: str) -> str:
         return "Microsoft Edge"
     elif "com.brave.Browser" in combined:
         return "Brave"
+    elif "com.vivaldi.Vivaldi" in combined:
+        return "Vivaldi"
+    elif "io.gitlab.librewolf-community" in combined:
+        return "LibreWolf"
     else:
         return "Unknown"
 
