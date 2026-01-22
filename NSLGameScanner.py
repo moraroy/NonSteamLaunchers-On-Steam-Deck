@@ -107,6 +107,7 @@ minecraft_launcher = os.environ.get('minecraft_launcher', '')
 indie_launcher = os.environ.get('indie_launcher', '')
 stove_launcher = os.environ.get('stove_launcher', '')
 humble_launcher = os.environ.get('humble_launcher', '')
+
 #Variables of the Launchers
 
 # Define the path of the Launchers
@@ -137,6 +138,8 @@ temposhortcutdirectory = os.environ.get('temposhortcutdirectory')
 poketcgshortcutdirectory = os.environ.get('poketcgshortcutdirectory')
 antstreamshortcutdirectory = os.environ.get('antstreamshortcutdirectory')
 stoveshortcutdirectory = os.environ.get('stoveshortcutdirectory')
+bigfishshortcutdirectory = os.environ.get('bigfishshortcutdirectory')
+
 repaireaappshortcutdirectory = os.environ.get('repaireaappshortcutdirectory')
 #Streaming
 chromedirectory = os.environ.get('chromedirectory')
@@ -2748,7 +2751,7 @@ def create_new_entry(shortcutdirectory, appname, launchoptions, startingdir, lau
     unsigned_shortcut_id = get_unsigned_shortcut_id(signed_shortcut_id)
 
     # Only store app ID for specific launchers
-    if appname in ['Epic Games', 'Gog Galaxy', 'Ubisoft Connect', 'Battle.net', 'EA App', 'Amazon Games', 'itch.io', 'Legacy Games', 'Humble Bundle', 'IndieGala Client', 'Rockstar Games Launcher', 'Glyph', 'Minecraft Launcher', 'Playstation Plus', 'VK Play', 'HoYoPlay', 'Nexon Launcher', 'Game Jolt Client', 'Artix Game Launcher', 'ARC Launcher', 'PURPLE Launcher', 'Plarium Play', 'VFUN Launcher', 'Tempo Launcher', 'Pokémon Trading Card Game Live', 'Antstream Arcade', 'STOVE Client']:
+    if appname in ['Epic Games', 'Gog Galaxy', 'Ubisoft Connect', 'Battle.net', 'EA App', 'Amazon Games', 'itch.io', 'Legacy Games', 'Humble Bundle', 'IndieGala Client', 'Rockstar Games Launcher', 'Glyph', 'Minecraft Launcher', 'Playstation Plus', 'VK Play', 'HoYoPlay', 'Nexon Launcher', 'Game Jolt Client', 'Artix Game Launcher', 'ARC Launcher', 'PURPLE Launcher', 'Plarium Play', 'VFUN Launcher', 'Tempo Launcher', 'Pokémon Trading Card Game Live', 'Antstream Arcade', 'STOVE Client', 'Big Fish Games Manager']:
         app_ids[appname] = unsigned_shortcut_id
 
     # Check if shortcut already exists with final values
@@ -3162,6 +3165,7 @@ track_create_entry(os.environ.get('arcshortcutdirectory'), 'ARC Launcher', os.en
 track_create_entry(os.environ.get('poketcgshortcutdirectory'), 'Pokémon Trading Card Game Live', os.environ.get('poketcglaunchoptions'), os.environ.get('poketcgstartingdir'))
 track_create_entry(os.environ.get('antstreamshortcutdirectory'), 'Antstream Arcade', os.environ.get('antstreamlaunchoptions'), os.environ.get('antstreamstartingdir'))
 track_create_entry(os.environ.get('stoveshortcutdirectory'), 'STOVE Client', os.environ.get('stovelaunchoptions'), os.environ.get('stovestartingdir'))
+track_create_entry(os.environ.get('bigfishshortcutdirectory'), 'Big Fish Games Manager', os.environ.get('bigfishlaunchoptions'), os.environ.get('bigfishstartingdir'))
 track_create_entry(os.environ.get('repaireaappshortcutdirectory'), 'Repair EA App', os.environ.get('repaireaapplaunchoptions'), os.environ.get('repaireaappstartingdir'))
 
 
@@ -3367,6 +3371,7 @@ folder_names = {
     'Pokémon Trading Card Game Live': 'PokeTCGLauncher',
     'Antstream Arcade': 'AntstreamLauncher',
     'STOVE Client': 'STOVELauncher',
+    'Big Fish Games Manager': 'BigFishLauncher',
 }
 
 
@@ -5279,7 +5284,7 @@ skip_games = {'Epic Games', 'GOG Galaxy', 'Ubisoft Connect', 'Battle.net', 'EA A
     'Rockstar Games Launcher', 'Glyph', 'Minecraft Launcher', 'Playstation Plus',
     'VK Play', 'HoYoPlay', 'Nexon Launcher', 'Game Jolt Client', 'Artix Game Launcher',
     'PURPLE Launcher', 'Plarium Play', 'VFUN Launcher', 'Tempo Launcher', 'ARC Launcher',
-    'Pokémon Trading Card Game Live', 'Antstream Arcade', 'STOVE Client', 'Xbox Game Pass',
+    'Pokémon Trading Card Game Live', 'Antstream Arcade', 'STOVE Client', 'Big Fish Games Manager', 'Xbox Game Pass',
     'Better xCloud', 'GeForce Now', 'Boosteroid Cloud Gaming', 'Stim.io', 'WatchParty',
     'Netflix', 'Hulu', 'Tubi', 'Disney+', 'Amazon Prime Video', 'Youtube', 'Youtube TV',
     'Amazon Luna', 'Twitch', 'Venge', 'Rocketcrab', 'Fortnite', 'WebRcade', 'Cloudy Pad',
