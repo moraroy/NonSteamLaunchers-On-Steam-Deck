@@ -223,6 +223,7 @@ Supported Stores 🛍
 - Tempo Launcher ✔️
 - Antstream Arcade ✔️
 - Hytale ✔️
+- Big Fish Games Manager ✔️
 - RemotePlayWhatever ✔️
 - NVIDIA GeForce NOW (Native Linux) ✔️
 - STOVE Client ✔️
