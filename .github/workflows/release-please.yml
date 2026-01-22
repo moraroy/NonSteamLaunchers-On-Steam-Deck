@@ -12,14 +12,18 @@ permissions:
 jobs:
   release-please:
     runs-on: ubuntu-latest
-
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
       - name: Release with release-please
-        uses: google-github-actions/release-please-action@v4
+        uses: googleapis/release-please-action@v4
         with:
-          # PAT with write access to the repository
           token: ${{ secrets.RELEASE_PLEASE_TOKEN }}
-          # optional. customize path to release-please-config.json
           config-file: release-please-config.json
-          # optional. customize path to .release-please-manifest.json
           manifest-file: .release-please-manifest.json
+          repo-url: moraroy/NonSteamLaunchers-On-Steam-Deck
+          fork: false
+          include-component-in-tag: false
+          skip-github-release: false
+          skip-github-pull-request: false
