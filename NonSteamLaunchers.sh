@@ -1036,6 +1036,21 @@ class LauncherUI(Gtk.Window):
         website_names = self.entry_names.get_text().strip()
         websites = self.entry.get_text().strip()
 
+        if label == "Uninstall":
+            if selected_launchers or selected_chrome or selected_browser or website_names or websites:
+                dlg = Gtk.MessageDialog(
+                    parent=self,
+                    flags=0,
+                    message_type=Gtk.MessageType.WARNING,
+                    buttons=Gtk.ButtonsType.OK,
+                    text="Uninstall requires no selections."
+                )
+                dlg.format_secondary_text(
+                    "Please uncheck all launchers, services, browsers, and clear any custom websites before uninstalling."
+                )
+                dlg.run()
+                dlg.destroy()
+                return
 
         # Enforce browser selection if needed
         if (selected_chrome or websites) and not selected_browser:
