@@ -93,7 +93,7 @@ fi
 exec > >(tee -a "$log_file") 2>&1
 
 # Version number (major.minor)
-version=v4.2.84
+version=v4.2.85
 #NSL Decky Plugin Latest Github Version
 deckyversion=$(curl -s https://raw.githubusercontent.com/moraroy/NonSteamLaunchersDecky/refs/heads/main/package.json | grep -o '"version": "[^"]*' | sed 's/"version": "//')
 
@@ -577,9 +577,17 @@ function CheckInstallationDirectory {
 
 #Get SD Card Path
 get_sd_path() {
-    # This assumes that the SD card is mounted under /run/media/deck/
-    local sd_path=$(df | grep '/run/media/deck/' | awk '{print $6}')
-    echo $sd_path
+    local sd_mount
+
+    sd_mount=$(lsblk -nr -o NAME,MOUNTPOINT \
+        | awk '$1 ~ /^mmcblk.*p[0-9]+$/ && $2 != "" { print $2; exit }')
+
+    if [[ -z "$sd_mount" ]]; then
+        zenity --error --text="No SD card detected. Please insert and mount an SD card."
+        exit 1
+    fi
+
+    echo "$sd_mount"
 }
 
 
@@ -1036,21 +1044,23 @@ class LauncherUI(Gtk.Window):
         website_names = self.entry_names.get_text().strip()
         websites = self.entry.get_text().strip()
 
-        if label == "Uninstall":
+        if label in ["Uninstall", "Move to SD Card"]:
             if selected_launchers or selected_chrome or selected_browser or website_names or websites:
                 dlg = Gtk.MessageDialog(
                     parent=self,
                     flags=0,
                     message_type=Gtk.MessageType.WARNING,
                     buttons=Gtk.ButtonsType.OK,
-                    text="Uninstall requires no selections."
+                    text=f"{label} requires no other selections."
                 )
                 dlg.format_secondary_text(
-                    "Please uncheck all launchers, services, browsers, and clear any custom websites before uninstalling."
+                    "Please uncheck all launchers, services, browsers, and clear any custom websites before continuing."
                 )
                 dlg.run()
                 dlg.destroy()
                 return
+
+
 
         # Enforce browser selection if needed
         if (selected_chrome or websites) and not selected_browser:
@@ -1194,147 +1204,66 @@ echo "Options: $options"
 
 
 # Define the StartFreshFunction
-function StartFreshFunction {
-    # Define the path to the compatdata directory
+StartFreshFunction() {
+    sd_path=$(get_sd_path)
+
     compatdata_dir="${logged_in_home}/.local/share/Steam/steamapps/compatdata"
-    # Define the path to the other directory
-    other_dir="${logged_in_home}/.local/share/Steam/steamapps/shadercache/"
+    other_dir="${logged_in_home}/.local/share/Steam/steamapps/shadercache"
 
-    # Define an array of original folder names
-    folder_names=("EpicGamesLauncher" "GogGalaxyLauncher" "UplayLauncher" "Battle.netLauncher" "TheEAappLauncher" "AmazonGamesLauncher" "itchioLauncher" "LegacyGamesLauncher" "HumbleGamesLauncher" "IndieGalaLauncher" "RockstarGamesLauncher" "GlyphLauncher" "PlaystationPlusLauncher" "VKPlayLauncher" "HoYoPlayLauncher" "NexonLauncher" "GameJoltLauncher" "ArtixGameLauncher" "ARCLauncher" "PokeTCGLauncher" "AntstreamLauncher" "PURPLELauncher" "PlariumLauncher" "VFUNLauncher" "TempoLauncher" "STOVELauncher" "BigFishLauncher")
-
-    # Define an array of app IDs
+    folder_names=("EpicGamesLauncher" "GogGalaxyLauncher" "UplayLauncher" "Battle.netLauncher" "TheEAappLauncher" "AmazonGamesLauncher" "itchioLauncher" "LegacyGamesLauncher" "HumbleGamesLauncher" "IndieGalaLauncher" "RockstarGamesLauncher" "GlyphLauncher" "PlaystationPlusLauncher" "VKPlayLauncher" "HoYoPlayLauncher" "NexonLauncher" "GameJoltLauncher" "ArtixGameLauncher" "ARCLauncher" "PokeTCGLauncher" "AntstreamLauncher" "PURPLELauncher" "PlariumLauncher" "VFUNLauncher" "TempoLauncher" "STOVELauncher" "BigFishLauncher" "NonSteamLaunchers" "MinecraftLauncher")
     app_ids=("3772819390" "4294900670" "4063097571" "3786021133" "3448088735" "3923904787" "3440562512" "2948446662" "3908676077" "4206469918" "3303169468" "3595505624" "4272271078" "3259996605" "2588786779" "4090616647" "3494943831" "2390200925" "4253976432" "2221882453" "2296676888" "2486751858" "3974004104" "3811372789" "3788101956" "3782277090" "3640061468" "3216372511" "2882622939" "2800812206" "2580882702" "4022508926" "4182617613" "1981254598" "2136059209" "1401184678" "3141683525")
 
-    # Iterate over each folder name in the folder_names array
+    delete_path() {
+        local path="$1"
+        if [ -e "$path" ]; then
+            if [ -L "$path" ]; then
+                target=$(readlink -f "$path")
+                rm -rf "$target"
+                unlink "$path"
+                echo "Deleted symlink and target: $path -> $target"
+            else
+                rm -rf "$path"
+                echo "Deleted folder: $path"
+            fi
+        fi
+    }
+
     for folder in "${folder_names[@]}"; do
-        # Check if the folder exists
-        if [ -e "${compatdata_dir}/${folder}" ]; then
-            # Check if the folder is a symbolic link
-            if [ -L "${compatdata_dir}/${folder}" ]; then
-                # Get the path of the target of the symbolic link
-                target_path=$(readlink -f "${compatdata_dir}/${folder}")
-
-                # Delete the target of the symbolic link
-                rm -rf "$target_path"
-
-                # Delete the symbolic link
-                unlink "${compatdata_dir}/${folder}"
-            else
-                # Delete the folder
-                # shellcheck disable=SC2115
-                rm -rf "${compatdata_dir}/${folder}"
-            fi
-        fi
+        delete_path "${compatdata_dir}/${folder}"
     done
 
-    # Iterate over each app ID in the app_ids array
     for app_id in "${app_ids[@]}"; do
-        # Check if the folder exists
-        if [ -e "${other_dir}/${app_id}" ]; then
-            # Check if the folder is a symbolic link
-            if [ -L "${other_dir}/${app_id}" ]; then
-                # Get the path of the target of the symbolic link
-                target_path=$(readlink -f "${other_dir}/${app_id}")
-
-                # Delete the target of the symbolic link
-                rm -rf "$target_path"
-
-                # Delete the symbolic link
-                unlink "${other_dir}/${app_id}"
-            else
-                # Delete the folder
-                # shellcheck disable=SC2115
-                rm -rf "${other_dir}/${app_id}"
-            fi
-        fi
+        delete_path "${other_dir}/${app_id}"
     done
 
-    # Check if the NonSteamLaunchers folder exists
-    if [ -e "$compatdata_dir/NonSteamLaunchers" ]; then
-        # Check if the NonSteamLaunchers folder is a symbolic link
-        if [ -L "$compatdata_dir/NonSteamLaunchers" ]; then
-            # Get the path of the target of the symbolic link
-            target_path=$(readlink -f "$compatdata_dir/NonSteamLaunchers")
-
-            # Delete the target of the symbolic link
-            rm -rf "$target_path"
-
-            # Delete the symbolic link
-            unlink "$compatdata_dir/NonSteamLaunchers"
-        else
-            # Delete the NonSteamLaunchers folder
-            rm -rf "$compatdata_dir/NonSteamLaunchers"
-        fi
-    fi
-
-    # Iterate over each folder in the compatdata directory
     for folder_path in "$compatdata_dir"/*; do
-        # Check if the current item is a folder
-        if [ -d "$folder_path" ]; then
-            # Check if the folder is empty
-            if [ -z "$(ls -A "$folder_path")" ]; then
-                # Delete the empty folder
-                rmdir "$folder_path"
-                echo "Deleted empty folder: $(basename "$folder_path")"
-            fi
-        fi
+        [ -d "$folder_path" ] && [ -z "$(ls -A "$folder_path")" ] && rmdir "$folder_path" && echo "Deleted empty folder: $(basename "$folder_path")"
     done
 
-    # TODO: declare array and use find/for loop to avoid duplicate `rm` processes
-    rm -rf "/run/media/mmcblk0p1/NonSteamLaunchers/"
-    rm -rf "/run/media/mmcblk0p1/EpicGamesLauncher/"
-    rm -rf "/run/media/mmcblk0p1/GogGalaxyLauncher/"
-    rm -rf "/run/media/mmcblk0p1/UplayLauncher/"
-    rm -rf "/run/media/mmcblk0p1/Battle.netLauncher/"
-    rm -rf "/run/media/mmcblk0p1/TheEAappLauncher/"
-    rm -rf "/run/media/mmcblk0p1/AmazonGamesLauncher/"
-    rm -rf "/run/media/mmcblk0p1/LegacyGamesLauncher/"
-    rm -rf "/run/media/mmcblk0p1/itchioLauncher/"
-    rm -rf "/run/media/mmcblk0p1/HumbleGamesLauncher/"
-    rm -rf "/run/media/mmcblk0p1/IndieGalaLauncher/"
-    rm -rf "/run/media/mmcblk0p1/RockstarGamesLauncher/"
-    rm -rf "/run/media/mmcblk0p1/GlyphLauncher/"
-    rm -rf "/run/media/mmcblk0p1/MinecraftLauncher/"
-    rm -rf "/run/media/mmcblk0p1/PlaystationPlusLauncher/"
-    rm -rf "/run/media/mmcblk0p1/VKPlayLauncher/"
-    rm -rf "/run/media/mmcblk0p1/HoYoPlayLauncher/"
-    rm -rf "/run/media/mmcblk0p1/NexonLauncher/"
-    rm -rf "/run/media/mmcblk0p1/GameJoltLauncher/"
-    rm -rf "/run/media/mmcblk0p1/ArtixGameLauncher/"
-    rm -rf "/run/media/mmcblk0p1/ARCLauncher/"
-    rm -rf "/run/media/mmcblk0p1/PokeTCGLauncher/"
-    rm -rf "/run/media/mmcblk0p1/AntstreamLauncher/"
-    rm -rf "/run/media/mmcblk0p1/PURPLELauncher/"
-    rm -rf "/run/media/mmcblk0p1/PlariumLauncher/"
-    rm -rf "/run/media/mmcblk0p1/VFUNLauncher/"
-    rm -rf "/run/media/mmcblk0p1/TempoLauncher/"
-    rm -rf "/run/media/mmcblk0p1/STOVELauncher/"
-    rm -rf "/run/media/mmcblk0p1/BigFishLauncher/"
-    rm -rf ${logged_in_home}/Downloads/NonSteamLaunchersInstallation
-    rm -rf ${logged_in_home}/.config/systemd/user/Modules
-    rm -rf ${logged_in_home}/.config/systemd/user/env_vars
-    rm -rf ${logged_in_home}/.config/systemd/user/NSLGameScanner.py
-	rm -rf ${logged_in_home}/.config/systemd/user/shortcuts
-    rm -rf ${logged_in_home}/.local/share/applications/RemotePlayWhatever
-    rm -rf ${logged_in_home}/.local/share/applications/RemotePlayWhatever.desktop
-    rm -rf ${logged_in_home}/Downloads/NonSteamLaunchers-install.log
+    # Remove folders on SD card dynamically
+    for folder in "${folder_names[@]}"; do
+        delete_path "${sd_path}/${folder}"
+    done
 
-    # Delete the service file
-    rm -rf ${logged_in_home}/.config/systemd/user/nslgamescanner.service
+    delete_path "${logged_in_home}/Downloads/NonSteamLaunchersInstallation"
+    delete_path "${logged_in_home}/.config/systemd/user/Modules"
+    delete_path "${logged_in_home}/.config/systemd/user/env_vars"
+    delete_path "${logged_in_home}/.config/systemd/user/NSLGameScanner.py"
+    delete_path "${logged_in_home}/.config/systemd/user/shortcuts"
+    delete_path "${logged_in_home}/.local/share/applications/RemotePlayWhatever"
+    delete_path "${logged_in_home}/.local/share/applications/RemotePlayWhatever.desktop"
+    delete_path "${logged_in_home}/Downloads/NonSteamLaunchers-install.log"
 
-    # Remove the symlink
-    unlink ${logged_in_home}/.config/systemd/user/default.target.wants/nslgamescanner.service
+    delete_path "${logged_in_home}/.config/systemd/user/nslgamescanner.service"
+    unlink "${logged_in_home}/.config/systemd/user/default.target.wants/nslgamescanner.service" 2>/dev/null || true
 
-    # Reload the systemd user instance
     systemctl --user daemon-reload
     systemctl --user reset-failed
 
-    show_message "NonSteamLaunhers has been wiped!"
-
-    # Exit the script with exit code 0 to indicate success
+    show_message "NonSteamLaunchers has been wiped!"
     exit 0
 }
+
 
 # Check if the Start Fresh button was clicked or if the Start Fresh option was passed as a command line argument
 if [[ $options == "Start Fresh" ]] || [[ $selected_launchers == "Start Fresh" ]]; then
@@ -2242,62 +2171,122 @@ fi
 #End of Uninstall
 
 
-move_to_sd() {
-    local launcher_id=$1
-    local original_dir="${logged_in_home}/.local/share/Steam/steamapps/compatdata/${launcher_id}"
-    local sd_path=$(get_sd_path)
-    local new_dir="${sd_path}/${launcher_id}"
+#SD CARD
+#SD CARD
+move_launcher_to_sd() {
+    local launcher_name=$1
+    local compat_dir="${logged_in_home}/.local/share/Steam/steamapps/compatdata"
+    local sd_path
+    sd_path=$(get_sd_path) || return 1
 
-    # Resolve symbolic link to its target
-    if [[ -L "${original_dir}" ]]; then
-        original_dir=$(readlink "${original_dir}")
+    local launcher_link="${compat_dir}/${launcher_name}"
+
+    # Check if launcher exists
+    if [[ ! -e "$launcher_link" ]]; then
+        zenity --warning --text="$launcher_name does not exist." --width=300 --height=100
+        echo "$launcher_name does not exist"
+        return 1
     fi
 
-    if [[ -d "${original_dir}" ]] && [[ $move_options == *"${launcher_id}"* ]]; then
-        mv "${original_dir}" "${new_dir}"
-        ln -s "${new_dir}" "${original_dir}"
+    local number_folder
+    number_folder=$(readlink -f "$launcher_link")
+
+    if [[ "$number_folder" == "$sd_path"* ]]; then
+        echo "# $launcher_name is already on the SD card."
+        return 0
+    fi
+
+    local sd_folder="${sd_path}/${launcher_name}"
+
+    echo "# Moving $launcher_name to SD card..."
+    mkdir -p "$sd_folder"
+    rsync -a "$number_folder/" "$sd_folder/" || {
+        zenity --error --text="Failed to copy $launcher_name to SD card." --width=300 --height=100
+        return 1
+    }
+
+    rm -rf "$number_folder"
+    ln -s "$sd_folder" "$number_folder"
+
+    rm -f "$launcher_link"
+    ln -s "$number_folder" "$launcher_link"
+}
+
+move_all_selected() {
+    local any_moved=0
+    (
+        for launcher in "${selected_launchers[@]}"; do
+            if move_launcher_to_sd "$launcher"; then
+                any_moved=1
+            fi
+        done
+    ) | zenity --progress \
+        --title="Moving Launchers to SD Card" \
+        --text="Copying files…" \
+        --pulsate \
+        --auto-close \
+        --width=400
+
+    if [[ $any_moved -eq 0 ]]; then
+        zenity --info --text="No launchers were moved. They may already be on the SD card or do not exist." --width=350 --height=100
     fi
 }
 
-# Check if the first command line argument is "Move to SD Card"
+# Main script logic
 if [[ $1 == "Move to SD Card" ]]; then
-    # Shift the arguments to remove the first one
     shift
-
-    # Use the remaining arguments as the launcher IDs to move
     for launcher in "$@"; do
-        move_to_sd "$launcher"
+        move_launcher_to_sd "$launcher"
     done
 else
-    # The first command line argument is not "Move to SD Card"
-    # Use Zenity to get the launcher IDs to move
     if [[ $options == "Move to SD Card" ]]; then
         CheckInstallationDirectory
 
-    move_options=$(zenity --list --text="Which launcher IDs do you want to move to the SD card?" --checklist --column="Select" --column="Launcher ID" $nonsteamlauncher_move_value "NonSteamLaunchers" $epicgameslauncher_move_value "EpicGamesLauncher" $goggalaxylauncher_move_value "GogGalaxyLauncher" $uplaylauncher_move_value "UplayLauncher" $battlenetlauncher_move_value "Battle.netLauncher" $eaapplauncher_move_value "TheEAappLauncher" $amazongameslauncher_move_value "AmazonGamesLauncher" $itchiolauncher_move_value "itchioLauncher" $legacygameslauncher_move_value "LegacyGamesLauncher" $humblegameslauncher_move_value "HumbleGamesLauncher" $indiegalalauncher_move_value "IndieGalaLauncher" $rockstargameslauncher_move_value "RockstarGamesLauncher" $glyphlauncher_move_value "GlyphLauncher" "$minecraftlauncher_move_value" "MinecraftLauncher" $pspluslauncher_move_value "PlaystationPlusLauncher" $vkplaylauncher_move_value "VKPlayLauncher" $hoyoplaylauncher_move_value "HoYoPlayLauncher" $nexonlauncher_move_value "NexonLauncher" $gamejoltlauncher_move_value "GameJoltLauncher" $artixgame_move_value "ArtixGameLauncher" $arc_move_value "ARCLauncher" $purple_move_value "PURPLELauncher" $plarium_move_value "PlariumLauncher" $vfun_move_value "VFUNLauncher" $tempo_move_value "TempoLauncher" $poketcg_move_value "PokeTCGLauncher" $antstream_move_value "AntstreamLauncher" "$stove_move_value" "STOVELauncher" --width=335 --height=524)
+        move_options=$(zenity --list --text="Which launcher IDs do you want to move to the SD card?" \
+            --checklist --column="Select" --column="Launcher ID" \
+            $nonsteamlauncher_move_value "NonSteamLaunchers" \
+            $epicgameslauncher_move_value "EpicGamesLauncher" \
+            $goggalaxylauncher_move_value "GogGalaxyLauncher" \
+            $uplaylauncher_move_value "UplayLauncher" \
+            $battlenetlauncher_move_value "Battle.netLauncher" \
+            $eaapplauncher_move_value "TheEAappLauncher" \
+            $amazongameslauncher_move_value "AmazonGamesLauncher" \
+            $itchiolauncher_move_value "itchioLauncher" \
+            $legacygameslauncher_move_value "LegacyGamesLauncher" \
+            $humblegameslauncher_move_value "HumbleGamesLauncher" \
+            $indiegalalauncher_move_value "IndieGalaLauncher" \
+            $rockstargameslauncher_move_value "RockstarGamesLauncher" \
+            $glyphlauncher_move_value "GlyphLauncher" \
+            $minecraftlauncher_move_value "MinecraftLauncher" \
+            $pspluslauncher_move_value "PlaystationPlusLauncher" \
+            $vkplaylauncher_move_value "VKPlayLauncher" \
+            $hoyoplaylauncher_move_value "HoYoPlayLauncher" \
+            $nexonlauncher_move_value "NexonLauncher" \
+            $gamejoltlauncher_move_value "GameJoltLauncher" \
+            $artixgame_move_value "ArtixGameLauncher" \
+            $arc_move_value "ARCLauncher" \
+            $purple_move_value "PURPLELauncher" \
+            $plarium_move_value "PlariumLauncher" \
+            $vfun_move_value "VFUNLauncher" \
+            $tempo_move_value "TempoLauncher" \
+            $poketcg_move_value "PokeTCGLauncher" \
+            $antstream_move_value "AntstreamLauncher" \
+            $stove_move_value "STOVELauncher" \
+            $bigfish_move_value "BigFishLauncher" \
+            --width=335 --height=524)
 
-    if [ $? -eq 0 ]; then
-        zenity --info --text="The selected directories have been moved to the SD card and symbolic links have been created." --width=200 --height=150
-
-        IFS="|" read -ra selected_launchers <<< "$move_options"
-        for launcher in "${selected_launchers[@]}"; do
-            move_to_sd "$launcher"
-        done
-    fi
-
-        IFS="|" read -ra selected_launchers <<< "$move_options"
-        for launcher in "${selected_launchers[@]}"; do
-            move_to_sd "$launcher"
-        done
-
-        if [ $? -eq 0 ]; then
-            zenity --info --text="The selected directories have been moved to the SD card and symbolic links have been created." --width=200 --height=150
+        if [[ $? -eq 0 ]]; then
+            IFS="|" read -ra selected_launchers <<< "$move_options"
+            move_all_selected
         fi
-        # Exit the script
+
         exit 0
     fi
-
 fi
+
+
+
+
 
 #Stop Scanner
 function stop_service {
