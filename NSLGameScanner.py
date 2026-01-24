@@ -2942,7 +2942,7 @@ def fetch_and_parse_csv():
     # Try local UMU database first
     try:
         dir_path = f"{logged_in_home}/.steam/root/compatibilitytools.d"
-        pattern = re.compile(r"(UMU|GE)-Proton-(\d+(?:\.\d+)*)(?:-(\d+(?:\.\d+)*))?")
+        pattern = re.compile(r"(UMU|GE)-Proton-?(\d+(?:\.\d+)*)(?:-(\d+(?:\.\d+)*))?")
 
         def parse_version(m):
             main, sub = m.groups()[1:]
