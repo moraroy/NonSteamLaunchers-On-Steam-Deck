@@ -2972,11 +2972,13 @@ def fetch_and_parse_csv():
 
     # Fallback to online if local fails
     try:
-        response = urllib.request.urlopen(CSV_URL, timeout=5)
-        response.raise_for_status()
-        csv_data = [row for row in csv.DictReader(response.text.splitlines())]
-        print("Fetched UMU database from online as fallback.")
-    except requests.exceptions.RequestException as e:
+        with urllib.request.urlopen(CSV_URL, timeout=5) as response:
+            if response.status != 200:
+                raise Exception(f"HTTP {response.status}")
+            content = response.read().decode('utf-8')
+            csv_data = [row for row in csv.DictReader(content.splitlines())]
+            print("Fetched UMU database from online as fallback.")
+    except (urllib.error.URLError, Exception) as e:
         print(f"Failed to fetch UMU data from the internet: {e}")
         csv_data = []
 
