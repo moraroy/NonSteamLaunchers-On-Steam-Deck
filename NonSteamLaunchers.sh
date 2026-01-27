@@ -93,7 +93,7 @@ fi
 exec > >(tee -a "$log_file") 2>&1
 
 # Version number (major.minor)
-version=v4.2.85
+version=v4.2.86
 #NSL Decky Plugin Latest Github Version
 deckyversion=$(curl -s https://raw.githubusercontent.com/moraroy/NonSteamLaunchersDecky/refs/heads/main/package.json | grep -o '"version": "[^"]*' | sed 's/"version": "//')
 
@@ -1250,6 +1250,7 @@ StartFreshFunction() {
     delete_path "${logged_in_home}/.config/systemd/user/env_vars"
     delete_path "${logged_in_home}/.config/systemd/user/NSLGameScanner.py"
     delete_path "${logged_in_home}/.config/systemd/user/shortcuts"
+    delete_path "${logged_in_home}/.config/systemd/user/descriptions.json"
     delete_path "${logged_in_home}/.local/share/applications/RemotePlayWhatever"
     delete_path "${logged_in_home}/.local/share/applications/RemotePlayWhatever.desktop"
     delete_path "${logged_in_home}/Downloads/NonSteamLaunchers-install.log"
@@ -2295,6 +2296,7 @@ function stop_service {
 
     # Delete the NSLGameScanner.py
     rm -rf ${logged_in_home}/.config/systemd/user/NSLGameScanner.py
+    rm -rf ${logged_in_home}/.config/systemd/user/descriptions.json
 
     # Delete the service file
     rm -rf ${logged_in_home}/.config/systemd/user/nslgamescanner.service
@@ -4026,12 +4028,12 @@ fi
 
 #recieve noooooooooooootes
 # Paths
+# Paths
 proton_dir=$(find -L "${logged_in_home}/.steam/root/compatibilitytools.d" -maxdepth 1 -type d -name "GE-Proton*" | sort -V | tail -n1)
 CSV_FILE="$proton_dir/protonfixes/umu-database.csv"
 echo "$CSV_FILE"
 shortcuts_file="${logged_in_home}/.steam/root/userdata/${steamid3}/config/shortcuts.vdf"
 output_dir="${logged_in_home}/.steam/root/userdata/${steamid3}/2371090/remote"
-descriptions_file="${logged_in_home}/.config/systemd/user/descriptions.json"
 
 # Function to get the current Unix timestamp
 get_current_timestamp() {
@@ -4054,26 +4056,10 @@ urlencode() {
     echo -n "$raw" | jq -sRr @uri
 }
 
-# Function to read descriptions from a file
-read_descriptions() {
-    if [[ -f "$descriptions_file" ]]; then
-        if ! validate_json "$descriptions_file"; then
-            echo "Error: Invalid JSON in descriptions file $descriptions_file"
-            return 1
-        fi
-        cat "$descriptions_file"
-    else
-        echo "Descriptions file does not exist, creating a new one."
-        echo "[]" > "$descriptions_file"  # Create an empty JSON array
-    fi
-}
-
 # Function to fetch all notes from the API at once
 fetch_all_notes_from_api() {
-    # Get the JSON response from the API
     response=$(curl -s "https://nslnotes.onrender.com/api/notes")
 
-    # Check if the response is valid JSON
     if ! jq . <<< "$response" > /dev/null 2>&1; then
         echo "Error: Invalid JSON response from the API"
         return 1
@@ -4086,67 +4072,47 @@ fetch_all_notes_from_api() {
 update_notes_in_file() {
     local file_path="$1"
     local game_name="$2"
-    local api_response="$3"  # All notes are passed in at once
+    local api_response="$3"
 
-    # Sanitize the game name (replace spaces with underscores, etc.)
     sanitized_game_name="$game_name"
     sanitized_game_name="${sanitized_game_name// /_}"
     sanitized_game_name="${sanitized_game_name//[^a-zA-Z0-9]/_}"
 
-    # URL encode the sanitized game name
     encoded_game_name=$(urlencode "$sanitized_game_name")
 
-    # Filter the notes to only get the ones for the current game using `jq`
     filtered_notes=$(echo "$api_response" | jq -r ".[] | select(.\"File Name\" == \"notes_shortcut_${encoded_game_name}\")")
 
-    # If no notes are found for this game, exit early
     if [[ -z "$filtered_notes" ]]; then
         echo "No notes found for game $game_name"
         return
     fi
 
-    # Start with an empty string to hold the formatted content for all notes
     nsl_content=""
 
-    # Loop through the filtered notes for this game
-    # Loop through the filtered notes for this game
     for note in $(echo "$filtered_notes" | jq -r '@base64'); do
-        # Decode the note
         note_decoded=$(echo "$note" | base64 --decode)
 
-        # Extract the relevant information for each note
         user=$(echo "$note_decoded" | jq -r '."user"')
         content=$(echo "$note_decoded" | jq -r '."Content"')
         time_created=$(echo "$note_decoded" | jq -r '."Time Created"')
 
-        # Sanitize content: remove any existing [p] tags
         content_sanitized=$(echo "$content" | sed 's/\[\/\?p\]//g')
-
-        # Replace newlines with Steam-friendly line breaks (or leave as plain text)
         content_sanitized=$(echo "$content_sanitized" | sed 's/\n/<br>/g')
 
-        # Construct the content block for this note using **only [p]…[/p]**
         nsl_content+=$"[p][i]A note called \"$user\" says,[/i][/p]"
         nsl_content+=$"[p]$content_sanitized[/p]"
         nsl_content+=$"[p]$time_created[/p]"
     done
 
-
-
-    # Generate the current timestamp
     local current_time=$(get_current_timestamp)
 
-    # Get the game details from the CSV file
     game_details=$(grep -i "$game_name" "$CSV_FILE")
 
-    # If no details are found, use default values for the game
     if [[ -z "$game_details" ]]; then
         game_details="N/A,N/A,N/A,N/A,N/A,N/A"
     fi
 
-    # Loop through each matching result and print each field without colons
     echo "$game_details" | while IFS=',' read -r title store codename umu_id common_acronym note; do
-        # Handle missing fields by replacing them with "N/A"
         title=${title:-N/A}
         store=${store:-N/A}
         codename=${codename:-N/A}
@@ -4154,60 +4120,38 @@ update_notes_in_file() {
         common_acronym=${common_acronym:-N/A}
         note=${note:-N/A}
 
-        # Construct the Proton-GE note with the game details
         proton_ge_content="[p]Title: $title[/p][p]Store: $store[/p][p]Codename: $codename[/p][p]UMU ID: $umu_id[/p][p]Common Acronym: $common_acronym[/p][p]Note: $note[/p]"
 
-        # Construct the notes using jq (dynamically including the new Proton-GE content)
         local note_1=$(jq -n --arg shortcut_name "$game_name" --argjson time_created "$current_time" --arg proton_ge_content "$proton_ge_content" \
             '{"id":"note1675","shortcut_name":$shortcut_name,"ordinal":0,"time_created":$time_created,"time_modified":$time_created,"title":"Proton-GE & UMU","content":$proton_ge_content}')
 
         local note_2=$(jq -n --arg shortcut_name "$game_name" --argjson time_created "$current_time" --arg nsl_content "$nsl_content" \
             '{"id":"note2675","shortcut_name":$shortcut_name,"ordinal":0,"time_created":$time_created,"time_modified":$time_created,"title":"NSL Community Notes","content":$nsl_content}')
 
-        # Read the descriptions from the JSON file
-        descriptions=$(read_descriptions)
-
-        # Find the description for the current game
-        game_description=$(echo "$descriptions" | jq -r ".[] | select(.game_name == \"$game_name\") | .about_the_game")
-
-        # Use a default description if none is found
-        if [[ -z "$game_description" ]]; then
-            game_description="No description found in the JSON file."
-        fi
-
-        #create a description note
-        local note_3=$(jq -n --arg shortcut_name "$game_name" --argjson time_created "$current_time" --arg game_description "$game_description" \
-            '{"id":"note3675","shortcut_name":$shortcut_name,"ordinal":0,"time_created":$time_created,"time_modified":$time_created,"title":"Game Description","content":$game_description}')
-
-            # Check if the file exists and is valid
-            if [[ -f "$file_path" ]]; then
-                # Validate if the file contains valid JSON
-                if validate_json "$file_path"; then
-                    # Check if the file contains an array of notes
-                    if jq -e '.notes | type == "array"' "$file_path" > /dev/null; then
-                        # Replace the existing notes with the new ones on top
-                        jq --argjson note1 "$note_1" --argjson note2 "$note_2" --argjson note3 "$note_3" \
-                            '.notes = [$note1, $note2, $note3] + (.notes | map(select(.id != "note1675" and .id != "note2675" and .id != "note3675")))' \
-                            "$file_path" > "$file_path.tmp" && mv "$file_path.tmp" "$file_path"
-                        echo "Replaced Proton, NSL Community Notes, and Description Notes in $file_path"
-                    else
-                        echo "Error: The 'notes' field is not an array or is missing in $file_path."
-                        return 1
-                    fi
+        if [[ -f "$file_path" ]]; then
+            if validate_json "$file_path"; then
+                if jq -e '.notes | type == "array"' "$file_path" > /dev/null; then
+                    jq --argjson note1 "$note_1" --argjson note2 "$note_2" \
+                        '.notes = [$note1, $note2] + (.notes | map(select(.id != "note1675" and .id != "note2675")))' \
+                        "$file_path" > "$file_path.tmp" && mv "$file_path.tmp" "$file_path"
+                    echo "Replaced Proton and NSL Community Notes in $file_path"
                 else
-                    echo "Invalid JSON. Skipping update."
-                    return 1  # Exit if the JSON is invalid
+                    echo "Error: The 'notes' field is not an array or is missing in $file_path."
+                    return 1
                 fi
             else
-                # Create a new file with the notes structure if the file does not exist
-                if jq -n --argjson note1 "$note_1" --argjson note2 "$note_2" --argjson note3 "$note_3" \
-                    '{"notes":[$note1, $note2, $note3]}' > "$file_path"; then
-                    echo "Created new file with notes: $file_path"
-                else
-                    echo "Error creating file: $file_path"
-                    return 1  # Exit if the file creation fails
-                fi
+                echo "Invalid JSON. Skipping update."
+                return 1
             fi
+        else
+            if jq -n --argjson note1 "$note_1" --argjson note2 "$note_2" \
+                '{"notes":[$note1, $note2]}' > "$file_path"; then
+                echo "Created new file with notes: $file_path"
+            else
+                echo "Error creating file: $file_path"
+                return 1
+            fi
+        fi
     done
 }
 
@@ -4222,20 +4166,16 @@ list_game_names() {
 
     echo "Reading game names from $shortcuts_file..."
 
-    # Reset games array
     games=()
 
-    # Parse shortcuts.vdf for appname entries
     mapfile -t lines < <(tr '\0\1\2' '\n\n\n' < "$shortcuts_file" | grep -v '^$')
 
     for ((i=0; i < ${#lines[@]} - 1; i++)); do
         if [[ "${lines[i],,}" == "appname" ]]; then
             local appname="${lines[i+1]}"
-            # Trim whitespace
-            appname="${appname#"${appname%%[![:space:]]*}"}"  # leading
-            appname="${appname%"${appname##*[![:space:]]}"}"  # trailing
+            appname="${appname#"${appname%%[![:space:]]*}"}"
+            appname="${appname%"${appname##*[![:space:]]}"}"
 
-            # Skip if appname matches skip extensions (case-insensitive)
             if [[ -n "$appname" && ! "${appname,,}" =~ $skip_ext ]]; then
                 games+=("$appname")
                 echo "Added game: $appname"
@@ -4248,21 +4188,17 @@ list_game_names() {
     return 0
 }
 
-# Main process
 echo "Starting script..."
 
-# Fetch all notes from the API once
 api_response=$(fetch_all_notes_from_api)
 if [[ $? -ne 0 ]]; then
     echo "Failed to fetch all notes from the API"
     exit 1
 fi
 
-list_game_names  # Get the list of game names
+list_game_names
 
-# Loop over each game name
 for game_name in "${games[@]}"; do
-    # Create the file path for each game
     sanitized_game_name="$game_name"
     sanitized_game_name="${sanitized_game_name//\(/_}"
     sanitized_game_name="${sanitized_game_name//\)/_}"
@@ -4275,6 +4211,7 @@ done
 
 echo "Notes execution complete."
 show_message "Notes have been recieved!"
+
 #noooooooooooooooootes
 
 
