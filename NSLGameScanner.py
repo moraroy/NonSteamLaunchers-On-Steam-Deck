@@ -498,7 +498,7 @@ def create_steam_store_app_manifest_file(steam_store_appid, steam_store_game_nam
     appmanifest_path = os.path.join(steamapps_dir, f"appmanifest_{steam_store_appid}.acf")
 
     os.makedirs(steamapps_dir, exist_ok=True)
-    
+
     if os.path.exists(appmanifest_path):
         print(f"Manifest file for {steam_store_appid} already exists.")
         return
@@ -607,11 +607,11 @@ def tag_artwork_files(shortcut_id, game_name, steamid3, logged_in_home):
     base_name = str(shortcut_id)
 
     patterns = [
-        f"{base_name}-icon",        
+        f"{base_name}-icon",
         f"{base_name}_logo",
         f"{base_name}_hero",
-        f"{base_name}p",            
-        f"{base_name}"               
+        f"{base_name}p",
+        f"{base_name}"
     ]
 
     found_files = []
@@ -900,7 +900,7 @@ def create_exec_line_from_entry(logged_in_home, new_entry, m_gameid):
                 print(f"desktopC: Found Ubisoft gameId: {game_id}")
 
 
-                
+
         if not game_id:
             print("No gameId found, skipping game ID-related steps.")
         else:
@@ -1058,23 +1058,39 @@ def create_exec_line_from_entry(logged_in_home, new_entry, m_gameid):
             # Update the comment line
             content = content.replace("Comment=Play this game on Steam", "Comment=Play this game on Steam or Standalone")
 
-            # Write the modified content back to the .desktop file
-            with open(path, "w") as file:
-                file.write(content)
 
-            print(f"Updated Exec line in {path}")
 
             applications_dir = os.path.join(logged_in_home, ".local/share/applications/")
             if not os.path.exists(applications_dir):
                 os.makedirs(applications_dir)
 
-            symlink_path = os.path.join(applications_dir, filename)
-            if os.path.exists(symlink_path):
-                os.remove(symlink_path)
-            os.symlink(path, symlink_path)
-            print(f"Created symlink {symlink_path} -> {path}")
 
-            return
+            # Delete broken or Desktop-pointing symlinks in applications folder
+            # Delete broken symlinks in applications folder
+            for f in os.listdir(applications_dir):
+                full_path = os.path.join(applications_dir, f)
+                if f.endswith(".desktop") and os.path.islink(full_path):
+                    target = os.readlink(full_path)
+                    # Resolve relative symlinks
+                    real_target = os.path.join(os.path.dirname(full_path), target)
+                    if not os.path.exists(real_target):
+                        print(f"Deleting broken symlink in applications folder: {full_path} -> {target}")
+                        os.remove(full_path)
+
+
+            app_file_path = os.path.join(applications_dir, filename)
+
+            with open(app_file_path, "w") as file:
+                file.write(content)
+            print(f"Moved and updated .desktop file in {app_file_path}")
+
+            original_desktop_path = os.path.join(desktop_dir, filename)
+            if os.path.exists(original_desktop_path):
+                os.remove(original_desktop_path)
+
+            os.symlink(app_file_path, original_desktop_path)
+            print(f"Created symlink {original_desktop_path} -> {app_file_path}")
+
 
         print("No matching .desktop file")
         return None
@@ -1083,7 +1099,6 @@ def create_exec_line_from_entry(logged_in_home, new_entry, m_gameid):
         print(f"Error creating Exec line: {e}")
         return None
 #End of .desktop file logic
-
 
 
 
@@ -1129,6 +1144,8 @@ WS_HOST = "localhost"
 WS_PORT = 8080
 TARGET_TITLE = "SharedJSContext"
 TARGET_TITLE2 = "Steam"
+TARGET_TITLE3 = "Steam Big Picture Mode"
+
 
 
 JS_CODE = """
@@ -1858,238 +1875,6 @@ THEMEMUSIC_CODE = r"""(function () {
 
 
 
-THEMEMUSIC_BUTTON = r"""
-const THEMEMUSIC_BUTTON = (() => {
-    if (document.getElementById("themeMusicToggleButton")) return;
-
-    const KEY = "ThemeMusicData";
-
-    const load = () => {
-        try { return JSON.parse(localStorage.getItem(KEY) || "{}"); }
-        catch { return {}; }
-    };
-
-    const save = (data) => {
-        try { localStorage.setItem(KEY, JSON.stringify(data)); }
-        catch(e){ console.error(e); }
-    };
-
-    // Container for buttons
-    const container = document.createElement("div");
-    Object.assign(container.style, {
-        position: "absolute",
-        top: "10px",
-        left: "10px",
-        display: "flex",
-        alignItems: "center",
-        gap: "6px",
-        zIndex: "99999"
-    });
-
-    // Shared button styling
-    const styleButton = (btn) => {
-        Object.assign(btn.style, {
-            padding: "6px 12px",
-            fontSize: "16px",
-            background: "#222",
-            color: "#fff",
-            border: "1px solid #555",
-            borderRadius: "5px",
-            cursor: "pointer",
-            transition: "transform 0.3s ease, box-shadow 0.3s ease, opacity 0.3s ease"
-        });
-    };
-
-    // Glow & float helpers
-    let glowTimer, floatFrame, startTime;
-    const startGlow = (btn) => {
-        let g = 0, d = 1;
-        clearInterval(glowTimer);
-        glowTimer = setInterval(() => {
-            g += d * 0.1;
-            if (g > 1.5 || g < 0) d *= -1;
-            btn.style.boxShadow = `0 0 ${8 + g * 8}px rgba(0,180,255,0.8)`;
-        }, 60);
-    };
-    const stopGlow = (btn) => { clearInterval(glowTimer); btn.style.boxShadow = "none"; };
-
-    const startFloat = (btns) => {
-        cancelAnimationFrame(floatFrame);
-        startTime = performance.now();
-        const anim = (t) => {
-            const y = Math.sin((t - startTime) / 800) * 4;
-            btns.forEach(btn => btn.style.transform = `translateY(${y}px)`);
-            floatFrame = requestAnimationFrame(anim);
-        };
-        floatFrame = requestAnimationFrame(anim);
-    };
-    const stopFloat = (btns) => { cancelAnimationFrame(floatFrame); btns.forEach(btn => btn.style.transform = "none"); };
-
-    const showButton = (btn) => { btn.style.opacity = "0.9"; };
-    const hideButton = (btn) => { btn.style.opacity = "0"; };
-
-    // Music toggle button
-    const musicBtn = document.createElement("button");
-    musicBtn.id = "themeMusicToggleButton";
-    styleButton(musicBtn);
-
-    const data = load();
-    let on = data.themeMusic === undefined ? true : !!data.themeMusic;
-    musicBtn.textContent = on ? "🎵" : "🔇";
-
-    // Paste button
-    const pasteBtn = document.createElement("button");
-    pasteBtn.textContent = "📋";
-    styleButton(pasteBtn);
-    Object.assign(pasteBtn.style, {
-        position: "absolute",
-        top: "0px",
-        left: "100%",
-        marginLeft: "6px",
-        opacity: "0",
-        transform: "translateX(0px)"
-    });
-
-    // Feedback bubble
-    const bubble = document.createElement("div");
-    bubble.id = "themeMusicHoverBubble";
-    bubble.textContent = "Don't like what you hear? Then paste it yo!";
-    Object.assign(bubble.style, {
-        position: "absolute",
-        top: "40px",
-        left: "0",
-        background: "#222",
-        color: "#fff",
-        border: "1px solid #555",
-        borderRadius: "5px",
-        padding: "8px 12px",
-        fontSize: "14px",
-        zIndex: "100000",
-        whiteSpace: "nowrap",
-        opacity: "0",
-        transform: "translateY(-10px)",
-        transition: "opacity 0.3s ease, transform 0.3s ease",
-        pointerEvents: "auto"
-    });
-
-    // Bubble hover
-    bubble.addEventListener("mouseenter", () => { if(on) bubble.style.opacity = "1"; });
-    bubble.addEventListener("mouseleave", () => {
-        setTimeout(() => {
-            if (!on || ![musicBtn, pasteBtn, bubble].some(el => el.matches(':hover'))) {
-                hideBubble(); hidePaste();
-            }
-        }, 150);
-    });
-
-    const showBubble = (text, isError = false) => {
-        if(!on) return; // Only show if music is ON
-        const themeData = load();
-        const current = themeData.currentlyPlaying;
-        let linkHTML = "hear";
-        if (current?.videoId) {
-            const videoUrl = `https://youtu.be/${current.videoId}`;
-            linkHTML = `<a href="${videoUrl}" target="_blank" style="color:#0af;text-decoration:underline;cursor:pointer;">hear</a>`;
-        }
-        const msg = text || `Don't like what you ${linkHTML}? Change it with paste!`;
-        bubble.innerHTML = msg;
-
-        bubble.style.opacity = "1";
-        bubble.style.transform = "translateY(0)";
-        if (isError) bubble.style.backgroundColor = "#F44336";
-        else if (text && text.startsWith("Updated")) bubble.style.backgroundColor = "#4CAF50";
-        else bubble.style.backgroundColor = "#222";
-    };
-
-    const hideBubble = () => { bubble.style.opacity = "0"; bubble.style.transform = "translateY(-10px)"; };
-    const showPaste = () => { pasteBtn.style.opacity = "1"; pasteBtn.style.pointerEvents = "auto"; };
-    const hidePaste = () => { pasteBtn.style.opacity = "0"; pasteBtn.style.pointerEvents = "none"; };
-
-    // Paste button logic
-    pasteBtn.onclick = async () => {
-        try {
-            const text = await navigator.clipboard.readText();
-            const match = text.match(/(?:youtube\.com\/.*v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
-            if (!match) return showBubble("Invalid YouTube link!", true);
-
-            const newVideoId = match[1];
-            const themeData = load();
-            const currentThemeName = themeData.currentlyPlaying?.name;
-            if (!currentThemeName || !themeData[currentThemeName]) return showBubble("No theme currently playing!");
-
-            themeData[currentThemeName].videoId = newVideoId;
-            themeData[currentThemeName].timestamp = Date.now();
-            save(themeData);
-
-            musicBtn.textContent = "🎵";
-            showButton(musicBtn);
-            startGlow(musicBtn);
-            startFloat([musicBtn]);
-
-            showBubble(`Updated "${currentThemeName}"!`);
-            setTimeout(() => { hidePaste(); }, 3000);
-        } catch (e) {
-            console.error(e);
-            showBubble("Failed to read clipboard.", true);
-        }
-    };
-
-    container.appendChild(musicBtn);
-    container.appendChild(bubble);
-    container.appendChild(pasteBtn);
-
-    if(!on){
-        hideButton(musicBtn);
-        hidePaste();
-    } else {
-        showButton(musicBtn);
-        startGlow(musicBtn);
-        startFloat([musicBtn]);
-    }
-
-    const insert = () => {
-        const panel = document.querySelector("div.MediumRightPanel");
-        if (panel) {
-            panel.style.position = panel.style.position || "relative";
-            if (!container.parentNode) panel.appendChild(container);
-        } else requestAnimationFrame(insert);
-    };
-    insert();
-
-    // Hover logic
-    [musicBtn, pasteBtn].forEach(el => {
-        el.addEventListener("mouseenter", () => { if(on) { showBubble(); showPaste(); } });
-        el.addEventListener("mouseleave", () => {
-            setTimeout(() => {
-                if (!on || ![musicBtn, pasteBtn, bubble].some(el => el.matches(':hover'))) {
-                    hideBubble(); hidePaste();
-                }
-            }, 150);
-        });
-    });
-
-    // Toggle music on/off
-    musicBtn.onclick = () => {
-        on = !on;
-        musicBtn.textContent = on ? "🎵" : "🔇";
-        const savedData = load();
-        savedData.themeMusic = on;
-        save(savedData);
-
-        if(on){
-            showButton(musicBtn);
-            startGlow(musicBtn);
-            startFloat([musicBtn]);
-        } else {
-            stopGlow(musicBtn);
-            stopFloat([musicBtn]);
-            hideButton(musicBtn);
-            hideBubble();
-            hidePaste();
-        }
-    };
-})();
-"""
 
 
 
@@ -2584,6 +2369,8 @@ except Exception as e:
 
 
 
+
+
 ###THEMEMUSIC ONLY
 # Usage
 eval_id_counter = iter(range(1, 1000000))  # Ensure counter exists
@@ -2626,23 +2413,597 @@ except Exception as e:
 
 
 
-###Theme Music Button# Ensure counter exists
-eval_id_counter = iter(range(1, 1000000))
+### METADATA ONLY
+METADATA_CODE = r"""
+(function () {
+    // Cache object to store game details
+    const gameCache = {};
 
-try:
-    # Connect to the Steam target
-    ws_url_steam = get_ws_url_by_title(WS_HOST, WS_PORT, TARGET_TITLE2)
-    ws_socket_steam = create_websocket_connection(ws_url_steam)
+    async function getSteamGameDetails(gameName) {
+        // Check if the game details are already in the cache
+        if (gameCache[gameName]) {
+            return gameCache[gameName];
+        }
+        try {
+            const searchRes = await fetch(`https://store.steampowered.com/search/?term=${encodeURIComponent(gameName)}`, {
+                credentials: "omit"
+            });
+            const searchHtml = await searchRes.text();
+            const searchDoc = new DOMParser().parseFromString(searchHtml, "text/html");
+            const results = [...searchDoc.querySelectorAll(".search_result_row")].map(r => ({
+                appid: r.dataset.dsAppid,
+                title: r.querySelector(".title")?.innerText.trim()
+            }));
+            if (!results.length) return null;
+            let match = results.find(r => r.title?.toLowerCase() === gameName.toLowerCase()) || results[0];
+            const appid = match.appid;
+            const apiRes = await fetch(`https://store.steampowered.com/api/appdetails?appids=${appid}`);
+            const apiData = await apiRes.json();
+            const info = apiData[appid].data;
+            if (!info) return null;
+            const gameData = {
+                appid: appid,
+                about_the_game: info.short_description || null,
+                developer: (info.developers?.join(", ") || null),
+                publisher: (info.publishers?.join(", ") || null),
+                release_date: info.release_date?.date || null,
+                genres: info.genres?.map(g => g.description).join(", ") || null,
+                platforms: info.platforms ? Object.entries(info.platforms).filter(([k,v]) => v).map(([k]) => k).join(", ") : null,
+                image_url: info.screenshots?.[0]?.path_full || null
+            };
+            // Cache the data for future use
+            gameCache[gameName] = gameData;
+            return gameData;
+        } catch (err) {
+            console.error("Error fetching Steam details:", err);
+            return null;
+        }
+    }
 
-    # Enable Runtime
-    send_ws_text(ws_socket_steam, json.dumps({"id": 1, "method": "Runtime.enable"}))
-    recv_ws_message_for_id(ws_socket_steam, 1)
+    function replaceText() {
+        document.querySelectorAll("div").forEach(div => {
+            if (
+                div.childNodes.length === 1 &&
+                div.firstChild.nodeType === Node.TEXT_NODE
+            ) {
+                const originalText = div.firstChild.nodeValue;
+                const match = originalText.match(/Some detailed information on (.*?) is unavailable/i);
+                if (match) {
+                    const gameName = match[1];
+                    const key = gameName.toUpperCase();
+                    // Fetch game details from Steam (from cache or API)
+                    getSteamGameDetails(gameName).then(gameData => {
+                        if (!gameData) return;
+                        const descriptionText = gameData.about_the_game || "No description available.";
+                        const bgImage = gameData.image_url || "https://images-1.gog-statics.com/6f3d015c3029fea5221ccd9802de5e2f92c6afccc0196b15540677341936a656.jpg";
+                        div.textContent = '';
 
-    # Inject ThemeMusic button JS into Steam
+                        //Check div
+                        const currentDiv = div;
+
+                        const nextDiv = currentDiv.nextElementSibling;
+
+                        if (nextDiv) {
+                            nextDiv.appendChild(currentDiv);
+                        }
+
+
+            // Main div styling
+            div.style.position = "relative";
+            div.style.overflow = "hidden";
+            div.style.height = "250px";
+            div.style.borderRadius = "6px";
+            div.style.fontFamily = '"Roboto", "Segoe UI", Tahoma, Geneva, Verdana, sans-serif';
+            div.style.color = "white";
+            div.style.outline = "none";
+            div.style.border = "none";
+
+            // Background image
+            const img = document.createElement('img');
+            img.src = bgImage;
+            img.alt = gameName;
+            img.style.width = "100%";
+            img.style.height = "100%";
+            img.style.objectFit = "cover";
+            img.style.position = "absolute";
+            img.style.top = 0;
+            img.style.left = 0;
+            img.style.opacity = 0.5;
+
+            // Overlay
+            const overlay = document.createElement('div');
+            overlay.style.position = "absolute";
+            overlay.style.top = 0;
+            overlay.style.left = 0;
+            overlay.style.width = "100%";
+            overlay.style.height = "100%";
+            overlay.style.padding = "10px";
+            overlay.style.display = "flex";
+            overlay.style.flexDirection = "column";
+            overlay.style.justifyContent = "flex-start";
+            overlay.style.background =
+              "linear-gradient(to bottom, rgba(0,0,0,0.3), rgba(0,0,0,0.7))";
+
+            // Content row
+            const contentRow = document.createElement('div');
+            contentRow.style.display = "flex";
+            contentRow.style.flexDirection = "row";
+            contentRow.style.flex = "1 1 auto";
+
+            // Left column (launcher icon + tags)
+            const leftColumn = document.createElement('div');
+            leftColumn.style.display = "flex";
+            leftColumn.style.flexDirection = "column";
+            leftColumn.style.alignItems = "flex-start";
+            leftColumn.style.marginRight = "15px";
+            leftColumn.style.flexShrink = "0";
+
+
+            // Add these:
+            leftColumn.style.maxWidth = "250px"; // or a % like "35%" depending on your layout
+            leftColumn.style.overflow = "visible"; // ensures it doesn’t break layout
+
+            // New method for obtaining launcher info
+            let foundLauncher = null;
+            let ancestor = div;
+            for (let i = 0; i < 9; i++) {
+              if (!ancestor.parentElement) break;
+              ancestor = ancestor.parentElement;
+            }
+
+            if (ancestor) {
+              const launcher = ancestor.querySelector('div[role="button"], div.Focusable');
+              if (launcher) {
+                foundLauncher = launcher.textContent.trim();
+              }
+            }
+
+            // Launcher icons
+            const launcherIcons = {
+              "Epic Games": "https://cdn2.steamgriddb.com/icon/34ffeb359a192eb8174b6854643cc046/32/96x96.png",
+              "GOG Galaxy": "https://cdn2.steamgriddb.com/icon/a928731e103dfc64c0027fa84709689e/32/96x96.png",
+              "NonSteamLaunchers": "https://raw.githubusercontent.com/moraroy/NonSteamLaunchers-On-Steam-Deck/refs/heads/main/logo.png",
+              "Ubisoft Connect": "https://cdn2.steamgriddb.com/icon/dabcff9ba10224b01fd2ce83f7d73ad6/32/96x96.png",
+              "EA App": "https://cdn2.steamgriddb.com/icon/ff51fb7a9bcb22c595616b4fa368880a/32/96x96.png",
+              "Amazon Games": "https://cdn2.steamgriddb.com/icon_thumb/6e88ec1459f337d5bea6353f8bff8026.png",
+              "itch.io": "https://cdn2.steamgriddb.com/icon/2ad9e5e943e43cad612a7996c12a8796/32/96x96.png",
+              "Battle.net": "https://cdn2.steamgriddb.com/icon/739465804a0e17d2a47c9bc9c805d60a/32/96x96.png",
+              "Legacy Games": "https://cdn2.steamgriddb.com/icon_thumb/5225802cb9758f9fcd34a679bf9326ec.png",
+              "VK Play": "https://cdn2.steamgriddb.com/icon_thumb/5d35998237b55b8778a75732afc080aa.png",
+              "HoyoPlay": "https://cdn2.steamgriddb.com/icon/817fccd834f01fb5e1770c8679c0824e/32/256x256.png",
+              "Game Jolt Client": "https://cdn2.steamgriddb.com/icon_thumb/17df67628bb89193838f83015a3e7d30.png",
+              "Minecraft Launcher": "https://cdn2.steamgriddb.com/icon/0678c572b0d5597d2d4a6b5bd135754c/32/96x96.png",
+              "Humble Games Collection": "https://cdn2.steamgriddb.com/icon_thumb/3126ed973cbecde2bbffe419f139f456.png",
+              "NVIDIA GeForce NOW": "https://cdn2.steamgriddb.com/icon_thumb/f91ee142269ec908c23e1cd87286e254.png",
+              "Waydroid": "https://cdn2.steamgriddb.com/icon_thumb/d6de4f0418bf4015017f5c65cdecc46e.png",
+              "Google Chrome": "https://cdn2.steamgriddb.com/icon/3941c4358616274ac2436eacf67fae05/32/256x256.png",
+              "Brave": "https://cdn2.steamgriddb.com/icon_thumb/192d80a88b27b3e4115e1a45a782fe1b.png",
+              "Vivaldi": "https://cdn2.steamgriddb.com/icon_thumb/51934729f32d36841a17e43e9390483a.png",
+              "Mozilla Firefox": "https://cdn2.steamgriddb.com/icon_thumb/fe998b49c41c4208c968bce204fa1cbb.png",
+              "LibreWolf": "https://cdn2.steamgriddb.com/icon/791608b685d1c61fb2fe8acdc69dc6b5/32/128x128.png",
+              "Microsoft Edge": "https://cdn2.steamgriddb.com/icon_thumb/714cb7478d98b1cb51d1f5f515f060c7.png",
+            };
+
+            const launcherName = foundLauncher;
+            const launcherIcon = (launcherName && launcherIcons[launcherName]) || null;
+
+            if (launcherIcon) {
+              // Row that holds launcher icon + music button
+              const launcherRow = document.createElement('div');
+              launcherRow.style.display = "flex";
+              launcherRow.style.alignItems = "center";
+              launcherRow.style.gap = "8px";
+              launcherRow.style.marginBottom = "8px";
+
+              // Launcher icon
+              const icon = document.createElement('img');
+              icon.src = launcherIcon;
+              icon.alt = launcherName;
+              icon.style.width = "60px";
+              icon.style.height = "60px";
+              icon.style.objectFit = "contain";
+              icon.onerror = () => icon.remove();
+
+              launcherRow.appendChild(icon);
+
+              // Placeholder music button (no logic)
+              const musicBtn = document.createElement('button');
+              musicBtn.textContent = "🎵";
+              musicBtn.style.background = "rgba(36,40,47,0.7)";
+              musicBtn.style.color = "white";
+              musicBtn.style.border = "none";
+              musicBtn.style.borderRadius = "12px";
+              musicBtn.style.padding = "6px 10px";
+              musicBtn.style.fontSize = "14px";
+              musicBtn.style.lineHeight = "1";
+              musicBtn.style.cursor = "pointer";
+              musicBtn.style.display = "flex";
+              musicBtn.style.alignItems = "center";
+              musicBtn.style.justifyContent = "center";
+              musicBtn.style.transition = "background 0.2s ease";
+
+
+              launcherRow.appendChild(musicBtn);
+              attachThemeMusicBehavior(musicBtn);
+
+
+              // Add row to left column
+              leftColumn.appendChild(launcherRow);
+            }
+
+
+            function createTag(text, fontSize) {
+              const tag = document.createElement('span');
+              tag.textContent = text;
+              tag.style.fontSize = fontSize; // ← use the value passed in
+              tag.style.background = "rgba(36,40,47,0.7)";
+              tag.style.padding = "3px 8px";
+              tag.style.borderRadius = "12px";
+              tag.style.whiteSpace = "normal";
+              tag.style.display = "inline-block";
+              tag.style.wordBreak = "break-word";
+              tag.style.marginRight = "4px";
+              tag.style.marginBottom = "4px";
+              return tag;
+            }
+
+            function createTagRow(items) {
+              const row = document.createElement('div');
+              row.style.display = "flex";
+              row.style.flexWrap = "wrap";
+              row.style.gap = "4px";
+
+              // Determine font size based on number of items
+              const fontSize = items.length > 3 ? "7.8px" : "12px";
+
+              items.forEach(item => row.appendChild(createTag(item, fontSize)));
+              return row;
+            }
+
+
+            leftColumn.appendChild(createTagRow((gameData.platforms || "Unknown").split(",").map(p => p.trim())));
+            leftColumn.appendChild(createTagRow((gameData.developer || "Unknown").split(",").map(d => d.trim())));
+            leftColumn.appendChild(createTagRow((gameData.publisher || "Unknown").split(",").map(p => p.trim())));
+            leftColumn.appendChild(createTagRow([gameData.release_date || "Unknown"]));
+            leftColumn.appendChild(createTagRow((gameData.genres || "Unknown").split(",").map(g => g.trim())));
+
+            // Right column (description)
+            const rightColumn = document.createElement('div');
+            rightColumn.style.display = "flex";
+            rightColumn.style.flexDirection = "column";
+            rightColumn.style.flex = "1";
+
+            const description = document.createElement('p');
+            description.textContent = descriptionText;
+            description.style.fontSize = "14px";
+            description.style.lineHeight = "1.4";
+            description.style.background = "rgba(36,40,47,0.7)";
+            description.style.padding = "8px 12px";
+            description.style.borderRadius = "12px";
+            description.style.wordBreak = "break-word";
+            description.style.overflowWrap = "break-word";
+
+            rightColumn.appendChild(description);
+            contentRow.appendChild(leftColumn);
+            contentRow.appendChild(rightColumn);
+            overlay.appendChild(contentRow);
+
+            // Bottom links
+            const bottomLinks = document.createElement('div');
+            bottomLinks.style.position = "absolute";
+            bottomLinks.style.bottom = "34px";
+            bottomLinks.style.left = "10px";
+            bottomLinks.style.right = "10px";
+            bottomLinks.style.display = "flex";
+            bottomLinks.style.flexWrap = "wrap";
+            bottomLinks.style.gap = "6px";
+
+            const searchSites = [
+              { name: "Google", url: "https://www.google.com/search?q=", icon: "https://upload.wikimedia.org/wikipedia/commons/2/2f/Google_2015_logo.svg" },
+
+              { name: "PCGW", url: "https://www.pcgamingwiki.com/w/index.php?search=", extra: "&title=Special%3ASearch", icon: "https://pbs.twimg.com/profile_images/876511628258418689/Joehp5YI_400x400.jpg" },
+              { name: "HLTB", url: "https://howlongtobeat.com/?q=", icon: "https://howlongtobeat.com/favicon.ico" },
+              { name: "SDHQ", url: "https://steamdeckhq.com/?s=", icon: "https://pbs.twimg.com/profile_images/1539310786614419459/5ohiy0ZX_400x400.jpg" },
+              { name: "GameFAQs", url: "https://gamefaqs.gamespot.com/search?game=", icon: "https://gamefaqs.gamespot.com/favicon.ico" },
+              { name: "AWACY", url: "https://areweanticheatyet.com/?search=", icon: "https://areweanticheatyet.com/icon.webp" },
+              { name: "ProtonDB", url: "https://www.protondb.com/search?q=", icon: "https://www.protondb.com/sites/protondb/images/site-logo.svg"},
+            ];
+
+            searchSites.forEach(site => {
+              const link = document.createElement('a');
+              // Minimal change: only modify IsThereAnyDeal URL
+              let gameUrl = site.url + encodeURIComponent(gameName) + (site.extra || "");
+              if (site.name === "IsThereAnyDeal") {
+                // Convert gameName into ITAD slug
+                const slug = gameName
+                  .toLowerCase()
+                  .replace(/[^a-z0-9 ]/g, '') // remove special chars
+                  .trim()
+                  .replace(/\s+/g, '-');      // spaces → hyphens
+                gameUrl = `${site.url}${slug}/info/`;
+              }
+
+
+              link.href = gameUrl;
+              link.target = "_blank";
+              link.style.display = "inline-flex";
+              link.style.alignItems = "center";
+              link.style.background = "rgba(36,40,47,0.7)";
+              link.style.color = "white";
+              link.style.fontSize = "13px";
+              link.style.padding = "4px 4px";
+              link.style.borderRadius = "6px";
+              link.style.textDecoration = "none";
+              link.style.transition = "background 0.2s"; // Smooth transition on hover
+
+              // Set initial background on hover state using CSS
+              link.onmouseover = () => {
+                link.style.background = "rgba(80,80,80,0.9)";
+              };
+              link.onmouseout = () => {
+                link.style.background = "rgba(36,40,47,0.7)";
+              };
+
+              const linkIcon = document.createElement('img');
+              linkIcon.src = site.icon;
+              linkIcon.style.width = "16px";
+              linkIcon.style.height = "16px";
+              linkIcon.style.marginRight = "4px";
+              link.prepend(linkIcon);
+
+              link.appendChild(document.createTextNode(site.name));
+              bottomLinks.appendChild(link);
+            });
+
+
+            // --- ITAD button directly under description ---
+            const itadSite = {
+                name: "",
+                url: "https://isthereanydeal.com/game/",
+                icon: "https://isthereanydeal.com/public/assets/logo-GBHE6XF2.svg"
+            };
+
+            const slug = gameName.toLowerCase()
+                .replace(/[^a-z0-9 ]/g, '')
+                .trim()
+                .replace(/\s+/g, '-');
+
+            const itadUrl = `${itadSite.url}${slug}/info/`;
+
+            const itadLink = document.createElement('a');
+            itadLink.href = itadUrl;
+            itadLink.target = "_blank";
+            itadLink.style.display = "inline-flex";
+            itadLink.style.alignItems = "center";
+            itadLink.style.background = "rgba(36,40,47,0.7)";
+            itadLink.style.color = "white";
+            itadLink.style.fontSize = "13px";
+            itadLink.style.padding = "6px 12px";
+            itadLink.style.borderRadius = "12px";
+            itadLink.style.textDecoration = "none";
+            itadLink.style.width = "max-content"; // ← keeps button snug
+            rightColumn.style.display = "flex";
+            rightColumn.style.flexDirection = "column";
+            rightColumn.style.alignItems = "flex-end"; // ← aligns all children (including ITAD) to the right
+
+
+            itadLink.style.marginTop = "0px"; // spacing below description
+
+            itadLink.onmouseover = () => itadLink.style.background = "rgba(80,80,80,0.9)";
+            itadLink.onmouseout = () => itadLink.style.background = "rgba(36,40,47,0.7)";
+
+            const itadIcon = document.createElement('img');
+            itadIcon.src = itadSite.icon;
+            itadIcon.style.width = "16px";
+            itadIcon.style.height = "16px";
+            itadIcon.style.marginRight = "6px";
+            itadLink.prepend(itadIcon);
+
+            itadLink.appendChild(document.createTextNode(itadSite.name));
+
+            // append it **directly under description** in right column
+            rightColumn.appendChild(itadLink);
+
+
+
+
+
+            overlay.appendChild(bottomLinks);
+            div.appendChild(img);
+            div.appendChild(overlay);
+          });
+        }
+      }
+    });
+  }
+
+
+  function attachThemeMusicBehavior(musicBtn) {
+      const KEY = "ThemeMusicData";
+
+      const load = () => {
+          try { return JSON.parse(localStorage.getItem(KEY) || "{}"); }
+          catch { return {}; }
+      };
+
+      const save = (data) => {
+          try { localStorage.setItem(KEY, JSON.stringify(data)); }
+          catch(e){ console.error(e); }
+      };
+
+      let data = load();
+      let on = data.themeMusic === undefined ? true : !!data.themeMusic;
+
+      // --- Container ---
+      const container = document.createElement("div");
+      Object.assign(container.style, {
+          display: "inline-flex",
+          alignItems: "center",
+          position: "relative"
+      });
+      musicBtn.parentElement.insertBefore(container, musicBtn);
+      container.appendChild(musicBtn);
+
+      // Initial icon
+      musicBtn.textContent = on ? "🎵" : "🔇";
+
+      // --- Bubble tooltip ---
+      const bubble = document.createElement("div");
+      bubble.innerHTML = "Don't like what you hear? Use paste!";
+      Object.assign(bubble.style, {
+          position: "absolute",
+          bottom: "30px",       // ← move above the button
+          top: "auto",           // reset top
+          left: "0",
+          background: musicBtn.style.background,
+          color: musicBtn.style.color,
+          border: "none",
+          borderRadius: musicBtn.style.borderRadius,
+          padding: musicBtn.style.padding,
+          fontSize: musicBtn.style.fontSize,
+          whiteSpace: "nowrap",
+          opacity: "0",
+          transform: "translateY(10px)", // ← nudge down slightly for animation
+          transition: "opacity 0.3s ease, transform 0.3s ease",
+          pointerEvents: "auto",
+          zIndex: "1000",
+          cursor: "default"
+      });
+
+      container.appendChild(bubble);
+
+      const showBubble = (text, isError=false) => {
+          if (!on) return;
+
+          if (text) {
+              bubble.innerHTML = text;
+          } else {
+              const themeData = load();
+              const current = themeData.currentlyPlaying;
+              let linkHTML = "hear";
+              if (current?.videoId) {
+                  const videoUrl = `https://youtu.be/${current.videoId}`;
+                  linkHTML = `<a href="${videoUrl}" target="_blank" style="color:#0af;text-decoration:underline; cursor:pointer;">hear</a>`;
+              }
+              bubble.innerHTML = `Don't like what you ${linkHTML}? Use paste!`;
+          }
+
+          bubble.style.opacity = "1";
+          bubble.style.transform = "translateY(0)";
+          bubble.style.backgroundColor = isError ? "#F44336" : musicBtn.style.background;
+      };
+
+      const hideBubble = () => {
+          bubble.style.opacity = "0";
+          bubble.style.transform = "translateY(-10px)";
+      };
+
+      // --- Paste button (pill style like music button) ---
+      const pasteBtn = document.createElement("button");
+      pasteBtn.textContent = "📋";
+      Object.assign(pasteBtn.style, {
+          background: musicBtn.style.background,
+          color: musicBtn.style.color,
+          border: "none",
+          borderRadius: musicBtn.style.borderRadius,  // pill shape
+          padding: musicBtn.style.padding,
+          fontSize: musicBtn.style.fontSize,
+          cursor: "pointer",
+          marginLeft: "6px",
+          opacity: 0,
+          pointerEvents: "none",
+          transition: "opacity 0.3s"
+      });
+      container.appendChild(pasteBtn);
+
+      // --- Paste button logic ---
+      pasteBtn.onclick = async () => {
+          try {
+              const text = await navigator.clipboard.readText();
+              const match = text.match(/(?:youtube\.com\/.*v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
+              if (!match) return showBubble("Invalid YouTube link!", true);
+
+              const newVideoId = match[1];
+              const themeData = load();
+              const currentThemeName = themeData.currentlyPlaying?.name;
+              if (!currentThemeName || !themeData[currentThemeName])
+                  return showBubble("No theme currently playing!", true);
+
+              themeData[currentThemeName].videoId = newVideoId;
+              themeData[currentThemeName].timestamp = Date.now();
+              save(themeData);
+
+              musicBtn.textContent = "🎵";
+              showBubble(`Updated "${currentThemeName}"!`);
+              setTimeout(() => {
+                  pasteBtn.style.opacity = "0";
+                  pasteBtn.style.pointerEvents = "none";
+              }, 3000);
+          } catch (e) {
+              console.error(e);
+              showBubble("Failed to read clipboard.", true);
+          }
+      };
+
+      // --- Hover logic (includes bubble itself) ---
+      [musicBtn, pasteBtn, bubble].forEach(el => {
+          el.addEventListener("mouseenter", () => {
+              if (on) {
+                  showBubble();
+                  pasteBtn.style.opacity = "1";
+                  pasteBtn.style.pointerEvents = "auto";
+              }
+          });
+          el.addEventListener("mouseleave", () => {
+              setTimeout(() => {
+                  if (!on || ![musicBtn, pasteBtn, bubble].some(el => el.matches(':hover'))) {
+                      hideBubble();
+                      pasteBtn.style.opacity = "0";
+                      pasteBtn.style.pointerEvents = "none";
+                  }
+              }, 200); // slightly longer delay to allow moving into bubble
+          });
+      });
+
+      // --- Toggle music on/off ---
+      musicBtn.onclick = () => {
+          on = !on;
+          musicBtn.textContent = on ? "🎵" : "🔇";
+          const saved = load();
+          saved.themeMusic = on;
+          save(saved);
+          if (!on) {
+              hideBubble();
+              pasteBtn.style.opacity = "0";
+              pasteBtn.style.pointerEvents = "none";
+          }
+      };
+  }
+
+  replaceText();
+
+  // Only create a new observer if one doesn’t already exist
+  if (!window.steamEnhancerObserver) {
+      const observer = new MutationObserver(replaceText);
+      observer.observe(document.body, { childList: true, subtree: true });
+
+      // Save it globally so future runs know it exists
+      window.steamEnhancerObserver = observer;
+  }
+
+})();
+"""
+
+def inject_metadata_code(ws_socket):
     inject_id = next(eval_id_counter)
-    wrapped_code = f"(async () => {{ {THEMEMUSIC_BUTTON}; return 'ThemeMusic button injection done'; }})()"
 
-    send_ws_text(ws_socket_steam, json.dumps({
+    wrapped_code = f"""
+    (function () {{
+        {METADATA_CODE}
+    }})();
+    """
+
+    send_ws_text(ws_socket, json.dumps({
         "id": inject_id,
         "method": "Runtime.evaluate",
         "params": {
@@ -2651,16 +3012,24 @@ try:
         }
     }))
 
-    response = recv_ws_message_for_id(ws_socket_steam, inject_id)
-    print("ThemeMusic button injection response:", response)
-except Exception as e:
-    print("Failed to connect or inject ThemeMusic button:", e)
-
-###End of theme music button
+    recv_ws_message(ws_socket)
 
 
+for target in (TARGET_TITLE2, TARGET_TITLE3):
+    try:
+        ws_url = get_ws_url_by_title(WS_HOST, WS_PORT, target)
+        ws_socket = create_websocket_connection(ws_url)
 
+        send_ws_text(ws_socket, json.dumps({
+            "id": 1,
+            "method": "Runtime.enable"
+        }))
+        recv_ws_message(ws_socket)
 
+        inject_metadata_code(ws_socket)
+
+    except Exception as e:
+        print(f"Metadata injection failed for {target}: {e}")
 
 
 
@@ -3275,7 +3644,7 @@ for i, website in enumerate(custom_websites):
         launcher_name=browser_for_env('customchromelaunchoptions')
     )
 
-    
+
 
 def remove_unwanted_lines(lines, remove_keys):
     lines_to_keep = []
@@ -3693,11 +4062,16 @@ def get_ea_app_game_info(installed_games, game_directory_path, sys_reg_file=None
             if game_name is None:
                 game_name = game
 
+            game_name = re.sub(r'\s*\([^)]*\)$', '', game_name)
+
+
             matched_id = None
 
             if not ea_ids and sys_reg_name_to_id:
                 print(f"No ID found in XML for '{game_name}', checking registry fallback...")
                 for reg_name, reg_id in sys_reg_name_to_id.items():
+
+                    clean_reg_name = re.sub(r'\s*\([^)]*\)$', '', reg_name)
                     if reg_name == game_name:
                         matched_id = reg_id
                         break
@@ -4076,7 +4450,7 @@ if game_dict:
 
 
 
-        
+
         elif game_key == "seaofthieves":
             print("Handling 'seaofthieves' as 'SCOR'")
             game_key = "SCOR"
@@ -4214,7 +4588,7 @@ else:
             # Check if candidates exist and are not empty
             if candidates:
                 executable_path = candidates[0].get('path', None)
-                
+
                 # If there's no valid executable path, skip this entry
                 if not executable_path:
                     print(f"Skipping game (no executable found): {game_info[2]}")
@@ -4246,7 +4620,7 @@ else:
 
     # Close the database connection
     conn.close()
-    
+
 # End of Itch.io Scanner
 
 
@@ -5294,112 +5668,6 @@ skip_games = {'Epic Games', 'GOG Galaxy', 'Ubisoft Connect', 'Battle.net', 'EA A
     'Plex', 'Apple TV+', 'Crunchyroll', 'PokéRogue', 'NonSteamLaunchers', 'Repair EA App'}
 
 
-# --- Game Descriptions Update Logic ---
-def update_game_details(games_to_check, logged_in_home, skip_games):
-    descriptions_file_path = os.path.join(logged_in_home, '.config/systemd/user/descriptions.json')
-
-    def create_descriptions_file():
-        if not os.path.exists(descriptions_file_path):
-            try:
-                with open(descriptions_file_path, 'w') as file:
-                    json.dump([], file, indent=4)
-                print(f"{descriptions_file_path} created successfully.")
-            except IOError as e:
-                print(f"Error creating {descriptions_file_path}: {e}")
-
-    def load_game_data():
-        create_descriptions_file()
-        try:
-            with open(descriptions_file_path, 'r') as file:
-                return json.load(file)
-        except (FileNotFoundError, json.JSONDecodeError):
-            return []
-
-    def game_exists_in_data(existing_data, game_name):
-        return any(game['game_name'] == game_name for game in existing_data)
-
-    def get_game_details(game_name):
-        # URL-encode the game name to handle spaces and special characters
-        encoded_game_name = urllib.parse.quote(game_name)
-        url = f"https://nonsteamlaunchers.onrender.com/api/details/{encoded_game_name}"
-
-        try:
-            with urllib.request.urlopen(url) as response:
-                if response.status == 200:
-                    return json.load(response)
-                else:
-                    print(f"Error: Unable to retrieve data for {game_name}. Status code {response.status}")
-                    return None
-        except urllib.error.URLError as e:
-            print(f"Error fetching details for {game_name}: {e}")
-            return None
-
-    def strip_html_tags(text):
-        return re.sub(r'<[^>]*>', '', text)
-
-    def decode_html_entities(text):
-        return text.replace("\u00a0", " ").replace("\u2013", "-").replace("\u2019", "'").replace("\u2122", "™")
-
-    def write_game_details(existing_data, game_details):
-        if not game_details:
-            return existing_data
-
-        if 'about_the_game' in game_details:
-            if game_details['about_the_game'] is not None:
-                game_details['about_the_game'] = strip_html_tags(game_details['about_the_game'])
-                game_details['about_the_game'] = decode_html_entities(game_details['about_the_game'])
-            else:
-                game_details['about_the_game'] = None
-
-        if 'game_details' in game_details:
-            del game_details['game_details']
-
-        if not game_exists_in_data(existing_data, game_details['game_name']):
-            existing_data.append(game_details)
-            print(f"Game details for {game_details['game_name']} added successfully.")
-        else:
-            print(f"Game details for {game_details['game_name']} already exist.")
-
-        return existing_data
-
-    existing_data = load_game_data()
-    changed = False
-
-    for game_name in games_to_check:
-        if game_name.lower() in (label.lower() for label in skip_games):
-            continue
-
-        existing_game = next((game for game in existing_data if game['game_name'] == game_name), None)
-        if existing_game and existing_game.get('about_the_game') is None:
-            continue
-
-        if not game_exists_in_data(existing_data, game_name):
-            game_details = get_game_details(game_name)
-            if game_details:
-                existing_data = write_game_details(existing_data, game_details)
-                changed = True
-            else:
-                existing_data = write_game_details(existing_data, {
-                    "game_name": game_name,
-                    "about_the_game": None
-                })
-                print(f"Inserted placeholder with null for {game_name}")
-                changed = True
-
-    if changed:
-        try:
-            with open(descriptions_file_path, 'w', encoding='utf-8') as file:
-                json.dump(existing_data, file, indent=4, ensure_ascii=False)
-
-            print(f"Updated {descriptions_file_path} with new game details.")
-        except IOError as e:
-            print(f"Error writing to {descriptions_file_path}: {e}")
-    else:
-        print("No new game details added.")
-# --- End of Game Descriptions Update Logic ---
-
-
-
 # --- Boot Video Logic ---
 def get_boot_video(game_name, logged_in_home):
     excluded_apps = skip_games
@@ -5538,8 +5806,6 @@ if new_shortcuts_added or shortcuts_updated:
             if name.lower() not in [app.lower() for app in skip_games]:
                 print(f"Fetching boot video for: {name}")
                 get_boot_video(name, logged_in_home)
-
-            update_game_details([name], logged_in_home, skip_games)
 
         for name in created_shortcuts:
             if name in notified_games:
