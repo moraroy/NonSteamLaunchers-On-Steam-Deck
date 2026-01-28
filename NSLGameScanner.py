@@ -1609,7 +1609,7 @@ THEMEMUSIC_CODE = r"""(function () {
       const data = JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY) || "{}");
       return !(data.themeMusic === false || data.themeMusic === "off");
     } catch {
-      return true; // default ON if parsing fails
+      return false; // default off
     }
   }
 
