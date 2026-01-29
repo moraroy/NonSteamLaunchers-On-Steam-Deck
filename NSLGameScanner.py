@@ -2449,6 +2449,8 @@ METADATA_CODE = r"""
                 release_date: info.release_date?.date || null,
                 genres: info.genres?.map(g => g.description).join(", ") || null,
                 platforms: info.platforms ? Object.entries(info.platforms).filter(([k,v]) => v).map(([k]) => k).join(", ") : null,
+                metacritic_score: info.metacritic?.score || null,
+                metacritic_url: info.metacritic?.url || null,
                 image_url: info.screenshots?.[0]?.path_full || null
             };
             // Cache the data for future use
@@ -2667,11 +2669,16 @@ METADATA_CODE = r"""
             leftColumn.appendChild(createTagRow([gameData.release_date || "Unknown"]));
             leftColumn.appendChild(createTagRow((gameData.genres || "Unknown").split(",").map(g => g.trim())));
 
-            // Right column (description)
+          // Right column (description + Metacritic tab)
             const rightColumn = document.createElement('div');
             rightColumn.style.display = "flex";
             rightColumn.style.flexDirection = "column";
             rightColumn.style.flex = "1";
+
+            // Wrap description in a container for absolute tabs
+            const descriptionWrapper = document.createElement('div');
+            descriptionWrapper.style.position = "relative";
+            descriptionWrapper.style.width = "100%"; // ensures tab positions correctly
 
             const description = document.createElement('p');
             description.textContent = descriptionText;
@@ -2683,10 +2690,72 @@ METADATA_CODE = r"""
             description.style.wordBreak = "break-word";
             description.style.overflowWrap = "break-word";
 
-            rightColumn.appendChild(description);
+            descriptionWrapper.appendChild(description);
+
+            // --- Metacritic tab ---
+            if (gameData.metacritic_score && gameData.metacritic_url) {
+                const metaTab = document.createElement('a');
+                metaTab.href = gameData.metacritic_url;
+                metaTab.target = "_blank";
+                metaTab.style.position = "absolute";
+                metaTab.style.top = "14px";
+                metaTab.style.left = "-18px";
+                metaTab.style.display = "flex";
+                metaTab.style.flexDirection = "column";
+                metaTab.style.alignItems = "center";
+                metaTab.style.justifyContent = "center";
+                metaTab.style.background = "rgba(36,40,47,0.85)";
+                metaTab.style.color = "white";
+                metaTab.style.fontSize = "12px";
+                metaTab.style.padding = "4px 6px";
+                metaTab.style.borderRadius = "8px";
+                metaTab.style.textDecoration = "none";
+                metaTab.style.cursor = "pointer";
+                metaTab.style.boxShadow = "0 2px 6px rgba(0,0,0,0.3)";
+                metaTab.style.zIndex = "10";
+
+                metaTab.onmouseover = () => metaTab.style.background = "rgba(80,80,80,0.9)";
+                metaTab.onmouseout = () => metaTab.style.background = "rgba(36,40,47,0.85)";
+
+                const metaLogo = document.createElement('img');
+                metaLogo.src = "https://static.wikia.nocookie.net/logopedia/images/1/1f/Metacritic_2.svg";
+                metaLogo.style.width = "16px";
+                metaLogo.style.height = "16px";
+                metaLogo.style.marginBottom = "2px";
+
+                const scoreText = document.createElement('span');
+                scoreText.textContent = gameData.metacritic_score;
+                scoreText.style.fontWeight = "bold";
+                scoreText.style.fontSize = "12px";
+
+
+                // Set color based on Metacritic score using RGB
+                const score = parseInt(gameData.metacritic_score, 10);
+
+                if (score >= 0 && score <= 49) {
+                    // Dark faded pink (red-ish)
+                    scoreText.style.color = "rgb(139, 75, 90)"; // muted/dark pink
+                } else if (score >= 50 && score <= 79) {
+                    // Dark faded orange
+                    scoreText.style.color = "rgb(166, 106, 58)"; // muted/dark orange
+                } else if (score >= 80) {
+                    // Dark faded green
+                    scoreText.style.color = "rgb(75, 139, 90)"; // muted/dark green
+                }
+
+                metaTab.appendChild(metaLogo);
+                metaTab.appendChild(scoreText);
+
+                // Attach to wrapper (so it floats above description)
+                descriptionWrapper.appendChild(metaTab);
+            }
+
+            rightColumn.appendChild(descriptionWrapper);
             contentRow.appendChild(leftColumn);
             contentRow.appendChild(rightColumn);
             overlay.appendChild(contentRow);
+
+
 
             // Bottom links
             const bottomLinks = document.createElement('div');
