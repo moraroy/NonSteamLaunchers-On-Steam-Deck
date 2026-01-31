@@ -165,6 +165,9 @@ How to Run 🏃‍♂️
 
 
 
+To stop the NSLGameScanner.service, open up NSL and hit "🔍" it will then ask you if you want to restart it, click no, and that's it.
+
+
 <h1 align="center">
 Command Lines 🫡
 </h1>
@@ -224,6 +227,7 @@ Supported Stores 🛍
 - Antstream Arcade ✔️
 - Hytale ✔️
 - Big Fish Games Manager ✔️
+- Gryphlink
 - RemotePlayWhatever ✔️
 - NVIDIA GeForce NOW (Native Linux) ✔️
 - STOVE Client ✔️
@@ -293,8 +297,6 @@ The scanner will pick these up automatically. But for Geforce Now only, change t
 
 ## Waydroid Detection
 If you're not in Official SteamOS or not using [this script](https://github.com/ryanrudolfoba/SteamOS-Waydroid-Installer) to install your Waydroid, you can put your own script for the App launch with the name "waydroid-cage.sh" in your own home directory and the scanner will do the rest. A good references for writing your own Script is in [here](https://github.com/SwallowKOR/cachyos-waydroid-gamemode).
-
-To stop the NSLGameScanner.service, open up NSL and hit "🔍" it will then ask you if you want to restart it, click no, and that's it.
 
 
 
