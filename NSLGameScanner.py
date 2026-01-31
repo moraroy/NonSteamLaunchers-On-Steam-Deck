@@ -5855,7 +5855,7 @@ endfield_exe = (
 if os.path.exists(endfield_exe):
     print(f"File exists: {endfield_exe}")
 
-    display_name = "Endfield"
+    display_name = "Arknights: Endfield"
     launch_options = (
         f"STEAM_COMPAT_DATA_PATH=\"{logged_in_home}/.local/share/Steam/"
         f"steamapps/compatdata/{gryphlink_launcher}/\" %command%"
