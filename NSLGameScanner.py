@@ -2424,47 +2424,166 @@ METADATA_CODE = r"""
     const gameCache = {};
 
     async function getSteamGameDetails(gameName) {
-        // Check if the game details are already in the cache
-        if (gameCache[gameName]) {
-            return gameCache[gameName];
-        }
+        if (gameCache[gameName]) return gameCache[gameName];
+
         try {
             const searchRes = await fetch(`https://store.steampowered.com/search/?term=${encodeURIComponent(gameName)}`, {
                 credentials: "omit"
             });
             const searchHtml = await searchRes.text();
             const searchDoc = new DOMParser().parseFromString(searchHtml, "text/html");
-            const results = [...searchDoc.querySelectorAll(".search_result_row")].map(r => ({
+
+            const results = [...searchDoc.querySelectorAll("a.search_result_row")].map(r => ({
                 appid: r.dataset.dsAppid,
                 title: r.querySelector(".title")?.innerText.trim()
             }));
-            if (!results.length) return null;
-            let match = results.find(r => r.title?.toLowerCase() === gameName.toLowerCase()) || results[0];
+
+            if (!results.length) {
+                return await getWikipediaGameDetails(gameName);
+            }
+
+            const normalize = str => str?.toLowerCase().replace(/[-()]/g, "").replace(/\s+/g, " ").trim();
+            const match = results.find(r => normalize(r.title) === normalize(gameName));
+
+            if (!match) {
+                return await getWikipediaGameDetails(gameName);
+            }
+
             const appid = match.appid;
             const apiRes = await fetch(`https://store.steampowered.com/api/appdetails?appids=${appid}`);
             const apiData = await apiRes.json();
             const info = apiData[appid].data;
-            if (!info) return null;
-            const gameData = {
-                appid: appid,
-                about_the_game: info.short_description || null,
-                developer: (info.developers?.join(", ") || null),
-                publisher: (info.publishers?.join(", ") || null),
-                release_date: info.release_date?.date || null,
-                genres: info.genres?.map(g => g.description).join(", ") || null,
-                platforms: info.platforms ? Object.entries(info.platforms).filter(([k,v]) => v).map(([k]) => k).join(", ") : null,
-                metacritic_score: info.metacritic?.score || null,
-                metacritic_url: info.metacritic?.url || null,
-                image_url: info.screenshots?.[0]?.path_full || null
-            };
-            // Cache the data for future use
-            gameCache[gameName] = gameData;
-            return gameData;
+
+            if (info) {
+                const platformsStr = info.platforms
+                    ? Object.entries(info.platforms)
+                          .filter(([k,v]) => v)
+                          .map(([k]) => k)
+                          .join(", ")
+                    : "Unknown";
+
+                const gameData = {
+                    appid: appid,
+                    about_the_game: info.short_description || null,
+                    developer: info.developers?.join(", ") || "Unknown",
+                    publisher: info.publishers?.join(", ") || "Unknown",
+                    release_date: info.release_date?.date || null,
+                    genres: info.genres?.map(g => g.description).join(", ") || null,
+                    platforms: platformsStr,
+                    metacritic_score: info.metacritic?.score || null,
+                    metacritic_url: info.metacritic?.url || null,
+                    image_url: info.screenshots?.[0]?.path_full || null
+                };
+
+                gameCache[gameName] = gameData;
+                return gameData;
+            }
+
+            return await getWikipediaGameDetails(gameName);
         } catch (err) {
-            console.error("Error fetching Steam details:", err);
+            return await getWikipediaGameDetails(gameName);
+        }
+    }
+
+    async function getWikipediaGameDetails(gameName) {
+        if (gameCache[gameName]) return gameCache[gameName];
+
+        try {
+            let gameTitle = gameName.replace(/\s+/g, "_");
+            let url = `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(gameTitle)}`;
+            let res = await fetch(url);
+
+            if (!res.ok) {
+                const searchUrl = `https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(gameName)}&format=json&origin=*`;
+                const searchRes = await fetch(searchUrl);
+                const searchData = await searchRes.json();
+                if (!searchData.query.search.length) return null;
+
+                gameTitle = searchData.query.search[0].title.replace(/\s+/g, "_");
+                url = `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(gameTitle)}`;
+                res = await fetch(url);
+                if (!res.ok) return null;
+            }
+
+            const data = await res.json();
+            const sentences = data.extract?.match(/[^.!?]+[.!?]+/g) || [];
+            const description = sentences.slice(0, 2).join(" ").trim();
+            const displayTitle = data.displaytitle?.replace(/<[^>]+>/g, "").replace(/\//g, "").trim();
+
+            const game = {
+                appid: null,
+                displayTitle,
+                about_the_game: description || data.extract || null,
+                developer: "Unknown",
+                publisher: "Unknown",
+                release_date: null,
+                genres: null,
+                platforms: "Unknown",
+                metacritic_score: null,
+                metacritic_url: null,
+                image_url: data.originalimage?.source || null
+            };
+
+            const wikidataId = data.wikibase_item;
+            if (wikidataId) {
+                const wdRes = await fetch(`https://www.wikidata.org/wiki/Special:EntityData/${wikidataId}.json`);
+                const wdData = await wdRes.json();
+                const claims = wdData.entities[wikidataId].claims;
+
+                const getClaimId = prop => claims?.[prop]?.[0]?.mainsnak?.datavalue?.value?.id || null;
+                const getClaimTime = prop => claims?.[prop]?.[0]?.mainsnak?.datavalue?.value?.time || null;
+                const getClaimIdList = prop => claims?.[prop]?.map(c => c.mainsnak.datavalue.value.id) || [];
+
+                const developerId = getClaimId("P178");
+                const publisherId = getClaimId("P123");
+                const releaseTime = getClaimTime("P577");
+                const genreIds = getClaimIdList("P136");
+                const platformIds = getClaimIdList("P400");
+
+                const idsToResolve = [developerId, publisherId, ...genreIds, ...platformIds].filter(Boolean);
+                let labelsData = {};
+
+                if (idsToResolve.length) {
+                    const labelsRes = await fetch(
+                        `https://www.wikidata.org/w/api.php?action=wbgetentities&ids=${idsToResolve.join("|")}&props=labels&languages=en&format=json&origin=*`
+                    );
+                    const labelsJson = await labelsRes.json();
+                    labelsData = labelsJson.entities || {};
+                }
+
+                game.developer = developerId ? labelsData[developerId]?.labels?.en?.value ?? "Unknown" : "Unknown";
+                game.publisher = publisherId ? labelsData[publisherId]?.labels?.en?.value ?? "Unknown" : "Unknown";
+                game.release_date = releaseTime ? releaseTime.match(/\d{4}/)[0] : null;
+
+                if (genreIds.length) {
+                    const genreLabel = labelsData[genreIds[0]]?.labels?.en?.value ?? "Unknown";
+                    game.genres = genreLabel.replace(/\s*\(.*?\)\s*/g, "").trim();
+                }
+
+                const platformsClean = platformIds.map(id => {
+                    const label = labelsData[id]?.labels?.en?.value ?? "Unknown";
+                    return label.replace(/\s*\(.*?\)\s*/g, "").trim();
+                });
+                game.platforms = platformsClean.length
+                    ? platformsClean.join(", ")
+                    : "Unknown"; // <- Always string
+            }
+
+            gameCache[gameName] = game;
+            return game;
+
+        } catch (err) {
             return null;
         }
     }
+
+    async function getGameDetails(gameName) {
+        let gameData = await getSteamGameDetails(gameName);
+        if (!gameData) gameData = await getWikipediaGameDetails(gameName);
+        return gameData;
+    }
+
+
 
     function replaceText() {
         document.querySelectorAll("div").forEach(div => {
