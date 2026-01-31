@@ -107,6 +107,8 @@ minecraft_launcher = os.environ.get('minecraft_launcher', '')
 indie_launcher = os.environ.get('indie_launcher', '')
 stove_launcher = os.environ.get('stove_launcher', '')
 humble_launcher = os.environ.get('humble_launcher', '')
+gryphlink_launcher = os.environ.get('gryphlink_launcher', '')
+
 
 #Variables of the Launchers
 
@@ -120,6 +122,8 @@ amazonshortcutdirectory = os.environ.get('amazonshortcutdirectory')
 itchioshortcutdirectory = os.environ.get('itchioshortcutdirectory')
 legacyshortcutdirectory = os.environ.get('legacyshortcutdirectory')
 humbleshortcutdirectory = os.environ.get('humbleshortcutdirectory')
+gryphlinkshortcutdirectory = os.environ.get('gryphlinkshortcutdirectory')
+
 indieshortcutdirectory = os.environ.get('indieshortcutdirectory')
 rockstarshortcutdirectory = os.environ.get('rockstarshortcutdirectory')
 glyphshortcutdirectory = os.environ.get('glyphshortcutdirectory')
@@ -2584,6 +2588,7 @@ METADATA_CODE = r"""
               "Mozilla Firefox": "https://cdn2.steamgriddb.com/icon_thumb/fe998b49c41c4208c968bce204fa1cbb.png",
               "LibreWolf": "https://cdn2.steamgriddb.com/icon/791608b685d1c61fb2fe8acdc69dc6b5/32/128x128.png",
               "Microsoft Edge": "https://cdn2.steamgriddb.com/icon_thumb/714cb7478d98b1cb51d1f5f515f060c7.png",
+              "Gryphlink": "https://i.namu.wiki/i/1CZOhlpjxh3owDKXC9axrnMHtotdDaoFMmnzBvQ0yOqCDOL3rIZpH2DyLfX2UCRul9CxIH0gCn1DmRodHnKr6-IUmEzSZpZ6p4r9zRbDvwPe94gZnek0VaIvKfsWsx6L28czwaiz0Mj1NNayAkypNQ.webp"
             };
 
             const launcherName = foundLauncher;
@@ -3189,7 +3194,7 @@ def create_new_entry(shortcutdirectory, appname, launchoptions, startingdir, lau
     unsigned_shortcut_id = get_unsigned_shortcut_id(signed_shortcut_id)
 
     # Only store app ID for specific launchers
-    if appname in ['Epic Games', 'Gog Galaxy', 'Ubisoft Connect', 'Battle.net', 'EA App', 'Amazon Games', 'itch.io', 'Legacy Games', 'Humble Bundle', 'IndieGala Client', 'Rockstar Games Launcher', 'Glyph', 'Minecraft Launcher', 'Playstation Plus', 'VK Play', 'HoYoPlay', 'Nexon Launcher', 'Game Jolt Client', 'Artix Game Launcher', 'ARC Launcher', 'PURPLE Launcher', 'Plarium Play', 'VFUN Launcher', 'Tempo Launcher', 'Pokémon Trading Card Game Live', 'Antstream Arcade', 'STOVE Client', 'Big Fish Games Manager']:
+    if appname in ['Epic Games', 'Gog Galaxy', 'Ubisoft Connect', 'Battle.net', 'EA App', 'Amazon Games', 'itch.io', 'Legacy Games', 'Humble Bundle', 'IndieGala Client', 'Rockstar Games Launcher', 'Glyph', 'Minecraft Launcher', 'Playstation Plus', 'VK Play', 'HoYoPlay', 'Nexon Launcher', 'Game Jolt Client', 'Artix Game Launcher', 'ARC Launcher', 'PURPLE Launcher', 'Plarium Play', 'VFUN Launcher', 'Tempo Launcher', 'Pokémon Trading Card Game Live', 'Antstream Arcade', 'STOVE Client', 'Big Fish Games Manager', 'Gryphlink']:
         app_ids[appname] = unsigned_shortcut_id
 
     # Check if shortcut already exists with final values
@@ -3606,6 +3611,9 @@ track_create_entry(os.environ.get('poketcgshortcutdirectory'), 'Pokémon Trading
 track_create_entry(os.environ.get('antstreamshortcutdirectory'), 'Antstream Arcade', os.environ.get('antstreamlaunchoptions'), os.environ.get('antstreamstartingdir'))
 track_create_entry(os.environ.get('stoveshortcutdirectory'), 'STOVE Client', os.environ.get('stovelaunchoptions'), os.environ.get('stovestartingdir'))
 track_create_entry(os.environ.get('bigfishshortcutdirectory'), 'Big Fish Games Manager', os.environ.get('bigfishlaunchoptions'), os.environ.get('bigfishstartingdir'))
+track_create_entry(os.environ.get('gryphlinkshortcutdirectory'), 'Gryphlink', os.environ.get('gryphlinklaunchoptions'), os.environ.get('gryphlinkstartingdir'))
+
+
 track_create_entry(os.environ.get('repaireaappshortcutdirectory'), 'Repair EA App', os.environ.get('repaireaapplaunchoptions'), os.environ.get('repaireaappstartingdir'))
 
 
@@ -3812,6 +3820,7 @@ folder_names = {
     'Antstream Arcade': 'AntstreamLauncher',
     'STOVE Client': 'STOVELauncher',
     'Big Fish Games Manager': 'BigFishLauncher',
+    'Gryphlink': 'GryphlinkLauncher',
 }
 
 
@@ -5716,7 +5725,40 @@ else:
 
 
 
+# Gryphlink Scanner (Endfield)
 
+endfield_exe = (
+    f"{logged_in_home}/.local/share/Steam/steamapps/compatdata/{gryphlink_launcher}/"
+    "pfx/drive_c/Program Files/GRYPHLINK/games/EndField Game/Endfield.exe"
+)
+
+# Check if Endfield exists
+if os.path.exists(endfield_exe):
+    print(f"File exists: {endfield_exe}")
+
+    display_name = "Endfield"
+    launch_options = (
+        f"STEAM_COMPAT_DATA_PATH=\"{logged_in_home}/.local/share/Steam/"
+        f"steamapps/compatdata/{gryphlink_launcher}/\" %command%"
+    )
+
+    exe_path = f"\"{endfield_exe}\""
+    start_dir = f"\"{os.path.dirname(endfield_exe)}\""
+
+    create_new_entry(
+        exe_path,
+        display_name,
+        launch_options,
+        start_dir,
+        launcher_name="Gryphlink"
+    )
+
+    track_game(display_name, "Gryphlink")
+
+else:
+    print("Skipping Gryphlink Scanner — Endfield.exe not found")
+
+# End of Gryphlink Game Scanner
 
 
 
@@ -5734,7 +5776,7 @@ skip_games = {'Epic Games', 'GOG Galaxy', 'Ubisoft Connect', 'Battle.net', 'EA A
     'Netflix', 'Hulu', 'Tubi', 'Disney+', 'Amazon Prime Video', 'Youtube', 'Youtube TV',
     'Amazon Luna', 'Twitch', 'Venge', 'Rocketcrab', 'Fortnite', 'WebRcade', 'Cloudy Pad',
     'WebRcade Editor', 'Afterplay.io', 'OnePlay', 'AirGPU', 'CloudDeck', 'JioGamesCloud',
-    'Plex', 'Apple TV+', 'Crunchyroll', 'PokéRogue', 'NonSteamLaunchers', 'Repair EA App'}
+    'Plex', 'Apple TV+', 'Crunchyroll', 'PokéRogue', 'NonSteamLaunchers', 'Repair EA App', 'Gryphlink'}
 
 
 # --- Boot Video Logic ---
