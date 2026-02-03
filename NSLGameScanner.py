@@ -1579,7 +1579,6 @@ THEMEMUSIC_CODE = r"""(function () {
     let ytAudioIframe = null;
     let ytPlayer = null;
     let ytPlayerReady = false;
-    let fadeInterval = null;
     let currentQuery = null;
     let lastUrl = null;
     let lastAppID = null;
@@ -1587,7 +1586,6 @@ THEMEMUSIC_CODE = r"""(function () {
     let pausedForGame = false;
     const sessionCache = new Map();
 
-    // ------------------------ LocalStorage Wrapper ------------------------
     localStorage.setItem = function (key, value) {
         originalSetItem(key, value);
         if (key === LOCAL_STORAGE_KEY) {
@@ -1614,7 +1612,6 @@ THEMEMUSIC_CODE = r"""(function () {
         } catch { return false; }
     }
 
-    // ------------------------ Cache Handling ------------------------
     function loadCache() {
         try { return JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY) || "{}"); }
         catch { return {}; }
@@ -1647,7 +1644,6 @@ THEMEMUSIC_CODE = r"""(function () {
         sessionCache.set(query, entry);
     }
 
-    // ------------------------ YouTube API & Player ------------------------
     if (!window.__MY_THEMEMUSIC_SCRIPT_LOADED__) {
         Object.defineProperty(window, "__MY_THEMEMUSIC_SCRIPT_LOADED__", { value: true });
         const tag = document.createElement('script');
@@ -1666,7 +1662,7 @@ THEMEMUSIC_CODE = r"""(function () {
         return waitForYouTubeAPI().then(() => {
             if (ytPlayer && ytPlayerReady) {
                 if (ytPlayer.getVideoData?.().video_id === videoId) { ytPlayer.playVideo?.(); return; }
-                return fadeOutAndStop().then(() => createYTPlayer(videoId));
+                return fadeOutAndStop({ clearCurrent: false }).then(() => createYTPlayer(videoId));
             }
 
             ytAudioIframe?.remove();
@@ -1690,37 +1686,47 @@ THEMEMUSIC_CODE = r"""(function () {
         });
     }
 
-    function fadeOutAndStop() {
+    function fadeOutAndStop({ clearCurrent = true, fadeDuration = 300 } = {}) {
         return new Promise(resolve => {
             if (!ytPlayer) return resolve();
             pausedForGame = true;
-            let volume = 100;
-            clearInterval(fadeInterval);
 
-            fadeInterval = setInterval(() => {
+            const startVolume = ytPlayer.getVolume?.() ?? 100;
+            const startTime = performance.now();
+
+            function step(now) {
                 if (!ytPlayer) return cleanup();
-                volume = Math.max(0, volume - 10);
-                ytPlayer.setVolume?.(volume);
-                if (volume <= 0) cleanup();
-            }, 50);
+
+                const elapsed = now - startTime;
+                const progress = Math.min(elapsed / fadeDuration, 1);
+                const newVolume = Math.round(startVolume * (1 - progress));
+
+                ytPlayer.setVolume?.(newVolume);
+
+                if (progress < 1) {
+                    requestAnimationFrame(step);
+                } else {
+                    cleanup();
+                }
+            }
 
             function cleanup() {
-                clearInterval(fadeInterval);
-                fadeInterval = null;
                 try { ytPlayer.stopVideo?.(); ytPlayer.destroy?.(); } catch {}
                 ytAudioIframe?.remove();
                 ytAudioIframe = null;
                 ytPlayer = null;
                 ytPlayerReady = false;
                 currentQuery = null;
-                clearCurrentlyPlaying();
-                setTimeout(() => { pausedForGame = false; }, 2000);
+
+                if (clearCurrent) clearCurrentlyPlaying();
+                pausedForGame = false;
                 resolve();
             }
+
+            requestAnimationFrame(step);
         });
     }
 
-    // ------------------------ Currently Playing ------------------------
     function updateCurrentlyPlaying(query, videoId) {
         try {
             const data = loadCache();
@@ -1738,11 +1744,13 @@ THEMEMUSIC_CODE = r"""(function () {
         } catch (e) { console.error(e); }
     }
 
-    // ------------------------ Play Theme Music ------------------------
     function playYouTubeAudio(query) {
         if (!getThemeMusicEnabled()) return;
         if (query === currentQuery && ytPlayer && ytPlayerReady) return;
+
+        const prevQuery = currentQuery;
         currentQuery = query;
+
         updateCurrentlyPlaying(query, "loading");
 
         const cachedId = getCachedVideo(query);
@@ -1751,7 +1759,7 @@ THEMEMUSIC_CODE = r"""(function () {
             return createYTPlayer(cachedId);
         }
 
-        return fadeOutAndStop().then(() => {
+        return fadeOutAndStop({ clearCurrent: false }).then(() => {
             return fetch("https://nonsteamlaunchers.onrender.com/api/x7a9/" + encodeURIComponent(query))
                 .then(res => res.json())
                 .then(data => {
@@ -1760,7 +1768,10 @@ THEMEMUSIC_CODE = r"""(function () {
                     updateCurrentlyPlaying(query, data.videoId);
                     return createYTPlayer(data.videoId);
                 })
-                .catch(() => { console.error("Theme music fetch failed"); updateCurrentlyPlaying(query, null); });
+                .catch(() => {
+                    console.error("Theme music fetch failed");
+                    updateCurrentlyPlaying(prevQuery, null);
+                });
         });
     }
 
@@ -1773,7 +1784,6 @@ THEMEMUSIC_CODE = r"""(function () {
         }
     });
 
-    // ------------------------ URL & App Handling ------------------------
     function handleAppId(appId) {
         if (!getThemeMusicEnabled() || pausedForGame) return;
         const appInfo = window.appStore?.m_mapApps?.get(appId);
@@ -1803,7 +1813,6 @@ THEMEMUSIC_CODE = r"""(function () {
     }
     requestAnimationFrame(watchUrl);
 
-    // ------------------------ Steam Game Start ------------------------
     if (window.SteamClient?.Apps?.RegisterForGameActionStart) {
         SteamClient.Apps.RegisterForGameActionStart((appID) => {
             if (stoppingMusic) return;
