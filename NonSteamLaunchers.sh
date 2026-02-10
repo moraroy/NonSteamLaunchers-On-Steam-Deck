@@ -1473,8 +1473,8 @@ bigfish_url="https://cdn-content.bigfishgames.com/prodstatic/games/gm_32/gm_inst
 bigfish_file="${logged_in_home}/Downloads/NonSteamLaunchersInstallation/bfginstaller32_s1_l1.exe"
 
 
-gryphlink_url="https://launcher.hg-cdn.com/TiaytKBUIEdoEwRT/launcher/1.0.2/6/6/FCLRoWw78h2SQCYy/GRYPHLINK_1.0.2_6_6_endfield.exe"
-gryph_file="${logged_in_home}/Downloads/NonSteamLaunchersInstallation/GRYPHLINK_1.0.2_6_6_endfield.exe"
+gryphlink_url="https://launcher.hg-cdn.com/TiaytKBUIEdoEwRT/launcher/1.1.0/6/6/NVX60B0FgrIAIWH2/GRYPHLINK_v1.1.0.1107_6_6_endfield.exe"
+gryph_file="${logged_in_home}/Downloads/NonSteamLaunchersInstallation/GRYPHLINK_v1.1.0.1107_6_6_endfield.exe"
 
 
 
@@ -2923,34 +2923,33 @@ install_psplus() {
 # Gryphlink specific installation steps
 install_gryphlink() {
     gryphlink_dir="${logged_in_home}/.local/share/Steam/steamapps/compatdata/${appid}/pfx/drive_c/Program Files/GRYPHLINK"
-    download_url="https://launcher.hg-cdn.com/TiaytKBUIEdoEwRT/launcher/1.0.2/6/6/FCLRoWw78h2SQCYy/GRYPHLINK_1.0.2_6_6_endfield.exe"
     tmp_installer="${logged_in_home}/Downloads/NonSteamLaunchersInstallation/GRYPHLINK_installer.exe"
+
+    version="$(echo "${gryphlink_url}" | sed -E 's#.*/launcher/([^/]+)/.*#\1#')"
 
     [ ! -d "${gryphlink_dir}" ] && mkdir -p "${gryphlink_dir}"
 
-    curl -L -o "${tmp_installer}" "${download_url}"
+    curl -L -o "${tmp_installer}" "${gryphlink_url}"
 
     command -v 7z >/dev/null 2>&1 || { echo "7z not found, install p7zip"; exit 1; }
 
     7z x "${tmp_installer}" -o"${gryphlink_dir}" -aoa
 
-    [ -d "${gryphlink_dir}/\$0/1.0.2" ] && mv "${gryphlink_dir}/\$0/1.0.2" "${gryphlink_dir}/1.0.2"
+    [ -d "${gryphlink_dir}/\$0/${version}" ] && mv "${gryphlink_dir}/\$0/${version}" "${gryphlink_dir}/${version}"
 
     rm -rf "${gryphlink_dir}/\$0" "${gryphlink_dir}/\$PLUGINSDIR"
     rm -f "${tmp_installer}"
 
     mkdir -p "${gryphlink_dir}/Cache/Config"
 
-    [ -f "${gryphlink_dir}/1.0.2/Launcher.exe" ] && cp "${gryphlink_dir}/1.0.2/Launcher.exe" "${gryphlink_dir}/Launcher.exe"
-    [ -f "${gryphlink_dir}/1.0.2/Uninstall.exe" ] && cp "${gryphlink_dir}/1.0.2/Uninstall.exe" "${gryphlink_dir}/Uninstall.exe"
+    [ -f "${gryphlink_dir}/${version}/Launcher.exe" ] && cp "${gryphlink_dir}/${version}/Launcher.exe" "${gryphlink_dir}/Launcher.exe"
+    [ -f "${gryphlink_dir}/${version}/Uninstall.exe" ] && cp "${gryphlink_dir}/${version}/Uninstall.exe" "${gryphlink_dir}/Uninstall.exe"
 
     if command -v tree >/dev/null 2>&1; then
         tree -L 3 "${gryphlink_dir}"
     else
         ls -R "${gryphlink_dir}"
     fi
-
-
 
     echo "Removing installer file..."
     rm -f "${gryphlink_dir}/GRYPHLINK_installer.exe" || {
