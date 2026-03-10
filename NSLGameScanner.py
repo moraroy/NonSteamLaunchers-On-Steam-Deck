@@ -2425,7 +2425,17 @@ METADATA_CODE = r"""
                         platforms: platformsStr,
                         metacritic_score: info.metacritic?.score || null,
                         metacritic_url: info.metacritic?.url || null,
-                        image_url: info.screenshots?.[0]?.path_full || null
+                        image_url: info.screenshots?.[0]?.path_full || null,
+
+                        discounted_price:
+                            info.price_overview?.discount_percent > 0
+                                ? info.price_overview.final_formatted
+                                : null,
+
+                        discount_percent:
+                            info.price_overview?.discount_percent > 0
+                                ? info.price_overview.discount_percent
+                                : null,
                     };
 
                     gameCache[gameName] = gameData;
@@ -2621,20 +2631,28 @@ METADATA_CODE = r"""
                 leftColumn.style.maxWidth = "250px"; // or a % like "35%" depending on your layout
                 leftColumn.style.overflow = "visible"; // ensures it doesn’t break layout
 
-                // New method for obtaining launcher info
-                let foundLauncher = null;
+                // Walk up fixed number of steps
+                const TARGET_STEP = 7;
                 let ancestor = div;
-                for (let i = 0; i < 9; i++) {
-                if (!ancestor.parentElement) break;
-                ancestor = ancestor.parentElement;
+                for (let i = 0; i < TARGET_STEP && ancestor.parentElement; i++) {
+                    ancestor = ancestor.parentElement;
                 }
 
-                if (ancestor) {
-                const launcher = ancestor.querySelector('div[role="button"], div.Focusable');
-                if (launcher) {
-                    foundLauncher = launcher.textContent.trim();
+                // Scan children for a plausible launcher name
+                let foundLauncher = null;
+                for (const child of ancestor.querySelectorAll("div, span, button, a")) {
+                    let text = child.textContent?.trim();
+                    if (!text || text.length >= 50) continue;
+
+                    text = text.replace(/^Found in these collections/i, "").trim();
+                    text = text.replace(/\s*\(.*?\)/g, "").trim();
+
+                    if (text) {
+                        foundLauncher = text;
+                        break;
+                    }
                 }
-                }
+
 
                 // Launcher icons
                 const launcherIcons = {
@@ -2660,11 +2678,56 @@ METADATA_CODE = r"""
                 "Mozilla Firefox": "https://cdn2.steamgriddb.com/icon_thumb/fe998b49c41c4208c968bce204fa1cbb.png",
                 "LibreWolf": "https://cdn2.steamgriddb.com/icon/791608b685d1c61fb2fe8acdc69dc6b5/32/128x128.png",
                 "Microsoft Edge": "https://cdn2.steamgriddb.com/icon_thumb/714cb7478d98b1cb51d1f5f515f060c7.png",
-                "Gryphlink": "https://i.namu.wiki/i/1CZOhlpjxh3owDKXC9axrnMHtotdDaoFMmnzBvQ0yOqCDOL3rIZpH2DyLfX2UCRul9CxIH0gCn1DmRodHnKr6-IUmEzSZpZ6p4r9zRbDvwPe94gZnek0VaIvKfsWsx6L28czwaiz0Mj1NNayAkypNQ.webp"
+                "Gryphlink": "https://i.namu.wiki/i/1CZOhlpjxh3owDKXC9axrnMHtotdDaoFMmnzBvQ0yOqCDOL3rIZpH2DyLfX2UCRul9CxIH0gCn1DmRodHnKr6-IUmEzSZpZ6p4r9zRbDvwPe94gZnek0VaIvKfsWsx6L28czwaiz0Mj1NNayAkypNQ.webp",
+                "WebRcade": "https://cdn2.steamgriddb.com/icon_thumb/4916ba26c0ec4e43588dcc3e019ede51.png",
+                "Nintendo": "https://cdn2.steamgriddb.com/icon_thumb/17b6114b9a9b8d8602ec9d9dfeb6a15f.png",
+                "Super Nintendo": "https://cdn2.steamgriddb.com/icon_thumb/d4dcf709a96dca127d0429d73c443afb.png",
+                "Nintendo 64": "https://cdn2.steamgriddb.com/icon_thumb/328de839e30893a67fc55ee2bf2ff5ae.png",
+                "Nintendo GameCube": "https://cdn2.steamgriddb.com/icon/3caf2d9b17ad63105399b122e2061eb1/32/256x256.png",
+                "Nintendo Wii": "https://cdn2.steamgriddb.com/icon_thumb/4c220c393016798aed81f9350e68f61c.png",
+                "Nintendo Wii U": "https://cdn2.steamgriddb.com/icon_thumb/c6c02ef92aa0dcb6c333a27cfb22d47c.png",
+                "Nintendo Switch": "https://cdn2.steamgriddb.com/icon_thumb/3b05af2c48dbaf6656fdf2d2f905b3b6.png",
+                "PlayStation": "https://cdn2.steamgriddb.com/icon_thumb/f6a81f703854985705a0cc479d221282.png",
+                "PlayStation 2": "https://cdn2.steamgriddb.com/icon/5e3600417e9ac9abf5a6fea026f9b05a/32/256x256.png",
                 };
 
+                const aliasGroups = {
+                    "Super Nintendo": ["SNES", "Super NES", "SuperNintendo", "Super Nintendo Entertainment System"],
+                    "Nintendo 64": ["N64", "Nintendo64", "Nintendo 64"],
+                    "Epic Games": ["Epic Game Store", "Epic Store", "EGS"],
+                    "PlayStation": ["PS", "PS1", "Sony PlayStation", "PSX", "PS one", "PSOne", "playstation"],
+                    "Nintendo GameCube": ["GC", "NGC", "Gamecube", "GameCube", "NintendoGameCube"],
+                    "Nintendo Wii": ["Wii", "NintendoWii", "RVL"],
+                    "Nintendo Wii U": ["WiiU", "NintendoWiiU", "Wii U", "Cafe"],
+                    "Nintendo Switch": ["Switch", "NintendoSwitch", "NS", "NSW", "HAC"],
+                    // add more groups here
+                };
+
+
+                function normalizeLauncherName(name) {
+                return name.trim().toLowerCase();
+                }
+
+                const launcherAliases = {};
+
+                for (const [canonical, aliases] of Object.entries(aliasGroups)) {
+                for (const alias of aliases) {
+                    launcherAliases[normalizeLauncherName(alias)] = canonical;
+                }
+                launcherAliases[normalizeLauncherName(canonical)] = canonical;
+                }
+
+                function resolveLauncherName(name) {
+                return launcherAliases[normalizeLauncherName(name)] || name;
+                }
+
+                function getLauncherIcon(name) {
+                return launcherIcons[resolveLauncherName(name)];
+                }
+
                 const launcherName = foundLauncher;
-                const launcherIcon = (launcherName && launcherIcons[launcherName]) || null;
+                const launcherIcon = launcherName ? getLauncherIcon(launcherName) : null;
+
 
                 if (launcherIcon) {
                 // Row that holds launcher icon + music button
@@ -2746,7 +2809,7 @@ METADATA_CODE = r"""
                 leftColumn.appendChild(createTagRow([gameData.release_date || "Unknown"]));
                 leftColumn.appendChild(createTagRow((gameData.genres || "Unknown").split(",").map(g => g.trim())));
 
-            // Right column (description + Metacritic tab)
+                // Right column (description + Metacritic tab)
                 const rightColumn = document.createElement('div');
                 rightColumn.style.display = "flex";
                 rightColumn.style.flexDirection = "column";
@@ -2901,13 +2964,15 @@ METADATA_CODE = r"""
                 bottomLinks.appendChild(link);
                 });
 
-
-                // --- ITAD button directly under description ---
                 const itadSite = {
-                    name: "",
+                    name:
+                        gameData.discounted_price && gameData.discount_percent
+                            ? `${gameData.discounted_price} (-${gameData.discount_percent}%)`
+                            : "",
                     url: "https://isthereanydeal.com/game/",
                     icon: "https://isthereanydeal.com/public/assets/logo-GBHE6XF2.svg"
                 };
+
 
                 const slug = gameName.toLowerCase()
                     .replace(/[^a-z0-9 ]/g, '')
@@ -2942,10 +3007,18 @@ METADATA_CODE = r"""
                 itadIcon.src = itadSite.icon;
                 itadIcon.style.width = "16px";
                 itadIcon.style.height = "16px";
-                itadIcon.style.marginRight = "6px";
-                itadLink.prepend(itadIcon);
+                itadIcon.style.marginLeft = "3px"; // spacing between text and icon
 
-                itadLink.appendChild(document.createTextNode(itadSite.name));
+                itadIcon.style.marginRight = "0px";
+
+
+
+
+                // --- ORDER: TEXT LEFT, ICON RIGHT ---
+                if (itadSite.name) {
+                    itadLink.appendChild(document.createTextNode(itadSite.name));
+                }
+                itadLink.appendChild(itadIcon);
 
                 // append it **directly under description** in right column
                 rightColumn.appendChild(itadLink);
