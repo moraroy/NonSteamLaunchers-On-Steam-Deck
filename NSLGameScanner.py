@@ -3804,6 +3804,7 @@ create_new_entry(chromedirectory, 'Youtube TV', os.environ.get('youtubetvchromel
 create_new_entry(chromedirectory, 'Amazon Luna', os.environ.get('lunachromelaunchoptions'), os.environ.get('chrome_startdir'), launcher_name=browser_for_env('lunachromelaunchoptions'))
 create_new_entry(chromedirectory, 'Twitch', os.environ.get('twitchchromelaunchoptions'), os.environ.get('chrome_startdir'), launcher_name=browser_for_env('twitchchromelaunchoptions'))
 create_new_entry(chromedirectory, 'Venge', os.environ.get('vengechromelaunchoptions'), os.environ.get('chrome_startdir'), launcher_name=browser_for_env('vengechromelaunchoptions'))
+create_new_entry(chromedirectory, 'Super Monkey Ball Online', os.environ.get('monkeychromelaunchoptions'), os.environ.get('chrome_startdir'), launcher_name=browser_for_env('monkeychromelaunchoptions'))
 create_new_entry(chromedirectory, 'Rocketcrab', os.environ.get('rocketcrabchromelaunchoptions'), os.environ.get('chrome_startdir'), launcher_name=browser_for_env('rocketcrabchromelaunchoptions'))
 create_new_entry(chromedirectory, 'Fortnite', os.environ.get('fortnitechromelaunchoptions'), os.environ.get('chrome_startdir'), launcher_name=browser_for_env('fortnitechromelaunchoptions'))
 create_new_entry(chromedirectory, 'Cloudy Pad', os.environ.get('cloudychromelaunchoptions'), os.environ.get('chrome_startdir'), launcher_name=browser_for_env('cloudychromelaunchoptions'))
@@ -5922,7 +5923,7 @@ skip_games = {'Epic Games', 'GOG Galaxy', 'Ubisoft Connect', 'Battle.net', 'EA A
     'Netflix', 'Hulu', 'Tubi', 'Disney+', 'Amazon Prime Video', 'Youtube', 'Youtube TV',
     'Amazon Luna', 'Twitch', 'Venge', 'Rocketcrab', 'Fortnite', 'WebRcade', 'Cloudy Pad',
     'WebRcade Editor', 'Afterplay.io', 'OnePlay', 'AirGPU', 'CloudDeck', 'JioGamesCloud',
-    'Plex', 'Apple TV+', 'Crunchyroll', 'PokéRogue', 'NonSteamLaunchers', 'Repair EA App', 'Gryphlink'}
+    'Plex', 'Apple TV+', 'Crunchyroll', 'PokéRogue', 'NonSteamLaunchers', 'Repair EA App', 'Gryphlink', 'Super Monkey Ball Online'}
 
 
 # --- Boot Video Logic ---
