@@ -227,7 +227,7 @@ Supported Stores 🛍
 - Antstream Arcade ✔️
 - Hytale ✔️
 - Big Fish Games Manager ✔️
-- Gryphlink
+- Gryphlink ✔️
 - RemotePlayWhatever ✔️
 - NVIDIA GeForce NOW (Native Linux) ✔️
 - STOVE Client ✔️
@@ -266,6 +266,7 @@ Supported Streaming Sites for games and as well as any website. 🌐
 - Plex ✔️
 - Apple TV+ ✔️
 - Crunchyroll ✔️
+- Super Monkey Ball Online ✔️
 
 
 <h1 align="left">
