@@ -862,6 +862,7 @@ launcher_entries=(
 chrome_entries=(
   "FALSE|Fortnite"
   "FALSE|Venge"
+  "FALSE|Super Monkey Ball Online"
   "FALSE|PokéRogue"
   "FALSE|Xbox Game Pass"
   "FALSE|Better xCloud"
@@ -3167,7 +3168,7 @@ echo "# Checking if a browser is needed...please wait..."
 # Check if user selected any browser-based service or entered a website
 if [[ $options == *"Apple TV+"* ]] || [[ $options == *"Plex"* ]] || [[ $options == *"Crunchyroll"* ]] || \
    [[ $options == *"WebRcade"* ]] || [[ $options == *"WebRcade Editor"* ]] || [[ $options == *"Netflix"* ]] || \
-   [[ $options == *"Fortnite"* ]] || [[ $options == *"Venge"* ]] || [[ $options == *"Xbox Game Pass"* ]] || \
+   [[ $options == *"Fortnite"* ]] || [[ $options == *"Venge"* ]] || [[ $options == *"Super Monkey Ball Online"* ]] || [[ $options == *"Xbox Game Pass"* ]] || \
    [[ $options == *"Better xCloud"* ]] || [[ $options == *"Geforce Now"* ]] || [[ $options == *"Boosteroid Cloud Gaming"* ]] || \
    [[ $options == *"Amazon Luna"* ]] || [[ $options == *"Hulu"* ]] || [[ $options == *"Tubi"* ]] || \
    [[ $options == *"Disney+"* ]] || [[ $options == *"Amazon Prime Video"* ]] || [[ $options == *"Youtube"* ]] || \
@@ -3754,6 +3755,7 @@ declare -A services=(
     ["Fortnite"]="fortnite|https://www.xbox.com/en-US/play/games/fortnite/BT5P2X999VH2"
     ["Better xCloud"]="xcloud|https://better-xcloud.github.io"
     ["Venge"]="venge|https://venge.io"
+    ["Super Monkey Ball Online"]="monkey|https://monkeyball-online.pages.dev"
     ["PokéRogue"]="pokerogue|https://pokerogue.net"
     ["Boosteroid Cloud Gaming"]="boosteroid|https://cloud.boosteroid.com"
     ["WebRcade"]="webrcade|https://play.webrcade.com"
