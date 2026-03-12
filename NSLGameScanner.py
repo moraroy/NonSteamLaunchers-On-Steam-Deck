@@ -366,9 +366,14 @@ def download_artwork(game_id, art_type, shortcut_id, dimensions=None):
             try:
                 alt_file_path = file_path.replace('.png', f'.{ext}')
                 # Use urllib to download the image
-                with urllib.request.urlopen(image_url) as response:
+                req = urllib.request.Request(image_url)
+                req.add_header("User-Agent", "Mozilla/5.0 (X11; Linux x86_64)")
+                req.add_header("Referer", "https://www.steamgriddb.com/")
+
+                with urllib.request.urlopen(req) as response:
                     if response.status == 200:
                         image_data = response.read()
+
 
                         # Save the image data to local file
                         with open(alt_file_path, 'wb') as file:
