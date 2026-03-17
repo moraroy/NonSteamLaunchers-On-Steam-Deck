@@ -3084,7 +3084,7 @@ install_launcher "Amazon Games" "AmazonGamesLauncher" "$amazon_file" "$amazon_ur
 install_launcher "EA App" "TheEAappLauncher" "$eaapp_file" "$eaapp_url" "$eaapp_file /quiet" "75" "" "install_eaapp" true
 
 # Install itch.io
-install_launcher "itch.io" "itchioLauncher" "$itchio_file" "$itchio_url" "$itchio_file --silent" "76" "" "install_itchio"
+install_launcher "itch.io" "itchioLauncher" "$itchio_file" "$itchio_url" "$itchio_file --silent" "76" "" ""
 
 # Install Legacy Games
 install_launcher "Legacy Games" "LegacyGamesLauncher" "$legacygames_file" "$legacygames_url" "$legacygames_file /S" "77" "" ""
