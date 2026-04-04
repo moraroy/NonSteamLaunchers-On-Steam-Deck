@@ -3,6 +3,6 @@ charset-normalizer==3.4.6
 idna==3.11
 python-decouple==3.8
 python-steamgriddb==1.0.5
-requests==2.33.0
+requests==2.33.1
 urllib3==2.6.3
 vdf==3.4
