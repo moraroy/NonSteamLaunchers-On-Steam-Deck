@@ -28,7 +28,7 @@ dev = [
     "pytest-cov>=6.0.0,<8",
     "pytest-datafiles>=3.0.0,<4",
     "pytest-xdist>=3.4.0,<4",
-    "rich>=14.0.0,<15",
+    "rich>=14.0.0,<16",
     "ruff>=0.12.1,<0.16",
 ]
 
