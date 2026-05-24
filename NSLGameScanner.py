@@ -2734,7 +2734,6 @@ METADATA_CODE = r"""
                 const launcherIcon = launcherName ? getLauncherIcon(launcherName) : null;
 
 
-                if (launcherIcon) {
                 // Row that holds launcher icon + music button
                 const launcherRow = document.createElement('div');
                 launcherRow.style.display = "flex";
@@ -2742,18 +2741,27 @@ METADATA_CODE = r"""
                 launcherRow.style.gap = "8px";
                 launcherRow.style.marginBottom = "8px";
 
-                // Launcher icon
-                const icon = document.createElement('img');
-                icon.src = launcherIcon;
-                icon.alt = launcherName;
-                icon.style.width = "60px";
-                icon.style.height = "60px";
-                icon.style.objectFit = "contain";
-                icon.onerror = () => icon.remove();
+                if (launcherIcon) {
+                    const icon = document.createElement('img');
+                    icon.src = launcherIcon;
+                    icon.alt = launcherName;
+                    icon.style.width = "60px";
+                    icon.style.height = "60px";
+                    icon.style.objectFit = "contain";
+                    icon.onerror = () => icon.remove();
 
-                launcherRow.appendChild(icon);
+                    launcherRow.appendChild(icon);
+                } else {
+                    // Empty space so layout stays aligned
+                    const blankIcon = document.createElement('div');
+                    blankIcon.style.width = "60px";
+                    blankIcon.style.height = "60px";
+                    blankIcon.style.flexShrink = "0";
 
-                // Placeholder music button (no logic)
+                    launcherRow.appendChild(blankIcon);
+                }
+
+                // --- Music button ---
                 const musicBtn = document.createElement('button');
                 musicBtn.textContent = "🎵";
                 musicBtn.style.background = "rgba(36,40,47,0.7)";
@@ -2769,14 +2777,12 @@ METADATA_CODE = r"""
                 musicBtn.style.justifyContent = "center";
                 musicBtn.style.transition = "background 0.2s ease";
 
-
                 launcherRow.appendChild(musicBtn);
+
                 attachThemeMusicBehavior(musicBtn);
 
-
-                // Add row to left column
                 leftColumn.appendChild(launcherRow);
-                }
+
 
 
                 function createTag(text, fontSize) {
