@@ -2661,11 +2661,40 @@ METADATA_CODE = r"""
 
                 // Launcher icons
                 const launcherIcons = {
-                "Epic Games": "https://cdn2.steamgriddb.com/icon/34ffeb359a192eb8174b6854643cc046/32/96x96.png",
-                "GOG Galaxy": "https://cdn2.steamgriddb.com/icon/a928731e103dfc64c0027fa84709689e/32/96x96.png",
-                "NonSteamLaunchers": "https://raw.githubusercontent.com/moraroy/NonSteamLaunchers-On-Steam-Deck/refs/heads/main/logo.png",
-                "Ubisoft Connect": "https://cdn2.steamgriddb.com/icon/dabcff9ba10224b01fd2ce83f7d73ad6/32/96x96.png",
-                "EA App": "https://cdn2.steamgriddb.com/icon/ff51fb7a9bcb22c595616b4fa368880a/32/96x96.png",
+                "Epic Games": {
+                    icon: "https://cdn2.steamgriddb.com/icon/34ffeb359a192eb8174b6854643cc046/32/96x96.png",
+
+                    getUrl: (gameName) => {
+                        const query = encodeURIComponent(gameName.trim());
+
+                        return `https://store.epicgames.com/browse?q=${query}&sortBy=relevancy&sortDir=DESC&count=40`;
+                    }
+                },
+                "GOG Galaxy": {
+                    icon: "https://cdn2.steamgriddb.com/icon/a928731e103dfc64c0027fa84709689e/32/96x96.png",
+
+                    getUrl: (gameName) => {
+                        const slug = gameName
+                            .toLowerCase()
+                            .replace(/[^a-z0-9 ]/g, "")
+                            .trim()
+                            .replace(/\s+/g, "_");
+
+                        return `https://www.gog.com/en/game/${slug}`;
+                    }
+                },
+                "Ubisoft Connect": {
+                    icon: "https://cdn2.steamgriddb.com/icon/dabcff9ba10224b01fd2ce83f7d73ad6/32/96x96.png",
+
+                    getUrl: (gameName) => {
+                        const query = encodeURIComponent(gameName.trim());
+
+                        return `https://www.ubisoft.com/en-us/search?gss-q=${query}`;
+                    }
+                },
+                "EA App": {
+                    icon: "https://cdn2.steamgriddb.com/icon/ff51fb7a9bcb22c595616b4fa368880a/32/96x96.png",
+                },
                 "Amazon Games": "https://cdn2.steamgriddb.com/icon_thumb/6e88ec1459f337d5bea6353f8bff8026.png",
                 "itch.io": "https://cdn2.steamgriddb.com/icon/2ad9e5e943e43cad612a7996c12a8796/32/96x96.png",
                 "Battle.net": "https://cdn2.steamgriddb.com/icon/739465804a0e17d2a47c9bc9c805d60a/32/96x96.png",
@@ -2694,6 +2723,7 @@ METADATA_CODE = r"""
                 "Nintendo Switch": "https://cdn2.steamgriddb.com/icon_thumb/3b05af2c48dbaf6656fdf2d2f905b3b6.png",
                 "PlayStation": "https://cdn2.steamgriddb.com/icon_thumb/f6a81f703854985705a0cc479d221282.png",
                 "PlayStation 2": "https://cdn2.steamgriddb.com/icon/5e3600417e9ac9abf5a6fea026f9b05a/32/256x256.png",
+                "NonSteamLaunchers": "https://raw.githubusercontent.com/moraroy/NonSteamLaunchers-On-Steam-Deck/refs/heads/main/logo.png",
                 };
 
                 const aliasGroups = {
@@ -2733,7 +2763,6 @@ METADATA_CODE = r"""
                 const launcherName = foundLauncher;
                 const launcherIcon = launcherName ? getLauncherIcon(launcherName) : null;
 
-
                 // Row that holds launcher icon + music button
                 const launcherRow = document.createElement('div');
                 launcherRow.style.display = "flex";
@@ -2742,18 +2771,55 @@ METADATA_CODE = r"""
                 launcherRow.style.marginBottom = "8px";
 
                 if (launcherIcon) {
+
+                    const launcherLink = document.createElement('a');
+
+                    // Only use URL if launcher supports it
+                    if (typeof launcherIcon !== "string" && launcherIcon.getUrl) {
+                        launcherLink.href = launcherIcon.getUrl(gameName);
+                        launcherLink.target = "_blank";
+                    }
+
+                    launcherLink.style.display = "inline-flex";
+                    launcherLink.style.alignItems = "center";
+                    launcherLink.style.justifyContent = "center";
+                    launcherLink.style.borderRadius = "10px";
+                    launcherLink.style.transition = "transform 0.15s ease, filter 0.15s ease, background 0.15s ease";
+
+                    // subtle hover feedback
+                    launcherLink.onmouseover = () => {
+                        launcherLink.style.transform = "scale(1.06)";
+                    };
+
+                    launcherLink.onmouseout = () => {
+                        launcherLink.style.transform = "scale(1)";
+                    };
+
                     const icon = document.createElement('img');
-                    icon.src = launcherIcon;
+
+                    icon.src = typeof launcherIcon === "string"
+                        ? launcherIcon
+                        : launcherIcon.icon;
+
                     icon.alt = launcherName;
+
                     icon.style.width = "60px";
                     icon.style.height = "60px";
                     icon.style.objectFit = "contain";
-                    icon.onerror = () => icon.remove();
 
-                    launcherRow.appendChild(icon);
+                    // keep cursor here OR on link (either works)
+                    launcherLink.style.cursor = "pointer";
+
+                    icon.onerror = () => launcherLink.remove();
+
+                    launcherLink.appendChild(icon);
+                    launcherRow.appendChild(launcherLink);
+
                 } else {
+
                     // Empty space so layout stays aligned
                     const blankIcon = document.createElement('div');
+
                     blankIcon.style.width = "60px";
                     blankIcon.style.height = "60px";
                     blankIcon.style.flexShrink = "0";
@@ -2934,8 +3000,11 @@ METADATA_CODE = r"""
                 { name: "SDHQ", url: "https://steamdeckhq.com/?s=", icon: "https://pbs.twimg.com/profile_images/1539310786614419459/5ohiy0ZX_400x400.jpg" },
                 { name: "GOS", url: "https://gamingonsteam.com/?post_type=post&s=", extra: "&btnSubmit=", icon: "https://gamingonsteam.com/wp-content/uploads/2025/12/X-BS-1-e1765643013126.png" },
                 { name: "GameFAQs", url: "https://gamefaqs.gamespot.com/search?game=", icon: "https://gamefaqs.gamespot.com/favicon.ico" },
-                { name: "ProtonDB", url: "https://www.protondb.com/search?q=", icon: "https://www.protondb.com/sites/protondb/images/site-logo.svg"},
+                { name: "ProtonDB", url: "https://www.protondb.com/search?q=", icon: "https://www.protondb.com/sites/protondb/images/site-logo.svg" },
+                { name: "SteamInputDB", url: "https://www.steaminputdb.com/config/search?searchtext=", extra: "&sort-by=vote", icon: "https://raw.githubusercontent.com/Alia5/steaminputdb.com/refs/heads/main/buddy-app/tray/icon.ico" },
                 { name: "AWACY", url: "https://areweanticheatyet.com/?search=", icon: "https://areweanticheatyet.com/icon.webp" },
+                { name: "SteamCharts", url: "https://steamcharts.com/search/?q=", icon: "https://pbs.twimg.com/profile_images/473239151924346880/5k2c-3Hv_400x400.png" },
+                {name: "SRC", url: "https://www.speedrun.com/search?q=", icon: "https://avatars.githubusercontent.com/u/11006616?s=200&v=4"},
                 ];
 
                 searchSites.forEach(site => {
@@ -2951,6 +3020,16 @@ METADATA_CODE = r"""
                         .replace(/\s+/g, '-');
 
                     gameUrl = `${site.url}${slug}/info/`;
+                }
+
+                if (site.name === "SRC") {
+                    const slug = gameName
+                        .replace(/:/g, '')      // remove colons
+                        .replace(/[^\w\s]/g, '') // remove special chars
+                        .trim()
+                        .replace(/\s+/g, '_');  // spaces -> underscores
+
+                    gameUrl = `https://www.speedrun.com/${slug}`;
                 }
 
                 link.href = gameUrl;
@@ -2985,14 +3064,14 @@ METADATA_CODE = r"""
                 });
 
 
-
+                //ITAD
                 const itadSite = {
-                name:
-                    gameData.discounted_price && gameData.discount_percent
-                        ? `${gameData.discounted_price} (-${gameData.discount_percent}%)`
-                        : "",
-                url: "https://isthereanydeal.com/game/",
-                icon: "https://isthereanydeal.com/public/assets/logo-GBHE6XF2.svg"
+                    name:
+                        gameData.discounted_price && gameData.discount_percent
+                            ? `${gameData.discounted_price} (-${gameData.discount_percent}%)`
+                            : "",
+                    url: "https://isthereanydeal.com/game/",
+                    icon: "https://isthereanydeal.com/public/assets/logo-GBHE6XF2.svg"
                 };
 
                 const slug = gameName.toLowerCase()
@@ -3005,37 +3084,56 @@ METADATA_CODE = r"""
                 const itadLink = document.createElement('a');
                 itadLink.href = itadUrl;
                 itadLink.target = "_blank";
+
+                itadLink.style.position = "absolute";
+                itadLink.style.top = "-2px";
+                itadLink.style.right = "12px";
+                itadLink.style.zIndex = "10";
+
                 itadLink.style.display = "inline-flex";
                 itadLink.style.alignItems = "center";
+                itadLink.style.gap = "6px";
+
                 itadLink.style.background = "rgba(36,40,47,0.7)";
                 itadLink.style.color = "white";
-                itadLink.style.fontSize = "13px";
-                itadLink.style.padding = "6px 12px";
-                itadLink.style.borderRadius = "12px";
+                itadLink.style.fontSize = "12px";
+                itadLink.style.padding = "6px 10px";
+                itadLink.style.borderRadius = "10px";
                 itadLink.style.textDecoration = "none";
                 itadLink.style.width = "max-content";
 
-                rightColumn.style.display = "flex";
-                rightColumn.style.flexDirection = "column";
-                rightColumn.style.alignItems = "flex-end";
+                itadLink.style.cursor = "pointer";
+                itadLink.style.transition = "background 0.2s ease";
 
-                itadLink.style.marginTop = "0px";
+                itadLink.onmouseover = () => {
+                    itadLink.style.background = "rgba(80,80,80,0.9)";
+                };
 
-                itadLink.onmouseover = () => itadLink.style.background = "rgba(80,80,80,0.9)";
-                itadLink.onmouseout = () => itadLink.style.background = "rgba(36,40,47,0.7)";
+                itadLink.onmouseout = () => {
+                    itadLink.style.background = "rgba(36,40,47,0.7)";
+                };
 
                 const itadIcon = document.createElement('img');
                 itadIcon.src = itadSite.icon;
                 itadIcon.style.width = "16px";
                 itadIcon.style.height = "16px";
-                itadIcon.style.marginLeft = "3px";
 
                 if (itadSite.name) {
-                    itadLink.appendChild(document.createTextNode(itadSite.name));
+                    const itadText = document.createElement('span');
+                    itadText.textContent = itadSite.name;
+                    itadText.style.fontWeight = "bold";
+                    itadText.style.fontSize = "12px";
+                    itadText.style.fontFamily = '"Roboto", "Segoe UI", Tahoma, Geneva, Verdana, sans-serif';
+
+                    // green “score-style” color (matching your Metacritic idea)
+                    itadText.style.color = "rgb(75, 139, 90)";
+
+                    itadLink.appendChild(itadText);
                 }
+
                 itadLink.appendChild(itadIcon);
 
-                rightColumn.appendChild(itadLink);
+                overlay.appendChild(itadLink);
 
 
 
