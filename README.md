@@ -141,8 +141,7 @@ Currently Working On 👷‍♂️
 
 3. Run **NSLPluginWindows.exe** first. This will also create the necessary cef debugging file for Decky Loader.
 
-4. Run either **No_console.exe** or **Plugin Loader.exe**, depending on your preference.
-
+4. Run either No_console.exe or Plugin Loader.exe. You can also press Win + R, type shell:startup, and press Enter, then place the .exe there to launch Decky Loader on boot.
 5. Go into **Game Mode** or **Big Picture Mode** to see the Decky Loader plugin and NonSteamLaunchers.
 
 
