@@ -139,9 +139,7 @@ cd "$LOCAL_DIR"
 
 
 
-systemctl daemon-reload
-systemctl restart plugin_loader
-sleep 3
+
 
 # Ask to switch to Game Mode
 zenity --question --text="Plugin installed or updated. Do you want to switch to Game Mode now?" --title="Switch to Game Mode?" --ok-label="Yes" --cancel-label="No"
