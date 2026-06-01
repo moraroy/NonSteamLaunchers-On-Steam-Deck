@@ -2474,10 +2474,6 @@ METADATA_CODE = r"""
                         current_players: await getSteamPlayerCount(appid)
                     };
 
-                    console.log("Game:", gameName);
-                    console.log("AppID:", appid);
-                    console.log("Players:", gameData.current_players);
-
                     gameCache[gameName] = gameData;
                     return gameData;
                 }
