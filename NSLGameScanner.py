@@ -2379,7 +2379,37 @@ METADATA_CODE = r"""
 
         // Cache object to store game details
         const gameCache = {};
+        const playerCache = {};
 
+        async function getSteamPlayerCount(appId) {
+            const now = Date.now();
+
+            // Return cached value if it’s still fresh (30 seconds)
+            if (playerCache[appId] && now - playerCache[appId].timestamp < 30000) {
+                return playerCache[appId].value;
+            }
+
+            try {
+                const res = await fetch(
+                    `https://api.steampowered.com/ISteamUserStats/GetNumberOfCurrentPlayers/v1/?appid=${appId}`
+                );
+
+                if (!res.ok) {
+                    console.warn(`Steam API responded with status ${res.status} for appId: ${appId}`);
+                    return null;
+                }
+
+                const data = await res.json();
+                const value = data?.response?.player_count ?? null;
+
+                playerCache[appId] = { value, timestamp: now };
+
+                return value;
+            } catch (err) {
+                console.warn("Error fetching player count:", err, "AppID:", appId);
+                return null;
+            }
+        }
 
         async function getSteamGameDetails(gameName) {
             if (gameCache[gameName]) return gameCache[gameName];
@@ -2441,7 +2471,12 @@ METADATA_CODE = r"""
                             info.price_overview?.discount_percent > 0
                                 ? info.price_overview.discount_percent
                                 : null,
+                        current_players: await getSteamPlayerCount(appid)
                     };
+
+                    console.log("Game:", gameName);
+                    console.log("AppID:", appid);
+                    console.log("Players:", gameData.current_players);
 
                     gameCache[gameName] = gameData;
                     return gameData;
@@ -2851,6 +2886,59 @@ METADATA_CODE = r"""
 
 
 
+                // Start of Player Count Render
+                launcherRow.style.position = "relative";
+
+                if (gameData.current_players != null) {
+
+                    const playerBox = document.createElement("div");
+
+                    playerBox.style.fontSize = "11px";
+                    playerBox.style.background = "rgba(35, 120, 70, 0.8)";
+                    playerBox.style.padding = "3px 8px";
+                    playerBox.style.borderRadius = "12px";
+                    playerBox.style.whiteSpace = "nowrap";
+
+                    // line up under music button
+                    playerBox.style.position = "absolute";
+                    playerBox.style.left = "56px";
+                    playerBox.style.top = "46px";
+                    playerBox.style.zIndex = "5";
+                    playerBox.textContent = "👥 Loading players...";
+
+
+
+                    let current = 0;
+                    let raf;
+
+                    function ease(t) {
+                        return 1 - Math.pow(1 - t, 3);
+                    }
+
+                    function animate(to) {
+                        const from = current;
+                        const diff = to - from;
+                        const start = performance.now();
+
+                        cancelAnimationFrame(raf);
+
+                        function frame(now) {
+                            const p = Math.min((now - start) / 1000, 1);
+                            current = Math.round(from + diff * ease(p));
+                            playerBox.textContent = `👥 ${current.toLocaleString()} online`;
+                            if (p < 1) raf = requestAnimationFrame(frame);
+                        }
+
+                        raf = requestAnimationFrame(frame);
+                    }
+
+                    animate(gameData.current_players);
+
+                    launcherRow.appendChild(playerBox);
+                }
+                // End of Player Count Render
+
+
                 function createTag(text, fontSize) {
                 const tag = document.createElement('span');
                 tag.textContent = text;
@@ -2973,6 +3061,9 @@ METADATA_CODE = r"""
                 overlay.appendChild(contentRow);
 
 
+
+
+
                 // Bottom links
                 const bottomLinks = document.createElement('div');
                 bottomLinks.style.position = "absolute";
@@ -2999,11 +3090,12 @@ METADATA_CODE = r"""
                 { name: "HLTB", url: "https://howlongtobeat.com/?q=", icon: "https://howlongtobeat.com/favicon.ico" },
                 { name: "SDHQ", url: "https://steamdeckhq.com/?s=", icon: "https://pbs.twimg.com/profile_images/1539310786614419459/5ohiy0ZX_400x400.jpg" },
                 { name: "GOS", url: "https://gamingonsteam.com/?post_type=post&s=", extra: "&btnSubmit=", icon: "https://gamingonsteam.com/wp-content/uploads/2025/12/X-BS-1-e1765643013126.png" },
-                { name: "GameFAQs", url: "https://gamefaqs.gamespot.com/search?game=", icon: "https://gamefaqs.gamespot.com/favicon.ico" },
+                { name: "SteamCharts", url: "https://steamcharts.com/search/?q=", icon: "https://pbs.twimg.com/profile_images/473239151924346880/5k2c-3Hv_400x400.png" },
                 { name: "ProtonDB", url: "https://www.protondb.com/search?q=", icon: "https://www.protondb.com/sites/protondb/images/site-logo.svg" },
                 { name: "SteamInputDB", url: "https://www.steaminputdb.com/config/search?searchtext=", extra: "&sort-by=vote", icon: "https://raw.githubusercontent.com/Alia5/steaminputdb.com/refs/heads/main/buddy-app/tray/icon.ico" },
                 { name: "AWACY", url: "https://areweanticheatyet.com/?search=", icon: "https://areweanticheatyet.com/icon.webp" },
-                { name: "SteamCharts", url: "https://steamcharts.com/search/?q=", icon: "https://pbs.twimg.com/profile_images/473239151924346880/5k2c-3Hv_400x400.png" },
+                { name: "GameFAQs", url: "https://gamefaqs.gamespot.com/search?game=", icon: "https://gamefaqs.gamespot.com/favicon.ico" },
+
                 {name: "SRC", url: "https://www.speedrun.com/search?q=", icon: "https://avatars.githubusercontent.com/u/11006616?s=200&v=4"},
                 ];
 
@@ -3064,12 +3156,11 @@ METADATA_CODE = r"""
                 });
 
 
-                //ITAD
+
                 const itadSite = {
-                    name:
-                        gameData.discounted_price && gameData.discount_percent
-                            ? `${gameData.discounted_price} (-${gameData.discount_percent}%)`
-                            : "",
+                    name: gameData.discounted_price && gameData.discount_percent
+                        ? `${gameData.discounted_price} (-${gameData.discount_percent}%)`
+                        : "",
                     url: "https://isthereanydeal.com/game/",
                     icon: "https://isthereanydeal.com/public/assets/logo-GBHE6XF2.svg"
                 };
@@ -3105,32 +3196,23 @@ METADATA_CODE = r"""
                 itadLink.style.cursor = "pointer";
                 itadLink.style.transition = "background 0.2s ease";
 
-                itadLink.onmouseover = () => {
-                    itadLink.style.background = "rgba(80,80,80,0.9)";
-                };
-
-                itadLink.onmouseout = () => {
-                    itadLink.style.background = "rgba(36,40,47,0.7)";
-                };
+                itadLink.onmouseover = () => itadLink.style.background = "rgba(80,80,80,0.9)";
+                itadLink.onmouseout = () => itadLink.style.background = "rgba(36,40,47,0.7)";
 
                 const itadIcon = document.createElement('img');
                 itadIcon.src = itadSite.icon;
                 itadIcon.style.width = "16px";
                 itadIcon.style.height = "16px";
 
+                const itadText = document.createElement('span');
                 if (itadSite.name) {
-                    const itadText = document.createElement('span');
                     itadText.textContent = itadSite.name;
                     itadText.style.fontWeight = "bold";
                     itadText.style.fontSize = "12px";
-                    itadText.style.fontFamily = '"Roboto", "Segoe UI", Tahoma, Geneva, Verdana, sans-serif';
-
-                    // green “score-style” color (matching your Metacritic idea)
                     itadText.style.color = "rgb(75, 139, 90)";
-
-                    itadLink.appendChild(itadText);
                 }
 
+                if (itadSite.name) itadLink.appendChild(itadText);
                 itadLink.appendChild(itadIcon);
 
                 overlay.appendChild(itadLink);
