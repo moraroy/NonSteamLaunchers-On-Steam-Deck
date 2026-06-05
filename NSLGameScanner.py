@@ -3878,12 +3878,17 @@ def extract_base_path(launchoptions):
         return match.group(1)
     raise ValueError("STEAM_COMPAT_DATA_PATH not found in launch options")
 
+def norm(s):
+    return s.strip().lower()
+
+
 def modify_shortcut_for_umu(appname, exe, launchoptions, startingdir):
     # Skip UMU modification for specific titles
     skip_titles = ["genshin impact", "zenless zone zero"]
     if appname.lower() in skip_titles:
         print(f"Skipping UMU modification for {appname}.")
         return exe, startingdir, launchoptions
+
     # Skip processing if STEAM_COMPAT_DATA_PATH is not present
     if 'STEAM_COMPAT_DATA_PATH=' not in launchoptions:
         print(f"Launch options for {appname} do not contain STEAM_COMPAT_DATA_PATH. Skipping modification.")
@@ -3898,6 +3903,7 @@ def modify_shortcut_for_umu(appname, exe, launchoptions, startingdir):
         print(f"No entries found in UMU database. Skipping modification for {appname}.")
         return exe, startingdir, launchoptions
 
+    # Fallback: match by appname if codename not found
     if not codename:
         for entry in entries:
             if entry.get('TITLE') and entry['TITLE'].lower() == appname.lower():
@@ -3905,79 +3911,92 @@ def modify_shortcut_for_umu(appname, exe, launchoptions, startingdir):
                 break
 
     if codename:
+        selected_entry = None
+
         for entry in entries:
-            if entry['CODENAME'] == codename:
-                umu_id = entry['UMU_ID'].replace("umu-", "")  # Remove the "umu-" prefix
-                base_path = extract_base_path(launchoptions)
-                new_exe = f'"{logged_in_home}/bin/umu-run" {exe}'
-                new_start_dir = f'"{logged_in_home}/bin/"'
+            if norm(entry['CODENAME']) == norm(codename):
+                selected_entry = entry
+                break
 
-                # Update only the launchoptions part for different game types
-                updated_launch = launchoptions
+        if not selected_entry:
+            print(f"No UMU entry match for codename: {codename}")
+            return exe, startingdir, launchoptions
 
-                # Hoyoplay - Extract the game identifier
-                #match = re.search(r'--game=(\w+)', launchoptions)
-                #
-                #if match:
-                    #codename = match.group(1)  # Capture the identifier
-                    #updated_launch = f"'--game={codename}'"
+        codename = selected_entry['CODENAME']  # preserve canonical casing
+        umu_id = selected_entry['UMU_ID'].replace("umu-", "")
 
-                if "origin2://game/launch?offerIds=" in launchoptions:
-                    updated_launch = f'"origin2://game/launch?offerIds={codename}"'
-                elif "amazon-games://play/amzn1.adg.product." in launchoptions:
-                    updated_launch = f"-'amazon-games://play/{codename}'"
-                elif "com.epicgames.launcher://apps/" in launchoptions:
-                    updated_launch = f"-'com.epicgames.launcher://apps/{codename}?action=launch&silent=true'"
-                elif "uplay://launch/" in launchoptions:
-                    updated_launch = f'"uplay://launch/{codename}/0"'
-                elif "/command=runGame /gameId=" in launchoptions:
-                    updated_launch = f'/command=runGame /gameId={codename} /path={launchoptions.split("/path=")[1]}'
+        base_path = extract_base_path(launchoptions)
+        new_exe = f'"{logged_in_home}/bin/umu-run" {exe}'
+        new_start_dir = f'"{logged_in_home}/bin/"'
 
-                # Ensure the first STEAM_COMPAT_DATA_PATH is included and avoid adding it again
-                if 'STEAM_COMPAT_DATA_PATH=' in updated_launch:
-                    # Remove the existing STEAM_COMPAT_DATA_PATH if it exists in the launch options
-                    updated_launch = re.sub(r'STEAM_COMPAT_DATA_PATH="[^"]+" ', '', updated_launch)
+        updated_launch = launchoptions
+        
+        
+        # Hoyoplay - Extract the game identifier
+        #match = re.search(r'--game=(\w+)', launchoptions)
+        #
+        #if match:
+            #codename = match.group(1)  # Capture the identifier
+            #updated_launch = f"'--game={codename}'"
 
+        if "origin2://game/launch?offerIds=" in launchoptions:
+            updated_launch = f'"origin2://game/launch?offerIds={codename}"'
 
-                #Set compat tool name to UMU-Proton(Latest)
-                dir_path = f"{logged_in_home}/.steam/root/compatibilitytools.d"
-                pattern = re.compile(r"UMU-Proton-(\d+(?:\.\d+)*)(?:-(\d+(?:\.\d+)*))?")
+        elif "amazon-games://play/amzn1.adg.product." in launchoptions:
+            updated_launch = f"-'amazon-games://play/{codename}'"
 
-                def parse_version(m):
-                    main, sub = m.groups()
-                    return tuple(map(int, (main + '.' + (sub or '0')).split('.')))
+        elif "com.epicgames.launcher://apps/" in launchoptions:
+            updated_launch = f"-'com.epicgames.launcher://apps/{codename}?action=launch&silent=true'"
 
-                umu_folders = [
-                    (parse_version(m), name)
-                    for name in os.listdir(dir_path)
-                    if (m := pattern.match(name)) and os.path.isdir(os.path.join(dir_path, name))
-                ]
+        elif "uplay://launch/" in launchoptions:
+            updated_launch = f'"uplay://launch/{codename}/0"'
 
-                if umu_folders:
-                    compat_tool_name = max(umu_folders)[1]
+        elif "/command=runGame /gameId=" in launchoptions:
+            updated_launch = f'/command=runGame /gameId={codename} /path={launchoptions.split("/path=")[1]}'
 
-                # Always include the first STEAM_COMPAT_DATA_PATH at the start
-                new_launch_options = (
-                    f'STEAM_COMPAT_DATA_PATH="{base_path}" '
-                    f'WINEPREFIX="{base_path}pfx" '
-                    f'GAMEID="{umu_id}" '
-                    f'PROTONPATH="{logged_in_home}/.steam/root/compatibilitytools.d/{compat_tool_name}" '
-                )
+        # Remove duplicate STEAM_COMPAT_DATA_PATH if present
+        if 'STEAM_COMPAT_DATA_PATH=' in updated_launch:
+            updated_launch = re.sub(
+                r'STEAM_COMPAT_DATA_PATH="[^"]+" ',
+                '',
+                updated_launch
+            )
 
-                # Check if %command% is already in the launch options
-                if '%command%' not in updated_launch:
-                    updated_launch = f'%command% {updated_launch}'
+        # Set compat tool name to latest UMU-Proton
+        dir_path = f"{logged_in_home}/.steam/root/compatibilitytools.d"
+        pattern = re.compile(r"UMU-Proton-(\d+(?:\.\d+)*)(?:-(\d+(?:\.\d+)*))?")
 
-                # Final new launch options
-                new_launch_options += updated_launch
+        def parse_version(m):
+            main, sub = m.groups()
+            return tuple(map(int, (main + '.' + (sub or '0')).split('.')))
 
-                umu_processed_shortcuts[umu_id] = True
+        umu_folders = [
+            (parse_version(m), name)
+            for name in os.listdir(dir_path)
+            if (m := pattern.match(name)) and os.path.isdir(os.path.join(dir_path, name))
+        ]
 
-                return new_exe, new_start_dir, new_launch_options
+        compat_tool_name = max(umu_folders)[1] if umu_folders else "UMU-Proton-Latest"
+
+        new_launch_options = (
+            f'STEAM_COMPAT_DATA_PATH="{base_path}" '
+            f'WINEPREFIX="{base_path}pfx" '
+            f'GAMEID="{umu_id}" '
+            f'PROTONPATH="{logged_in_home}/.steam/root/compatibilitytools.d/{compat_tool_name}" '
+        )
+
+        if '%command%' not in updated_launch:
+            updated_launch = f'%command% {updated_launch}'
+
+        new_launch_options += updated_launch
+
+        umu_processed_shortcuts[umu_id] = True
+
+        return new_exe, new_start_dir, new_launch_options
 
     print(f"No UMU entry found for {appname}. Skipping modification.")
     return exe, startingdir, launchoptions
-
+   
 
 
 
