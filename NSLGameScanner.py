@@ -2794,6 +2794,10 @@ METADATA_CODE = r"""
                 return launcherIcons[resolveLauncherName(name)];
                 }
 
+                if (foundLauncher && foundLauncher.includes("NonSteamLaunchers")) {
+                    foundLauncher = "NonSteamLaunchers";
+                }
+                
                 const launcherName = foundLauncher;
                 const launcherIcon = launcherName ? getLauncherIcon(launcherName) : null;
 
