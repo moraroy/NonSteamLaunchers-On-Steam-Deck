@@ -1839,14 +1839,27 @@ THEMEMUSIC_CODE = r"""(function () {
 
 # Utility: Fetch debugger targets
 def fetch_targets(host, port):
-    conn = http.client.HTTPConnection(host, port)
-    conn.request("GET", "/json")
-    resp = conn.getresponse()
-    if resp.status != 200:
-        raise Exception(f"Failed to fetch targets: {resp.status} {resp.reason}")
-    data = resp.read()
-    conn.close()
-    return json.loads(data)
+    try:
+        conn = http.client.HTTPConnection(host, port, timeout=5)
+        conn.request("GET", "/json")
+        resp = conn.getresponse()
+
+        if resp.status != 200:
+            print(f"Failed to fetch targets: {resp.status} {resp.reason}")
+            sys.exit(0)
+
+        data = resp.read()
+        return json.loads(data)
+
+    except (ConnectionRefusedError, socket.timeout, http.client.CannotSendRequest, http.client.RemoteDisconnected, Exception) as e:
+        print(f"Error fetching debugger targets: {e}")
+        sys.exit(0)
+
+    finally:
+        try:
+            conn.close()
+        except:
+            pass
 
 # Find websocket debugger URL for the target title
 def get_ws_url_by_title(host, port, title):
