@@ -4343,7 +4343,7 @@ echo "export compat_tool_name=$compat_tool_name" >> ${logged_in_home}/.config/sy
 echo "export python_version=$python_version" >> ${logged_in_home}/.config/systemd/user/env_vars
 echo "export chromedirectory=$chromedirectory" >> ${logged_in_home}/.config/systemd/user/env_vars
 echo "export chrome_startdir=$chrome_startdir" >> ${logged_in_home}/.config/systemd/user/env_vars
-
+echo "NSL_SCAN_STATE=ON" >> ${logged_in_home}/.config/systemd/user/env_vars
 
 
 # TODO: might be better to relocate temp files to `/tmp` or even use `mktemp -d` since `rm -rf` is potentially dangerous without the `-i` flag
