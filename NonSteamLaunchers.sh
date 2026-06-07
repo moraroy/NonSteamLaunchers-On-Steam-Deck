@@ -2662,7 +2662,7 @@ function install_amazon {
 }
 
 function install_eaapp {
-    terminate_processes "EADesktop.exe"
+    #terminate_processes "EADesktop.exe"
 
     # Additional download for EA App
     eaapp_download_dir="${logged_in_home}/.local/share/Steam/steamapps/compatdata/$appid/pfx/drive_c/users/steamuser/Downloads/"
