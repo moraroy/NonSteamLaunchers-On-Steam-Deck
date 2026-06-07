@@ -3011,7 +3011,7 @@ function install_launcher {
         fi
 
         #temp ubi fix
-        if [[ "$launcher_name" == "Ubisoft Connect" ]]; then
+        if [[ "$launcher_name" == "Ubisoft Connect" || "$launcher_name" == "GOG Galaxy" ]]; then
             for root in \
                 "$HOME/.local/share/Steam" \
                 "$HOME/.steam/steam" \
