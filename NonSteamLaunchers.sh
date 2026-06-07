@@ -2404,6 +2404,13 @@ if [[ " ${args[@]} " =~ " 🔍 " ]] || [[ $options == "🔍" ]]; then
         # User wants to run NSLGameScanner again
         show_message "NSLGameScanner is now restarting!"
         update_nsl_game_scanner
+
+        # Restart Steam since the scanner is being restarted
+        echo "Restarting Steam..."
+        killall steam 2>/dev/null || true
+        while pgrep -x steam >/dev/null; do sleep 1; done
+        nohup /usr/bin/steam -silent %U &>/dev/null &
+
         if systemctl --user list-unit-files | grep -q "nslgamescanner.service"; then
             echo "[NSL] Starting NSL Game Scanner service..."
             systemctl --user start nslgamescanner.service
@@ -2413,7 +2420,7 @@ if [[ " ${args[@]} " =~ " 🔍 " ]] || [[ $options == "🔍" ]]; then
     else
         # User does not want to run NSLGameScanner again
         stop_service
-		exit 0
+        exit 0
     fi
 fi
 # Stop Scanner
