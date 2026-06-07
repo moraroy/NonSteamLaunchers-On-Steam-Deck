@@ -3488,7 +3488,6 @@ METADATA_CODE = r"""
         // Save it globally so future runs know it exists
         window.steamEnhancerObserver = observer;
     }
-
 }
 })();
 """
@@ -3533,6 +3532,287 @@ for target in (TARGET_TITLE2, TARGET_TITLE3):
 
 
 
+
+
+
+#Scanner button and control for Frontend
+ENVARS_FILE = f"{logged_in_home}/.config/systemd/user/env_vars"
+TARGET_TITLES = [TARGET_TITLE2, TARGET_TITLE3]
+
+SCANNER_CODE = r"""
+(function () {
+    if (window.__MY_SCANNER_LOADED__) return;
+    window.__MY_SCANNER_LOADED__ = true;
+
+    const css = (el, s) => Object.assign(el.style, s);
+
+    const style = document.createElement("style");
+    style.textContent = `
+        .steam-hover { transition: filter 0.12s ease; }
+        .steam-hover:hover { filter: brightness(1.25); }
+        .no-hover:hover { filter: none !important; }
+    `;
+    document.head.appendChild(style);
+
+    const inject = (addGame) => {
+        if (!addGame || addGame.parentElement.querySelector(".my-steam-controls")) return;
+
+        const parent = addGame.parentElement;
+        css(parent, { position: "relative" });
+
+        const wrapper = document.createElement("div");
+        wrapper.className = "my-steam-controls";
+
+        css(wrapper, {
+            display: "flex",
+            alignItems: "center",
+            gap: "8px",
+            position: "absolute",
+            left: "125px",
+            top: "50%",
+            transform: "translateY(-50%)",
+            zIndex: 9999,
+            pointerEvents: "auto"
+        });
+
+
+        let autoScan = window.__scan_state === "ON";
+        if (window.__scan_state === "MANUAL") autoScan = false;
+
+        const toggle = document.createElement("div");
+        const knob = document.createElement("div");
+        const scanBtn = document.createElement("div");
+        let scanLocked = false;
+
+        toggle.classList.add("steam-hover");
+        scanBtn.classList.add("steam-hover");
+
+        css(toggle, {
+            width: "34px", height: "18px", borderRadius: "999px",
+            background: "#333", border: "1px solid rgba(255,255,255,0.12)",
+            position: "relative", cursor: "pointer", transition: "0.12s ease"
+        });
+
+        css(knob, {
+            width: "14px", height: "14px", borderRadius: "50%",
+            background: "#bbb", position: "absolute", top: "50%", left: "2px",
+            transform: "translateY(-50%)", transition: "0.2s"
+        });
+
+        toggle.appendChild(knob);
+
+        css(scanBtn, {
+            width: "28px", height: "28px", display: "flex",
+            alignItems: "center", justifyContent: "center",
+            borderRadius: "6px", background: "rgba(255,255,255,0.06)",
+            border: "1px solid rgba(255,255,255,0.08)",
+            color: "rgba(255,255,255,0.85)", cursor: "pointer",
+            transition: "0.12s ease"
+        });
+
+        const render = () => {
+            const on = autoScan;
+
+            css(toggle, {
+                background: on ? "rgba(255,122,24,0.85)" : "#333",
+                opacity: scanLocked ? "0.4" : "1",
+                pointerEvents: scanLocked ? "none" : "auto"
+            });
+
+            knob.style.left = on ? "18px" : "2px";
+            knob.style.background = on ? "#fff" : "#bbb";
+
+            scanBtn.style.opacity = autoScan ? "0.4" : "1";
+            scanBtn.style.pointerEvents = autoScan ? "none" : "auto";
+            scanBtn.style.cursor = autoScan ? "default" : "pointer";
+
+            if (scanLocked) {
+                scanBtn.textContent = "⏳";
+                scanBtn.style.background = "rgba(255,122,24,0.85)";
+                scanBtn.style.border = "none";
+            } else {
+                scanBtn.style.background = "rgba(255,255,255,0.06)";
+                scanBtn.style.border = "1px solid rgba(255,255,255,0.08)";
+                if (autoScan) {
+                    scanBtn.textContent = "AUTO";
+                    scanBtn.style.fontSize = "11px";
+                    scanBtn.style.fontWeight = "700";
+                } else {
+                    scanBtn.textContent = "🔍";
+                    scanBtn.style.fontSize = "16px";
+                    scanBtn.style.fontWeight = "400";
+                }
+            }
+
+            toggle.classList.toggle("no-hover", autoScan || scanLocked);
+            scanBtn.classList.toggle("no-hover", autoScan || scanLocked);
+        };
+
+        toggle.onclick = () => {
+            if (scanLocked) return;
+            autoScan = !autoScan;
+            window.__scan_state = autoScan ? "ON" : "OFF";
+            console.log("STATE:", window.__scan_state);
+            render();
+        };
+
+        scanBtn.onclick = () => {
+            if (scanLocked || autoScan) return;
+            scanLocked = true;
+            autoScan = false;
+            window.__scan_event = "MANUAL";
+            console.log("EVENT: MANUAL");
+            render();
+            setTimeout(() => { scanLocked = false; render(); window.__scan_state = "OFF"; }, 30000);
+        };
+
+        render();
+        wrapper.append(toggle, scanBtn);
+        parent.appendChild(wrapper);
+    };
+
+    let attempts = 0;
+    const interval = setInterval(() => {
+        const addGame = [...document.querySelectorAll("div")].find(
+            (el) => el.textContent.trim() === "Add a Game"
+        );
+        if (addGame) { inject(addGame); clearInterval(interval); }
+        else if (++attempts > 20) clearInterval(interval);
+    }, 500);
+})();
+"""
+
+_last_written_state = None
+
+def write_scan_state_to_file(state: str):
+    global _last_written_state
+    if state == _last_written_state: return
+    try:
+        lines = []
+        try: lines = open(ENVARS_FILE).readlines()
+        except FileNotFoundError: pass
+        lines = [l for l in lines if not l.startswith("NSL_SCAN_STATE=")]
+        lines.append(f"NSL_SCAN_STATE={state}\n")
+        with open(ENVARS_FILE, "w") as f: f.writelines(lines)
+        _last_written_state = state
+        print(f"[ENVARS] Updated scan state: {state}")
+    except Exception as e:
+        print(f"[ENVARS] Failed to write state: {e}")
+
+def read_scan_state_from_file() -> str | None:
+    try:
+        for line in open(ENVARS_FILE):
+            if line.startswith("NSL_SCAN_STATE="):
+                return line.strip().split("=",1)[1]
+    except FileNotFoundError:
+        return None
+    return None
+
+eval_id_counter = itertools.count(1000)
+
+def inject_scanner_code(sock, state):
+    state_js = state if state in ("ON","OFF","MANUAL") else "OFF"
+    send_ws_text(sock, json.dumps({
+        "id": next(eval_id_counter),
+        "method": "Runtime.evaluate",
+        "params": {
+            "expression": f"""
+                window.__scan_state = '{state_js}';
+                (function(){{ {SCANNER_CODE} }})();
+            """,
+            "awaitPromise": True
+        }
+    }))
+    recv_ws_message(sock)
+
+def set_initial_state(sock):
+    state_from_envars = read_scan_state_from_file()
+    send_ws_text(sock, json.dumps({
+        "id": next(eval_id_counter),
+        "method": "Runtime.evaluate",
+        "params": {"expression": f"window.__scan_state = '{state_from_envars}'"}
+    }))
+    write_scan_state_to_file(state_from_envars)
+    return state_from_envars
+
+def sync_frontend_state_to_envars(sock):
+
+    request_id = next(eval_id_counter)
+    send_ws_text(sock, json.dumps({
+        "id": request_id,
+        "method": "Runtime.evaluate",
+        "params": {"expression": "window.__scan_event", "returnByValue": True}
+    }))
+
+    while True:
+        msg = recv_ws_message(sock)
+        if not msg:
+            time.sleep(0.01)
+            continue
+        data = json.loads(msg)
+        if data.get("id") != request_id:
+            continue
+
+        event = data.get("result", {}).get("result", {}).get("value")
+        if event == "MANUAL":
+
+            send_ws_text(sock, json.dumps({
+                "id": next(eval_id_counter),
+                "method": "Runtime.evaluate",
+                "params": {"expression": "window.__scan_event = null"}
+            }))
+            write_scan_state_to_file("MANUAL")
+            return "MANUAL"
+
+        break
+
+    request_id = next(eval_id_counter)
+    send_ws_text(sock, json.dumps({
+        "id": request_id,
+        "method": "Runtime.evaluate",
+        "params": {"expression": "window.__scan_state", "returnByValue": True}
+    }))
+
+    while True:
+        msg = recv_ws_message(sock)
+        if not msg:
+            time.sleep(0.01)
+            continue
+        data = json.loads(msg)
+        if data.get("id") != request_id:
+            continue
+        state = data.get("result", {}).get("result", {}).get("value")
+        if state is None:
+            return None
+        write_scan_state_to_file(state)
+        return state
+
+
+sockets = []
+
+for title in TARGET_TITLES:
+    try:
+        ws_url = get_ws_url_by_title(WS_HOST, WS_PORT, title)
+        sock = create_websocket_connection(ws_url)
+
+        send_ws_text(sock, json.dumps({
+            "id": next(eval_id_counter),
+            "method": "Runtime.enable"
+        }))
+        recv_ws_message(sock)
+
+        state = sync_frontend_state_to_envars(sock)
+
+        if state is None:
+            state = read_scan_state_from_file() or "OFF"
+        inject_scanner_code(sock, state)
+
+        print(f"RESUMED WITH STATE for '{title}': {state}")
+        sockets.append(sock)
+
+    except Exception as e:
+        print(f"[ERROR] Failed for '{title}': {e}")
+# End of Scanner button and control for Frontend
 
 
 
@@ -3585,9 +3865,22 @@ def get_compat_tool_if_needed(launchoptions):
 
 
 
-
-
 def create_new_entry(shortcutdirectory, appname, launchoptions, startingdir, launcher_name=None):
+    gate_file = f"{logged_in_home}/.config/systemd/user/env_vars"
+    scan_state = None
+    try:
+        with open(gate_file, "r", encoding="utf-8") as f:
+            for line in f:
+                line = line.strip()
+                if line.startswith("NSL_SCAN_STATE="):
+                    scan_state = line.split("=", 1)[1].strip().upper()
+                    break
+    except FileNotFoundError:
+        print(f"[NSL] Gate file not found: {gate_file}. Allowing by default.")
+    if scan_state == "OFF":
+        print(f"[NSL] Scan state is OFF. Skipping shortcut creation for {appname}.")
+        return
+
     global new_shortcuts_added
     global shortcuts_updated
     global created_shortcuts
@@ -3727,6 +4020,13 @@ def create_new_entry(shortcutdirectory, appname, launchoptions, startingdir, lau
 
 
 
+
+
+
+
+
+
+
     # Add the new entry to the shortcuts dictionary and add proton
     key = get_next_available_key(shortcuts)
     shortcuts['shortcuts'][key] = new_entry
@@ -3782,9 +4082,6 @@ def create_new_entry(shortcutdirectory, appname, launchoptions, startingdir, lau
             print("No result returned from JS")
 
 
-
-
-
         ws.close()
         print("WebSocket closed.")
     except Exception as e:
@@ -3792,8 +4089,11 @@ def create_new_entry(shortcutdirectory, appname, launchoptions, startingdir, lau
 
 
 
+
+
     #Final return
     return new_entry
+
 
 
 
@@ -6445,3 +6745,29 @@ if removed_apps:
             print(f"No .desktop file found for: {game_name}")
 
 
+#Temp location to reset scanner
+gate_file = f"{logged_in_home}/.config/systemd/user/env_vars"
+
+try:
+    with open(gate_file, "r", encoding="utf-8") as f:
+        lines = f.readlines()
+
+    changed = False
+    with open(gate_file, "w", encoding="utf-8") as f:
+        for line in lines:
+            if line.strip().startswith("NSL_SCAN_STATE="):
+                state = line.split("=", 1)[1].strip().upper()
+                if state == "MANUAL":
+                    f.write("NSL_SCAN_STATE=OFF\n")
+                    changed = True
+                else:
+                    f.write(line)
+            else:
+                f.write(line)
+
+    if changed:
+        print(f"[NSL] Scan state was MANUAL. Reset to OFF.")
+except FileNotFoundError:
+    print(f"[NSL] Gate file not found: {gate_file}")
+except Exception as e:
+    print(f"[NSL] Failed to reset NSL_SCAN_STATE: {e}")
