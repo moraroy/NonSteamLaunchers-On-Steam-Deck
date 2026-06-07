@@ -315,6 +315,11 @@ else
     done
     echo "Environment variables updated in $env_file (if needed)."
 fi
+
+if ! grep -q "^NSL_SCAN_STATE=" "$env_file"; then
+    echo "NSL_SCAN_STATE=ON" >> "$env_file"
+    echo "NSL_SCAN_STATE added as ON"
+fi
 #End of First Run Env_vars
 
 
@@ -4351,11 +4356,6 @@ echo "export python_version=$python_version" >> ${logged_in_home}/.config/system
 echo "export chromedirectory=$chromedirectory" >> ${logged_in_home}/.config/systemd/user/env_vars
 echo "export chrome_startdir=$chrome_startdir" >> ${logged_in_home}/.config/systemd/user/env_vars
 
-file="${logged_in_home}/.config/systemd/user/env_vars"
-if ! grep -q "^NSL_SCAN_STATE=" "$file"; then
-    echo "NSL_SCAN_STATE=ON" >> "$file"
-    echo "NSL_SCAN_STATE added as ON"
-fi
 # TODO: might be better to relocate temp files to `/tmp` or even use `mktemp -d` since `rm -rf` is potentially dangerous without the `-i` flag
 
 # Delete NonSteamLaunchersInstallation subfolder in Downloads folder
