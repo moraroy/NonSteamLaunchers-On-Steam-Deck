@@ -3931,7 +3931,7 @@ def create_new_entry(shortcutdirectory, appname, launchoptions, startingdir, lau
     steam_store_appid = get_steam_store_appid(appname)
     if steam_store_appid:
         print(f"Found Steam App ID for {appname}: {steam_store_appid}")
-        create_steam_store_app_manifest_file(steam_store_appid, appname)
+        #create_steam_store_app_manifest_file(steam_store_appid, appname)
 
         for art_type in ["icons", "logos", "heroes", "grids_600x900", "grids_920x430"]:
             url = get_steam_fallback_url(steam_store_appid, art_type)
