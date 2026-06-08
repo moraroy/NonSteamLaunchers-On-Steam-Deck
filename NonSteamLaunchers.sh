@@ -4367,18 +4367,18 @@ rm -rf "$download_dir"
 
 
 
-
 echo "Script completed successfully."
 
-
-
-# Check if the symlink exists
 if [ -L "${logged_in_home}/.config/systemd/user/default.target.wants/nslgamescanner.service" ]; then
-  # Symlink exists, show message
-  show_message "Script finished...and the NSLGamesScanner is actively scanning!"
+  if [ "${NSL_SCAN_STATE}" = "ON" ]; then
+    show_message "Script finished. The NSL Game Scanner is currently active and scanning."
+  elif [ "${NSL_SCAN_STATE}" = "MANUAL" ]; then
+    show_message "Script finished. The NSL Game Scanner is set to MANUAL. Please press Scan to start manually."
+  elif [ "${NSL_SCAN_STATE}" = "OFF" ]; then
+    show_message "Script finished. The NSL Game Scanner is currently turned OFF."
+  fi
 else
-  # Symlink does not exist
-  echo "Symlink does not exist."
+  show_message "Script finished. The NSL Game Scanner is currently turned OFF."
 fi
 
 exit 0
