@@ -3554,6 +3554,26 @@ SCANNER_CODE = r"""
     `;
     document.head.appendChild(style);
 
+    const isGameMode = () => !!document.querySelector("#Footer");
+
+    const findGameModeTarget = () => {
+        const footer = document.querySelector("#Footer");
+        if (!footer) return null;
+
+        const groups = [...footer.querySelectorAll("div")];
+
+        return groups.find(g => {
+            const text = (g.innerText || "").trim().toLowerCase();
+            return g.children.length <= 3 && text === "menu";
+        });
+    };
+
+    const findDesktopTarget = () => {
+        return [...document.querySelectorAll("div")].find(
+            (el) => el.textContent.trim() === "Add a Game"
+        );
+    };
+
     const inject = (addGame) => {
         if (!addGame || addGame.parentElement.querySelector(".my-steam-controls")) return;
 
@@ -3574,7 +3594,6 @@ SCANNER_CODE = r"""
             zIndex: 9999,
             pointerEvents: "auto"
         });
-
 
         let autoScan = window.__scan_state === "ON";
         if (window.__scan_state === "MANUAL") autoScan = false;
@@ -3673,11 +3692,18 @@ SCANNER_CODE = r"""
 
     let attempts = 0;
     const interval = setInterval(() => {
-        const addGame = [...document.querySelectorAll("div")].find(
-            (el) => el.textContent.trim() === "Add a Game"
-        );
-        if (addGame) { inject(addGame); clearInterval(interval); }
-        else if (++attempts > 20) clearInterval(interval);
+
+        const target = isGameMode()
+            ? findGameModeTarget()
+            : findDesktopTarget();
+
+        if (target) {
+            inject(target);
+            clearInterval(interval);
+        } else if (++attempts > 20) {
+            clearInterval(interval);
+        }
+
     }, 500);
 })();
 """
