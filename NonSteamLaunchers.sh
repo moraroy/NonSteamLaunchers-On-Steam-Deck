@@ -3622,14 +3622,16 @@ check_and_write() {
 
     if [[ -f "$path1" ]]; then
         write_env_vars "$path1" "$launcher_name" "$launcher_dir_name_path1" "$launcher_args" "$launcher_env_var_name"
+
     elif [[ -f "$path2" ]]; then
         write_env_vars "$path2" "$launcher_name" "$launcher_dir_name_path2" "$launcher_args" "$launcher_env_var_name"
+
     else
         echo "${launcher_name^} Launcher not found"
     fi
 }
 
-# Env_vars Configuration Paths
+
 check_and_write "epic" "$epic_games_launcher_path1" "$epic_games_launcher_path2" "NonSteamLaunchers" "EpicGamesLauncher" "-opengl" "epic_games_launcher"
 check_and_write "gog" "$gog_galaxy_path1" "$gog_galaxy_path2" "NonSteamLaunchers" "GogGalaxyLauncher" "" "gog_galaxy_launcher"
 check_and_write "uplay" "$uplay_path1" "$uplay_path2" "NonSteamLaunchers" "UplayLauncher" "" "ubisoft_connect_launcher"
@@ -3654,7 +3656,6 @@ check_and_write "poketcg" "$poketcg_path1" "$poketcg_path2" "NonSteamLaunchers" 
 check_and_write "antstream" "$antstream_path1" "$antstream_path2" "NonSteamLaunchers" "AntstreamLauncher" "" "antstream_launcher"
 check_and_write "purple" "$purple_path1" "$purple_path2" "NonSteamLaunchers" "PURPLELauncher" "" "purple_launcher"
 check_and_write "plarium" "$plarium_path1" "$plarium_path2" "NonSteamLaunchers" "PlariumLauncher" "" "plarium_launcher"
-
 check_and_write "vfun" "$vfun_path1" "$vfun_path2" "NonSteamLaunchers" "VFUNLauncher" "" "vfun_launcher"
 check_and_write "tempo" "$tempo_path1" "$tempo_path2" "NonSteamLaunchers" "TempoLauncher" "" "tempo_launcher"
 check_and_write "stove" "$stove_path1" "$stove_path2" "NonSteamLaunchers" "STOVELauncher" "" "stove_launcher"
@@ -3662,13 +3663,10 @@ check_and_write "bigfish" "$bigfish_path1" "$bigfish_path2" "NonSteamLaunchers" 
 check_and_write "gryphlink" "$gryphlink_path1" "$gryphlink_path2" "NonSteamLaunchers" "GryphlinkLauncher" "" "gryphlink_launcher"
 
 
-
-# Special Shortcut for EA App NoRepair
 eaapp_path1="${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/users/steamuser/Downloads/EAappInstaller.exe"
 eaapp_path2="${logged_in_home}/.local/share/Steam/steamapps/compatdata/TheEAappLauncher/pfx/drive_c/users/steamuser/Downloads/EAappInstaller.exe"
-check_and_write "repaireaapp" "$eaapp_path1" "$eaapp_path2" "NonSteamLaunchers" "TheEAappLauncher" "" "repaireaapp"
 
-# End of writing to env_vars
+check_and_write "repaireaapp" "$eaapp_path1" "$eaapp_path2" "NonSteamLaunchers" "TheEAappLauncher" "" "repaireaapp"
 
 # Set the env_vars variable
 if [ "$use_separate_appids" != true ]; then
@@ -3847,24 +3845,6 @@ fi
 
 
 
-# Create the download directory if it doesn't exist
-mkdir -p "$download_dir"
-
-# Get the version of Python being used
-python_version=$(python -c 'import sys; print(f"{sys.version_info.major}.{sys.version_info.minor}")')
-
-# Create a directory for the vdf module
-mkdir -p "${download_dir}/lib/python${python_version}/site-packages/vdf"
-
-# Download the vdf module from the GitHub repository
-download_url="https://github.com/moraroy/NonSteamLaunchers-On-Steam-Deck/raw/main/Modules/vdf/__init__.py"
-wget -P "${download_dir}/lib/python${python_version}/site-packages/vdf" "$download_url"
-
-# Set the PYTHONPATH environment variable
-export PYTHONPATH="${download_dir}/lib/python${python_version}/site-packages/:$PYTHONPATH"
-
-# Set the default Steam directory
-steam_dir="${logged_in_home}/.local/share/Steam"
 
 set +x
 
