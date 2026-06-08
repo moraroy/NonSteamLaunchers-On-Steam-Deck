@@ -90,7 +90,6 @@ for line in lines:
 steamid3 = os.environ['steamid3']
 logged_in_home = os.environ['logged_in_home']
 compat_tool_name = os.environ['compat_tool_name']
-python_version = os.environ['python_version']
 #Scanner Variables
 epic_games_launcher = os.environ.get('epic_games_launcher', '')
 ubisoft_connect_launcher = os.environ.get('ubisoft_connect_launcher', '')
@@ -1139,8 +1138,7 @@ def check_if_shortcut_exists(display_name, exe_path, start_dir, launch_options):
 
 
 # Start of Refactoring code from the .sh file
-#sys.path.insert(0, os.path.expanduser(f"{logged_in_home}/Downloads/NonSteamLaunchersInstallation/lib/python{python_version}/site-packages"))
-#print(sys.path)
+
 
 track_game, finalize_tracking = scan_and_track_games(logged_in_home, steamid3)
 
