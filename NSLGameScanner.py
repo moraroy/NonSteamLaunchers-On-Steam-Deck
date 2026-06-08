@@ -3690,21 +3690,25 @@ SCANNER_CODE = r"""
         parent.appendChild(wrapper);
     };
 
-    let attempts = 0;
-    const interval = setInterval(() => {
-
+    const tryInject = () => {
         const target = isGameMode()
             ? findGameModeTarget()
             : findDesktopTarget();
 
-        if (target) {
-            inject(target);
-            clearInterval(interval);
-        } else if (++attempts > 20) {
-            clearInterval(interval);
-        }
+        if (target) inject(target);
+    };
 
-    }, 500);
+    tryInject();
+
+    const observer = new MutationObserver(() => {
+        tryInject();
+    });
+
+    observer.observe(document.body, {
+        childList: true,
+        subtree: true
+    });
+
 })();
 """
 
