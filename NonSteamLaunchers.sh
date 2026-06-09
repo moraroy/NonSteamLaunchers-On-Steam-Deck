@@ -3095,8 +3095,7 @@ function install_launcher {
             eval "$post_install_command"
         fi
 
-        sleep 5
-        pkill -f wineserver
+
         wait 2>/dev/null
     fi
 }
