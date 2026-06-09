@@ -2723,93 +2723,117 @@ EOF
 
 # Rockstar Games Launcher specific installation steps
 function install_rockstar {
-    #Manually Install Rockstar Game Launcher
 
-    # Define directories and files
-    toolsDir=$(dirname "$(readlink -f "$0")")
+    set -e
+
+    toolsDir="$(dirname "$(readlink -f "$0")")"
     checksumType='sha256'
+
     rstarInstallUnzipFileDir="${logged_in_home}/Downloads/NonSteamLaunchersInstallation/Rockstar"
     rstarInstallDir="${logged_in_home}/.local/share/Steam/steamapps/compatdata/${appid}/pfx/drive_c/Program Files/Rockstar Games/Launcher"
     rstarStartMenuRunShortcutFolder="${logged_in_home}/.local/share/Steam/steamapps/compatdata/${appid}/pfx/drive_c/users/steamuser/AppData/Roaming/Microsoft/Windows/Start Menu/Programs/Rockstar Games"
     rstarStartMenuRunShortcut="$rstarStartMenuRunShortcutFolder/Rockstar Games Launcher.lnk"
     rstarRunTarget="$rstarInstallDir/LauncherPatcher.exe"
-    rstarInstallUnzipFile=$rockstar_file
-    url=$rockstar_url
 
-    # Define checksum
+    rstarInstallUnzipFile="$rockstar_file"
+    url="$rockstar_url"
+
+    mkdir -p "$rstarInstallUnzipFileDir"
+
     checksum='589f6b251424e01dcd912e6a059d2d98f33fa73aadcd6376c0e1f1109f594b48'
 
-    # Verify checksum (sha256sum command may vary based on distribution)
-    echo "$checksum $rstarInstallUnzipFile" | sha256sum -c -
+    if [[ -f "$rstarInstallUnzipFile" ]]; then
+        echo "$checksum  $rstarInstallUnzipFile" | sha256sum -c -
+    else
+        echo "Rockstar installer not found: $rstarInstallUnzipFile"
+        return 1
+    fi
 
-    # Extract files from EXE and capture the output
-    output=$(7z e "$rockstar_file" -o"$rstarInstallUnzipFileDir" -aoa)
 
-    # Parse the output to get the ProductVersion
-    version=$(echo "$output" | grep 'ProductVersion:' | awk '{print $2}')
+    7z e -y "$rstarInstallUnzipFile" -o"$rstarInstallUnzipFileDir" -aoa > /dev/null 2>&1
 
-    ls -l "$rstarInstallUnzipFileDir"
+    version=$(7z l "$rstarInstallUnzipFile" | awk '/ProductVersion:/ {print $2; exit}')
+    version="${version:-1.0.0}"
 
-    # Create Program Files folders to prepare for copying files
     mkdir -p "$rstarInstallDir/Redistributables/VCRed"
     mkdir -p "$rstarInstallDir/ThirdParty/Steam"
     mkdir -p "$rstarInstallDir/ThirdParty/Epic"
 
-    cp "$rstarInstallUnzipFileDir/449" "$rstarInstallDir/Redistributables/VCRed/vc_redist.x64.exe"
-    cp "$rstarInstallUnzipFileDir/450" "$rstarInstallDir/Redistributables/VCRed/vc_redist.x86.exe"
-    cp "$rstarInstallUnzipFileDir/451" "$rstarInstallDir/ThirdParty/Steam/steam_api64.dll"
+    cp -f "$rstarInstallUnzipFileDir/449" "$rstarInstallDir/Redistributables/VCRed/vc_redist.x64.exe"
+    cp -f "$rstarInstallUnzipFileDir/450" "$rstarInstallDir/Redistributables/VCRed/vc_redist.x86.exe"
+    cp -f "$rstarInstallUnzipFileDir/451" "$rstarInstallDir/ThirdParty/Steam/steam_api64.dll"
 
-    while IFS=' ' read -r number dll; do
-    dll=${dll//\//\\}
-    filename=$(basename "$dll" | tr -d '\r')
+    map_file="$download_dir/Rockstar/211"
 
-    if [[ $dll == Redistributables\\* ]] || [[ $dll == ThirdParty\\Steam\\* ]] || [[ $number == 474 ]] || [[ $number == 475 ]]; then
-        continue
-    elif [[ $dll == ThirdParty\\Epic\\* ]]; then
-        cp "$rstarInstallUnzipFileDir/$number" "$epicInstallDir/$filename"
+    if [[ -f "$map_file" ]]; then
+        while IFS=' ' read -r number dll || [[ -n "$number" ]]; do
+            dll=${dll//\//\\}
+            filename=$(basename "$dll" | tr -d '\r')
+
+            if [[ $dll == Redistributables\\* ]] || \
+               [[ $dll == ThirdParty\\Steam\\* ]] || \
+               [[ $number == 474 ]] || \
+               [[ $number == 475 ]]; then
+                continue
+
+            elif [[ $dll == ThirdParty\\Epic\\* ]]; then
+                cp -f "$rstarInstallUnzipFileDir/$number" "$epicInstallDir/$filename"
+            else
+                cp -f "$rstarInstallUnzipFileDir/$number" "$rstarInstallDir/$filename"
+            fi
+        done < "$map_file"
     else
-        cp "$rstarInstallUnzipFileDir/$number" "$rstarInstallDir/$filename"
+        echo "Mapping file missing: $map_file"
+        return 1
     fi
-    done < "$download_dir/Rockstar/211"
 
-    cp "$rstarInstallUnzipFileDir/474" "$rstarInstallDir/ThirdParty/Epic/EOSSDK-Win64-Shipping.dll"
-    cp "$rstarInstallUnzipFileDir/475" "$rstarInstallDir/ThirdParty/Epic/EOSSDK-Win64-Shipping-1.14.2.dll"
+    cp -f "$rstarInstallUnzipFileDir/474" "$rstarInstallDir/ThirdParty/Epic/EOSSDK-Win64-Shipping.dll"
+    cp -f "$rstarInstallUnzipFileDir/475" "$rstarInstallDir/ThirdParty/Epic/EOSSDK-Win64-Shipping-1.14.2.dll"
 
-    # Use a loop for chmod commands
     for file in Launcher.exe LauncherPatcher.exe offline.pak RockstarService.exe RockstarSteamHelper.exe uninstall.exe; do
-    chmod +x "$rstarInstallDir/$file"
+        chmod +x "$rstarInstallDir/$file" 2>/dev/null || true
     done
 
     size_kb=$(du -sk "$rstarInstallDir" | cut -f1)
-    size_hex=$(printf '%08x\n' $size_kb)
+    size_hex=$(printf '%08x\n' "$size_kb")
 
     wine_registry_path="HKEY_LOCAL_MACHINE\\Software\\WOW6432Node\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\Rockstar Games Launcher"
 
-    # Use a loop for registry commands
     declare -A registry_keys=(
-    ["DisplayName"]="Rockstar Games Launcher"
-    ["DisplayIcon"]="C:\\Program Files\\Rockstar Games\\Launcher\\Launcher.exe, 0"
-    ["DisplayVersion"]="$version"
-    ["Publisher"]="Rockstar Games"
-    ["InstallLocation"]="C:\\Program Files\\Rockstar Games\\Launcher"
-    ["EstimatedSize"]="0x$size_hex"
-    ["UninstallString"]="C:\\Program Files\\Rockstar Games\\Launcher\\uninstall.exe"
-    ["QuietUninstallString"]="\"C:\\Program Files\\Rockstar Games\\Launcher\\uninstall.exe\" /S"
-    ["HelpLink"]="https://www.rockstargames.com/support"
-    ["URLInfoAbout"]="https://www.rockstargames.com/support"
-    ["URLUpdateInfo"]="https://www.rockstargames.com"
-    ["NoModify"]="0x1"
-    ["NoRepair"]="0x1"
-    ["Comments"]="Rockstar Games Launcher"
-    ["Readme"]="https://www.rockstargames.com/support"
+        ["DisplayName"]="Rockstar Games Launcher"
+        ["DisplayIcon"]="C:\\Program Files\\Rockstar Games\\Launcher\\Launcher.exe, 0"
+        ["DisplayVersion"]="$version"
+        ["Publisher"]="Rockstar Games"
+        ["InstallLocation"]="C:\\Program Files\\Rockstar Games\\Launcher"
+        ["EstimatedSize"]="0x$size_hex"
+        ["UninstallString"]="C:\\Program Files\\Rockstar Games\\Launcher\\uninstall.exe"
+        ["QuietUninstallString"]="\"C:\\Program Files\\Rockstar Games\\Launcher\\uninstall.exe\" /S"
+        ["HelpLink"]="https://www.rockstargames.com/support"
+        ["URLInfoAbout"]="https://www.rockstargames.com/support"
+        ["URLUpdateInfo"]="https://www.rockstargames.com"
+        ["NoModify"]="0x1"
+        ["NoRepair"]="0x1"
+        ["Comments"]="Rockstar Games Launcher"
+        ["Readme"]="https://www.rockstargames.com/support"
     )
 
     for key in "${!registry_keys[@]}"; do
-    "$STEAM_RUNTIME" "$proton_dir/proton" run reg add "$wine_registry_path" /v "$key" /t REG_SZ /d "${registry_keys[$key]}" /f
+        "$STEAM_RUNTIME" "$proton_dir/proton" run reg add "$wine_registry_path" \
+            /v "$key" /t REG_SZ /d "${registry_keys[$key]}" /f > /dev/null 2>&1
     done
 
-    "$STEAM_RUNTIME" "$proton_dir/proton" run "$rstarInstallDir/Redistributables/VCRed/vc_redist.x64.exe" /install /quiet /norestart
-    "$STEAM_RUNTIME" "$proton_dir/proton" run "$rstarInstallDir/Redistributables/VCRed/vc_redist.x86.exe" /install /quiet /norestart
+    "$STEAM_RUNTIME" "$proton_dir/proton" run \
+        "$rstarInstallDir/Redistributables/VCRed/vc_redist.x64.exe" \
+        /install /quiet /norestart > /dev/null 2>&1
+
+    "$STEAM_RUNTIME" "$proton_dir/proton" run \
+        "$rstarInstallDir/Redistributables/VCRed/vc_redist.x86.exe" \
+        /install /quiet /norestart > /dev/null 2>&1
+
+    "$STEAM_RUNTIME" "$proton_dir/proton" run wineserver -w > /dev/null 2>&1
+    "$STEAM_RUNTIME" "$proton_dir/proton" run wineserver -k > /dev/null 2>&1
+
+    return 0
 }
 
 # VK Play specific installation steps
@@ -3096,7 +3120,7 @@ function install_launcher {
         fi
 
 
-        wait 2>/dev/null
+        wait
     fi
 }
 # Install Epic Games Launcher
