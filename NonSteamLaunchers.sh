@@ -2810,7 +2810,6 @@ function install_rockstar {
 
     "$STEAM_RUNTIME" "$proton_dir/proton" run "$rstarInstallDir/Redistributables/VCRed/vc_redist.x64.exe" /install /quiet /norestart
     "$STEAM_RUNTIME" "$proton_dir/proton" run "$rstarInstallDir/Redistributables/VCRed/vc_redist.x86.exe" /install /quiet /norestart
-    wait
 }
 
 # VK Play specific installation steps
@@ -3096,8 +3095,9 @@ function install_launcher {
             eval "$post_install_command"
         fi
 
-        wait
+        sleep 5
         pkill -f wineserver
+        wait 2>/dev/null
     fi
 }
 # Install Epic Games Launcher
