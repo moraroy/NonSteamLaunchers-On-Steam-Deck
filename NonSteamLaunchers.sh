@@ -3601,13 +3601,6 @@ echo "Backup completed"
 
 
 
-    echo "100"
-    echo "# Installation Complete - Steam will now restart. Your launchers will be in your library!...Food for thought...do Jedis use Force Compatability?"
-) | zenity --progress \
-  --title="Update Status" \
-  --text="Starting update...please wait..." \
-  --width=450 --height=350 \
-  --percentage=0 --auto-close || true
 
 
 # Write to env_vars
@@ -4382,5 +4375,16 @@ else
   # Symlink does not exist
   echo "Symlink does not exist."
 fi
+
+
+
+
+    echo "100"
+    echo "# Installation Complete - Your launchers will be in your library!...Food for thought...do Jedis use Force Compatability?"
+) | zenity --progress \
+  --title="Update Status" \
+  --text="Starting update...please wait..." \
+  --width=450 --height=350 \
+  --percentage=0 --auto-close || true
 
 exit 0
