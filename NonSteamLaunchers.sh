@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 set -x              # activate debugging (execution shown)
-#set -o pipefail     # capture error from pipes
+set -o pipefail     # capture error from pipes
 
 # ENVIRONMENT VARIABLES
 # Get the logged-in user, fallback to whoami if needed
