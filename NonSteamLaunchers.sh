@@ -3121,6 +3121,7 @@ function install_launcher {
 
 
         wait
+        pkill -f wineserver
     fi
 }
 # Install Epic Games Launcher
