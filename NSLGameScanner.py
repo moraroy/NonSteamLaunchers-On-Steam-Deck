@@ -3713,20 +3713,34 @@ SCANNER_CODE = r"""
 _last_written_state = None
 
 def write_scan_state_to_file(state: str):
-    global _last_written_state
-    if state == _last_written_state: return
     try:
-        lines = []
-        try: lines = open(ENVARS_FILE).readlines()
-        except FileNotFoundError: pass
-        lines = [l for l in lines if not l.startswith("NSL_SCAN_STATE=")]
-        lines.append(f"NSL_SCAN_STATE={state}\n")
-        with open(ENVARS_FILE, "w") as f: f.writelines(lines)
-        _last_written_state = state
+        current = read_scan_state_from_file()
+        if current == state:
+            return
+
+        try:
+            with open(ENVARS_FILE, "r") as f:
+                lines = f.readlines()
+        except FileNotFoundError:
+            lines = []
+
+        found = False
+        for i, line in enumerate(lines):
+            if line.startswith("NSL_SCAN_STATE="):
+                lines[i] = f"NSL_SCAN_STATE={state}\n"
+                found = True
+                break
+
+        if not found:
+            lines.append(f"NSL_SCAN_STATE={state}\n")
+
+        with open(ENVARS_FILE, "w") as f:
+            f.writelines(lines)
+
         print(f"[ENVARS] Updated scan state: {state}")
+
     except Exception as e:
         print(f"[ENVARS] Failed to write state: {e}")
-
 def read_scan_state_from_file() -> str | None:
     try:
         for line in open(ENVARS_FILE):
@@ -3760,7 +3774,7 @@ def set_initial_state(sock):
         "method": "Runtime.evaluate",
         "params": {"expression": f"window.__scan_state = '{state_from_envars}'"}
     }))
-    write_scan_state_to_file(state_from_envars)
+    #write_scan_state_to_file(state_from_envars)
     return state_from_envars
 
 def sync_frontend_state_to_envars(sock):
@@ -3899,16 +3913,17 @@ def create_new_entry(shortcutdirectory, appname, launchoptions, startingdir, lau
     try:
         with open(gate_file, "r", encoding="utf-8") as f:
             for line in f:
-                line = line.strip()
-                if line.startswith("NSL_SCAN_STATE="):
+                if line.strip().startswith("NSL_SCAN_STATE="):
                     scan_state = line.split("=", 1)[1].strip().upper()
                     break
     except FileNotFoundError:
         print(f"[NSL] Gate file not found: {gate_file}. Allowing by default.")
+
     if scan_state == "OFF":
         print(f"[NSL] Scan state is OFF. Skipping shortcut creation for {appname}.")
         return
 
+    # Continue shortcut creation here...
     global new_shortcuts_added
     global shortcuts_updated
     global created_shortcuts
@@ -4058,6 +4073,74 @@ def create_new_entry(shortcutdirectory, appname, launchoptions, startingdir, lau
     # Add the new entry to the shortcuts dictionary and add proton
     key = get_next_available_key(shortcuts)
     shortcuts['shortcuts'][key] = new_entry
+
+
+
+
+
+
+
+
+
+    try:
+        with open(gate_file, "r", encoding="utf-8") as f:
+            lines = f.readlines()
+
+        new_lines = []
+        changed = False
+
+        for line in lines:
+            stripped = line.strip()
+            if stripped.startswith("NSL_SCAN_STATE="):
+                state = line.split("=", 1)[1].strip().upper()
+
+                if state == "MANUAL":
+                    new_lines.append("NSL_SCAN_STATE=OFF\n")
+                    scan_state = "OFF"
+                    changed = True
+                    print("[NSL] Scan state was MANUAL. Reset to OFF.")
+                else:
+                    new_lines.append(line)
+                    scan_state = state
+            else:
+                new_lines.append(line)
+
+        if changed:
+            with open(gate_file, "w", encoding="utf-8") as f:
+                f.writelines(new_lines)
+
+    except FileNotFoundError:
+        print(f"[NSL] Gate file not found during reset: {gate_file}")
+    except Exception as e:
+        print(f"[NSL] Error resetting scan state: {e}")
+
+
+    remove_lines = {
+        'chromelaunchoptions',
+        'websites_str',
+        'custom_website_names_str'
+    }
+
+    try:
+        with open(env_vars_path, "r", encoding="utf-8") as f:
+            lines = f.readlines()
+
+        lines_to_keep = []
+        modified = False
+
+        for line in lines:
+            if not any(key in line for key in remove_lines):
+                lines_to_keep.append(line)
+            else:
+                modified = True
+
+        if modified:
+            with open(env_vars_path, "w", encoding="utf-8") as f:
+                f.writelines(lines_to_keep)
+
+    except FileNotFoundError:
+        pass
+
     print(f"Added new entry for {appname} to shortcuts.")
     new_shortcuts_added = True
     created_shortcuts.append(appname)
@@ -4114,7 +4197,6 @@ def create_new_entry(shortcutdirectory, appname, launchoptions, startingdir, lau
         print("WebSocket closed.")
     except Exception as e:
         print(f"WebSocket error: {e}")
-
 
 
 
@@ -4493,34 +4575,6 @@ for i, website in enumerate(custom_websites):
         os.environ["chrome_startdir"],
         launcher_name=browser_for_env('customchromelaunchoptions')
     )
-
-
-
-def remove_unwanted_lines(lines, remove_keys):
-    lines_to_keep = []
-    modified = False
-
-    for line in lines:
-        if not any(key in line for key in remove_keys):
-            lines_to_keep.append(line)
-        else:
-            modified = True
-
-    return lines_to_keep, modified
-
-
-remove_lines = {
-    'chromelaunchoptions',
-    'websites_str',
-    'custom_website_names_str'
-}
-
-lines_to_keep, modified = remove_unwanted_lines(lines, remove_lines)
-
-if modified:
-    with open(env_vars_path, 'w') as f:
-        f.writelines(lines_to_keep)
-
 #End of Creating Launcher Shortcuts
 
 
@@ -6797,31 +6851,3 @@ if removed_apps:
 
         if not found_file:
             print(f"No .desktop file found for: {game_name}")
-
-
-#Temp location to reset scanner
-gate_file = f"{logged_in_home}/.config/systemd/user/env_vars"
-
-try:
-    with open(gate_file, "r", encoding="utf-8") as f:
-        lines = f.readlines()
-
-    changed = False
-    with open(gate_file, "w", encoding="utf-8") as f:
-        for line in lines:
-            if line.strip().startswith("NSL_SCAN_STATE="):
-                state = line.split("=", 1)[1].strip().upper()
-                if state == "MANUAL":
-                    f.write("NSL_SCAN_STATE=OFF\n")
-                    changed = True
-                else:
-                    f.write(line)
-            else:
-                f.write(line)
-
-    if changed:
-        print(f"[NSL] Scan state was MANUAL. Reset to OFF.")
-except FileNotFoundError:
-    print(f"[NSL] Gate file not found: {gate_file}")
-except Exception as e:
-    print(f"[NSL] Failed to reset NSL_SCAN_STATE: {e}")
