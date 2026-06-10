@@ -3923,7 +3923,6 @@ def create_new_entry(shortcutdirectory, appname, launchoptions, startingdir, lau
         print(f"[NSL] Scan state is OFF. Skipping shortcut creation for {appname}.")
         return
 
-    # Continue shortcut creation here...
     global new_shortcuts_added
     global shortcuts_updated
     global created_shortcuts
@@ -4078,41 +4077,6 @@ def create_new_entry(shortcutdirectory, appname, launchoptions, startingdir, lau
 
 
 
-
-
-
-
-    try:
-        with open(gate_file, "r", encoding="utf-8") as f:
-            lines = f.readlines()
-
-        new_lines = []
-        changed = False
-
-        for line in lines:
-            stripped = line.strip()
-            if stripped.startswith("NSL_SCAN_STATE="):
-                state = line.split("=", 1)[1].strip().upper()
-
-                if state == "MANUAL":
-                    new_lines.append("NSL_SCAN_STATE=OFF\n")
-                    scan_state = "OFF"
-                    changed = True
-                    print("[NSL] Scan state was MANUAL. Reset to OFF.")
-                else:
-                    new_lines.append(line)
-                    scan_state = state
-            else:
-                new_lines.append(line)
-
-        if changed:
-            with open(gate_file, "w", encoding="utf-8") as f:
-                f.writelines(new_lines)
-
-    except FileNotFoundError:
-        print(f"[NSL] Gate file not found during reset: {gate_file}")
-    except Exception as e:
-        print(f"[NSL] Error resetting scan state: {e}")
 
 
     remove_lines = {
