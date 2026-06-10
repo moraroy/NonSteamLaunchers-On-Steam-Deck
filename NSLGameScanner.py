@@ -1835,29 +1835,59 @@ THEMEMUSIC_CODE = r"""(function () {
 
 
 
-# Utility: Fetch debugger targets
-def fetch_targets(host, port):
-    try:
-        conn = http.client.HTTPConnection(host, port, timeout=5)
-        conn.request("GET", "/json")
-        resp = conn.getresponse()
+# Utility: Fetch debugger targets with retry
+def fetch_targets(host, port, max_retries=15, base_delay=2):
+    """Fetch debugger targets from Steam CEF debugger, with retry logic.
 
-        if resp.status != 200:
-            print(f"Failed to fetch targets: {resp.status} {resp.reason}")
-            sys.exit(0)
+    Steam's CEF debugger on port 8080 may not be listening on first run.
+    Retries with exponential backoff (capped at 10s) up to max_retries times.
 
-        data = resp.read()
-        return json.loads(data)
+    Old behavior: called sys.exit(0) on any connection failure (silent exit).
+    New behavior: retries up to max_retries times, then raises the last error.
+    """
+    import time
 
-    except (ConnectionRefusedError, socket.timeout, http.client.CannotSendRequest, http.client.RemoteDisconnected, Exception) as e:
-        print(f"Error fetching debugger targets: {e}")
-        sys.exit(0)
-
-    finally:
+    last_error = None
+    for attempt in range(max_retries):
         try:
-            conn.close()
-        except:
-            pass
+            conn = http.client.HTTPConnection(host, port, timeout=5)
+            conn.request("GET", "/json")
+            resp = conn.getresponse()
+
+            if resp.status != 200:
+                msg = f"Failed to fetch targets: {resp.status} {resp.reason}"
+                print(msg)
+                raise Exception(msg)
+
+            data = resp.read()
+            targets = json.loads(data)
+
+            if attempt > 0:
+                print(f"Connected to Steam debugger on attempt {attempt + 1}/{max_retries}")
+
+            return targets
+
+        except (ConnectionRefusedError, socket.timeout,
+                http.client.CannotSendRequest, http.client.RemoteDisconnected,
+                OSError, Exception) as e:
+            last_error = e
+            if attempt < max_retries - 1:
+                delay = min(base_delay * (attempt + 1), 10)
+                print(f"Steam debugger not ready (attempt {attempt + 1}/{max_retries}), "
+                      f"retrying in {delay}s... ({e})")
+                time.sleep(delay)
+            else:
+                print(f"ERROR: Could not connect to Steam debugger at {host}:{port} "
+                      f"after {max_retries} attempts.")
+                print(f"Make sure Steam is running with these launch options:")
+                print(f"  -dev -cef-enable-debugging -cef-single-process")
+                raise last_error
+
+        finally:
+            try:
+                conn.close()
+            except:
+                pass
 
 # Find websocket debugger URL for the target title
 def get_ws_url_by_title(host, port, title):
