@@ -5237,8 +5237,10 @@ flavor_mapping = {
     # Add more games here...
 }
 
+
 def parse_battlenet_config(config_file_path):
     print(f"Opening Battle.net config file at: {config_file_path}")
+
     with open(config_file_path, 'r') as file:
         config_data = json.load(file)
 
@@ -5247,20 +5249,23 @@ def parse_battlenet_config(config_file_path):
 
     for game_key, game_data in games_info.items():
         print(f"Processing game: {game_key}")
-        if game_key == "battle_net":
-            print("Skipping 'battle_net' entry")
-            continue
-        if "Resumable" not in game_data:
-            print(f"Skipping {game_key}, no 'Resumable' key found")
-            continue
-        if game_data["Resumable"] == "false":
-            print(f"Game {game_key} is not resumable, adding to game_dict")
-            game_dict[game_key] = {
-                "ServerUid": game_data.get("ServerUid", ""),
-                "LastActioned": game_data.get("LastActioned", "")
-            }
 
-    print(f"Parsed config data: {game_dict}")
+        if game_key == "battle_net":
+            continue
+
+        # INSTALL RULE: key existence only
+        if "Resumable" not in game_data:
+            print(f"Skipping {game_key}: not installed (no Resumable key)")
+            continue
+
+        game_dict[game_key] = {
+            "ServerUid": game_data.get("ServerUid", game_key),
+            "LastActioned": game_data.get("LastActioned", ""),
+            "LastPlayed": game_data.get("LastPlayed", "")
+        }
+
+        print(f"{game_key} is INSTALLED")
+
     return game_dict
 
 
@@ -5278,89 +5283,66 @@ else:
     print("Battle.net config file not found. Skipping Battle.net Games Scanner.")
 
 if game_dict:
-    for game_key, game_info in game_dict.items():
-        print(f"Processing game: {game_key}")
+    for raw_key, game_info in game_dict.items():
+
+        print(f"Processing game: {raw_key}")
+
+        game_key = raw_key
 
         if game_key == "prometheus":
-            print("Handling 'prometheus' as 'Pro'")
             game_key = "Pro"
         elif game_key == "fenris":
-            print("Handling 'fenris' as 'Fen'")
             game_key = "Fen"
         elif game_key == "diablo3":
-            print("Handling 'diablo3' as 'D3'")
             game_key = "D3"
         elif game_key == "hs_beta":
-            print("Handling 'hs_beta' as 'WTCG'")
             game_key = "WTCG"
         elif game_key == "wow_classic":
-            print("Handling 'wow_classic' as 'WoWC'")
             game_key = "WoWC"
         elif game_key == "wow":
-            print("Handling 'wow' as 'WoW'")
             game_key = "WoW"
         elif game_key == "aqua":
-            print("Handling 'aqua' as 'Aqua'")
             game_key = "Aqua"
         elif game_key == "aris":
-            print("Handling 'aris' as 'Aris'")
             game_key = "Aris"
         elif game_key == "heroes":
             game_key = "Hero"
         elif game_key == "gryphon":
             game_key = "GRY"
         elif game_key == "lbra":
-            print("Handling 'lbra' as 'LBRA'")
             game_key = "LBRA"
         elif game_key == "wow_classic_era":
-            print("Handling 'wow_classic_era' as 'WoWC'")
             game_key = "WoWC"
-
-
-
-
-
-        elif game_key == "seaofthieves":
-            print("Handling 'seaofthieves' as 'SCOR'")
-            game_key = "SCOR"
-        elif game_key == "sot":
-            print("Handling 'sot' as 'SCOR'")
-            game_key = "SCOR"
-        elif game_key == "scor":
+        elif game_key in ("seaofthieves", "sot", "scor"):
             game_key = "SCOR"
 
+        game_name = flavor_mapping.get(game_key)
 
-        game_name = flavor_mapping.get(game_key, "unknown")
-
-        if game_name == "unknown":
-            game_name = flavor_mapping.get(game_key.upper(), "unknown")
-            print(f"Trying uppercase for {game_key}: {game_name}")
-            if game_name == "unknown":
-                print(f"Game {game_key} remains unknown, skipping...")
-                continue
-
-        matched_key = next((k for k, v in flavor_mapping.items() if v == game_name), game_key)
-        print(f"Matched key for {game_key}: {matched_key}")
-
-        if game_name == "Overwatch":
-            game_name = "Overwatch 2"
-            print(f"Renaming 'Overwatch' to 'Overwatch 2'")
-
-        if game_info['ServerUid'] == "unknown":
-            print(f"Skipping game {game_key} due to unknown ServerUid")
+        if not game_name:
+            print(f"Unknown game mapping: {game_key}, skipping")
             continue
+
+        print(f"Resolved {raw_key} -> {game_name}")
+
 
         exe_path = f'"{logged_in_home}/.local/share/Steam/steamapps/compatdata/{bnet_launcher}/pfx/drive_c/Program Files (x86)/Battle.net/Battle.net.exe"'
         start_dir = f'"{logged_in_home}/.local/share/Steam/steamapps/compatdata/{bnet_launcher}/pfx/drive_c/Program Files (x86)/Battle.net/"'
-        launch_options = f'STEAM_COMPAT_DATA_PATH="{logged_in_home}/.local/share/Steam/steamapps/compatdata/{bnet_launcher}" %command% --exec="launch {matched_key}" battlenet://{matched_key}'
 
-        print(f"Creating new entry for {game_name} with exe_path: {exe_path}")
+        launch_options = (
+            f'STEAM_COMPAT_DATA_PATH="{logged_in_home}/.local/share/Steam/steamapps/compatdata/{bnet_launcher}" '
+            f'%command% --exec="launch {game_key}" battlenet://{game_key}'
+        )
+
+        print(f"Creating entry for {game_name}")
+
         create_new_entry(exe_path, game_name, launch_options, start_dir, launcher_name="Battle.net")
         track_game(game_name, "Battle.net")
 
 print("Battle.net Games Scanner completed.")
 
 # End of Battle.net Scanner
+
+
 
 
 
