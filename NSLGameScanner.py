@@ -6770,30 +6770,52 @@ if removed_apps:
     ]
 
     for game_name in removed_game_names:
-        base_game_name = game_name.split(' (')[0].strip().lower()
+        base_game_name = game_name.split(' (')[0].strip()
         desktop_filename = f"{base_game_name}.desktop"
 
         found_file = False
 
         print(f"Looking for .desktop file for: {game_name}")
 
-        for directory in directories:
-            try:
-                files_in_directory = os.listdir(directory)
-            except Exception as e:
-                continue
+        for game_name in removed_game_names:
+            base_game_name = game_name.split(' (')[0].strip()
 
-            for f in files_in_directory:
-                if f.lower() == desktop_filename:
-                    full_path = os.path.join(directory, f)
-                    try:
-                        os.remove(full_path)
-                        print(f"Deleted .desktop file for: {game_name} from {directory}")
-                    except Exception as e:
-                        print(f"Failed to delete {full_path} due to: {e}")
+            found_file = False
+            print(f"Looking for .desktop file for: {game_name}")
+
+            for directory in directories:
+                try:
+                    files_in_directory = os.listdir(directory)
+                except Exception:
+                    continue
+
+                for f in files_in_directory:
+                    if not f.endswith(".desktop"):
                         continue
-                    found_file = True
 
+                    full_path = os.path.join(directory, f)
 
-        if not found_file:
-            print(f"No .desktop file found for: {game_name}")
+                    try:
+                        config = configparser.ConfigParser(interpolation=None)
+                        config.read(full_path)
+
+                        if "Desktop Entry" not in config:
+                            continue
+
+                        desktop_name = config["Desktop Entry"].get("Name", "").strip()
+
+                        if desktop_name == base_game_name:
+                            os.remove(full_path)
+                            print(f"Deleted .desktop file for: {game_name} from {directory}")
+                            found_file = True
+                            break
+
+                    except Exception as e:
+                        print(f"Failed reading {full_path}: {e}")
+                        continue
+
+                if found_file:
+                    break
+
+            if not found_file:
+                print(f"No .desktop file found for: {game_name}")
