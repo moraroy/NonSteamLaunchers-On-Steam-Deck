@@ -1219,6 +1219,7 @@ StartFreshFunction() {
     other_dir="${logged_in_home}/.local/share/Steam/steamapps/shadercache"
 
     folder_names=("EpicGamesLauncher" "GogGalaxyLauncher" "UplayLauncher" "Battle.netLauncher" "TheEAappLauncher" "AmazonGamesLauncher" "itchioLauncher" "LegacyGamesLauncher" "HumbleGamesLauncher" "IndieGalaLauncher" "RockstarGamesLauncher" "GlyphLauncher" "PlaystationPlusLauncher" "VKPlayLauncher" "HoYoPlayLauncher" "NexonLauncher" "GameJoltLauncher" "ArtixGameLauncher" "ARCLauncher" "PokeTCGLauncher" "AntstreamLauncher" "PURPLELauncher" "PlariumLauncher" "VFUNLauncher" "TempoLauncher" "STOVELauncher" "BigFishLauncher" "NonSteamLaunchers" "MinecraftLauncher" "GryphlinkLauncher")
+
     app_ids=("3772819390" "4294900670" "4063097571" "3786021133" "3448088735" "3923904787" "3440562512" "2948446662" "3908676077" "4206469918" "3303169468" "3595505624" "4272271078" "3259996605" "2588786779" "4090616647" "3494943831" "2390200925" "4253976432" "2221882453" "2296676888" "2486751858" "3974004104" "3811372789" "3788101956" "3782277090" "3640061468" "3216372511" "2882622939" "2800812206" "2580882702" "4022508926" "4182617613" "1981254598" "2136059209" "1401184678" "3141683525")
 
     delete_path() {
@@ -1231,37 +1232,90 @@ StartFreshFunction() {
                 echo "Deleted symlink and target: $path -> $target"
             else
                 rm -rf "$path"
-                echo "Deleted folder: $path"
+                echo "Deleted: $path"
             fi
         fi
     }
 
+    clean_envars_file() {
+        local envars_file="${logged_in_home}/.config/systemd/user/env_vars"
+
+        if [ -f "$envars_file" ]; then
+            echo "Cleaning ENVARS file..."
+
+            awk '
+                /^[[:space:]]*export[[:space:]]+steamid3=/ { print; next }
+                /^[[:space:]]*export[[:space:]]+logged_in_home=/ { print; next }
+                /^[[:space:]]*export[[:space:]]+compat_tool_name=/ { print; next }
+                /^[[:space:]]*export[[:space:]]+/ { next }
+                { print }
+            ' "$envars_file" > "${envars_file}.tmp"
+
+            mv "${envars_file}.tmp" "$envars_file"
+
+            echo "ENVARS cleaned. Preserved: steamid3, logged_in_home, compat_tool_name."
+        else
+            echo "ENVARS file not found. Skipping."
+        fi
+    }
+
+    run_nsl_scanner() {
+        local scanner_path="${logged_in_home}/.config/systemd/user/NSLGameScanner.py"
+
+        if [ -f "$scanner_path" ]; then
+            echo "Running NSLGameScanner.py with cleaned ENVARS..."
+
+            python3 "$scanner_path" &
+            scanner_pid=$!
+
+            sleep 5
+
+            if ps -p $scanner_pid > /dev/null 2>&1; then
+                wait $scanner_pid
+            fi
+
+            echo "Scanner finished."
+        else
+            echo "NSLGameScanner.py not found. Skipping."
+        fi
+    }
+
+    echo "Removing compatdata folders..."
     for folder in "${folder_names[@]}"; do
         delete_path "${compatdata_dir}/${folder}"
     done
 
+    echo "Removing shadercache folders..."
     for app_id in "${app_ids[@]}"; do
         delete_path "${other_dir}/${app_id}"
     done
 
+    echo "Removing empty compatdata directories..."
     for folder_path in "$compatdata_dir"/*; do
         [ -d "$folder_path" ] && [ -z "$(ls -A "$folder_path")" ] && rmdir "$folder_path" && echo "Deleted empty folder: $(basename "$folder_path")"
     done
 
-    # Remove folders on SD card dynamically
+    echo "Removing SD card folders..."
     for folder in "${folder_names[@]}"; do
         delete_path "${sd_path}/${folder}"
     done
 
+    clean_envars_file
+
+    run_nsl_scanner
+
+    echo "Removing remaining files..."
+
     delete_path "${logged_in_home}/Downloads/NonSteamLaunchersInstallation"
     delete_path "${logged_in_home}/.config/systemd/user/Modules"
-    delete_path "${logged_in_home}/.config/systemd/user/env_vars"
-    delete_path "${logged_in_home}/.config/systemd/user/NSLGameScanner.py"
     delete_path "${logged_in_home}/.config/systemd/user/shortcuts"
     delete_path "${logged_in_home}/.config/systemd/user/descriptions.json"
     delete_path "${logged_in_home}/.local/share/applications/RemotePlayWhatever"
     delete_path "${logged_in_home}/.local/share/applications/RemotePlayWhatever.desktop"
     delete_path "${logged_in_home}/Downloads/NonSteamLaunchers-install.log"
+
+    delete_path "${logged_in_home}/.config/systemd/user/NSLGameScanner.py"
+    delete_path "${logged_in_home}/.config/systemd/user/env_vars"
 
     delete_path "${logged_in_home}/.config/systemd/user/nslgamescanner.service"
     unlink "${logged_in_home}/.config/systemd/user/default.target.wants/nslgamescanner.service" 2>/dev/null || true
