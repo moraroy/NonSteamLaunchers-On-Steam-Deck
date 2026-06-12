@@ -38,7 +38,19 @@ from urllib.parse import (
     quote
 )
 
+LOCK_FILE = "/tmp/nslgamescanner.lock"
 
+def single_instance():
+    global lockfile
+    lockfile = open(LOCK_FILE, "w")
+
+    try:
+        fcntl.flock(lockfile, fcntl.LOCK_EX | fcntl.LOCK_NB)
+    except BlockingIOError:
+        print("Another instance is already running. Exiting.")
+        sys.exit(0)
+
+single_instance()
 
 
 # Check the value of the DBUS_SESSION_BUS_ADDRESS environment variable
