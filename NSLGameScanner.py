@@ -15,6 +15,7 @@ import csv
 import configparser
 import certifi
 import itertools
+import fcntl
 import shlex
 import ssl
 import socket
