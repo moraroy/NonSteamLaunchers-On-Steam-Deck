@@ -1,4 +1,10 @@
 #!/usr/bin/env bash
+LOCK_FILE="/tmp/nonsteamlaunchers.lock"
+exec 200>"$LOCK_FILE"
+flock -n 200 || {
+    echo "Another instance is already running. Exiting."
+    exit 0
+}
 
 set -x              # activate debugging (execution shown)
 set -o pipefail     # capture error from pipes
