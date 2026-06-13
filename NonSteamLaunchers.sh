@@ -1375,8 +1375,8 @@ msi_file=${logged_in_home}/Downloads/NonSteamLaunchersInstallation/EpicGamesLaun
 
 
 # Set the URL to download the second file from
-exe_url=https://content-system.gog.com/open_link/download?path=/open/galaxy/client/2.0.74.352/setup_galaxy_2.0.74.352.exe
-#exe_url=https://webinstallers.gog-statics.com/download/GOG_Galaxy_2.0.exe
+#exe_url=https://content-system.gog.com/open_link/download?path=/open/galaxy/client/2.0.74.352/setup_galaxy_2.0.74.352.exe
+exe_url=https://webinstallers.gog-statics.com/download/GOG_Galaxy_2.0.exe
 
 # Set the path to save the second file to
 exe_file=${logged_in_home}/Downloads/NonSteamLaunchersInstallation/setup_galaxy_2.0.74.352.exe
@@ -3139,7 +3139,7 @@ function install_launcher {
         if [ "$run_in_background" = true ]; then
             if [ "$launcher_name" = "GOG Galaxy" ]; then
                 "$STEAM_RUNTIME" "$proton_dir/proton" run "$exe_file" /silent &
-                install_gog2
+                install_gog
             elif [ "$launcher_name" = "Battle.net" ]; then
 
 
