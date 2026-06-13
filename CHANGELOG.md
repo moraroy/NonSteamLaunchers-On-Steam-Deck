@@ -1,5 +1,21 @@
 # Changelog
 
+## [4.2.4](https://github.com/moraroy/NonSteamLaunchers-On-Steam-Deck/compare/v4.2.3...v4.2.4) (2026-06-13)
+
+
+### Bug Fixes
+
+* **epic:** update install path ([b20fa82](https://github.com/moraroy/NonSteamLaunchers-On-Steam-Deck/commit/b20fa8244b3ffc80a4da82bdc3b8aa16a57db869))
+* **epic:** update install path ([6090a8e](https://github.com/moraroy/NonSteamLaunchers-On-Steam-Deck/commit/6090a8e97eb254bb785e0b6a680efe0b93e19c09))
+* retry WebSocket connection on first run instead of silent exit ([bb73939](https://github.com/moraroy/NonSteamLaunchers-On-Steam-Deck/commit/bb73939339647b471eed8c468996147a7ac439e7))
+* retry WebSocket connection on first run instead of silent exit ([#895](https://github.com/moraroy/NonSteamLaunchers-On-Steam-Deck/issues/895)) ([07c1dc8](https://github.com/moraroy/NonSteamLaunchers-On-Steam-Deck/commit/07c1dc88e6c580ac3ca6c22db4e4d946d2139c93))
+
+
+### Documentation
+
+* small correction in readme ([8a54ca3](https://github.com/moraroy/NonSteamLaunchers-On-Steam-Deck/commit/8a54ca33e3cc940410c1f83f80003c938509aee0))
+* small correction in readme ([cec4e69](https://github.com/moraroy/NonSteamLaunchers-On-Steam-Deck/commit/cec4e691bbdb20970c1bd18b9f82d6cb388c56f6))
+
 ## [3.8.2](https://github.com/moraroy/NonSteamLaunchers-On-Steam-Deck/compare/v3.8.1...v3.8.2) (2024-08-06)
 
 
