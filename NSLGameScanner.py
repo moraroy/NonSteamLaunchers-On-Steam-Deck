@@ -4165,7 +4165,6 @@ def create_new_entry(shortcutdirectory, appname, launchoptions, startingdir, lau
         print("WebSocket connected")
 
         result = inject_and_create_shortcut(ws, new_entry)
-        time.sleep(3.0)
         print("Shortcut creation result:", result)
 
         shortcut_id = None
