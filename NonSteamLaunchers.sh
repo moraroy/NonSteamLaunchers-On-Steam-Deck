@@ -95,8 +95,8 @@ if [[ -f $log_file ]]; then
   rm $log_file
 fi
 
-# Redirect all output to the log file
-exec > >(tee -a "$log_file") 2>&1
+exec >> "$log_file" 2>&1
+
 
 # Version number (major.minor)
 version=v4.2.91
