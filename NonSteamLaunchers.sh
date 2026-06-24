@@ -652,7 +652,11 @@ function download_ge_proton() {
     }
 
     checksum_url=$(curl -s https://api.github.com/repos/GloriousEggroll/proton-ge-custom/releases/latest \
-        | grep browser_download_url | cut -d\" -f4 | grep .sha512sum)
+        | grep browser_download_url \
+        | cut -d\" -f4 \
+        | grep '\.sha512sum$' \
+        | grep -v 'aarch64' \
+        | head -n1)
 
     if [ -z "$checksum_url" ]; then
         echo "Failed to get checksum URL. Exiting."
