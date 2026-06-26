@@ -4,14 +4,11 @@
 logged_in_user=$(logname 2>/dev/null || whoami)
 logged_in_home=$(eval echo "~${logged_in_user}")
 
-# Function to prompt for sudo password
+# Function to prompt for sudo using sudo's normal credential handling.
 prompt_for_sudo() {
-  password=$(zenity --password --title="Authentication Required" --text="Please enter your password to proceed with installation/update.")
-
-  # Validate password
-  echo "$password" | sudo -S -v >/dev/null 2>&1
+  sudo -v
   if [ $? -ne 0 ]; then
-    zenity --error --text="Incorrect password or sudo failed. Exiting."
+    zenity --error --text="Sudo authentication failed. Exiting."
     exit 1
   fi
 }
@@ -35,9 +32,24 @@ show_update_message() {
 }
 
 # Set URLs and paths
-REPO_URL="https://github.com/moraroy/NonSteamLaunchersDecky/archive/refs/heads/main.zip"
-GITHUB_URL="https://raw.githubusercontent.com/moraroy/NonSteamLaunchersDecky/main/package.json"
+DECKY_REPO_OWNER="${DECKY_REPO_OWNER:-moraroy}"
+DECKY_REPO_NAME="${DECKY_REPO_NAME:-NonSteamLaunchersDecky}"
+DECKY_REPO_REF="${DECKY_REPO_REF:-main}"
+REPO_URL="https://github.com/${DECKY_REPO_OWNER}/${DECKY_REPO_NAME}/archive/refs/heads/${DECKY_REPO_REF}.zip"
+GITHUB_URL="https://raw.githubusercontent.com/${DECKY_REPO_OWNER}/${DECKY_REPO_NAME}/${DECKY_REPO_REF}/package.json"
 LOCAL_DIR="${logged_in_home}/homebrew/plugins/NonSteamLaunchers"
+
+download_https() {
+  local url="$1"
+  local output="$2"
+
+  if [[ "$url" != https://* ]]; then
+    echo "Refusing to download non-HTTPS URL: $url"
+    return 1
+  fi
+
+  curl --fail --location --show-error --proto '=https' --tlsv1.2 --output "$output" "$url"
+}
 
 # Ask the user
 zenity --question --text="Would you like to install or update the NonSteamLaunchers Decky Plugin?" --title="Install/Update Plugin" --ok-label="Yes" --cancel-label="No"
@@ -67,7 +79,7 @@ extract_version() {
 }
 
 fetch_github_version() {
-  version=$(curl -s "$GITHUB_URL" | grep -o '"version": *"[^"]*"' | sed 's/.*"version": *"\([^"]*\)".*/\1/')
+  version=$(curl -fsSL "$GITHUB_URL" | grep -o '"version": *"[^"]*"' | sed 's/.*"version": *"\([^"]*\)".*/\1/')
   echo "$version"
 }
 
@@ -117,23 +129,30 @@ else
 
   if $NSL_PLUGIN_EXISTS; then
     show_message "NSL Plugin detected. Deleting and updating..."
-    echo "$password" | sudo -S rm -rf "$LOCAL_DIR"
+    sudo rm -rf "$LOCAL_DIR"
   fi
 
   show_message "Creating base directory and setting permissions..."
 
-  echo "$password" | sudo -S mkdir -p "$LOCAL_DIR"
-  echo "$password" | sudo -S chmod -R u+rw "$LOCAL_DIR"
-  echo "$password" | sudo -S chown -R "$logged_in_user:$logged_in_user" "$LOCAL_DIR"
+  sudo mkdir -p "$LOCAL_DIR"
+  sudo chmod -R u+rw "$LOCAL_DIR"
+  sudo chown -R "$logged_in_user:$logged_in_user" "$LOCAL_DIR"
 
-  curl -L "$REPO_URL" -o /tmp/NonSteamLaunchersDecky.zip
+  download_https "$REPO_URL" /tmp/NonSteamLaunchersDecky.zip || exit 1
   unzip -o /tmp/NonSteamLaunchersDecky.zip -d /tmp/
-  cp -r /tmp/NonSteamLaunchersDecky-main/* "$LOCAL_DIR"
+  extract_root=$(find /tmp -maxdepth 1 -type d -name "${DECKY_REPO_NAME}-*" | head -n 1)
+  if [ -z "$extract_root" ]; then
+    zenity --error --text="Could not find extracted plugin archive. Exiting."
+    exit 1
+  fi
+  cp -r "$extract_root"/* "$LOCAL_DIR"
 
-  rm -rf /tmp/NonSteamLaunchersDecky*
+  rm -rf /tmp/NonSteamLaunchersDecky.zip "$extract_root"
 fi
 
-set -x
+if [[ "${NSL_DEBUG:-0}" == "1" ]]; then
+  set -x
+fi
 cd "$LOCAL_DIR"
 
 
