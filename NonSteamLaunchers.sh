@@ -553,7 +553,9 @@ update_nsl_game_scanner() {
     nsl_install_scanner_files "$parent_folder" "$python_script_path" "${folders_to_clone[@]}" || exit 1
 }
 
-if [[ "${NSL_AUTO_SCAN_ON_START:-0}" == "1" ]]; then
+# Runs by default; the scan injects launcher shortcuts into Steam and starts the
+# scanner service. Set NSL_AUTO_SCAN_ON_START=0 to skip.
+if [[ "${NSL_AUTO_SCAN_ON_START:-1}" != "0" ]]; then
     update_nsl_game_scanner
 
     funny_messages=(
@@ -794,7 +796,7 @@ function download_ge_proton() {
     }
 
     tarball_url=$(curl -s https://api.github.com/repos/GloriousEggroll/proton-ge-custom/releases/latest \
-        | grep browser_download_url | cut -d\" -f4 | grep .tar.gz)
+        | grep browser_download_url | cut -d\" -f4 | grep '\.tar\.gz$' | grep -v aarch64)
 
     if [ -z "$tarball_url" ]; then
         echo "Failed to get tarball URL. Exiting."
@@ -807,7 +809,7 @@ function download_ge_proton() {
     }
 
     checksum_url=$(curl -s https://api.github.com/repos/GloriousEggroll/proton-ge-custom/releases/latest \
-        | grep browser_download_url | cut -d\" -f4 | grep .sha512sum)
+        | grep browser_download_url | cut -d\" -f4 | grep '\.sha512sum$' | grep -v aarch64)
 
     if [ -z "$checksum_url" ]; then
         echo "Failed to get checksum URL. Exiting."
