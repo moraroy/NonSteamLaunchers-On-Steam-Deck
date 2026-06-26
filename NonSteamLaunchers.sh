@@ -2896,8 +2896,11 @@ install_gog_offline() {
         fi
     fi
 
+    # GOG's setup_galaxy installer honors /silent (its own flag); /VERYSILENT
+    # (an Inno Setup flag) is ignored and the installer no-ops. This matches the
+    # pre-4fdc7af flow that installed GalaxyClient.exe directly.
     echo "Running GOG Galaxy offline installer (Xalia disabled): $(basename "$gog_offline_file")"
-    PROTON_USE_XALIA=0 "$STEAM_RUNTIME" "$proton_dir/proton" run "$gog_offline_file" /VERYSILENT /NORESTART &
+    PROTON_USE_XALIA=0 "$STEAM_RUNTIME" "$proton_dir/proton" run "$gog_offline_file" /silent &
     gog_wait_for_client "$gog_client_path" "$!" 300
 }
 
