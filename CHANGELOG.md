@@ -13,7 +13,7 @@
 * prefer vendored `Modules/` for the scanner, with remote download gated behind `NSL_ALLOW_REMOTE_SCANNER_UPDATE`
 * make the startup game scan opt-in via `NSL_AUTO_SCAN_ON_START`
 * require `NSL_CONFIRM_START_FRESH=1` for non-interactive "Start Fresh" wipes
-* rework GOG Galaxy installer detection and install/handoff flow
+* rework GOG Galaxy install to use the full offline installer by default (more reliable under Proton), with automatic fallback to the online web installer, an `NSL_GOG_USE_WEB_INSTALLER` override, and a configurable `GOG_GALAXY_VERSION`
 * replace the password-piped-to-sudo flow in the Decky plugin installer with standard `sudo` credential handling
 * run pre-commit on edited files via a PostToolUse hook in `.claude/settings.json`
 

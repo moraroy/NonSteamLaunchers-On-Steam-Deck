@@ -136,6 +136,8 @@ hardcoded or interactive behavior. All default to the safe/off value shown.
 | `NSL_PROTON_DIR` | _(auto)_ | Override the GE-Proton directory instead of auto-detecting under `compatibilitytools.d`. |
 | `NSL_REPO_OWNER` / `NSL_REPO_NAME` / `NSL_REPO_REF` | `dadtronics` / `NonSteamLaunchers-On-Steam-Deck` / `main` | Source repo/ref for remote raw + archive downloads. |
 | `NSL_DRY_RUN_SD_PATH` | _(placeholder)_ | SD path used during a dry run when no card is detected. |
+| `NSL_GOG_USE_WEB_INSTALLER` | `0` | `1` forces GOG Galaxy's online web installer. Default uses the more Proton-reliable full offline installer, falling back to the web installer only if the offline install fails. |
+| `GOG_GALAXY_VERSION` | `2.0.74.352` | Version used to build the GOG Galaxy offline installer URL. Bump when GOG ships a newer build (the installed client also self-updates). |
 
 `NSLPluginInstaller.sh` additionally reads `DECKY_REPO_OWNER` / `DECKY_REPO_NAME`
 / `DECKY_REPO_REF` (default `moraroy` / `NonSteamLaunchersDecky` / `main`) and

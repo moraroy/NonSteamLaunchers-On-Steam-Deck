@@ -1610,13 +1610,25 @@ msi_url=https://launcher-public-service-prod06.ol.epicgames.com/launcher/api/ins
 msi_file=${logged_in_home}/Downloads/NonSteamLaunchersInstallation/EpicGamesLauncherInstaller.msi
 
 
-# Set the URL to download the second file from
-#exe_url=https://content-system.gog.com/open_link/download?path=/open/galaxy/client/2.0.74.352/setup_galaxy_2.0.74.352.exe
-exe_url=https://webinstallers.gog-statics.com/download/GOG_Galaxy_2.0.exe
+# GOG Galaxy installer sources.
+# The full offline installer (content-system.gog.com) installs GalaxyClient.exe
+# directly and is far more reliable under Proton than GOG's online web installer,
+# which must download its payload through wine and frequently fails on Steam Deck.
+# Default to the offline installer; set NSL_GOG_USE_WEB_INSTALLER=1 to force the
+# web installer, and override GOG_GALAXY_VERSION when GOG ships a newer build.
+gog_galaxy_version="${GOG_GALAXY_VERSION:-2.0.74.352}"
+gog_offline_url="https://content-system.gog.com/open_link/download?path=/open/galaxy/client/${gog_galaxy_version}/setup_galaxy_${gog_galaxy_version}.exe"
+gog_offline_file="${logged_in_home}/Downloads/NonSteamLaunchersInstallation/setup_galaxy_${gog_galaxy_version}.exe"
+gog_web_url="https://webinstallers.gog-statics.com/download/GOG_Galaxy_2.0.exe"
+gog_web_file="${logged_in_home}/Downloads/NonSteamLaunchersInstallation/GOG_Galaxy_2.0.exe"
 
-# Set the path to save the second file to
-exe_file=${logged_in_home}/Downloads/NonSteamLaunchersInstallation/setup_galaxy_2.0.74.352.exe
-#exe_file=${logged_in_home}/Downloads/NonSteamLaunchersInstallation/GOG_Galaxy_2.0.exe
+if [[ "${NSL_GOG_USE_WEB_INSTALLER:-0}" == "1" ]]; then
+    exe_url="$gog_web_url"
+    exe_file="$gog_web_file"
+else
+    exe_url="$gog_offline_url"
+    exe_file="$gog_offline_file"
+fi
 
 # Set the URL to download the third file from
 ubi_url=https://ubi.li/4vxt9
@@ -2784,9 +2796,73 @@ function terminate_processes {
 }
 
 
-function install_gog {
-    echo "45"
-    echo "# Downloading and Installing Gog Galaxy...Please wait..."
+# Poll for the installed GalaxyClient.exe after kicking off an installer.
+# Args: <gog_client_path> <installer_pid> <timeout_seconds>
+gog_wait_for_client() {
+    local gog_client_path="$1"
+    local gog_setup_pid="$2"
+    local timeout_seconds="$3"
+    local setup_finished_logged=0
+    local end=$((SECONDS + timeout_seconds))
+
+    while true; do
+        if [[ -f "$gog_client_path" ]]; then
+            echo "GOG Galaxy executable found at $gog_client_path"
+            # GalaxyClient may auto-launch after install; stop it so the prefix settles.
+            pkill -f "GalaxyClient.exe" 2>/dev/null || true
+            return 0
+        fi
+
+        if [[ "$setup_finished_logged" == "0" ]] && { [[ -z "$gog_setup_pid" ]] || ! kill -0 "$gog_setup_pid" 2>/dev/null; }; then
+            echo "Installer process exited; waiting for GalaxyClient.exe to appear."
+            setup_finished_logged=1
+        fi
+
+        if [ $SECONDS -gt $end ]; then
+            echo "Timeout waiting for GOG Galaxy executable at $gog_client_path"
+            return 1
+        fi
+
+        sleep 2
+    done
+}
+
+# Preferred path: run the full offline installer directly. Installs GalaxyClient.exe
+# without GOG's flaky online payload-download stage.
+install_gog_offline() {
+    local gog_client_path="$1"
+
+    if [[ ! -f "$gog_offline_file" ]]; then
+        echo "Downloading GOG Galaxy offline installer ($gog_galaxy_version)..."
+        nsl_download "$gog_offline_url" "$gog_offline_file" || {
+            echo "Failed to download GOG Galaxy offline installer."
+            return 1
+        }
+    fi
+
+    echo "Running GOG Galaxy offline installer (Xalia disabled): $(basename "$gog_offline_file")"
+    PROTON_USE_XALIA=0 "$STEAM_RUNTIME" "$proton_dir/proton" run "$gog_offline_file" /VERYSILENT /NORESTART &
+    gog_wait_for_client "$gog_client_path" "$!" 300
+}
+
+# Fallback path: GOG's online web installer. Runs the small bootstrapper, waits for it
+# to extract the GalaxyInstaller_* payload, then runs the extracted setup directly.
+install_gog_web() {
+    local gog_client_path="$1"
+
+    if [[ ! -f "$gog_web_file" ]]; then
+        echo "Downloading GOG Galaxy web installer..."
+        nsl_download "$gog_web_url" "$gog_web_file" || {
+            echo "Failed to download GOG Galaxy web installer."
+            return 1
+        }
+    fi
+
+    echo "Running GOG Galaxy web installer (Xalia disabled)..."
+    PROTON_USE_XALIA=0 "$STEAM_RUNTIME" "$proton_dir/proton" run "$gog_web_file" /silent &
+
+    local temp_dir1="${logged_in_home}/.local/share/Steam/steamapps/compatdata/$appid/pfx/drive_c/users/steamuser/AppData/Local/Temp"
+    local temp_dir2="${logged_in_home}/.local/share/Steam/steamapps/compatdata/$appid/pfx/drive_c/users/steamuser/Temp"
 
     find_gog_installer_folder() {
         local temp_dir candidate
@@ -2801,12 +2877,8 @@ function install_gog {
         return 1
     }
 
-    # Check both Temp directories for the real Galaxy installer payload.
-    temp_dir1="${logged_in_home}/.local/share/Steam/steamapps/compatdata/$appid/pfx/drive_c/users/steamuser/AppData/Local/Temp"
-    temp_dir2="${logged_in_home}/.local/share/Steam/steamapps/compatdata/$appid/pfx/drive_c/users/steamuser/Temp"
-
-    galaxy_installer_folder=""
-    end=$((SECONDS+120))  # Timeout after 120 seconds
+    local galaxy_installer_folder=""
+    local end=$((SECONDS+120))  # Timeout after 120 seconds
     while true; do
         galaxy_installer_folder=$(find_gog_installer_folder || true)
         if [[ -n "$galaxy_installer_folder" ]]; then
@@ -2822,7 +2894,6 @@ function install_gog {
         sleep 1
     done
 
-    # If no installer folder was found in either directory, exit
     if [ -z "$galaxy_installer_folder" ]; then
         echo "Galaxy installer folder not found in either Temp directory"
         return 1
@@ -2833,83 +2904,53 @@ function install_gog {
         pkill -f "GalaxySetup.tmp" || true
     fi
 
-    # Copy the GalaxyInstaller_* folder to Downloads
     cp -r "$galaxy_installer_folder" "${logged_in_home}/Downloads/NonSteamLaunchersInstallation/"
-
-    # Navigate to the copied folder in Downloads
     cd "${logged_in_home}/Downloads/NonSteamLaunchersInstallation/$(basename "$galaxy_installer_folder")" || return 1
 
-    local gog_setup_exe=""
-    local gog_setup_url=""
-    local gog_setup_file=""
-    local gog_setup_options=(/VERYSILENT /NORESTART)
-    local gog_setup_pid=""
-
-    if [[ -f remoteconfig.json ]]; then
-        gog_setup_url=$(jq -r '.content.windows.downloadLink // empty' remoteconfig.json 2>/dev/null || true)
-    fi
-
-    if [[ -n "$gog_setup_url" ]]; then
-        gog_setup_file=$(grep -oE 'setup_galaxy_[^/?&]+\.exe' <<< "$gog_setup_url" | head -n1)
-        [[ -n "$gog_setup_file" ]] || gog_setup_file="setup_galaxy_latest.exe"
-
-        if [[ ! -f "$gog_setup_file" ]]; then
-            echo "Downloading full GOG Galaxy installer from remoteconfig.json"
-            if nsl_download "$gog_setup_url" "$gog_setup_file"; then
-                gog_setup_exe="$gog_setup_file"
-            else
-                echo "Failed to download full GOG Galaxy installer; falling back to local payload executables."
-            fi
-        else
-            gog_setup_exe="$gog_setup_file"
-        fi
-    fi
-
-    if [[ -z "$gog_setup_exe" ]]; then
-        for candidate in GalaxySetup.exe setup_galaxy_*.exe GalaxyInstaller.exe; do
-            [[ -f "$candidate" ]] || continue
-            gog_setup_exe="$candidate"
-            break
-        done
-    fi
+    local gog_setup_exe="" candidate
+    for candidate in GalaxySetup.exe setup_galaxy_*.exe GalaxyInstaller.exe; do
+        [[ -f "$candidate" ]] || continue
+        gog_setup_exe="$candidate"
+        break
+    done
 
     if [[ -z "$gog_setup_exe" ]]; then
         echo "No runnable GOG Galaxy installer executable found in $(pwd)."
         return 1
     fi
 
-    if [[ "$gog_setup_exe" == "GalaxyInstaller.exe" ]]; then
-        gog_setup_options=(/silent)
+    local gog_setup_options=(/VERYSILENT /NORESTART)
+    [[ "$gog_setup_exe" == "GalaxyInstaller.exe" ]] && gog_setup_options=(/silent)
+
+    echo "Running $gog_setup_exe with options: ${gog_setup_options[*]} (Xalia disabled)"
+    PROTON_USE_XALIA=0 "$STEAM_RUNTIME" "$proton_dir/proton" run "$gog_setup_exe" "${gog_setup_options[@]}" &
+    gog_wait_for_client "$gog_client_path" "$!" 180
+}
+
+function install_gog {
+    echo "45"
+    echo "# Downloading and Installing GOG Galaxy...Please wait..."
+
+    local gog_client_path="${logged_in_home}/.local/share/Steam/steamapps/compatdata/$appid/pfx/drive_c/Program Files (x86)/GOG Galaxy/GalaxyClient.exe"
+
+    if [[ -f "$gog_client_path" ]]; then
+        echo "GOG Galaxy is already installed at $gog_client_path"
+        return 0
     fi
 
-    # Xalia can crash during GOG's UI handoff even when the installer itself succeeds.
-    echo "Running $gog_setup_exe with options: ${gog_setup_options[*]}"
-    echo "Disabling Xalia for the GOG installer run."
-    PROTON_USE_XALIA=0 "$STEAM_RUNTIME" "$proton_dir/proton" run "$gog_setup_exe" "${gog_setup_options[@]}" &
-    gog_setup_pid=$!
+    # Forced web-installer mode.
+    if [[ "${NSL_GOG_USE_WEB_INSTALLER:-0}" == "1" ]]; then
+        install_gog_web "$gog_client_path"
+        return $?
+    fi
 
-    # Wait for the installed launcher executable, not just the transient setup process.
-    local gog_client_path="${logged_in_home}/.local/share/Steam/steamapps/compatdata/$appid/pfx/drive_c/Program Files (x86)/GOG Galaxy/GalaxyClient.exe"
-    local setup_finished_logged=0
-    end=$((SECONDS+180))  # Timeout after 180 seconds
-    while true; do
-        if [[ -f "$gog_client_path" ]]; then
-            echo "GOG Galaxy executable found at $gog_client_path"
-            return 0
-        fi
+    # Reliable offline installer first; fall back to the web installer if it fails.
+    if install_gog_offline "$gog_client_path"; then
+        return 0
+    fi
 
-        if [[ "$setup_finished_logged" == "0" ]] && ! kill -0 "$gog_setup_pid" 2>/dev/null; then
-            echo "$gog_setup_exe has finished running; waiting for GalaxyClient.exe to appear."
-            setup_finished_logged=1
-        fi
-
-        if [ $SECONDS -gt $end ]; then
-            echo "Timeout waiting for GOG Galaxy executable at $gog_client_path"
-            return 1
-        fi
-
-        sleep 1
-    done
+    echo "Offline GOG Galaxy install did not complete; falling back to the web installer."
+    install_gog_web "$gog_client_path"
 }
 
 function install_gog2 {
@@ -3372,7 +3413,13 @@ function install_launcher {
         # Download file
         if [ ! -f "$file_name" ]; then
             echo "Downloading ${file_name}"
-            nsl_download "$file_url" "$file_name" || exit 1
+            if ! nsl_download "$file_url" "$file_name"; then
+                if [ "$launcher_name" = "GOG Galaxy" ]; then
+                    echo "GOG Galaxy primary installer download failed; install_gog will try a fallback."
+                else
+                    exit 1
+                fi
+            fi
         fi
 
         # Execute the pre-installation command, if provided
@@ -3385,8 +3432,6 @@ function install_launcher {
         echo "Running ${file_name} using Proton with the specified command"
         if [ "$run_in_background" = true ]; then
             if [ "$launcher_name" = "GOG Galaxy" ]; then
-                echo "Disabling Xalia for the GOG web installer run."
-                PROTON_USE_XALIA=0 "$STEAM_RUNTIME" "$proton_dir/proton" run "$exe_file" /silent &
                 install_gog || {
                     echo "GOG Galaxy install did not complete successfully."
                     exit 1
