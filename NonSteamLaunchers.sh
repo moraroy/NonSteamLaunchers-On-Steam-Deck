@@ -1634,21 +1634,21 @@ msi_file=${logged_in_home}/Downloads/NonSteamLaunchersInstallation/EpicGamesLaun
 # The full offline installer (content-system.gog.com) installs GalaxyClient.exe
 # directly and is far more reliable under Proton than GOG's online web installer,
 # which must download its payload through wine and frequently fails on Steam Deck.
-# Default to the offline installer; set NSL_GOG_USE_WEB_INSTALLER=1 to force the
-# web installer, and override GOG_GALAXY_VERSION when GOG ships a newer build.
-gog_galaxy_version="${GOG_GALAXY_VERSION:-2.0.74.352}"
-gog_offline_url="https://content-system.gog.com/open_link/download?path=/open/galaxy/client/${gog_galaxy_version}/setup_galaxy_${gog_galaxy_version}.exe"
-gog_offline_file="${logged_in_home}/Downloads/NonSteamLaunchersInstallation/setup_galaxy_${gog_galaxy_version}.exe"
+# install_gog resolves the latest offline installer (URL + version + md5) from
+# GOG's remote config; gog_galaxy_fallback_version is used only if that lookup
+# fails. Set NSL_GOG_USE_WEB_INSTALLER=1 to force the web installer, or override
+# GOG_GALAXY_VERSION to pin the fallback build.
+gog_remote_config_url="https://remote-config.gog.com/components/webinstaller?component_version=2.0.0"
+gog_galaxy_fallback_version="${GOG_GALAXY_VERSION:-2.0.100.1}"
+gog_offline_url="https://content-system.gog.com/open_link/download?path=/open/galaxy/client/setup_galaxy_${gog_galaxy_fallback_version}.exe"
+gog_offline_file="${logged_in_home}/Downloads/NonSteamLaunchersInstallation/setup_galaxy_${gog_galaxy_fallback_version}.exe"
 gog_web_url="https://webinstallers.gog-statics.com/download/GOG_Galaxy_2.0.exe"
 gog_web_file="${logged_in_home}/Downloads/NonSteamLaunchersInstallation/GOG_Galaxy_2.0.exe"
 
-if [[ "${NSL_GOG_USE_WEB_INSTALLER:-0}" == "1" ]]; then
-    exe_url="$gog_web_url"
-    exe_file="$gog_web_file"
-else
-    exe_url="$gog_offline_url"
-    exe_file="$gog_offline_file"
-fi
+# Positional args for the GOG install_launcher call; install_gog does the real
+# download/dispatch, so these are only placeholders.
+exe_url="$gog_offline_url"
+exe_file="$gog_offline_file"
 
 # Set the URL to download the third file from
 ubi_url=https://ubi.li/4vxt9
@@ -2847,17 +2847,53 @@ gog_wait_for_client() {
     done
 }
 
+# Resolve the latest GOG Galaxy Windows offline installer from GOG's remote config.
+# Echoes "<url>\t<version>\t<md5>" on success; non-zero on failure.
+gog_resolve_offline_installer() {
+    local json url version md5
+    json=$(curl -fsSL --max-time 30 "$gog_remote_config_url" 2>/dev/null) || return 1
+    url=$(jq -r '.content.windows.downloadLink // empty' <<<"$json" 2>/dev/null)
+    version=$(jq -r '.content.windows.version // empty' <<<"$json" 2>/dev/null)
+    md5=$(jq -r '.content.windows.installerMd5 // empty' <<<"$json" 2>/dev/null)
+    [[ "$url" == https://* ]] || return 1
+    printf '%s\t%s\t%s\n' "$url" "$version" "$md5"
+}
+
 # Preferred path: run the full offline installer directly. Installs GalaxyClient.exe
 # without GOG's flaky online payload-download stage.
 install_gog_offline() {
     local gog_client_path="$1"
+    local url="$gog_offline_url"
+    local version="$gog_galaxy_fallback_version"
+    local md5=""
+    local resolved
+
+    # Prefer the latest installer advertised by GOG's remote config.
+    if resolved=$(gog_resolve_offline_installer); then
+        IFS=$'\t' read -r url version md5 <<<"$resolved"
+        gog_offline_file="${logged_in_home}/Downloads/NonSteamLaunchersInstallation/setup_galaxy_${version}.exe"
+        echo "Resolved latest GOG Galaxy offline installer: $version"
+    else
+        echo "Could not resolve latest GOG Galaxy version; using fallback $version."
+    fi
 
     if [[ ! -f "$gog_offline_file" ]]; then
-        echo "Downloading GOG Galaxy offline installer ($gog_galaxy_version)..."
-        nsl_download "$gog_offline_url" "$gog_offline_file" || {
+        echo "Downloading GOG Galaxy offline installer ($version)..."
+        nsl_download "$url" "$gog_offline_file" || {
             echo "Failed to download GOG Galaxy offline installer."
             return 1
         }
+
+        if [[ -n "$md5" ]] && command -v md5sum >/dev/null 2>&1; then
+            local actual_md5
+            actual_md5=$(md5sum "$gog_offline_file" | awk '{print $1}')
+            if [[ "$actual_md5" != "$md5" ]]; then
+                echo "MD5 mismatch for GOG Galaxy installer (expected $md5, got $actual_md5)."
+                rm -f "$gog_offline_file"
+                return 1
+            fi
+            echo "GOG Galaxy installer MD5 verified."
+        fi
     fi
 
     echo "Running GOG Galaxy offline installer (Xalia disabled): $(basename "$gog_offline_file")"
@@ -3430,16 +3466,12 @@ function install_launcher {
         # Set the STEAM_COMPAT_DATA_PATH environment variable for the launcher
         export STEAM_COMPAT_DATA_PATH="${logged_in_home}/.local/share/Steam/steamapps/compatdata/${appid}"
 
-        # Download file
-        if [ ! -f "$file_name" ]; then
+        # Download file (install_gog resolves and downloads GOG itself).
+        if [ "$launcher_name" = "GOG Galaxy" ]; then
+            echo "Skipping generic pre-download for GOG Galaxy; install_gog resolves and downloads the installer."
+        elif [ ! -f "$file_name" ]; then
             echo "Downloading ${file_name}"
-            if ! nsl_download "$file_url" "$file_name"; then
-                if [ "$launcher_name" = "GOG Galaxy" ]; then
-                    echo "GOG Galaxy primary installer download failed; install_gog will try a fallback."
-                else
-                    exit 1
-                fi
-            fi
+            nsl_download "$file_url" "$file_name" || exit 1
         fi
 
         # Execute the pre-installation command, if provided
