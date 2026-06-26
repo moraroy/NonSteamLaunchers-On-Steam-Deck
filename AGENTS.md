@@ -11,13 +11,15 @@ NonSteamLaunchers is a tool that installs various game launchers (Epic Games, EA
 ### Python Environment Setup
 
 ```bash
-# Create and activate virtual environment using UV
-uv venv --python ">=3.11,<3.13"
+# Create the environment and install dependencies (runtime + dev group)
+uv sync
 source .venv/bin/activate
-
-# Install dependencies
-uv pip install -r pyproject.toml --all-extras
 ```
+
+This project is run as a collection of scripts, not an installable package, so
+`pyproject.toml` sets `[tool.uv] package = false`. uv installs the declared
+dependencies without attempting to build a wheel. (Without this, hatchling fails
+with "Unable to determine which files to ship inside the wheel".)
 
 ### Code Quality
 
@@ -32,8 +34,13 @@ ruff check .
 ruff check . --fix
 
 # Run pre-commit hooks manually
-pre-commit run --all-files
+uvx pre-commit run --all-files
 ```
+
+Use `uvx pre-commit` rather than `uv run pre-commit`: pre-commit manages its own
+isolated hook environments and does not need this project installed, and `uvx`
+avoids triggering a project build. The repo's PostToolUse hook in
+`.claude/settings.json` runs `uvx pre-commit run --files` on edited files.
 
 ### Running the Project
 
@@ -111,6 +118,32 @@ The main script supports:
 - Uninstall: `"Uninstall Epic Games"`
 - Utilities: `"Start Fresh"`, `"Update Proton-GE"`, `"Stop NSLGameScanner"`
 - SD Card: `"Move to SD Card" "LauncherName"`
+
+## Environment Variables
+
+`NonSteamLaunchers.sh` reads several `NSL_*` variables to control otherwise
+hardcoded or interactive behavior. All default to the safe/off value shown.
+
+| Variable | Default | Effect |
+|----------|---------|--------|
+| `NSL_DEBUG` | `0` | `1` enables `set -x` execution tracing (off by default to avoid leaking values into the log). |
+| `NSL_DRY_RUN` | `0` | `1` reports destructive actions (deletes, Start Fresh) without performing them. |
+| `NSL_AUTO_INSTALL_DEPS` | `0` | `1` allows the script to install missing tools (zenity/curl/jq) via the system package manager. Otherwise it exits with instructions. |
+| `NSL_AUTO_SCAN_ON_START` | `0` | `1` runs the game-scanner update + scan (and Steam restart) at startup. |
+| `NSL_ALLOW_REMOTE_SCANNER_UPDATE` | `0` | `1` permits downloading scanner modules / `NSLGameScanner.py` from the remote repo. Default prefers vendored `Modules/`. |
+| `NSL_CONFIRM_START_FRESH` | `0` | Must be `1` to run a non-interactive (CLI) "Start Fresh" wipe. |
+| `NSL_UMU_SELF_UPDATE` | `0` | `1` runs `umu-run winetricks --self-update` after installing UMU. |
+| `NSL_PROTON_DIR` | _(auto)_ | Override the GE-Proton directory instead of auto-detecting under `compatibilitytools.d`. |
+| `NSL_REPO_OWNER` / `NSL_REPO_NAME` / `NSL_REPO_REF` | `dadtronics` / `NonSteamLaunchers-On-Steam-Deck` / `main` | Source repo/ref for remote raw + archive downloads. |
+| `NSL_DRY_RUN_SD_PATH` | _(placeholder)_ | SD path used during a dry run when no card is detected. |
+
+`NSLPluginInstaller.sh` additionally reads `DECKY_REPO_OWNER` / `DECKY_REPO_NAME`
+/ `DECKY_REPO_REF` (default `moraroy` / `NonSteamLaunchersDecky` / `main`) and
+`NSL_DEBUG`.
+
+Downloads go through HTTPS-only helpers (`nsl_download` / `download_https`) and
+destructive removals are restricted to an allowlist of expected NSL paths via
+`nsl_safe_rm` / `delete_path`.
 
 ## Important Notes
 
