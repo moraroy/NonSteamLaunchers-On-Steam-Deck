@@ -44,9 +44,19 @@ avoids triggering a project build. The repo's PostToolUse hook in
 
 ### Running the Project
 
+> **Run the app with system Python, not the project venv.** The launcher-picker
+> GUI imports PyGObject (`gi`), which is a system package and cannot be installed
+> into a uv/virtualenv. If the `.venv` is active, `python3` resolves to the venv
+> interpreter, `gi` import fails, and the script misreports it as
+> "No launchers or websites selected. Exiting." Run `deactivate` first (or use a
+> shell where the venv is not active). The venv is only for ruff/pytest/pre-commit.
+
 ```bash
-# Main installer script
+# Main installer script (deactivate the venv first if it is active)
 ./NonSteamLaunchers.sh
+
+# Passing a launcher name skips the GTK GUI entirely (no gi needed)
+./NonSteamLaunchers.sh "GOG Galaxy"
 
 # Game scanner service
 python NSLGameScanner.py

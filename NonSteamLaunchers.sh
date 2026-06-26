@@ -1094,7 +1094,27 @@ separate_appids=false
 
 # --- Handle command line arguments or fallback to GTK UI ---
 if [ $# -eq 0 ]; then
-    readarray -t gtk_output < <(python3 - <<'EOF'
+    # The launcher picker needs PyGObject (gi), a system package that is NOT
+    # available inside a uv/virtualenv. If the active python3 can't import gi
+    # (e.g. a venv is activated), fall back to the system interpreter so the GUI
+    # still works instead of silently returning "No launchers selected".
+    gui_python=""
+    for candidate in python3 /usr/bin/python3; do
+        if command -v "$candidate" >/dev/null 2>&1 && "$candidate" -c 'import gi' >/dev/null 2>&1; then
+            gui_python="$candidate"
+            break
+        fi
+    done
+
+    if [ -z "$gui_python" ]; then
+        echo "ERROR: No python3 with PyGObject (gi) found for the launcher selection GUI."
+        echo "If you are in a Python virtualenv, run 'deactivate' and try again, install PyGObject"
+        echo "system-wide, or pass a launcher name to skip the GUI (e.g. ./NonSteamLaunchers.sh \"GOG Galaxy\")."
+        zenity --error --width=420 --text="Could not open the launcher selection window: PyGObject (gi) is not available for python3.\n\nIf you are running inside a Python virtualenv, deactivate it and try again, or pass a launcher name as an argument (e.g. \"GOG Galaxy\")." 2>/dev/null || true
+        exit 1
+    fi
+
+    readarray -t gtk_output < <("$gui_python" - <<'EOF'
 import gi, os, sys, subprocess, re
 
 gi.require_version("Gtk", "3.0")
