@@ -23,20 +23,19 @@
       "mcp__serena__think_about_whether_you_are_done",
       "mcp__serena__write_memory"
     ],
-    "deny": [ ]
+    "deny": []
+  },
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|MultiEdit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "git diff --name-only HEAD | xargs -r uvx pre-commit run --files"
+          }
+        ]
+      }
+    ]
   }
-  // TODO: instate at a later time
-  // "hooks": {
-  //   "PostToolUse": [
-  //     {
-  //       "matcher": "Edit|MultiEdit|Write",
-  //       "hooks": [
-  //         {
-  //           "type": "command",
-  //           "command": "git diff --name-only HEAD | xargs -r pre-commit run --files"
-  //         }
-  //       ]
-  //     }
-  //   ]
-  // }
 }
