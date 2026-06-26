@@ -2705,23 +2705,26 @@ function install_gog2 {
 
 
 
-# Battle.net specific installation steps
 function install_battlenet {
-    # Terminate any existing Battle.net processes before starting installation
-    #terminate_processes "Battle.net.exe" #"BlizzardError.exe"
+    echo "Starting Battle.net installation"
 
+    "$STEAM_RUNTIME" -- \
+        "$proton_dir/proton" run \
+        "$battle_file" \
+        --lang=enUS \
+        --installpath="C:\\Program Files (x86)\\Battle.net" &
 
-    # Start the first installation
-    echo "Starting first installation of Battle.net"
-    "$STEAM_RUNTIME" "$proton_dir/proton" run "$battle_file" Battle.net-Setup.exe --lang=enUS --installpath="C:\Program Files (x86)\Battle.net"
+    installer_pid=$!
 
-    # Optional: kill wineserver after installation is completely done
-    #pkill wineserver
+    while ! pgrep -f "Battle.net.exe" > /dev/null; do
+        sleep 1
+    done
+
+    terminate_processes "Battle.net.exe"
+
+    wait "$installer_pid"
     echo "Battle.net installation complete."
-
-    sleep 1
 }
-
 
 
 # Amazon Games specific installation steps
@@ -2730,8 +2733,7 @@ function install_amazon {
 }
 
 function install_eaapp {
-    #terminate_processes "EADesktop.exe"
-
+    #terminate_processes "CrBrowserMain"
     # Additional download for EA App
     eaapp_download_dir="${logged_in_home}/.local/share/Steam/steamapps/compatdata/$appid/pfx/drive_c/users/steamuser/Downloads/"
     eaapp_file_name="EAappInstaller.exe"  # Replace with the actual file name if different
@@ -3101,28 +3103,20 @@ function install_launcher {
             mkdir -p "${logged_in_home}/.local/share/Steam/steamapps/compatdata/$appid"
         fi
 
-        #temp ubi fix
-        if [[ "$launcher_name" == "Ubisoft Connect" || "$launcher_name" == "GOG Galaxy" ]]; then
-            for root in \
-                "$HOME/.local/share/Steam" \
-                "$HOME/.steam/steam" \
-                /run/media/"$USER"/* \
-                /mnt/* \
-                /media/*
-            do
-                # skip if glob didn't expand to real dirs
-                [[ -d "$root" ]] || continue
 
-                if [[ -x "$root/steamapps/common/Proton - Experimental/proton" ]]; then
-                    proton_dir="$root/steamapps/common/Proton - Experimental"
-                    break
-                fi
-            done
+
+
+
+
+        SLR4="${logged_in_home}/.local/share/Steam/steamapps/common/SteamLinuxRuntime_4/run"
+
+        if [[ -x "$SLR4" ]]; then
+            STEAM_RUNTIME="$SLR4"
+        else
+            STEAM_RUNTIME="${logged_in_home}/.steam/root/ubuntu12_32/steam-runtime/run.sh"
         fi
 
-
-        # Change working directory to Proton's
-        cd $proton_dir
+        cd "$proton_dir"
 
         # Set the STEAM_COMPAT_CLIENT_INSTALL_PATH environment variable
         export STEAM_COMPAT_CLIENT_INSTALL_PATH="${logged_in_home}/.local/share/Steam"
@@ -3152,6 +3146,9 @@ function install_launcher {
 
 
                 install_battlenet
+
+
+
             elif [ "$launcher_name" = "Big Fish Games Manager" ]; then
 
 
@@ -3193,8 +3190,7 @@ function install_launcher {
     fi
 }
 # Install Epic Games Launcher
-install_launcher "Epic Games" "EpicGamesLauncher" "$msi_file" "$msi_url" "MsiExec.exe /i "$msi_file" -opengl /qn" "70" "" ""
-
+install_launcher "Epic Games" "EpicGamesLauncher" "$msi_file" "$msi_url" "MsiExec.exe /i "$msi_file" /qn" "70" "" ""
 # Install GOG Galaxy
 install_launcher "GOG Galaxy" "GogGalaxyLauncher" "$exe_file" "$exe_url" "$exe_file /silent" "71" "" "" true
 
@@ -3208,7 +3204,7 @@ install_launcher "Battle.net" "Battle.netLauncher" "$battle_file" "$battle_url" 
 install_launcher "Amazon Games" "AmazonGamesLauncher" "$amazon_file" "$amazon_url" "" "74" "" "" true
 
 #Install EA App
-install_launcher "EA App" "TheEAappLauncher" "$eaapp_file" "$eaapp_url" "$eaapp_file /quiet" "75" "install_eaapp" ""
+install_launcher "EA App" "TheEAappLauncher" "$eaapp_file" "$eaapp_url" "$eaapp_file /quiet" "75" "" "install_eaapp" true
 
 # Install itch.io
 install_launcher "itch.io" "itchioLauncher" "$itchio_file" "$itchio_url" "$itchio_file --silent" "76" "" ""
@@ -3279,8 +3275,6 @@ install_launcher "Gryphlink" "GryphlinkLauncher" "$gryphlink_file" "$gryphlink_u
 
 
 #End of Launcher Installations
-
-
 
 
 
