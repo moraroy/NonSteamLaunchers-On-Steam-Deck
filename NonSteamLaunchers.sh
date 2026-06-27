@@ -1647,18 +1647,23 @@ msi_url=https://launcher-public-service-prod06.ol.epicgames.com/launcher/api/ins
 msi_file=${logged_in_home}/Downloads/NonSteamLaunchersInstallation/EpicGamesLauncherInstaller.msi
 
 
-# GOG Galaxy offline installer. By default this resolves the latest Windows
-# build (download URL + version + MD5) from GOG's remote config and verifies the
-# download against the advertised MD5 (see verify_gog_md5). If the lookup fails,
-# it falls back to the pinned GOG_GALAXY_VERSION below. The offline installer
-# (content-system.gog.com) installs GalaxyClient.exe directly and is far more
-# reliable under Proton than GOG's online web installer.
+# GOG Galaxy offline installer. Defaults to a pinned, Proton-compatible build:
+# newer GOG Galaxy releases frequently fail under Proton on first launch with
+# "Essential components needed to start GOG GALAXY are missing or incorrectly
+# configured", so we pin a known-good version rather than tracking latest.
+#
+# Set NSL_GOG_USE_LATEST=1 to instead resolve the latest Windows build (download
+# URL + version + MD5) from GOG's remote config and verify the download against
+# the advertised MD5 (see verify_gog_md5) — useful for testing whether a newer
+# build works under Proton. Override the pinned build with GOG_GALAXY_VERSION.
+# The offline installer (content-system.gog.com) installs GalaxyClient.exe
+# directly and is far more reliable under Proton than GOG's online web installer.
 gog_remote_config_url="https://remote-config.gog.com/components/webinstaller?component_version=2.0.0"
 gog_galaxy_version="${GOG_GALAXY_VERSION:-2.0.74.352}"
 gog_installer_md5=""
 resolved_exe_url=""
 
-if [[ "$options" == *"GOG Galaxy"* ]]; then
+if [[ "$options" == *"GOG Galaxy"* && "${NSL_GOG_USE_LATEST:-0}" == "1" ]]; then
     if gog_meta=$(curl -fsSL --max-time 30 "$gog_remote_config_url" 2>/dev/null); then
         gog_link=$(jq -r '.content.windows.downloadLink // empty' <<<"$gog_meta" 2>/dev/null)
         gog_ver=$(jq -r '.content.windows.version // empty' <<<"$gog_meta" 2>/dev/null)
