@@ -1647,13 +1647,44 @@ msi_url=https://launcher-public-service-prod06.ol.epicgames.com/launcher/api/ins
 msi_file=${logged_in_home}/Downloads/NonSteamLaunchersInstallation/EpicGamesLauncherInstaller.msi
 
 
-# Set the URL to download the second file from
-exe_url=https://content-system.gog.com/open_link/download?path=/open/galaxy/client/2.0.74.352/setup_galaxy_2.0.74.352.exe
-#exe_url=https://webinstallers.gog-statics.com/download/GOG_Galaxy_2.0.exe
+# GOG Galaxy offline installer. Defaults to a pinned, Proton-compatible build:
+# newer GOG Galaxy releases frequently fail under Proton on first launch with
+# "Essential components needed to start GOG GALAXY are missing or incorrectly
+# configured", so we pin a known-good version rather than tracking latest.
+#
+# Set NSL_GOG_USE_LATEST=1 to instead resolve the latest Windows build (download
+# URL + version + MD5) from GOG's remote config and verify the download against
+# the advertised MD5 (see verify_gog_md5) — useful for testing whether a newer
+# build works under Proton. Override the pinned build with GOG_GALAXY_VERSION.
+# The offline installer (content-system.gog.com) installs GalaxyClient.exe
+# directly and is far more reliable under Proton than GOG's online web installer.
+gog_remote_config_url="https://remote-config.gog.com/components/webinstaller?component_version=2.0.0"
+gog_galaxy_version="${GOG_GALAXY_VERSION:-2.0.74.352}"
+gog_installer_md5=""
+resolved_exe_url=""
 
-# Set the path to save the second file to
-exe_file=${logged_in_home}/Downloads/NonSteamLaunchersInstallation/setup_galaxy_2.0.74.352.exe
-#exe_file=${logged_in_home}/Downloads/NonSteamLaunchersInstallation/GOG_Galaxy_2.0.exe
+if [[ "$options" == *"GOG Galaxy"* && "${NSL_GOG_USE_LATEST:-0}" == "1" ]]; then
+    if gog_meta=$(curl -fsSL --max-time 30 "$gog_remote_config_url" 2>/dev/null); then
+        gog_link=$(jq -r '.content.windows.downloadLink // empty' <<<"$gog_meta" 2>/dev/null)
+        gog_ver=$(jq -r '.content.windows.version // empty' <<<"$gog_meta" 2>/dev/null)
+        gog_md5=$(jq -r '.content.windows.installerMd5 // empty' <<<"$gog_meta" 2>/dev/null)
+        if [[ "$gog_link" == https://* ]]; then
+            resolved_exe_url="$gog_link"
+            [[ -n "$gog_ver" ]] && gog_galaxy_version="$gog_ver"
+            gog_installer_md5="$gog_md5"
+            echo "Resolved latest GOG Galaxy offline installer: $gog_galaxy_version"
+        else
+            echo "GOG remote config returned no usable installer link; using fallback $gog_galaxy_version."
+        fi
+    else
+        echo "Could not reach GOG remote config; using fallback GOG Galaxy $gog_galaxy_version."
+    fi
+fi
+
+# Active offline-installer URL + local file. exe_url falls back to the pinned
+# version path when the remote lookup above did not provide a link.
+exe_url="${resolved_exe_url:-https://content-system.gog.com/open_link/download?path=/open/galaxy/client/${gog_galaxy_version}/setup_galaxy_${gog_galaxy_version}.exe}"
+exe_file="${logged_in_home}/Downloads/NonSteamLaunchersInstallation/setup_galaxy_${gog_galaxy_version}.exe"
 
 # Set the URL to download the third file from
 ubi_url=https://ubi.li/4vxt9
@@ -2940,6 +2971,26 @@ function install_gog2 {
     fi
 }
 
+# Verify the downloaded GOG Galaxy offline installer against the MD5 advertised
+# by GOG's remote config (resolved in the GOG variable block). Runs as the GOG
+# pre-install step. No-op when no MD5 was resolved or md5sum is unavailable; on a
+# mismatch it removes the corrupt download so the install fails loudly rather
+# than running a bad installer.
+verify_gog_md5() {
+    [[ -n "$gog_installer_md5" ]] || { echo "No GOG Galaxy MD5 advertised; skipping verification."; return 0; }
+    command -v md5sum >/dev/null 2>&1 || { echo "md5sum unavailable; skipping GOG Galaxy verification."; return 0; }
+    [[ -f "$exe_file" ]] || { echo "GOG Galaxy installer not found for verification: $exe_file"; return 1; }
+
+    local actual_md5
+    actual_md5=$(md5sum "$exe_file" | awk '{print $1}')
+    if [[ "$actual_md5" != "$gog_installer_md5" ]]; then
+        echo "GOG Galaxy installer MD5 mismatch (expected $gog_installer_md5, got $actual_md5). Removing."
+        nsl_safe_rm "$exe_file"
+        return 1
+    fi
+    echo "GOG Galaxy installer MD5 verified ($gog_installer_md5)."
+}
+
 
 
 function install_battlenet {
@@ -3376,7 +3427,7 @@ function install_launcher {
         if [ "$run_in_background" = true ]; then
             if [ "$launcher_name" = "GOG Galaxy" ]; then
                 "$STEAM_RUNTIME" "$proton_dir/proton" run "$exe_file" /silent &
-                install_gog2
+                install_gog
             elif [ "$launcher_name" = "Battle.net" ]; then
 
 
@@ -3427,7 +3478,7 @@ function install_launcher {
 # Install Epic Games Launcher
 install_launcher "Epic Games" "EpicGamesLauncher" "$msi_file" "$msi_url" "MsiExec.exe /i "$msi_file" /qn" "70" "" ""
 # Install GOG Galaxy
-install_launcher "GOG Galaxy" "GogGalaxyLauncher" "$exe_file" "$exe_url" "$exe_file /silent" "71" "" "" true
+install_launcher "GOG Galaxy" "GogGalaxyLauncher" "$exe_file" "$exe_url" "$exe_file /silent" "71" "verify_gog_md5" "" true
 
 # Install Ubisoft Connect
 install_launcher "Ubisoft Connect" "UplayLauncher" "$ubi_file" "$ubi_url" "$ubi_file /S" "72" "" ""
