@@ -49,8 +49,11 @@ echo "==== NonSteamLaunchers started $(date -Is) ===="
 NSL_REPO_OWNER="${NSL_REPO_OWNER:-dadtronics}"
 NSL_REPO_NAME="${NSL_REPO_NAME:-NonSteamLaunchers-On-Steam-Deck}"
 NSL_REPO_REF="${NSL_REPO_REF:-main}"
-NSL_ALLOW_REMOTE_SCANNER_UPDATE="${NSL_ALLOW_REMOTE_SCANNER_UPDATE:-0}"
-NSL_AUTO_INSTALL_DEPS="${NSL_AUTO_INSTALL_DEPS:-0}"
+# Default ON so the documented curl|bash install (no local Modules/ or
+# NSLGameScanner.py present) and minimal hosts still work. Set to 0 to require
+# vendored files only / forbid auto-installing system packages.
+NSL_ALLOW_REMOTE_SCANNER_UPDATE="${NSL_ALLOW_REMOTE_SCANNER_UPDATE:-1}"
+NSL_AUTO_INSTALL_DEPS="${NSL_AUTO_INSTALL_DEPS:-1}"
 NSL_DRY_RUN="${NSL_DRY_RUN:-0}"
 NSL_PROTON_DIR="${NSL_PROTON_DIR:-}"
 
@@ -471,12 +474,16 @@ vars_to_set["compat_tool_name"]=$compat_tool_name
 [[ -n "$python_version" ]] && vars_to_set["python_version"]=$python_version
 vars_to_set["chromedirectory"]=$chromedirectory
 vars_to_set["chrome_startdir"]=$chrome_startdir
+# Only persisted when set, so the scanner (and its service) can use a custom
+# artwork/metadata proxy via NSL_ARTWORK_API.
+[[ -n "${NSL_ARTWORK_API:-}" ]] && vars_to_set["NSL_ARTWORK_API"]=$NSL_ARTWORK_API
 
 # Variables that should be quoted
 declare -A quote_vars
 quote_vars["chromedirectory"]=1
 quote_vars["chrome_startdir"]=1
 quote_vars["compat_tool_name"]=1
+quote_vars["NSL_ARTWORK_API"]=1
 
 # If file is missing or empty, write everything at once
 if [[ ! -s "$env_file" ]]; then

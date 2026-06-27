@@ -138,14 +138,15 @@ hardcoded or interactive behavior. All default to the safe/off value shown.
 |----------|---------|--------|
 | `NSL_DEBUG` | `0` | `1` enables `set -x` execution tracing (off by default to avoid leaking values into the log). |
 | `NSL_DRY_RUN` | `0` | `1` reports destructive actions (deletes, Start Fresh) without performing them. |
-| `NSL_AUTO_INSTALL_DEPS` | `0` | `1` allows the script to install missing tools (zenity/curl/jq) via the system package manager. Otherwise it exits with instructions. |
-| `NSL_AUTO_SCAN_ON_START` | `0` | `1` runs the game-scanner update + scan (and Steam restart) at startup. |
-| `NSL_ALLOW_REMOTE_SCANNER_UPDATE` | `0` | `1` permits downloading scanner modules / `NSLGameScanner.py` from the remote repo. Default prefers vendored `Modules/`. |
+| `NSL_AUTO_INSTALL_DEPS` | `1` | Auto-install missing tools (zenity/curl/jq) via the system package manager. Set to `0` to instead exit with instructions when a tool is missing. |
+| `NSL_AUTO_SCAN_ON_START` | `1` | Runs the game-scanner update + scan at startup — this is what registers launcher shortcuts into Steam and starts the scanner service. Set to `0` to skip (launchers will not appear in Steam). |
+| `NSL_ALLOW_REMOTE_SCANNER_UPDATE` | `1` | Prefer vendored `Modules/` + local `NSLGameScanner.py`, falling back to the remote repo when they're absent (required for the curl\|bash install). Set to `0` to forbid the remote fallback (local/vendored only). |
 | `NSL_CONFIRM_START_FRESH` | `0` | Must be `1` to run a non-interactive (CLI) "Start Fresh" wipe. |
 | `NSL_UMU_SELF_UPDATE` | `0` | `1` runs `umu-run winetricks --self-update` after installing UMU. |
 | `NSL_PROTON_DIR` | _(auto)_ | Override the GE-Proton directory instead of auto-detecting under `compatibilitytools.d`. |
 | `NSL_REPO_OWNER` / `NSL_REPO_NAME` / `NSL_REPO_REF` | `dadtronics` / `NonSteamLaunchers-On-Steam-Deck` / `main` | Source repo/ref for remote raw + archive downloads. |
 | `NSL_DRY_RUN_SD_PATH` | _(placeholder)_ | SD path used during a dry run when no card is detected. |
+| `NSL_ARTWORK_API` | `https://nonsteamlaunchers.onrender.com/api` | Artwork/metadata proxy (fronts SteamGridDB) used by `NSLGameScanner.py`. Override to point at your own instance — when set, it's persisted to `env_vars` so the scanner service uses it too. |
 
 `NSLPluginInstaller.sh` additionally reads `DECKY_REPO_OWNER` / `DECKY_REPO_NAME`
 / `DECKY_REPO_REF` (default `moraroy` / `NonSteamLaunchersDecky` / `main`) and

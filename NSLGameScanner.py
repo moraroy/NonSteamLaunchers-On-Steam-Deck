@@ -235,7 +235,9 @@ def get_unsigned_shortcut_id(signed_shortcut_id):
 api_cache = {}
 
 #API KEYS FOR NONSTEAMLAUNCHER USE ONLY
-BASE_URL = 'https://nonsteamlaunchers.onrender.com/api'
+# Override with NSL_ARTWORK_API to point at your own artwork/metadata proxy
+# instead of the shared default (e.g. if your IP is rate-limited/blocked).
+BASE_URL = os.environ.get('NSL_ARTWORK_API', 'https://nonsteamlaunchers.onrender.com/api').rstrip('/')
 
 #GLOBAL VARS
 created_shortcuts = []
