@@ -655,8 +655,8 @@ uplay_path1="${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamL
 uplay_path2="${logged_in_home}/.local/share/Steam/steamapps/compatdata/UplayLauncher/pfx/drive_c/Program Files (x86)/Ubisoft/Ubisoft Game Launcher/upc.exe"
 battlenet_path1="${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/Program Files (x86)/Battle.net/Battle.net Launcher.exe"
 battlenet_path2="${logged_in_home}/.local/share/Steam/steamapps/compatdata/Battle.netLauncher/pfx/drive_c/Program Files (x86)/Battle.net/Battle.net Launcher.exe"
-eaapp_path1="${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/Program Files/Electronic Arts/EA Desktop/13.725.0.6238/EA Desktop/EALauncher.exe"
-eaapp_path2="${logged_in_home}/.local/share/Steam/steamapps/compatdata/TheEAappLauncher/pfx/drive_c/Program Files/Electronic Arts/EA Desktop/13.725.0.6238/EA Desktop/EALauncher.exe"
+eaapp_path1="${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/Program Files/Electronic Arts/EA Desktop/13.735.2.6250/EA Desktop/EALauncher.exe"
+eaapp_path2="${logged_in_home}/.local/share/Steam/steamapps/compatdata/TheEAappLauncher/pfx/drive_c/Program Files/Electronic Arts/EA Desktop/13.735.2.6250/EA Desktop/EALauncher.exe"
 amazongames_path1="${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/users/steamuser/AppData/Local/Amazon Games/App/Amazon Games.exe"
 amazongames_path2="${logged_in_home}/.local/share/Steam/steamapps/compatdata/AmazonGamesLauncher/pfx/drive_c/users/steamuser/AppData/Local/Amazon Games/App/Amazon Games.exe"
 itchio_path1="${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/users/steamuser/AppData/Local/itch/app-26.13.0/itch.exe"
@@ -803,7 +803,11 @@ function download_ge_proton() {
     }
 
     tarball_url=$(curl -s https://api.github.com/repos/GloriousEggroll/proton-ge-custom/releases/latest \
-        | grep browser_download_url | cut -d\" -f4 | grep '\.tar\.gz$' | grep -v aarch64)
+        | grep browser_download_url \
+        | cut -d\" -f4 \
+        | grep '\.tar\.gz$' \
+        | grep -v 'aarch64' \
+        | head -n1)
 
     if [ -z "$tarball_url" ]; then
         echo "Failed to get tarball URL. Exiting."
@@ -816,7 +820,11 @@ function download_ge_proton() {
     }
 
     checksum_url=$(curl -s https://api.github.com/repos/GloriousEggroll/proton-ge-custom/releases/latest \
-        | grep browser_download_url | cut -d\" -f4 | grep '\.sha512sum$' | grep -v aarch64)
+        | grep browser_download_url \
+        | cut -d\" -f4 \
+        | grep '\.sha512sum$' \
+        | grep -v 'aarch64' \
+        | head -n1)
 
     if [ -z "$checksum_url" ]; then
         echo "Failed to get checksum URL. Exiting."
@@ -1640,8 +1648,8 @@ msi_file=${logged_in_home}/Downloads/NonSteamLaunchersInstallation/EpicGamesLaun
 
 
 # Set the URL to download the second file from
-#exe_url=https://content-system.gog.com/open_link/download?path=/open/galaxy/client/2.0.74.352/setup_galaxy_2.0.74.352.exe
-exe_url=https://webinstallers.gog-statics.com/download/GOG_Galaxy_2.0.exe
+exe_url=https://content-system.gog.com/open_link/download?path=/open/galaxy/client/2.0.74.352/setup_galaxy_2.0.74.352.exe
+#exe_url=https://webinstallers.gog-statics.com/download/GOG_Galaxy_2.0.exe
 
 # Set the path to save the second file to
 exe_file=${logged_in_home}/Downloads/NonSteamLaunchersInstallation/setup_galaxy_2.0.74.352.exe
@@ -2934,23 +2942,26 @@ function install_gog2 {
 
 
 
-# Battle.net specific installation steps
 function install_battlenet {
-    # Terminate any existing Battle.net processes before starting installation
-    #terminate_processes "Battle.net.exe" #"BlizzardError.exe"
+    echo "Starting Battle.net installation"
 
+    "$STEAM_RUNTIME" -- \
+        "$proton_dir/proton" run \
+        "$battle_file" \
+        --lang=enUS \
+        --installpath="C:\\Program Files (x86)\\Battle.net" &
 
-    # Start the first installation
-    echo "Starting first installation of Battle.net"
-    "$STEAM_RUNTIME" "$proton_dir/proton" run "$battle_file" Battle.net-Setup.exe --lang=enUS --installpath="C:\Program Files (x86)\Battle.net"
+    installer_pid=$!
 
-    # Optional: kill wineserver after installation is completely done
-    #pkill wineserver
+    while ! pgrep -f "Battle.net.exe" > /dev/null; do
+        sleep 1
+    done
+
+    terminate_processes "Battle.net.exe"
+
+    wait "$installer_pid"
     echo "Battle.net installation complete."
-
-    sleep 1
 }
-
 
 
 # Amazon Games specific installation steps
@@ -2959,8 +2970,7 @@ function install_amazon {
 }
 
 function install_eaapp {
-    #terminate_processes "EADesktop.exe"
-
+    #terminate_processes "CrBrowserMain"
     # Additional download for EA App
     eaapp_download_dir="${logged_in_home}/.local/share/Steam/steamapps/compatdata/$appid/pfx/drive_c/users/steamuser/Downloads/"
     eaapp_file_name="EAappInstaller.exe"  # Replace with the actual file name if different
@@ -3330,25 +3340,15 @@ function install_launcher {
             mkdir -p "${logged_in_home}/.local/share/Steam/steamapps/compatdata/$appid"
         fi
 
-        # Fallback for older Ubisoft/GOG behavior when no ProtonPlus/GE tool was found.
-        if [[ -z "$proton_dir" && ( "$launcher_name" == "Ubisoft Connect" || "$launcher_name" == "GOG Galaxy" ) ]]; then
-            for root in \
-                "$HOME/.local/share/Steam" \
-                "$HOME/.steam/steam" \
-                /run/media/"$USER"/* \
-                /mnt/* \
-                /media/*
-            do
-                # skip if glob didn't expand to real dirs
-                [[ -d "$root" ]] || continue
 
-                if [[ -x "$root/steamapps/common/Proton - Experimental/proton" ]]; then
-                    proton_dir="$root/steamapps/common/Proton - Experimental"
-                    break
-                fi
-            done
+
+        SLR4="${logged_in_home}/.local/share/Steam/steamapps/common/SteamLinuxRuntime_4/run"
+
+        if [[ -x "$SLR4" ]]; then
+            STEAM_RUNTIME="$SLR4"
+        else
+            STEAM_RUNTIME="${logged_in_home}/.steam/root/ubuntu12_32/steam-runtime/run.sh"
         fi
-
 
         # Change working directory to Proton's
         cd "$proton_dir" || exit 1
@@ -3376,11 +3376,14 @@ function install_launcher {
         if [ "$run_in_background" = true ]; then
             if [ "$launcher_name" = "GOG Galaxy" ]; then
                 "$STEAM_RUNTIME" "$proton_dir/proton" run "$exe_file" /silent &
-                install_gog
+                install_gog2
             elif [ "$launcher_name" = "Battle.net" ]; then
 
 
                 install_battlenet
+
+
+
             elif [ "$launcher_name" = "Big Fish Games Manager" ]; then
 
 
@@ -3422,8 +3425,7 @@ function install_launcher {
     fi
 }
 # Install Epic Games Launcher
-install_launcher "Epic Games" "EpicGamesLauncher" "$msi_file" "$msi_url" "MsiExec.exe /i "$msi_file" -opengl /qn" "70" "" ""
-
+install_launcher "Epic Games" "EpicGamesLauncher" "$msi_file" "$msi_url" "MsiExec.exe /i "$msi_file" /qn" "70" "" ""
 # Install GOG Galaxy
 install_launcher "GOG Galaxy" "GogGalaxyLauncher" "$exe_file" "$exe_url" "$exe_file /silent" "71" "" "" true
 
@@ -3437,7 +3439,7 @@ install_launcher "Battle.net" "Battle.netLauncher" "$battle_file" "$battle_url" 
 install_launcher "Amazon Games" "AmazonGamesLauncher" "$amazon_file" "$amazon_url" "" "74" "" "" true
 
 #Install EA App
-install_launcher "EA App" "TheEAappLauncher" "$eaapp_file" "$eaapp_url" "$eaapp_file /quiet" "75" "install_eaapp" ""
+install_launcher "EA App" "TheEAappLauncher" "$eaapp_file" "$eaapp_url" "$eaapp_file /quiet" "75" "" "install_eaapp"
 
 # Install itch.io
 install_launcher "itch.io" "itchioLauncher" "$itchio_file" "$itchio_url" "$itchio_file --silent" "76" "" ""
@@ -3508,8 +3510,6 @@ install_launcher "Gryphlink" "GryphlinkLauncher" "$gryphlink_file" "$gryphlink_u
 
 
 #End of Launcher Installations
-
-
 
 
 
