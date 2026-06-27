@@ -1240,7 +1240,7 @@ class LauncherUI(Gtk.Window):
         # Buttons
         button_box = Gtk.Box(spacing=6)
         self.button_result = None
-        for label in ["Cancel","Install","Uninstall","Game Scanner","Start Fresh","Move to SD Card","Update Proton-GE","🖥️ Off","NSLGameSaves","Share Notes","README"]:
+        for label in ["Cancel","OK","❤️","Uninstall","🔍","Start Fresh","Move to SD Card","Update Proton-GE","🖥️ Off","NSLGameSaves","README"]:
             btn = Gtk.Button(label=label)
             btn.connect("clicked", self.on_button_clicked, label)
             button_box.pack_start(btn, True, True, 0)
@@ -1330,7 +1330,7 @@ EOF
     IFS='|' read -ra selected_launchers <<< "$selected_launchers_str"
 
     # Determine what to put in options:
-    if [[ "$extra_button" == "OK" || "$extra_button" == "Install" ]]; then
+    if [[ "$extra_button" == "OK" ]]; then
         options="$selected_launchers_str"
     elif [[ "$selected_launchers_str" == "" ]]; then
         # Only a button was pressed, no launchers selected
@@ -1357,7 +1357,7 @@ else
 
     custom_websites_str=$(IFS=', '; echo "${custom_websites[*]}")
 
-    extra_button="Install"
+    extra_button="OK"
     options="${selected_launchers[*]}"
 fi
 
