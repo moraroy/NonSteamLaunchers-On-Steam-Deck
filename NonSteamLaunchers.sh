@@ -3422,7 +3422,7 @@ function install_launcher {
         if [ "$run_in_background" = true ]; then
             if [ "$launcher_name" = "GOG Galaxy" ]; then
                 "$STEAM_RUNTIME" "$proton_dir/proton" run "$exe_file" /silent &
-                install_gog2
+                install_gog
             elif [ "$launcher_name" = "Battle.net" ]; then
 
 
