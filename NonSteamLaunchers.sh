@@ -3204,7 +3204,7 @@ install_launcher "Battle.net" "Battle.netLauncher" "$battle_file" "$battle_url" 
 install_launcher "Amazon Games" "AmazonGamesLauncher" "$amazon_file" "$amazon_url" "" "74" "" "" true
 
 #Install EA App
-install_launcher "EA App" "TheEAappLauncher" "$eaapp_file" "$eaapp_url" "$eaapp_file /quiet" "75" "" "install_eaapp" true
+install_launcher "EA App" "TheEAappLauncher" "$eaapp_file" "$eaapp_url" "$eaapp_file /quiet" "75" "" "install_eaapp"
 
 # Install itch.io
 install_launcher "itch.io" "itchioLauncher" "$itchio_file" "$itchio_url" "$itchio_file --silent" "76" "" ""
