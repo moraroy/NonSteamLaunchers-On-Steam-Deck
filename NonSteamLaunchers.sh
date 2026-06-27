@@ -6,12 +6,15 @@ flock -n 200 || {
     exit 0
 }
 
-set -x              # activate debugging (execution shown)
+if [[ "${NSL_DEBUG:-0}" == "1" ]]; then
+    set -x          # activate debugging only when requested
+fi
 set -o pipefail     # capture error from pipes
 
 # ENVIRONMENT VARIABLES
 # Get the logged-in user, fallback to whoami if needed
 logged_in_user=$(logname 2>/dev/null || whoami)
+script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd -P)"
 
 # DBUS
 # Add the DBUS_SESSION_BUS_ADDRESS environment variable if missing
@@ -36,6 +39,250 @@ logged_in_home=$(eval echo "~${logged_in_user}")
 # Setup download directory and log file path
 download_dir="${logged_in_home}/Downloads/NonSteamLaunchersInstallation"
 log_file="${logged_in_home}/Downloads/NonSteamLaunchers-install.log"
+mkdir -p "$(dirname "$log_file")"
+printf 'Writing detailed NonSteamLaunchers output to %s\n' "$log_file"
+: > "$log_file"
+exec >> "$log_file" 2>&1
+echo "==== NonSteamLaunchers started $(date -Is) ===="
+
+# Security defaults
+NSL_REPO_OWNER="${NSL_REPO_OWNER:-dadtronics}"
+NSL_REPO_NAME="${NSL_REPO_NAME:-NonSteamLaunchers-On-Steam-Deck}"
+NSL_REPO_REF="${NSL_REPO_REF:-main}"
+# Default ON so the documented curl|bash install (no local Modules/ or
+# NSLGameScanner.py present) and minimal hosts still work. Set to 0 to require
+# vendored files only / forbid auto-installing system packages.
+NSL_ALLOW_REMOTE_SCANNER_UPDATE="${NSL_ALLOW_REMOTE_SCANNER_UPDATE:-1}"
+NSL_AUTO_INSTALL_DEPS="${NSL_AUTO_INSTALL_DEPS:-1}"
+NSL_DRY_RUN="${NSL_DRY_RUN:-0}"
+NSL_PROTON_DIR="${NSL_PROTON_DIR:-}"
+
+nsl_raw_url() {
+    local path="$1"
+    printf 'https://raw.githubusercontent.com/%s/%s/%s/%s' "$NSL_REPO_OWNER" "$NSL_REPO_NAME" "$NSL_REPO_REF" "$path"
+}
+
+nsl_archive_url() {
+    printf 'https://github.com/%s/%s/archive/%s.zip' "$NSL_REPO_OWNER" "$NSL_REPO_NAME" "$NSL_REPO_REF"
+}
+
+nsl_download() {
+    local url="$1"
+    local output="$2"
+    local expected_sha256="${3:-}"
+
+    if [[ "$url" != https://* ]]; then
+        echo "Refusing to download non-HTTPS URL: $url"
+        return 1
+    fi
+
+    if command -v curl >/dev/null 2>&1; then
+        curl --fail --location --silent --show-error --proto '=https' --tlsv1.2 --output "$output" "$url" || return 1
+    elif command -v wget >/dev/null 2>&1; then
+        wget --https-only -O "$output" "$url" || return 1
+    else
+        echo "Neither curl nor wget is installed."
+        return 1
+    fi
+
+    if [[ -n "$expected_sha256" ]]; then
+        local actual_sha256
+        actual_sha256=$(sha256sum "$output" | awk '{print $1}')
+        if [[ "$actual_sha256" != "$expected_sha256" ]]; then
+            echo "Checksum mismatch for $output"
+            echo "Expected: $expected_sha256"
+            echo "Actual:   $actual_sha256"
+            rm -f "$output"
+            return 1
+        fi
+    fi
+}
+
+nsl_install_dependency() {
+    local command_name="$1"
+    local package_name="${2:-$1}"
+
+    if command -v "$command_name" >/dev/null 2>&1; then
+        return 0
+    fi
+
+    if [[ "$NSL_AUTO_INSTALL_DEPS" != "1" ]]; then
+        echo "$command_name is not installed. Install package '$package_name' and rerun, or set NSL_AUTO_INSTALL_DEPS=1 to allow this script to install it."
+        exit 1
+    fi
+
+    echo "$command_name is not installed. Installing $package_name because NSL_AUTO_INSTALL_DEPS=1..."
+    if command -v apt-get >/dev/null 2>&1; then
+        sudo apt-get install -y "$package_name"
+    elif command -v dnf >/dev/null 2>&1; then
+        sudo dnf install -y "$package_name"
+    elif command -v pacman >/dev/null 2>&1; then
+        sudo pacman -S --noconfirm "$package_name"
+    else
+        echo "Unknown package manager. Please install $package_name manually."
+        exit 1
+    fi
+}
+
+nsl_safe_rm() {
+    local path="$1"
+
+    if [[ -z "$path" || "$path" == "/" || "$path" == "$logged_in_home" ]]; then
+        echo "Refusing to delete unsafe path: ${path:-<empty>}"
+        return 1
+    fi
+
+    case "$path" in
+        "$download_dir"|"$download_dir"/*|\
+        "${logged_in_home}/.config/systemd/user/NSLGameScanner.py"|\
+        "${logged_in_home}/.config/systemd/user/descriptions.json"|\
+        "${logged_in_home}/.config/systemd/user/nslgamescanner.service"|\
+        "${logged_in_home}/.config/systemd/user/env_vars"|\
+        "${logged_in_home}/.local/share/applications/RemotePlayWhatever"|\
+        "${logged_in_home}/.local/share/applications/RemotePlayWhatever.desktop"|\
+        /tmp/NonSteamLaunchersDecky|/tmp/NonSteamLaunchersDecky.zip|/tmp/NonSteamLaunchersDecky-main|\
+        /tmp/hytale-launcher.flatpak)
+            ;;
+        *)
+            echo "Refusing to delete path outside expected NSL locations: $path"
+            return 1
+            ;;
+    esac
+
+    if [[ "$NSL_DRY_RUN" == "1" ]]; then
+        echo "DRY RUN: would delete $path"
+        return 0
+    fi
+
+    if [[ -L "$path" ]]; then
+        unlink "$path"
+    else
+        rm -rf "$path"
+    fi
+}
+
+nsl_install_scanner_files() {
+    local parent_folder="$1"
+    local python_script_path="$2"
+    shift 2
+    local folders_to_clone=("$@")
+    local missing_remote_modules=()
+
+    mkdir -p "$parent_folder"
+
+    for folder in "${folders_to_clone[@]}"; do
+        if [[ -d "${parent_folder}/${folder}" ]]; then
+            continue
+        fi
+
+        if [[ -d "${script_dir}/Modules/${folder}" ]]; then
+            cp -a "${script_dir}/Modules/${folder}" "${parent_folder}/${folder}"
+        else
+            missing_remote_modules+=("$folder")
+        fi
+    done
+
+    if (( ${#missing_remote_modules[@]} > 0 )); then
+        if [[ "$NSL_ALLOW_REMOTE_SCANNER_UPDATE" != "1" ]]; then
+            echo "Missing scanner modules: ${missing_remote_modules[*]}"
+            echo "Refusing remote scanner module download without NSL_ALLOW_REMOTE_SCANNER_UPDATE=1"
+            return 1
+        fi
+
+        local zip_file_path="${parent_folder}/repo.zip"
+        local extract_root
+        nsl_download "$(nsl_archive_url)" "$zip_file_path" || { echo 'Download failed'; return 1; }
+        unzip -d "$parent_folder" "$zip_file_path" || { echo 'Unzip failed'; return 1; }
+        extract_root=$(find "$parent_folder" -mindepth 1 -maxdepth 1 -type d -name "${NSL_REPO_NAME}-*" | head -n 1)
+
+        for folder in "${missing_remote_modules[@]}"; do
+            local destination_path="${parent_folder}/${folder}"
+            local source_path="${extract_root}/Modules/${folder}"
+            if [[ -d "$source_path" ]]; then
+                mv "$source_path" "$destination_path" || { echo "Move failed for ${folder}"; return 1; }
+            else
+                echo "Missing module ${folder} in downloaded archive."
+                return 1
+            fi
+        done
+
+        rm -f "$zip_file_path"
+        if [[ -n "$extract_root" && "$extract_root" == "$parent_folder"/* ]]; then
+            rm -rf "$extract_root"
+        fi
+    fi
+
+    if [[ -f "${script_dir}/NSLGameScanner.py" ]]; then
+        cp "${script_dir}/NSLGameScanner.py" "$python_script_path"
+    elif [[ "$NSL_ALLOW_REMOTE_SCANNER_UPDATE" == "1" ]]; then
+        nsl_download "$(nsl_raw_url "NSLGameScanner.py")" "$python_script_path" || return 1
+    else
+        echo "Local NSLGameScanner.py not found and remote scanner update is disabled."
+        return 1
+    fi
+
+    chmod +x "$python_script_path"
+}
+
+nsl_find_proton_dir() {
+    local roots=(
+        "${logged_in_home}/.steam/root/compatibilitytools.d"
+        "${logged_in_home}/.steam/steam/compatibilitytools.d"
+        "${logged_in_home}/.local/share/Steam/compatibilitytools.d"
+        "${logged_in_home}/.var/app/com.valvesoftware.Steam/data/Steam/compatibilitytools.d"
+    )
+    local root found
+
+    if [[ -n "$NSL_PROTON_DIR" ]]; then
+        if [[ -x "$NSL_PROTON_DIR/proton" ]]; then
+            printf '%s\n' "$NSL_PROTON_DIR"
+            return 0
+        fi
+        echo "NSL_PROTON_DIR is set but does not contain an executable proton script: $NSL_PROTON_DIR" >&2
+    fi
+
+    for root in "${roots[@]}"; do
+        [[ -d "$root" ]] || continue
+
+        found=$(find -L "$root" -mindepth 1 -maxdepth 1 -type d -name 'GE-Proton*' -exec test -x '{}/proton' \; -print 2>/dev/null | sort -V | tail -n1)
+        if [[ -n "$found" ]]; then
+            printf '%s\n' "$found"
+            return 0
+        fi
+    done
+
+    return 1
+}
+
+nsl_proton_tool_name() {
+    local dir
+    dir=$(nsl_find_proton_dir) || return 1
+    basename "$dir"
+}
+
+nsl_restart_steam() {
+    echo "Restarting Steam..."
+    killall steam 2>/dev/null || true
+    while pgrep -x steam >/dev/null; do sleep 1; done
+
+    (
+        # Do not let Steam inherit this script's flock fd or Proton install environment.
+        exec 200>&-
+        unset STEAM_RUNTIME
+        unset STEAM_RUNTIME_LIBRARY_PATH
+        unset STEAM_COMPAT_CLIENT_INSTALL_PATH
+        unset STEAM_COMPAT_DATA_PATH
+        unset STEAM_COMPAT_INSTALL_PATH
+        unset STEAM_COMPAT_MOUNTS
+        unset STEAM_COMPAT_TOOL_PATHS
+        unset PROTONPATH
+        unset WINEPREFIX
+        unset WINEDLLOVERRIDES
+        unset GAMEID
+        unset LD_LIBRARY_PATH
+        nohup /usr/bin/steam -silent >/dev/null 2>&1 &
+    )
+}
 
 
 
@@ -90,18 +337,10 @@ echo "Cleanup completed!"
 
 
 
-# Remove existing log file if it exists
-if [[ -f $log_file ]]; then
-  rm $log_file
-fi
-
-exec >> "$log_file" 2>&1
-
-
 # Version number (major.minor)
 version=v4.2.91
 #NSL Decky Plugin Latest Github Version
-deckyversion=$(curl -s https://raw.githubusercontent.com/moraroy/NonSteamLaunchersDecky/refs/heads/main/package.json | grep -o '"version": "[^"]*' | sed 's/"version": "//')
+deckyversion=""
 
 
 
@@ -124,20 +363,7 @@ check_for_updates() {
     fi
 }
 
-# Check if Zenity is installed
-if ! command -v zenity &> /dev/null; then
-    echo "Zenity is not installed. Installing Zenity..."
-    if command -v apt-get &> /dev/null; then
-        sudo apt-get install -y zenity
-    elif command -v dnf &> /dev/null; then
-        sudo dnf install -y zenity
-    elif command -v pacman &> /dev/null; then
-        sudo pacman -S --noconfirm zenity
-    else
-        echo "Unknown package manager. Please install Zenity manually."
-        exit 1
-    fi
-fi
+nsl_install_dependency zenity zenity
 
 # Check if Steam is installed (non-flatpak)
 if ! command -v steam &> /dev/null; then
@@ -158,50 +384,9 @@ if ! command -v steam &> /dev/null; then
     fi
 fi
 
-# Check if wget is installed
-if ! command -v wget &> /dev/null; then
-    echo "wget is not installed. Installing wget..."
-    if command -v apt-get &> /dev/null; then
-        sudo apt-get install -y wget
-    elif command -v dnf &> /dev/null; then
-        sudo dnf install -y wget
-    elif command -v pacman &> /dev/null; then
-        sudo pacman -S --noconfirm wget
-    else
-        echo "Unknown package manager. Please install wget manually."
-        exit 1
-    fi
-fi
-
-# Check if curl is installed
-if ! command -v curl &> /dev/null; then
-    echo "curl is not installed. Installing curl..."
-    if command -v apt-get &> /dev/null; then
-        sudo apt-get install -y curl
-    elif command -v dnf &> /dev/null; then
-        sudo dnf install -y curl
-    elif command -v pacman &> /dev/null; then
-        sudo pacman -S --noconfirm curl
-    else
-        echo "Unknown package manager. Please install curl manually."
-        exit 1
-    fi
-fi
-
-# Check if jq is installed
-if ! command -v jq &> /dev/null; then
-    echo "jq is not installed. Installing jq..."
-    if command -v apt-get &> /dev/null; then
-        sudo apt-get install -y jq
-    elif command -v dnf &> /dev/null; then
-        sudo dnf install -y jq
-    elif command -v pacman &> /dev/null; then
-        sudo pacman -S --noconfirm jq
-    else
-        echo "Unknown package manager. Please install jq manually."
-        exit 1
-    fi
-fi
+nsl_install_dependency curl curl
+nsl_install_dependency jq jq
+deckyversion=$(curl -fsSL https://raw.githubusercontent.com/moraroy/NonSteamLaunchersDecky/refs/heads/main/package.json 2>/dev/null | grep -o '"version": "[^"]*' | sed 's/"version": "//' || true)
 
 # Get the command line arguments
 args=("$@")
@@ -253,11 +438,13 @@ get_steam_user_info() {
 {
     set +x
     steamid3=$(get_steam_user_info | tail -n1)
-    set -x
+    if [[ "${NSL_DEBUG:-0}" == "1" ]]; then
+        set -x
+    fi
 } 2>/dev/null
 
 # Get Proton compatibility tool name or fall back
-proton_dir=$(find -L "${logged_in_home}/.steam/root/compatibilitytools.d" -maxdepth 1 -type d -name "GE-Proton*" | sort -V | tail -n1)
+proton_dir=$(nsl_find_proton_dir || true)
 if [[ -n "$proton_dir" ]]; then
     compat_tool_name=$(basename "$proton_dir")
 else
@@ -287,11 +474,16 @@ vars_to_set["compat_tool_name"]=$compat_tool_name
 [[ -n "$python_version" ]] && vars_to_set["python_version"]=$python_version
 vars_to_set["chromedirectory"]=$chromedirectory
 vars_to_set["chrome_startdir"]=$chrome_startdir
+# Only persisted when set, so the scanner (and its service) can use a custom
+# artwork/metadata proxy via NSL_ARTWORK_API.
+[[ -n "${NSL_ARTWORK_API:-}" ]] && vars_to_set["NSL_ARTWORK_API"]=$NSL_ARTWORK_API
 
 # Variables that should be quoted
 declare -A quote_vars
 quote_vars["chromedirectory"]=1
 quote_vars["chrome_startdir"]=1
+quote_vars["compat_tool_name"]=1
+quote_vars["NSL_ARTWORK_API"]=1
 
 # If file is missing or empty, write everything at once
 if [[ ! -s "$env_file" ]]; then
@@ -307,16 +499,30 @@ if [[ ! -s "$env_file" ]]; then
     } > "$env_file"
     echo "Environment variables written to $env_file (new file)."
 else
-    # Append only missing variables
+    # Update managed variables and append any that are missing.
     for key in "${!vars_to_set[@]}"; do
-        if ! grep -qE "^export $key=" "$env_file"; then
-            value="${vars_to_set[$key]}"
-            if [[ -n "${quote_vars[$key]:-}" ]]; then
-                echo "export $key=\"$value\"" >> "$env_file"
-            else
-                echo "export $key=$value" >> "$env_file"
-            fi
-            echo "Added: export $key=$value"
+        value="${vars_to_set[$key]}"
+        if [[ -n "${quote_vars[$key]:-}" ]]; then
+            line="export $key=\"$value\""
+        else
+            line="export $key=$value"
+        fi
+
+        if grep -qE "^export $key=" "$env_file"; then
+            awk -v key="$key" -v line="$line" '
+                $0 ~ "^export " key "=" {
+                    if (!updated) {
+                        print line
+                        updated=1
+                    }
+                    next
+                }
+                { print }
+            ' "$env_file" > "${env_file}.tmp" && mv "${env_file}.tmp" "$env_file"
+            echo "Updated: $line"
+        else
+            echo "$line" >> "$env_file"
+            echo "Added: $line"
         fi
     done
     echo "Environment variables updated in $env_file (if needed)."
@@ -331,12 +537,10 @@ fi
 
 ### NSL Game Scanner.py Update/Scan
 update_nsl_game_scanner() {
-    repo_url='https://github.com/moraroy/NonSteamLaunchers-On-Steam-Deck/archive/refs/heads/main.zip'
     folders_to_clone=('urllib3' 'vdf' 'charset_normalizer')
 
     parent_folder="${logged_in_home}/.config/systemd/user/Modules"
     python_script_path="${logged_in_home}/.config/systemd/user/NSLGameScanner.py"
-    github_link="https://raw.githubusercontent.com/moraroy/NonSteamLaunchers-On-Steam-Deck/main/NSLGameScanner.py"
     env_vars="${logged_in_home}/.config/systemd/user/env_vars"
     steam_debug_file="${logged_in_home}/.local/share/Steam/.cef-enable-remote-debugging"
     nsl_config_dir="${logged_in_home}/.var/app/com.github.mtkennerly.ludusavi/config/ludusavi/NSLconfig"
@@ -353,107 +557,74 @@ update_nsl_game_scanner() {
     # Remove the old python script if it exists
     rm -f "$python_script_path"
 
-    # Create the parent folder if it doesn't exist
-    mkdir -p "${parent_folder}"
-
-    folders_exist=true
-    for folder in "${folders_to_clone[@]}"; do
-        if [ ! -d "${parent_folder}/${folder}" ]; then
-            folders_exist=false
-            break
-        fi
-    done
-
-    # Download and unzip the repo if necessary
-    if [ "${folders_exist}" = false ]; then
-        zip_file_path="${parent_folder}/repo.zip"
-
-        wget -O "${zip_file_path}" "${repo_url}" || { echo 'Download failed'; exit 1; }
-
-        unzip -d "${parent_folder}" "${zip_file_path}" || { echo 'Unzip failed'; exit 1; }
-
-        for folder in "${folders_to_clone[@]}"; do
-            destination_path="${parent_folder}/${folder}"
-            source_path="${parent_folder}/NonSteamLaunchers-On-Steam-Deck-main/Modules/${folder}"
-            if [ -d "${source_path}" ]; then
-                mv "${source_path}" "${destination_path}" || { echo "Move failed for ${folder}"; exit 1; }
-            fi
-        done
-
-        rm -f "${zip_file_path}"
-        rm -rf "${parent_folder}/NonSteamLaunchers-On-Steam-Deck-main"
-    fi
-
-    # Download the latest Python script
-    curl -fsSL -o "$python_script_path" "$github_link"
-    chmod +x "$python_script_path"
+    nsl_install_scanner_files "$parent_folder" "$python_script_path" "${folders_to_clone[@]}" || exit 1
 }
 
-update_nsl_game_scanner
+# Runs by default; the scan injects launcher shortcuts into Steam and starts the
+# scanner service. Set NSL_AUTO_SCAN_ON_START=0 to skip.
+if [[ "${NSL_AUTO_SCAN_ON_START:-1}" != "0" ]]; then
+    update_nsl_game_scanner
 
+    funny_messages=(
+      "Wow, you have a lot of games!"
+      "Getting artwork and descriptions for note system..."
+      "So many launchers, so little time..."
+      "Much game. Very library. Wow."
+      "Looking under the Steam Deck couch cushions..."
+      "Injecting metadata directly into your eyeballs..."
+      "Downloading more RAM... just kidding."
+      "Scanning your games like a barcode at checkout!"
+      "Adding +10 charm to your launcher list..."
+      "Man this is taking a long time..."
+      "Removing NSL from Decky Loader Store... jk that happened in real life."
+      "Learning your game choices and judging you for them..."
+      "But why is that game in here!!??"
+      "Downloading any boot videos for your enjoyment..."
+      "Thank you for being patient..."
+      "This may take a while..."
+      "You may need to grab a coffee..."
+      "If you see this notification, I'm still working don't worry..."
+      "Getting Descriptions, Artwork and Boot Videos if applicable..."
+    )
 
+    (
+      while true; do
+        sleep 2
+        loop_msg="${funny_messages[$RANDOM % ${#funny_messages[@]}]}"
+        show_message "Still scanning... ${loop_msg}"
+        sleep 15
+      done
+    ) &
+    message_pid=$!
+    python3 "$python_script_path"
 
-funny_messages=(
-  "Wow, you have a lot of games!"
-  "Getting artwork and descriptions for note system..."
-  "So many launchers, so little time..."
-  "Much game. Very library. Wow."
-  "Looking under the Steam Deck couch cushions..."
-  "Injecting metadata directly into your eyeballs..."
-  "Downloading more RAM... just kidding."
-  "Scanning your games like a barcode at checkout!"
-  "Adding +10 charm to your launcher list..."
-  "Man this is taking a long time..."
-  "Removing NSL from Decky Loader Store... jk that happened in real life."
-  "Learning your game choices and judging you for them..."
-  "But why is that game in here!!??"
-  "Downloading any boot videos for your enjoyment..."
-  "Thank you for being patient..."
-  "This may take a while..."
-  "You may need to grab a coffee..."
-  "If you see this notification, I'm still working don't worry..."
-  "Getting Descriptions, Artwork and Boot Videos if applicable..."
-)
+    kill $message_pid 2>/dev/null
+    show_message "Scanning complete! Your game library looks good!"
 
-(
-  while true; do
-    sleep 2
-    loop_msg="${funny_messages[$RANDOM % ${#funny_messages[@]}]}"
-    show_message "Still scanning... ${loop_msg}"
-    sleep 15
-  done
-) &
-message_pid=$!
-python3 "$python_script_path"
+    if [ ! -f "$steam_debug_file" ]; then
+        touch "$steam_debug_file" || { echo "Failed to create $steam_debug_file"; exit 1; }
 
-kill $message_pid 2>/dev/null
-show_message "Scanning complete! Your game library looks good!"
+        nsl_restart_steam
+    fi
 
-if [ ! -f "$steam_debug_file" ]; then
-    touch "$steam_debug_file" || { echo "Failed to create $steam_debug_file"; exit 1; }
+    if [[ -f "${logged_in_home}/.config/systemd/user/nslgamescanner.service" ]]; then
+        echo "[NSL] Starting NSL Game Scanner service..."
+        systemctl --user daemon-reload
+        systemctl --user start nslgamescanner.service
+    else
+        echo "[NSL] Service file not found; skipping start."
+    fi
 
-    echo "Restarting Steam..."
-    killall steam 2>/dev/null || true
-    while pgrep -x steam >/dev/null; do sleep 1; done
-    nohup /usr/bin/steam -silent %U &>/dev/null &
-fi
+    if [ -d "$nsl_config_dir" ] && flatpak list --app | grep -q "com.github.mtkennerly.ludusavi"; then
+        nohup flatpak run com.github.mtkennerly.ludusavi --config "$nsl_config_dir" backup --force > /dev/null 2>&1 &
+        wait $!
+        show_message "Game Saves have been backed up! Please check here: /home/deck/NSLGameSaves"
+        sleep 3
+    fi
 
-if systemctl --user list-unit-files | grep -q "nslgamescanner.service"; then
-    echo "[NSL] Starting NSL Game Scanner service..."
-    systemctl --user start nslgamescanner.service
-else
-    echo "[NSL] Service file not found — skipping start."
-fi
-
-if [ -d "$nsl_config_dir" ] && flatpak list --app | grep -q "com.github.mtkennerly.ludusavi"; then
-    nohup flatpak run com.github.mtkennerly.ludusavi --config "$nsl_config_dir" backup --force > /dev/null 2>&1 &
-    wait $!
-    show_message "Game Saves have been backed up! Please check here: /home/deck/NSLGameSaves"
+    show_message "Finished! Welcome to NonSteamLaunchers!"
     sleep 3
 fi
-
-show_message "Finished! Welcome to NonSteamLaunchers!"
-sleep 3
 ###End of NSL Game Scanner update
 
 
@@ -468,10 +639,8 @@ fi
 # Check if the NonSteamLaunchersInstallation subfolder exists in the Downloads folder
 if [ -d "$download_dir" ]; then
     # Delete the NonSteamLaunchersInstallation subfolder
-    rm -rf "$download_dir"
+    nsl_safe_rm "$download_dir"
     echo "Deleted NonSteamLaunchersInstallation subfolder"
-else
-    echo "NonSteamLaunchersInstallation subfolder does not exist"
 fi
 
 # Game Launchers
@@ -607,8 +776,7 @@ get_sd_path() {
 ### update proton ge
 
 function patch_proton_script() {
-    proton_dir=$(find -L "${logged_in_home}/.steam/root/compatibilitytools.d" \
-        -maxdepth 1 -type d -name "GE-Proton*" | sort -V | tail -n1)
+    proton_dir=$(nsl_find_proton_dir || true)
 
     if [ -z "$proton_dir" ]; then
         echo "No GE-Proton installation found to patch."
@@ -635,7 +803,7 @@ function download_ge_proton() {
     }
 
     tarball_url=$(curl -s https://api.github.com/repos/GloriousEggroll/proton-ge-custom/releases/latest \
-        | grep browser_download_url | cut -d\" -f4 | grep .tar.gz)
+        | grep browser_download_url | cut -d\" -f4 | grep '\.tar\.gz$' | grep -v aarch64)
 
     if [ -z "$tarball_url" ]; then
         echo "Failed to get tarball URL. Exiting."
@@ -648,7 +816,7 @@ function download_ge_proton() {
     }
 
     checksum_url=$(curl -s https://api.github.com/repos/GloriousEggroll/proton-ge-custom/releases/latest \
-        | grep browser_download_url | cut -d\" -f4 | grep .sha512sum)
+        | grep browser_download_url | cut -d\" -f4 | grep '\.sha512sum$' | grep -v aarch64)
 
     if [ -z "$checksum_url" ]; then
         echo "Failed to get checksum URL. Exiting."
@@ -684,6 +852,7 @@ function download_ge_proton() {
 function update_proton() {
     echo "0"
     echo "# Detecting, Updating and Installing GE-Proton...please wait..."
+    local update_mode="${1:-default}"
 
     if [ ! -d "${logged_in_home}/.steam/root/compatibilitytools.d" ]; then
         mkdir -p "${logged_in_home}/.steam/root/compatibilitytools.d" || {
@@ -697,11 +866,12 @@ function update_proton() {
         exit 1
     }
 
-    proton_dir=$(find -L "${logged_in_home}/.steam/root/compatibilitytools.d" \
-        -maxdepth 1 -type d -name "GE-Proton*" | sort -V | tail -n1)
+    proton_dir=$(nsl_find_proton_dir || true)
 
     if [ -z "$proton_dir" ]; then
         download_ge_proton
+    elif [[ "$update_mode" != "force" ]]; then
+        echo "Using existing Proton compatibility tool: $proton_dir"
     else
         installed_version=$(basename "$proton_dir" | sed 's/GE-Proton-//')
         latest_version=$(curl -s https://api.github.com/repos/GloriousEggroll/proton-ge-custom/releases/latest \
@@ -725,29 +895,25 @@ function download_umu_launcher() {
     cd "${logged_in_home}/Downloads/NonSteamLaunchersInstallation" || { echo "Failed to change directory. Exiting."; exit 1; }
 
     # Get the download URL for a file that matches the pattern 'umu-launcher-*zipapp*.tar.gz'
-    zip_url=$(curl -s https://api.github.com/repos/Open-Wine-Components/umu-launcher/releases/latest | \
+    zip_url=$(curl -fsSL https://api.github.com/repos/Open-Wine-Components/umu-launcher/releases/latest | \
       grep '"browser_download_url":' | grep -E 'umu-launcher-.*-zipapp.*\.(zip|tar\.gz|tar)' | \
-      cut -d '"' -f 4)
+      cut -d '"' -f 4 | head -n 1)
 
     if [ -z "$zip_url" ]; then
         echo "Failed to get zip/tar URL. Exiting."
+        exit 1
     fi
 
     echo "Found download URL: $zip_url"
 
     # Download the file
-    curl --retry 5 --retry-delay 0 --retry-max-time 60 -sLOJ "$zip_url"
-    if [ $? -ne 0 ]; then
-        echo "Curl failed to download the file. Exiting."
-    fi
+    downloaded_file=$(basename "$zip_url")
+    nsl_download "$zip_url" "$downloaded_file" || { echo "Failed to download UMU Launcher. Exiting."; exit 1; }
 
     # Ensure the bin directory exists
     if [ ! -d "${logged_in_home}/bin" ]; then
         mkdir -p "${logged_in_home}/bin" || { echo "Failed to create bin directory. Exiting."; exit 1; }
     fi
-
-    # Get the downloaded file name
-    downloaded_file=$(basename "$zip_url")
 
     # Check if the downloaded file is a .zip file or a .tar.gz file and extract accordingly
     if [[ "$downloaded_file" =~ \.zip$ ]]; then
@@ -755,6 +921,7 @@ function download_umu_launcher() {
         unzip -o -j "$downloaded_file" -d "${logged_in_home}/bin/"
         if [ $? -ne 0 ]; then
             echo "Zip extraction failed. Exiting."
+            exit 1
         fi
     elif [[ "$downloaded_file" =~ \.tar\.gz$ ]] || [[ "$downloaded_file" =~ \.tar$ ]]; then
         # Check the actual file type using the `file` command
@@ -772,24 +939,41 @@ function download_umu_launcher() {
             tar --strip-components=1 -xvf "$downloaded_file" -C "${logged_in_home}/bin/"
             if [ $? -ne 0 ]; then
                 echo "Tar extraction failed. Exiting."
+                exit 1
             fi
         else
             echo "Unknown file type: $file_type. Exiting."
+            exit 1
         fi
     else
         echo "Unsupported file type: $downloaded_file. Exiting."
+        exit 1
     fi
 
     # Make all extracted files executable
     find "${logged_in_home}/bin/" -type f -exec chmod +x {} \;
 
     if [ -f "${logged_in_home}/bin/umu-run" ]; then
+        mkdir -p "${logged_in_home}/bin/umu-launcher"
+        latest_version=$(curl -fsSL https://api.github.com/repos/Open-Wine-Components/umu-launcher/releases/latest | grep tag_name | cut -d '"' -f 4)
+        printf '%s\n' "$latest_version" > "${logged_in_home}/bin/umu-launcher/version.txt"
+    else
+        echo "umu-run not found after install."
+        exit 1
+    fi
+
+    if [[ "${NSL_UMU_SELF_UPDATE:-0}" == "1" ]]; then
         "${logged_in_home}/bin/umu-run" winetricks --self-update
     else
-        echo "umu-run not found. Skipping self-update."
+        echo "Skipping UMU winetricks self-update. Set NSL_UMU_SELF_UPDATE=1 to run it."
     fi
 
     echo "UMU Launcher update completed :)"
+}
+
+nsl_umu_launcher_healthy() {
+    [[ -x "${logged_in_home}/bin/umu-run" ]] || return 1
+    "${logged_in_home}/bin/umu-run" --version >/dev/null 2>&1 || return 1
 }
 
 
@@ -805,13 +989,13 @@ function update_umu_launcher() {
     # Set the path to the UMU Launcher directory
     umu_dir="${logged_in_home}/bin/umu-launcher"
 
-    # Check if UMU Launcher is installed
-    if [ ! -d "$umu_dir" ]; then
+    # Check if UMU Launcher is installed and runnable.
+    if [ ! -d "$umu_dir" ] || ! nsl_umu_launcher_healthy; then
         download_umu_launcher
     else
         # Check if installed version is the latest version
-        installed_version=$(cat "$umu_dir/version.txt")
-        latest_version=$(curl -s https://api.github.com/repos/Open-Wine-Components/umu-launcher/releases/latest | grep tag_name | cut -d '"' -f 4)
+        installed_version=$(cat "$umu_dir/version.txt" 2>/dev/null || true)
+        latest_version=$(curl -fsSL https://api.github.com/repos/Open-Wine-Components/umu-launcher/releases/latest | grep tag_name | cut -d '"' -f 4)
         if [ "$installed_version" != "$latest_version" ]; then
             download_umu_launcher
         fi
@@ -919,24 +1103,50 @@ separate_appids=false
 
 # --- Handle command line arguments or fallback to GTK UI ---
 if [ $# -eq 0 ]; then
-    readarray -t gtk_output < <(python3 - <<'EOF'
+    # The launcher picker needs PyGObject (gi), a system package that is NOT
+    # available inside a uv/virtualenv. If the active python3 can't import gi
+    # (e.g. a venv is activated), fall back to the system interpreter so the GUI
+    # still works instead of silently returning "No launchers selected".
+    gui_python=""
+    for candidate in python3 /usr/bin/python3; do
+        if command -v "$candidate" >/dev/null 2>&1 && "$candidate" -c 'import gi' >/dev/null 2>&1; then
+            gui_python="$candidate"
+            break
+        fi
+    done
+
+    if [ -z "$gui_python" ]; then
+        echo "ERROR: No python3 with PyGObject (gi) found for the launcher selection GUI."
+        echo "If you are in a Python virtualenv, run 'deactivate' and try again, install PyGObject"
+        echo "system-wide, or pass a launcher name to skip the GUI (e.g. ./NonSteamLaunchers.sh \"GOG Galaxy\")."
+        zenity --error --width=420 --text="Could not open the launcher selection window: PyGObject (gi) is not available for python3.\n\nIf you are running inside a Python virtualenv, deactivate it and try again, or pass a launcher name as an argument (e.g. \"GOG Galaxy\")." 2>/dev/null || true
+        exit 1
+    fi
+
+    readarray -t gtk_output < <("$gui_python" - <<'EOF'
 import gi, os, sys, subprocess, re
 
 gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk
 
+def get_xrandr_output():
+    try:
+        return subprocess.check_output(["xrandr"], stderr=subprocess.DEVNULL).decode("utf-8")
+    except (OSError, subprocess.CalledProcessError):
+        return ""
+
 def get_screen_resolution():
-    xrandr_output = subprocess.check_output(["xrandr"]).decode("utf-8")
+    xrandr_output = get_xrandr_output()
     resolutions = re.findall(r"(\d+)x(\d+)\s*\*+", xrandr_output)
     return map(int, resolutions[0]) if resolutions else (1920,1080)
 
 def is_multiple_monitors():
-    xrandr_output = subprocess.check_output(["xrandr"]).decode("utf-8")
+    xrandr_output = get_xrandr_output()
     return len(re.findall(r" connected", xrandr_output))>1
 
 screen_width, screen_height = get_screen_resolution()
 if is_multiple_monitors():
-    xrandr_output = subprocess.check_output(["xrandr"]).decode("utf-8")
+    xrandr_output = get_xrandr_output()
     match = re.search(r"(\d+)x(\d+)\s+connected", xrandr_output)
     if match:
         screen_width, screen_height = map(int, match.groups())
@@ -1030,7 +1240,7 @@ class LauncherUI(Gtk.Window):
         # Buttons
         button_box = Gtk.Box(spacing=6)
         self.button_result = None
-        for label in ["Cancel","OK","❤️","Uninstall","🔍","Start Fresh","Move to SD Card","Update Proton-GE","🖥️ Off","NSLGameSaves","README"]:
+        for label in ["Cancel","Install","Uninstall","Game Scanner","Start Fresh","Move to SD Card","Update Proton-GE","🖥️ Off","NSLGameSaves","Share Notes","README"]:
             btn = Gtk.Button(label=label)
             btn.connect("clicked", self.on_button_clicked, label)
             button_box.pack_start(btn, True, True, 0)
@@ -1120,7 +1330,7 @@ EOF
     IFS='|' read -ra selected_launchers <<< "$selected_launchers_str"
 
     # Determine what to put in options:
-    if [[ "$extra_button" == "OK" ]]; then
+    if [[ "$extra_button" == "OK" || "$extra_button" == "Install" ]]; then
         options="$selected_launchers_str"
     elif [[ "$selected_launchers_str" == "" ]]; then
         # Only a button was pressed, no launchers selected
@@ -1147,7 +1357,7 @@ else
 
     custom_websites_str=$(IFS=', '; echo "${custom_websites[*]}")
 
-    extra_button="OK"
+    extra_button="Install"
     options="${selected_launchers[*]}"
 fi
 
@@ -1155,7 +1365,7 @@ fi
 
 # Handle validation (skip if extra button is special)
 case "$extra_button" in
-    "Start Fresh"|"Uninstall"|"Move to SD Card"|"Update Proton-GE"|"NSLGameSaves"|"README"|"🖥️ Off"|"❤️"|"🔍")
+    "Start Fresh"|"Uninstall"|"Move to SD Card"|"Update Proton-GE"|"NSLGameSaves"|"README"|"🖥️ Off"|"Share Notes"|"Game Scanner"|"Stop Scanner"|"❤️"|"🔍")
         # Skip validation
         ;;
     *)
@@ -1174,16 +1384,20 @@ if [[ "$extra_button" == "🖥️ Off" ]]; then
 fi
 
 if [[ "$extra_button" == "README" ]]; then
-    README_URL="https://raw.githubusercontent.com/moraroy/NonSteamLaunchers-On-Steam-Deck/main/README.md"
     TEMP_FILE=$(mktemp)
-    curl -s "$README_URL" |
-        sed 's/<[^>]*>//g' |
+    README_DOWNLOAD_FILE=$(mktemp)
+    nsl_download "$(nsl_raw_url "README.md")" "$README_DOWNLOAD_FILE" || {
+        rm -f "$TEMP_FILE" "$README_DOWNLOAD_FILE"
+        zenity --error --text="Failed to download README." --width=300 --timeout=5
+        exit 1
+    }
+    sed 's/<[^>]*>//g' "$README_DOWNLOAD_FILE" |
         sed 's/^###\s*/---\n/g' |
         sed 's/^##\s*/--\n/g' |
         sed 's/^#\s*/\n/g' |
         sed 's/^[-*]\s*/- /g' > "$TEMP_FILE"
     zenity --text-info --title="NonSteamLaunchers README" --width=800 --height=600 --filename="$TEMP_FILE"
-    rm "$TEMP_FILE"
+    rm -f "$TEMP_FILE" "$README_DOWNLOAD_FILE"
     exit 1
 fi
 
@@ -1219,7 +1433,12 @@ echo "Options: $options"
 
 # Define the StartFreshFunction
 StartFreshFunction() {
-    sd_path=$(get_sd_path)
+    if [[ "$NSL_DRY_RUN" == "1" ]]; then
+        echo "DRY RUN: Start Fresh will report planned removals without deleting files or changing services."
+        sd_path="${NSL_DRY_RUN_SD_PATH:-/run/media/${USER:-deck}/DRY_RUN_SD_CARD}"
+    else
+        sd_path=$(get_sd_path)
+    fi
 
     compatdata_dir="${logged_in_home}/.local/share/Steam/steamapps/compatdata"
     other_dir="${logged_in_home}/.local/share/Steam/steamapps/shadercache"
@@ -1230,12 +1449,39 @@ StartFreshFunction() {
 
     delete_path() {
         local path="$1"
-        if [ -e "$path" ]; then
+        if [[ -z "$path" || "$path" == "/" || "$path" == "$logged_in_home" ]]; then
+            echo "Refusing to delete unsafe path: ${path:-<empty>}"
+            return 1
+        fi
+
+        case "$path" in
+            "$compatdata_dir"/*|"$other_dir"/*|"$sd_path"/*|\
+            "${logged_in_home}/Downloads/NonSteamLaunchersInstallation"|\
+            "${logged_in_home}/.config/systemd/user/Modules"|\
+            "${logged_in_home}/.config/systemd/user/shortcuts"|\
+            "${logged_in_home}/.config/systemd/user/descriptions.json"|\
+            "${logged_in_home}/.local/share/applications/RemotePlayWhatever"|\
+            "${logged_in_home}/.local/share/applications/RemotePlayWhatever.desktop"|\
+            "${logged_in_home}/Downloads/NonSteamLaunchers-install.log"|\
+            "${logged_in_home}/.config/systemd/user/NSLGameScanner.py"|\
+            "${logged_in_home}/.config/systemd/user/env_vars"|\
+            "${logged_in_home}/.config/systemd/user/nslgamescanner.service")
+                ;;
+            *)
+                echo "Refusing to delete path outside expected NSL locations: $path"
+                return 1
+                ;;
+        esac
+
+        if [ -e "$path" ] || [ -L "$path" ]; then
+            if [[ "$NSL_DRY_RUN" == "1" ]]; then
+                echo "DRY RUN: would delete $path"
+                return 0
+            fi
+
             if [ -L "$path" ]; then
-                target=$(readlink -f "$path")
-                rm -rf "$target"
                 unlink "$path"
-                echo "Deleted symlink and target: $path -> $target"
+                echo "Deleted symlink: $path"
             else
                 rm -rf "$path"
                 echo "Deleted: $path"
@@ -1245,6 +1491,11 @@ StartFreshFunction() {
 
     clean_envars_file() {
         local envars_file="${logged_in_home}/.config/systemd/user/env_vars"
+
+        if [[ "$NSL_DRY_RUN" == "1" ]]; then
+            echo "DRY RUN: would clean ENVARS file at $envars_file"
+            return 0
+        fi
 
         if [ -f "$envars_file" ]; then
             echo "Cleaning ENVARS file..."
@@ -1267,6 +1518,11 @@ StartFreshFunction() {
 
     run_nsl_scanner() {
         local scanner_path="${logged_in_home}/.config/systemd/user/NSLGameScanner.py"
+
+        if [[ "$NSL_DRY_RUN" == "1" ]]; then
+            echo "DRY RUN: would run NSLGameScanner.py from $scanner_path"
+            return 0
+        fi
 
         if [ -f "$scanner_path" ]; then
             echo "Running NSLGameScanner.py with cleaned ENVARS..."
@@ -1324,10 +1580,15 @@ StartFreshFunction() {
     delete_path "${logged_in_home}/.config/systemd/user/env_vars"
 
     delete_path "${logged_in_home}/.config/systemd/user/nslgamescanner.service"
-    unlink "${logged_in_home}/.config/systemd/user/default.target.wants/nslgamescanner.service" 2>/dev/null || true
+    if [[ "$NSL_DRY_RUN" == "1" ]]; then
+        echo "DRY RUN: would unlink ${logged_in_home}/.config/systemd/user/default.target.wants/nslgamescanner.service"
+        echo "DRY RUN: would reload and reset failed user systemd units"
+    else
+        unlink "${logged_in_home}/.config/systemd/user/default.target.wants/nslgamescanner.service" 2>/dev/null || true
 
-    systemctl --user daemon-reload
-    systemctl --user reset-failed
+        systemctl --user daemon-reload
+        systemctl --user reset-failed
+    fi
 
     show_message "NonSteamLaunchers has been wiped!"
     exit 0
@@ -1353,7 +1614,11 @@ if [[ $options == "Start Fresh" ]] || [[ $selected_launchers == "Start Fresh" ]]
             exit 0
         fi
     else
-        # Command line arguments were provided, so skip displaying the zenity window and directly perform any necessary actions to start fresh by calling the StartFreshFunction
+        if [[ "${NSL_CONFIRM_START_FRESH:-0}" != "1" ]]; then
+            echo "Refusing CLI Start Fresh without NSL_CONFIRM_START_FRESH=1"
+            exit 1
+        fi
+
         StartFreshFunction
     fi
 fi
@@ -1558,7 +1823,7 @@ handle_uninstall_common() {
     app_name=$4
 
     # Set the path to the Proton directory
-    proton_dir=$(find -L "${logged_in_home}/.steam/root/compatibilitytools.d" -maxdepth 1 -type d -name "GE-Proton*" | sort -V | tail -n1)
+    proton_dir=$(nsl_find_proton_dir || true)
 
     # Set the paths for the environment variables
     STEAM_RUNTIME="${logged_in_home}/.steam/root/ubuntu12_32/steam-runtime/run.sh"
@@ -1586,7 +1851,7 @@ handle_uninstall_ea() {
     # Download EA App file
     if [ ! -f "$eaapp_file" ]; then
         echo "Downloading EA App file"
-        wget $eaapp_url -O $eaapp_file
+        nsl_download "$eaapp_url" "$eaapp_file" || exit 1
     fi
 
     handle_uninstall_common "$1" "$eaapp_file" "/uninstall /quiet" "EA App"
@@ -1726,7 +1991,7 @@ handle_uninstall_antstream() {
     # Download Antstream file
     if [ ! -f "$antstream_file" ]; then
         echo "Downloading Antstream Arcade file"
-        wget $antstream_url -O $antstream_file
+        nsl_download "$antstream_url" "$antstream_file" || exit 1
     fi
 
     handle_uninstall_common "$1" "$antstream_file" "/uninstall /quiet" "AntStream Arcade"
@@ -2273,6 +2538,11 @@ move_launcher_to_sd() {
     local number_folder
     number_folder=$(readlink -f "$launcher_link")
 
+    if [[ -z "$number_folder" || "$number_folder" == "/" ]]; then
+        zenity --error --text="Refusing to move unsafe launcher path for $launcher_name." --width=300 --height=100
+        return 1
+    fi
+
     if [[ "$number_folder" == "$sd_path"* ]]; then
         echo "# $launcher_name is already on the SD card."
         return 0
@@ -2288,10 +2558,13 @@ move_launcher_to_sd() {
     }
 
     rm -rf "$number_folder"
-    ln -s "$sd_folder" "$number_folder"
-
-    rm -f "$launcher_link"
-    ln -s "$number_folder" "$launcher_link"
+    if [[ -L "$launcher_link" ]]; then
+        ln -s "$sd_folder" "$number_folder"
+        rm -f "$launcher_link"
+        ln -s "$number_folder" "$launcher_link"
+    else
+        ln -s "$sd_folder" "$launcher_link"
+    fi
 }
 
 move_all_selected() {
@@ -2376,11 +2649,11 @@ function stop_service {
     systemctl --user stop nslgamescanner.service
 
     # Delete the NSLGameScanner.py
-    rm -rf ${logged_in_home}/.config/systemd/user/NSLGameScanner.py
-    rm -rf ${logged_in_home}/.config/systemd/user/descriptions.json
+    nsl_safe_rm "${logged_in_home}/.config/systemd/user/NSLGameScanner.py"
+    nsl_safe_rm "${logged_in_home}/.config/systemd/user/descriptions.json"
 
     # Delete the service file
-    rm -rf ${logged_in_home}/.config/systemd/user/nslgamescanner.service
+    nsl_safe_rm "${logged_in_home}/.config/systemd/user/nslgamescanner.service"
 
     # Remove the symlink
     unlink ${logged_in_home}/.config/systemd/user/default.target.wants/nslgamescanner.service
@@ -2391,12 +2664,10 @@ function stop_service {
 }
 
 update_nsl_game_scanner() {
-    repo_url='https://github.com/moraroy/NonSteamLaunchers-On-Steam-Deck/archive/refs/heads/main.zip'
-    folders_to_clone=('requests' 'urllib3' 'steamgrid' 'vdf' 'charset_normalizer')
+    folders_to_clone=('urllib3' 'vdf' 'charset_normalizer')
 
     parent_folder="${logged_in_home}/.config/systemd/user/Modules"
     python_script_path="${logged_in_home}/.config/systemd/user/NSLGameScanner.py"
-    github_link="https://raw.githubusercontent.com/moraroy/NonSteamLaunchers-On-Steam-Deck/main/NSLGameScanner.py"
     env_vars="${logged_in_home}/.config/systemd/user/env_vars"
     steam_debug_file="${logged_in_home}/.local/share/Steam/.cef-enable-remote-debugging"
     nsl_config_dir="${logged_in_home}/.var/app/com.github.mtkennerly.ludusavi/config/ludusavi/NSLconfig"
@@ -2413,53 +2684,20 @@ update_nsl_game_scanner() {
     # Remove the old python script if it exists
     rm -f "$python_script_path"
 
-    # Create the parent folder if it doesn't exist
-    mkdir -p "${parent_folder}"
-
-    folders_exist=true
-    for folder in "${folders_to_clone[@]}"; do
-        if [ ! -d "${parent_folder}/${folder}" ]; then
-            folders_exist=false
-            break
-        fi
-    done
-
-    # Download and unzip the repo if necessary
-    if [ "${folders_exist}" = false ]; then
-        zip_file_path="${parent_folder}/repo.zip"
-
-        wget -O "${zip_file_path}" "${repo_url}" || { echo 'Download failed'; exit 1; }
-
-        unzip -d "${parent_folder}" "${zip_file_path}" || { echo 'Unzip failed'; exit 1; }
-
-        for folder in "${folders_to_clone[@]}"; do
-            destination_path="${parent_folder}/${folder}"
-            source_path="${parent_folder}/NonSteamLaunchers-On-Steam-Deck-main/Modules/${folder}"
-            if [ -d "${source_path}" ]; then
-                mv "${source_path}" "${destination_path}" || { echo "Move failed for ${folder}"; exit 1; }
-            fi
-        done
-
-        rm -f "${zip_file_path}"
-        rm -rf "${parent_folder}/NonSteamLaunchers-On-Steam-Deck-main"
-    fi
-
-    # Download the latest Python script
-    curl -fsSL -o "$python_script_path" "$github_link"
-    chmod +x "$python_script_path"
+    nsl_install_scanner_files "$parent_folder" "$python_script_path" "${folders_to_clone[@]}" || exit 1
     python3 "$python_script_path"
 }
 
 # Get the command line arguments
 args=("$@")
 
-# Check if the 🔍 option was passed as a command line argument or clicked in the GUI
-if [[ " ${args[@]} " =~ " 🔍 " ]] || [[ $options == "🔍" ]]; then
+# Check if the scanner stop option was passed as a command line argument or clicked in the GUI.
+if [[ " ${args[@]} " =~ " Game Scanner " ]] || [[ " ${args[@]} " =~ " Stop Scanner " ]] || [[ " ${args[@]} " =~ " 🔍 " ]] || [[ $options == "Game Scanner" ]] || [[ $options == "Stop Scanner" ]] || [[ $options == "🔍" ]]; then
     stop_service
 
     # If command line arguments were provided, exit the script
     if [ ${#args[@]} -ne 0 ]; then
-        rm -rf ${logged_in_home}/.config/systemd/user/env_vars
+        nsl_safe_rm "${logged_in_home}/.config/systemd/user/env_vars"
         exit 0
     fi
 
@@ -2471,17 +2709,16 @@ if [[ " ${args[@]} " =~ " 🔍 " ]] || [[ $options == "🔍" ]]; then
         update_nsl_game_scanner
 
         # Restart Steam since the scanner is being restarted
-        echo "Restarting Steam..."
-        killall steam 2>/dev/null || true
-        while pgrep -x steam >/dev/null; do sleep 1; done
-        nohup /usr/bin/steam -silent %U &>/dev/null &
+        nsl_restart_steam
 
-        if systemctl --user list-unit-files | grep -q "nslgamescanner.service"; then
+        if [[ -f "${logged_in_home}/.config/systemd/user/nslgamescanner.service" ]]; then
             echo "[NSL] Starting NSL Game Scanner service..."
+            systemctl --user daemon-reload
             systemctl --user start nslgamescanner.service
         else
-            echo "[NSL] Service file not found — skipping start."
+            echo "[NSL] Service file not found; skipping start."
         fi
+        exit 0
     else
         # User does not want to run NSLGameScanner again
         stop_service
@@ -2492,7 +2729,7 @@ fi
 
 
 # TODO: probably better to break this subshell into a function that can then be redirected to zenity
-# Massive subshell pipes into `zenity --progress` around L2320 for GUI rendering
+# Mirror install progress to the log before feeding it to the Zenity progress UI.
 (
 
 
@@ -2503,14 +2740,14 @@ update_umu_launcher
 
 # Also call the function when the button is pressed
 if [[ $options == *"Update Proton-GE"* ]]; then
-    update_proton
+    update_proton force
     update_umu_launcher
 fi
 
 
 
 echo "20"
-echo "# Creating files & folders"
+echo "# Creating files and folders"
 
 # Check if the user selected any launchers
 if [ -n "$options" ]; then
@@ -2523,7 +2760,7 @@ if [ -n "$options" ]; then
 fi
 
 # Change working directory to Proton's
-cd $proton_dir
+cd "$proton_dir" || exit 1
 
 # Set the STEAM_RUNTIME environment variable
 export STEAM_RUNTIME="${logged_in_home}/.steam/root/ubuntu12_32/steam-runtime/run.sh"
@@ -2732,7 +2969,7 @@ function install_eaapp {
     mkdir -p "$eaapp_download_dir"
 
     # Download the file
-    wget "$eaapp_url" -O "${eaapp_download_dir}${eaapp_file_name}"
+    nsl_download "$eaapp_url" "${eaapp_download_dir}${eaapp_file_name}" || exit 1
 }
 
 
@@ -2965,7 +3202,7 @@ install_stove() {
 
     echo "Attempting to download $installer..."
 
-    if curl -fLo "$installer" "$url"; then
+    if nsl_download "$url" "$installer"; then
         echo "Download successful. Running $installer silently..."
 
         # Start the installer with Proton and capture PID
@@ -2993,7 +3230,7 @@ install_psplus() {
 
     echo "Attempting to download $installer..."
 
-    if curl -fLo "$installer" "$url"; then
+    if nsl_download "$url" "$installer"; then
         echo "Download successful. Running $installer silently..."
 
         # Start the installer with Proton and capture PID
@@ -3026,7 +3263,7 @@ install_gryphlink() {
 
     [ ! -d "${gryphlink_dir}" ] && mkdir -p "${gryphlink_dir}"
 
-    curl -L -o "${tmp_installer}" "${gryphlink_url}"
+    nsl_download "$gryphlink_url" "${tmp_installer}" || return 1
 
     command -v 7z >/dev/null 2>&1 || { echo "7z not found, install p7zip"; exit 1; }
 
@@ -3074,7 +3311,7 @@ function install_launcher {
     run_in_background=$9  # New parameter to specify if the launcher should run in the background
 
     echo "${progress_update}"
-    echo "# Downloading & Installing ${launcher_name}...please wait..."
+    echo "# Downloading and Installing ${launcher_name}...please wait..."
 
     # Check if the user selected the launcher
     if [[ $options == *"${launcher_name}"* ]]; then
@@ -3093,8 +3330,8 @@ function install_launcher {
             mkdir -p "${logged_in_home}/.local/share/Steam/steamapps/compatdata/$appid"
         fi
 
-        #temp ubi fix
-        if [[ "$launcher_name" == "Ubisoft Connect" || "$launcher_name" == "GOG Galaxy" ]]; then
+        # Fallback for older Ubisoft/GOG behavior when no ProtonPlus/GE tool was found.
+        if [[ -z "$proton_dir" && ( "$launcher_name" == "Ubisoft Connect" || "$launcher_name" == "GOG Galaxy" ) ]]; then
             for root in \
                 "$HOME/.local/share/Steam" \
                 "$HOME/.steam/steam" \
@@ -3114,7 +3351,7 @@ function install_launcher {
 
 
         # Change working directory to Proton's
-        cd $proton_dir
+        cd "$proton_dir" || exit 1
 
         # Set the STEAM_COMPAT_CLIENT_INSTALL_PATH environment variable
         export STEAM_COMPAT_CLIENT_INSTALL_PATH="${logged_in_home}/.local/share/Steam"
@@ -3125,7 +3362,7 @@ function install_launcher {
         # Download file
         if [ ! -f "$file_name" ]; then
             echo "Downloading ${file_name}"
-            curl -L "$file_url" -o "$file_name"
+            nsl_download "$file_url" "$file_name" || exit 1
         fi
 
         # Execute the pre-installation command, if provided
@@ -3317,9 +3554,9 @@ if [[ $options == *"Apple TV+"* ]] || [[ $options == *"Plex"* ]] || [[ $options 
         echo "User selected browser: $selected_browser"
 
         # Ensure Flathub repository exists
-        if ! flatpak remote-list | grep flathub &> /dev/null; then
+        if ! flatpak remote-list --user | grep -q '^flathub'; then
             echo "Adding Flathub repository..."
-            flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
+            flatpak remote-add --user --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
         fi
 
         # Install the browser if not already installed
@@ -3387,7 +3624,10 @@ if [[ $options == *"Hytale"* ]]; then
         echo "Hytale is already installed (user or system)."
     else
         echo "Downloading Hytale Flatpak..."
-        curl -L -o /tmp/hytale-launcher.flatpak https://launcher.hytale.com/builds/release/linux/amd64/hytale-launcher-latest.flatpak
+        if ! nsl_download "https://launcher.hytale.com/builds/release/linux/amd64/hytale-launcher-latest.flatpak" /tmp/hytale-launcher.flatpak; then
+            echo "Failed to download Hytale Launcher."
+            exit 1
+        fi
 
         echo "Installing Hytale Flatpak app (user scope)..."
         if flatpak install -y --user /tmp/hytale-launcher.flatpak; then
@@ -3421,11 +3661,11 @@ if flatpak list | grep com.github.mtkennerly.ludusavi &> /dev/null; then
     echo "Ludusavi is already installed"
 else
     # Check if the Flathub repository exists
-    if flatpak remote-list | grep flathub &> /dev/null; then
+    if flatpak remote-list --user | grep -q '^flathub'; then
         echo "Flathub repository exists"
     else
         # Add the Flathub repository
-        flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
+        flatpak remote-add --user --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
     fi
 
     # Install Ludusavi
@@ -3455,7 +3695,7 @@ download_and_extract_rclone() {
 
     if [ -d "$rclone_base_dir" ]; then
         echo "Downloading rclone..."
-        if ! wget -O "$rclone_zip_file" "$rclone_zip_url"; then
+        if ! nsl_download "$rclone_zip_url" "$rclone_zip_file"; then
             echo "Failed to download rclone. Exiting script."
             exit 1
         fi
@@ -3767,7 +4007,7 @@ if [[ $options == *"RemotePlayWhatever"* ]]; then
     RELEASE_URL=$(curl -s https://api.github.com/repos/m4dEngi/RemotePlayWhatever/releases/latest | grep -o 'https://github.com/m4dEngi/RemotePlayWhatever/releases/download/.*RemotePlayWhatever.*\.AppImage')
 
     # Download the latest RemotePlayWhatever AppImage
-    wget -P "$DIRECTORY" "$RELEASE_URL"
+    nsl_download "$RELEASE_URL" "$DIRECTORY/$(basename "$RELEASE_URL")" || exit 1
 
     # Get the downloaded file name
     DOWNLOADED_FILE=$(basename "$RELEASE_URL")
@@ -4045,7 +4285,7 @@ fi
 
 
 # Send Notes
-if [[ $options == *"❤️"* ]]; then
+if [[ $options == *"Share Notes"* ]] || [[ $options == *"❤️"* ]]; then
     show_message "Sending any #nsl notes to the community!<3"
 
     # Check if steamid3 is not empty
@@ -4188,7 +4428,7 @@ fi
 #recieve noooooooooooootes
 # Paths
 # Paths
-proton_dir=$(find -L "${logged_in_home}/.steam/root/compatibilitytools.d" -maxdepth 1 -type d -name "GE-Proton*" | sort -V | tail -n1)
+proton_dir=$(nsl_find_proton_dir || true)
 CSV_FILE="$proton_dir/protonfixes/umu-database.csv"
 echo "$CSV_FILE"
 shortcuts_file="${logged_in_home}/.steam/root/userdata/${steamid3}/config/shortcuts.vdf"
@@ -4398,7 +4638,7 @@ if [ -f "$config_vdf_path" ]; then
     cp "$config_vdf_path" "$backup_path"
 
     # Set the name of the compatibility tool to use
-    compat_tool_name=$(ls "${logged_in_home}/.steam/root/compatibilitytools.d" | grep "GE-Proton" | sort -V | tail -n1)
+    compat_tool_name=$(nsl_proton_tool_name || true)
 else
     echo "Could not find config.vdf file"
 fi
@@ -4416,13 +4656,10 @@ echo "export chrome_startdir=$chrome_startdir" >> ${logged_in_home}/.config/syst
 # TODO: might be better to relocate temp files to `/tmp` or even use `mktemp -d` since `rm -rf` is potentially dangerous without the `-i` flag
 
 # Delete NonSteamLaunchersInstallation subfolder in Downloads folder
-rm -rf "$download_dir"
+nsl_safe_rm "$download_dir"
 
-
-
-
-
-
+echo "Install flow completed; restarting Steam so library changes are reloaded."
+nsl_restart_steam
 
 echo "Script completed successfully."
 
@@ -4442,7 +4679,7 @@ fi
 
     echo "100"
     echo "# Installation Complete - Your launchers will be in your library!...Food for thought...do Jedis use Force Compatability?"
-) | zenity --progress \
+) | tee -a "$log_file" | zenity --progress \
   --title="Update Status" \
   --text="Starting update...please wait..." \
   --width=450 --height=350 \

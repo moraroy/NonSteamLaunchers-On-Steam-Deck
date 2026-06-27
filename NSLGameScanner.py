@@ -1,46 +1,34 @@
 #!/usr/bin/env python3
+import base64
+import binascii
+import certifi
+import configparser
+import csv
+import ctypes
+import fcntl
+import gzip
+import http.client
+import itertools
+import json
 import os
 import re
-import json
-import shutil
-import binascii
-import ctypes
-import gzip
-import zipfile
-import time
-import sys
-import subprocess
-import sqlite3
-import csv
-import configparser
-import certifi
-import itertools
-import fcntl
 import shlex
-import ssl
+import shutil
 import socket
-import base64
-import http.client
-
-from datetime import datetime
-from base64 import b64encode
-
-import xml.etree.ElementTree as ET
-
+import sqlite3
+import ssl
+import subprocess
+import sys
+import time
 import urllib
-import urllib.request
 import urllib.error
-
+import urllib.request
+import xml.etree.ElementTree as ET
+import zipfile
+from base64 import b64encode
+from datetime import UTC, datetime
+from urllib.parse import quote, urlparse, urlsplit, urlunsplit
 from urllib.request import urlopen, urlretrieve
-from urllib.parse import (
-    urlparse,
-    urlsplit,
-    urlunsplit,
-    quote
-)
-
-
-
 
 # Check the value of the DBUS_SESSION_BUS_ADDRESS environment variable
 dbus_address = os.environ.get('DBUS_SESSION_BUS_ADDRESS')
@@ -65,7 +53,7 @@ if not os.path.exists(env_vars_path):
 print(f"Env vars file path is: {env_vars_path}")
 
 # Read variables from the file
-with open(env_vars_path, 'r') as f:
+with open(env_vars_path) as f:
     lines = f.readlines()
 
 separate_appids = None
@@ -130,7 +118,7 @@ glyphshortcutdirectory = os.environ.get('glyphshortcutdirectory')
 minecraftshortcutdirectory = os.environ.get('minecraftshortcutdirectory')
 psplusshortcutdirectory = os.environ.get('psplusshortcutdirectory')
 vkplayshortcutdirectory = os.environ.get('vkplayshortcutdirectory')
-hoyoplayshortcutdirectory = os.environ.get('hoyoplayshortcutfirectory')
+hoyoplayshortcutdirectory = os.environ.get('hoyoplayshortcutdirectory')
 nexonshortcutdirectory = os.environ.get('nexonshortcutdirectory')
 gamejoltshortcutdirectory = os.environ.get('gamejoltshortcutdirectory')
 artixgameshortcutdirectory = os.environ.get('artixgameshortcutdirectory')
@@ -166,8 +154,6 @@ print(sys.path)
 
 # Now import your modules after the single insert
 import vdf
-
-
 
 #Set Up nslgamescanner.service
 # Define the paths
@@ -249,7 +235,9 @@ def get_unsigned_shortcut_id(signed_shortcut_id):
 api_cache = {}
 
 #API KEYS FOR NONSTEAMLAUNCHER USE ONLY
-BASE_URL = 'https://nonsteamlaunchers.onrender.com/api'
+# Override with NSL_ARTWORK_API to point at your own artwork/metadata proxy
+# instead of the shared default (e.g. if your IP is rate-limited/blocked).
+BASE_URL = os.environ.get('NSL_ARTWORK_API', 'https://nonsteamlaunchers.onrender.com/api').rstrip('/')
 
 #GLOBAL VARS
 created_shortcuts = []
@@ -305,11 +293,11 @@ def get_sgdb_art(game_id, app_id):
     global gridp64
     global logo64
     global hero64
-    print(f"Downloading icons artwork...")
+    print("Downloading icons artwork...")
     download_artwork(game_id, "icons", app_id)
-    print(f"Downloading logos artwork...")
+    print("Downloading logos artwork...")
     logo64 = download_artwork(game_id, "logos", app_id)
-    print(f"Downloading heroes artwork...")
+    print("Downloading heroes artwork...")
     hero64 = download_artwork(game_id, "heroes", app_id)
     print("Downloading grids artwork of size 600x900...")
     gridp64 = download_artwork(game_id, "grids", app_id, "600x900")
@@ -747,7 +735,7 @@ def scan_and_track_games(logged_in_home, steamid3):
         nonlocal master_list, previous_master_list
         if os.path.exists(installed_apps_path):
             try:
-                with open(installed_apps_path, "r") as f:
+                with open(installed_apps_path) as f:
                     master_list_raw = json.load(f)
                     if not isinstance(master_list_raw, dict):
                         raise ValueError("Expected dictionary.")
@@ -761,8 +749,11 @@ def scan_and_track_games(logged_in_home, steamid3):
             master_list = {}
             previous_master_list = {}
 
+    def utc_timestamp():
+        return datetime.now(UTC).isoformat().replace("+00:00", "Z")
+
     def track_game(appname, launcher):
-        now = datetime.utcnow().isoformat() + "Z"
+        now = utc_timestamp()
         if launcher not in current_scan:
             current_scan[launcher] = {}
         current_scan[launcher][appname] = {
@@ -807,7 +798,7 @@ def scan_and_track_games(logged_in_home, steamid3):
                 print(f"AppID not found for '{appname}'")
 
     def finalize_game_tracking():
-        now = datetime.utcnow().isoformat() + "Z"
+        now = utc_timestamp()
         removed_apps = {}
 
         for launcher in list(master_list.keys()):
@@ -1051,6 +1042,7 @@ def create_exec_line_from_entry(logged_in_home, new_entry, m_gameid):
 
             print(f"Runner Cmd: {runner_cmd}")
 
+            launcher_choice = launcher_name.lower().replace('"', '\\"')
             exec_line = (
                 f"Exec=sh -c '"
                 f"if command -v kdialog >/dev/null; then "
@@ -1059,13 +1051,13 @@ def create_exec_line_from_entry(logged_in_home, new_entry, m_gameid):
                 f"exit_code=$?; "
                 f"if [ $exit_code -eq 2 ]; then exit 0; fi; "
                 f"if [ $exit_code -eq 0 ]; then "
-                f"CHOICE={launcher_name.lower()}; "
+                f"CHOICE=\"{launcher_choice}\"; "
                 f"elif [ $exit_code -eq 1 ]; then "
                 f"CHOICE=steam; "
                 f"fi; "
                 f"else CHOICE=steam; fi; "
                 f"if [ \"$CHOICE\" = \"steam\" ]; then steam steam://rungameid/{m_gameid}; "
-                f"else \"pkill -9 -f wineserver\"; {env_vars} {runner_cmd}; fi'"
+                f"else pkill -9 -f wineserver; {env_vars} {runner_cmd}; fi'"
             )
 
 
@@ -1880,9 +1872,7 @@ def fetch_targets(host, port, max_retries=15, base_delay=2):
 
             return targets
 
-        except (ConnectionRefusedError, socket.timeout,
-                http.client.CannotSendRequest, http.client.RemoteDisconnected,
-                OSError, Exception) as e:
+        except (TimeoutError, ConnectionRefusedError, http.client.CannotSendRequest, http.client.RemoteDisconnected, OSError, Exception) as e:
             last_error = e
             if attempt < max_retries - 1:
                 delay = min(base_delay * (attempt + 1), 10)
@@ -1892,8 +1882,8 @@ def fetch_targets(host, port, max_retries=15, base_delay=2):
             else:
                 print(f"ERROR: Could not connect to Steam debugger at {host}:{port} "
                       f"after {max_retries} attempts.")
-                print(f"Make sure Steam is running with these launch options:")
-                print(f"  -dev -cef-enable-debugging -cef-single-process")
+                print("Make sure Steam is running with these launch options:")
+                print("  -dev -cef-enable-debugging -cef-single-process")
                 raise last_error
 
         finally:
@@ -3568,7 +3558,7 @@ for target in (TARGET_TITLE2, TARGET_TITLE3):
         inject_metadata_code(ws_socket)
 
     except Exception as e:
-        print(f"Metadata injection failed for {target}: {e}")
+        print(f"[WARN] Metadata injection skipped for {target}: {e}")
 
 
 
@@ -3762,7 +3752,7 @@ def write_scan_state_to_file(state: str):
             return
 
         try:
-            with open(ENVARS_FILE, "r") as f:
+            with open(ENVARS_FILE) as f:
                 lines = f.readlines()
         except FileNotFoundError:
             lines = []
@@ -3896,7 +3886,7 @@ for title in TARGET_TITLES:
         sockets.append(sock)
 
     except Exception as e:
-        print(f"[ERROR] Failed for '{title}': {e}")
+        print(f"[WARN] Frontend scanner injection skipped for '{title}': {e}")
 # End of Scanner button and control for Frontend
 
 
@@ -3954,7 +3944,7 @@ def create_new_entry(shortcutdirectory, appname, launchoptions, startingdir, lau
     gate_file = f"{logged_in_home}/.config/systemd/user/env_vars"
     scan_state = None
     try:
-        with open(gate_file, "r", encoding="utf-8") as f:
+        with open(gate_file, encoding="utf-8") as f:
             for line in f:
                 if line.strip().startswith("NSL_SCAN_STATE="):
                     scan_state = line.split("=", 1)[1].strip().upper()
@@ -4129,7 +4119,7 @@ def create_new_entry(shortcutdirectory, appname, launchoptions, startingdir, lau
     }
 
     try:
-        with open(env_vars_path, "r", encoding="utf-8") as f:
+        with open(env_vars_path, encoding="utf-8") as f:
             lines = f.readlines()
 
         lines_to_keep = []
@@ -4246,7 +4236,7 @@ def fetch_and_parse_csv():
                 dir_path, latest_folder, "protonfixes", "umu-database.csv"
             )
 
-            with open(local_csv_path, 'r', encoding='utf-8') as f:
+            with open(local_csv_path, encoding='utf-8') as f:
                 csv_data = [row for row in csv.DictReader(f.readlines())]
                 print(f"Successfully loaded UMU data from local file: {local_csv_path}")
                 return csv_data
@@ -4798,13 +4788,13 @@ item_dir = f"{logged_in_home}/.local/share/Steam/steamapps/compatdata/{epic_game
 dat_file_path = f"{logged_in_home}/.local/share/Steam/steamapps/compatdata/{epic_games_launcher}/pfx/drive_c/ProgramData/Epic/UnrealEngineLauncher/LauncherInstalled.dat"
 
 if os.path.exists(dat_file_path) and os.path.exists(item_dir):
-    with open(dat_file_path, 'r') as file:
+    with open(dat_file_path) as file:
         dat_data = json.load(file)
 
     # Epic Game Scanner
     for item_file in os.listdir(item_dir):
         if item_file.endswith('.item'):
-            with open(os.path.join(item_dir, item_file), 'r') as file:
+            with open(os.path.join(item_dir, item_file)) as file:
                 item_data = json.load(file)
 
             # Initialize variables
@@ -4836,7 +4826,7 @@ def getUplayGameInfo(folderPath, filePath):
 
     # Parse the registry file
     game_dict = {}
-    with open(filePath, 'r') as file:
+    with open(filePath) as file:
         uplay_id = None
         game_name = None
         uplay_install_found = False
@@ -4914,7 +4904,7 @@ def extract_games_fixed(filename):
     name_re = re.compile(r'"DisplayName"="(.+)"')
     current_id = None
 
-    with open(filename, 'r', encoding='utf-8') as f:
+    with open(filename, encoding='utf-8') as f:
         for line in f:
             key_match = key_re.search(line)
             if key_match:
@@ -5010,7 +5000,7 @@ def find_ea_games_path_from_registry():
         return None
 
     try:
-        with open(registry_path, 'r', encoding='utf-16-le', errors='ignore') as file:
+        with open(registry_path, encoding='utf-16-le', errors='ignore') as file:
             content = file.read()
     except Exception as e:
         print(f"Error reading EA registry file: {e}")
@@ -5283,7 +5273,7 @@ flavor_mapping = {
 def parse_battlenet_config(config_file_path):
     print(f"Opening Battle.net config file at: {config_file_path}")
 
-    with open(config_file_path, 'r') as file:
+    with open(config_file_path) as file:
         config_data = json.load(file)
 
     games_info = config_data.get("Games", {})
@@ -5525,7 +5515,7 @@ if not os.path.exists(legacy_dir):
     print("Legacy directory not found. Skipping creation.")
 else:
     user_reg_path = f"{logged_in_home}/.local/share/Steam/steamapps/compatdata/{legacy_launcher}/pfx/user.reg"
-    with open(user_reg_path, 'r') as file:
+    with open(user_reg_path) as file:
         user_reg = file.read()
 
     for game_dir in os.listdir(legacy_dir):
@@ -5543,7 +5533,7 @@ else:
 
         if os.path.exists(app_info_path):
             print("app.info file found.")
-            with open(app_info_path, 'r') as file:
+            with open(app_info_path) as file:
                 lines = file.read().split('\n')
                 game_name = lines[1].strip()
                 print(f"Game Name: {game_name}")
@@ -5583,7 +5573,7 @@ else:
 
     # Read the GameCenter.ini file
     try:
-        with open(gamecenter_ini_path, 'r', encoding='utf-16') as file:
+        with open(gamecenter_ini_path, encoding='utf-16') as file:
             config.read_file(file)
         print("File read successfully.")
     except Exception as e:
@@ -5800,11 +5790,11 @@ if not os.path.exists(games_file_path) or not os.path.exists(packages_file_path)
 else:
     try:
         # Load the games file
-        with open(games_file_path, 'r') as f:
+        with open(games_file_path) as f:
             games_data = json.load(f)
 
         # Load the packages file
-        with open(packages_file_path, 'r') as f:
+        with open(packages_file_path) as f:
             packages_data = json.load(f)
 
         # Check if 'objects' exists in the games data
@@ -5883,7 +5873,7 @@ def convert_to_unix_path(windows_path, home_dir):
 # Check if the JSON file exists
 if os.path.exists(file_path):
     try:
-        with open(file_path, 'r') as file:
+        with open(file_path) as file:
             # Parse the JSON data
             data = json.load(file)
 
@@ -5974,12 +5964,12 @@ def find_exe_file(base_path, slugged_name, game_name):
 if not file_is_valid(installed_json_path) or not file_is_valid(default_install_path_file):
     print("Required JSON files missing or empty. Skipping scan.")
 else:
-    with open(default_install_path_file, "r") as f:
+    with open(default_install_path_file) as f:
         default_data = json.load(f)
         default_install_path = default_data if isinstance(default_data, str) else default_data.get("default-install-path", "C:/IGClientGames")
     default_install_path = windows_to_linux_path(default_install_path)
 
-    with open(installed_json_path, "r") as f:
+    with open(installed_json_path) as f:
         data = json.load(f)
 
     for game_entry in data:
@@ -6081,16 +6071,7 @@ def process_bookmark_item(item):
 
 
         # Boosteroid
-        elif "cloud.boosteroid.com/application/" in url:
-            if not name or url in seen_urls:
-                return
-
-            game_name = name.strip()
-            boosteroid_urls.append(("Boosteroid", game_name, url))
-            seen_urls.add(url)
-
-        # Boosteroid (Session format)
-        elif "cloud.boosteroid.com/static/streaming/streaming.html" in url and "sessionId=" in url:
+        elif "cloud.boosteroid.com/application/" in url or "cloud.boosteroid.com/static/streaming/streaming.html" in url and "sessionId=" in url:
             if not name or url in seen_urls:
                 return
 
@@ -6110,7 +6091,7 @@ def scan_children(children):
 if not os.path.exists(bookmarks_file_path):
     print("Chrome Bookmarks not found. Skipping scanning for Bookmarks.")
 else:
-    with open(bookmarks_file_path, 'r') as f:
+    with open(bookmarks_file_path) as f:
         data = json.load(f)
 
     # Scan bookmarks in bookmark_bar, other, and synced folders recursively
@@ -6333,7 +6314,7 @@ client_config_path = os.path.join(steam_compat_base, "pfx/drive_c/users/steamuse
 if not os.path.isfile(client_config_path):
     print("Skipping STOVE Scanner ClientConfig.json not found at", client_config_path)
 else:
-    with open(client_config_path, "r", encoding="utf-8") as f:
+    with open(client_config_path, encoding="utf-8") as f:
         client_config = json.load(f)
 
     win_games_dir = client_config.get("defaultPath", "")
@@ -6358,7 +6339,7 @@ else:
             else:
                 for manifest_path in manifest_files:
                     try:
-                        with open(manifest_path, "r", encoding="utf-8") as mf:
+                        with open(manifest_path, encoding="utf-8") as mf:
                             game_data = json.load(mf)
 
                         game_id = game_data.get("game_id")
@@ -6410,7 +6391,7 @@ if not os.path.isfile(config_path):
     print("Skipping Humble Games Scanner (config not found)")
 else:
     try:
-        with open(config_path, "r", encoding="utf-8") as f:
+        with open(config_path, encoding="utf-8") as f:
             data = json.load(f)
     except json.JSONDecodeError:
         print("Skipping Humble Games Scanner (invalid config)")
