@@ -5369,14 +5369,33 @@ if game_dict:
 
         print(f"Resolved {raw_key} -> {game_name}")
 
+        compat_data_path = f"{logged_in_home}/.local/share/Steam/steamapps/compatdata/{bnet_launcher}"
+        program_files = f"{compat_data_path}/pfx/drive_c/Program Files (x86)"
 
-        exe_path = f'"{logged_in_home}/.local/share/Steam/steamapps/compatdata/{bnet_launcher}/pfx/drive_c/Program Files (x86)/Battle.net/Battle.net.exe"'
-        start_dir = f'"{logged_in_home}/.local/share/Steam/steamapps/compatdata/{bnet_launcher}/pfx/drive_c/Program Files (x86)/Battle.net/"'
+        # Prefer the game's own launcher exe (e.g. "Diablo II Resurrected/Diablo II
+        # Resurrected Launcher.exe"), which launches straight into the game. Blizzard
+        # installs these as "Program Files (x86)/<Name>/<Name> Launcher.exe", where
+        # <Name> matches the flavor_mapping display name. The folder name doesn't match
+        # for every title (e.g. Overwatch 2 installs to "Overwatch"), so only use this
+        # path when the exe actually exists; otherwise fall back to the Battle.net
+        # launcher with a battlenet:// URL, which works for every game.
+        game_launcher_path = f"{program_files}/{game_name}/{game_name} Launcher.exe"
 
-        launch_options = (
-            f'STEAM_COMPAT_DATA_PATH="{logged_in_home}/.local/share/Steam/steamapps/compatdata/{bnet_launcher}" '
-            f'%command% --exec="launch {game_key}" battlenet://{game_key}'
-        )
+        if os.path.exists(game_launcher_path):
+            print(f"Using per-game launcher for {game_name}: {game_launcher_path}")
+            exe_path = f'"{game_launcher_path}"'
+            start_dir = f'"{program_files}/{game_name}/"'
+            launch_options = (
+                f'STEAM_COMPAT_DATA_PATH="{compat_data_path}" %command%'
+            )
+        else:
+            print(f"Per-game launcher not found for {game_name}, using Battle.net launcher")
+            exe_path = f'"{program_files}/Battle.net/Battle.net.exe"'
+            start_dir = f'"{program_files}/Battle.net/"'
+            launch_options = (
+                f'STEAM_COMPAT_DATA_PATH="{compat_data_path}" '
+                f'%command% --exec="launch {game_key}" battlenet://{game_key}'
+            )
 
         print(f"Creating entry for {game_name}")
 
