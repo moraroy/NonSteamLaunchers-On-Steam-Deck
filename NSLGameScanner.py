@@ -167,7 +167,9 @@ Description=NSL Game Scanner
 [Service]
 ExecStart=/usr/bin/python3 '{logged_in_home}/.config/systemd/user/NSLGameScanner.py'
 Restart=always
-RestartSec=20
+# Re-scan every 5 minutes instead of every 20s. The old 20s cadence hammered
+# the artwork API and got IPs flagged/blocked for "suspicious behavior".
+RestartSec=300
 StartLimitBurst=40
 StartLimitInterval=240
 
@@ -450,7 +452,9 @@ steam_applist_cache = None
 
 
 def get_steam_store_appid(steam_store_game_name):
-    search_url = f"{BASE_URL}/search/{steam_store_game_name}"
+    # URL-encode the name so games with spaces/special characters (e.g.
+    # "Diablo II Resurrected") don't raise "URL can't contain control characters".
+    search_url = f"{BASE_URL}/search/{urllib.parse.quote(steam_store_game_name)}"
     try:
         with urllib.request.urlopen(search_url) as response:
             data = json.load(response)
@@ -5348,7 +5352,16 @@ if game_dict:
         elif game_key in ("seaofthieves", "sot", "scor"):
             game_key = "SCOR"
 
+        # Look up the display name case-insensitively so lowercase config keys
+        # (e.g. "osi" for Diablo II: Resurrected) still match the uppercase
+        # product codes in flavor_mapping (e.g. "OSI").
         game_name = flavor_mapping.get(game_key)
+        if not game_name:
+            game_name = next(
+                (name for code, name in flavor_mapping.items()
+                 if code.lower() == game_key.lower()),
+                None
+            )
 
         if not game_name:
             print(f"Unknown game mapping: {game_key}, skipping")
