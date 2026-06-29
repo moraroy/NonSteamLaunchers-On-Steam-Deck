@@ -2854,92 +2854,56 @@ function terminate_processes {
 
 function install_gog {
     echo "45"
-    echo "# Downloading & Installing Gog Galaxy...Please wait..."
+    echo "# Downloading & Installing GOG Galaxy...Please wait..."
 
-    # Cancel & Exit the GOG Galaxy Setup Wizard
-    end=$((SECONDS+90))  # Timeout after 90 seconds
-    while true; do
-        if pgrep -f "GalaxySetup.tmp" > /dev/null; then
-            pkill -f "GalaxySetup.tmp"
-            break
-        fi
-        if [ $SECONDS -gt $end ]; then
-            echo "Timeout while trying to kill GalaxySetup.tmp"
+    # The caller launches the offline installer detached:
+    #   proton run setup_galaxy_<ver>.exe /silent &
+    # That offline installer performs a complete, unattended install of
+    # GalaxyClient.exe by itself. It does NOT stage a GalaxyInstaller_* folder or
+    # spawn a GalaxySetup.tmp wizard -- those belong to GOG's *online* web
+    # installer. The silent install runs for ~1-2 minutes, so we must block here
+    # until it actually finishes; otherwise the next launcher installs into the
+    # same prefix and races/aborts it, leaving GOG Galaxy uninstalled (which is
+    # why GOG failed whenever it was selected alongside other launchers).
+    local galaxy_exe="${logged_in_home}/.local/share/Steam/steamapps/compatdata/${appid}/pfx/drive_c/Program Files (x86)/GOG Galaxy/GalaxyClient.exe"
+
+    # Wait for the backgrounded installer process to actually start.
+    local appear_deadline=$((SECONDS+30))
+    while ! pgrep -f "setup_galaxy" > /dev/null; do
+        if [ $SECONDS -gt $appear_deadline ]; then
+            echo "GOG Galaxy installer process did not start within 30s."
             break
         fi
         sleep 1
     done
 
-    # Check both Temp directories for Galaxy installer folder
-    temp_dir1="${logged_in_home}/.local/share/Steam/steamapps/compatdata/$appid/pfx/drive_c/users/steamuser/AppData/Local/Temp"
-    temp_dir2="${logged_in_home}/.local/share/Steam/steamapps/compatdata/$appid/pfx/drive_c/users/steamuser/Temp"
+    # Wait for the silent installer to exit (install complete), with a timeout.
+    local end=$((SECONDS+300))  # Timeout after 5 minutes
+    while pgrep -f "setup_galaxy" > /dev/null; do
+        if [ $SECONDS -gt $end ]; then
+            echo "Timeout waiting for GOG Galaxy silent installer to finish."
+            pkill -f "setup_galaxy"
+            break
+        fi
+        sleep 2
+    done
 
-    # First check temp_dir1 (AppData/Local/Temp)
-    if [ -d "$temp_dir1" ]; then
-        cd "$temp_dir1"
-        # Check if we found the installer folder
-        for dir in GalaxyInstaller_*; do
-            if [ -d "$dir" ]; then
-                galaxy_installer_folder="$dir"
-                break
-            fi
-        done
-    fi
+    # The installer may auto-launch the client/service on completion. Stop those
+    # (and any leftover setup processes) so the prefix is idle before the next
+    # launcher's install begins.
+    for proc in "GalaxyClient.exe" "GalaxyClientService.exe" "GalaxySetup" "setup_galaxy"; do
+        if pgrep -f "$proc" > /dev/null; then
+            pkill -f "$proc"
+        fi
+    done
+    sleep 2  # let wineserver settle
 
-    # If not found, check temp_dir2 (Temp)
-    if [ -z "$galaxy_installer_folder" ] && [ -d "$temp_dir2" ]; then
-        cd "$temp_dir2"
-        # Now check if we found the installer folder in the second directory
-        for dir in GalaxyInstaller_*; do
-            if [ -d "$dir" ]; then
-                galaxy_installer_folder="$dir"
-                break
-            fi
-        done
-    fi
-
-    # If no installer folder was found in either directory, exit
-    if [ -z "$galaxy_installer_folder" ]; then
-        echo "Galaxy installer folder not found in either Temp directory"
+    if [ -e "$galaxy_exe" ]; then
+        echo "GOG Galaxy installation complete."
+    else
+        echo "Warning: GOG Galaxy installer finished but GalaxyClient.exe was not found."
         return 1
     fi
-
-    # Copy the GalaxyInstaller_* folder to Downloads
-    echo "Found Galaxy installer folder: $galaxy_installer_folder"
-    cp -r "$galaxy_installer_folder" "${logged_in_home}/Downloads/NonSteamLaunchersInstallation/"
-
-    # Navigate to the copied folder in Downloads
-    cd "${logged_in_home}/Downloads/NonSteamLaunchersInstallation/$(basename "$galaxy_installer_folder")"
-
-    # Run GalaxySetup.exe with the /VERYSILENT and /NORESTART options
-    echo "Running GalaxySetup.exe with the /VERYSILENT and /NORESTART options"
-    "$STEAM_RUNTIME" "$proton_dir/proton" run GalaxySetup.exe /VERYSILENT /NORESTART &
-
-    # Wait for the GalaxySetup.exe to finish running with a timeout of 90 seconds
-    end=$((SECONDS+90))  # Timeout after 90 seconds
-    while true; do
-        # Kill GalaxyClient.exe every 10 seconds if it's running
-        if [ $((SECONDS % 20)) -eq 0 ]; then
-            if pgrep -f "GalaxyClient.exe" > /dev/null; then
-                echo "Killing GalaxyClient.exe"
-                pkill -f "GalaxyClient.exe"
-            fi
-        fi
-
-        # Break the loop when GalaxySetup.exe finishes
-        if ! pgrep -f "GalaxySetup.exe" > /dev/null; then
-            echo "GalaxySetup.exe has finished running"
-            break
-        fi
-
-        # Timeout check (90 seconds)
-        if [ $SECONDS -gt $end ]; then
-            echo "Timeout while waiting for GalaxySetup.exe to finish"
-            break
-        fi
-
-        sleep 1
-    done
 }
 
 function install_gog2 {
@@ -2993,6 +2957,39 @@ verify_gog_md5() {
 
 
 
+function install_ubisoft {
+    # Driver for the backgrounded Ubisoft Connect installer. UbisoftConnectInstaller.exe
+    # /S is an NSIS silent install whose top-level process can return before the real
+    # install has finished (and it may auto-launch Ubisoft Connect), so running it
+    # synchronously let the script continue too early and the next launcher's install
+    # raced it in the shared prefix -- which left Ubisoft Connect uninstalled whenever
+    # it was selected alongside other launchers. Wait for upc.exe to appear, then stop
+    # any lingering Ubisoft processes so the prefix is idle for the next launcher.
+    local upc_exe="${logged_in_home}/.local/share/Steam/steamapps/compatdata/${appid}/pfx/drive_c/Program Files (x86)/Ubisoft/Ubisoft Game Launcher/upc.exe"
+
+    local end=$((SECONDS+300))  # Timeout after 5 minutes
+    while true; do
+        if [ -e "$upc_exe" ]; then
+            echo "Ubisoft Connect installed (upc.exe present)."
+            sleep 10  # let the installer finish writing files
+            break
+        fi
+        if [ $SECONDS -gt $end ]; then
+            echo "Timeout waiting for Ubisoft Connect install to complete."
+            break
+        fi
+        sleep 2
+    done
+
+    for proc in "UbisoftConnectInstaller.exe" "UbisoftConnect.exe" "upc.exe" "UplayWebCore.exe" "UbisoftGameLauncher.exe"; do
+        if pgrep -f "$proc" > /dev/null; then
+            pkill -f "$proc"
+        fi
+    done
+    sleep 2  # let wineserver settle
+}
+
+
 function install_battlenet {
     echo "Starting Battle.net installation"
 
@@ -3031,6 +3028,39 @@ function install_eaapp {
 
     # Download the file
     nsl_download "$eaapp_url" "${eaapp_download_dir}${eaapp_file_name}" || exit 1
+}
+
+# Driver for the backgrounded EA App installer. EAappInstaller.exe /quiet installs
+# EA Desktop and then auto-launches it, which pops a login window and keeps a
+# process alive. The (otherwise synchronous) install step would hang there until
+# the user manually closed the window. Wait for EALauncher.exe to appear (install
+# complete), then terminate the lingering EA processes so the prefix is idle and
+# the script can continue on its own.
+function install_eaapp_wait {
+    local ea_desktop_dir="${logged_in_home}/.local/share/Steam/steamapps/compatdata/${appid}/pfx/drive_c/Program Files/Electronic Arts/EA Desktop"
+
+    local end=$((SECONDS+300))  # Timeout after 5 minutes
+    while true; do
+        if find "$ea_desktop_dir" -name "EALauncher.exe" 2>/dev/null | grep -q .; then
+            echo "EA App installed (EALauncher.exe present)."
+            sleep 10  # let the installer finish writing files
+            break
+        fi
+        if [ $SECONDS -gt $end ]; then
+            echo "Timeout waiting for EA App install to complete."
+            break
+        fi
+        sleep 2
+    done
+
+    # Stop the auto-launched EA Desktop / login window and the installer itself
+    # so the backgrounded "proton run" exits and the script does not stall.
+    for proc in "EABackgroundService.exe" "EADesktop.exe" "EALauncher.exe" "EAappInstaller.exe" "EALocalHostSvc.exe" "EACrashReporter.exe"; do
+        if pgrep -f "$proc" > /dev/null; then
+            pkill -f "$proc"
+        fi
+    done
+    sleep 2  # let wineserver settle
 }
 
 
@@ -3428,6 +3458,9 @@ function install_launcher {
             if [ "$launcher_name" = "GOG Galaxy" ]; then
                 "$STEAM_RUNTIME" "$proton_dir/proton" run "$exe_file" /silent &
                 install_gog
+            elif [ "$launcher_name" = "Ubisoft Connect" ]; then
+                "$STEAM_RUNTIME" "$proton_dir/proton" run "$ubi_file" /S &
+                install_ubisoft
             elif [ "$launcher_name" = "Battle.net" ]; then
 
 
@@ -3456,6 +3489,9 @@ function install_launcher {
                 done
                 sleep 5
                 echo "ARC Launcher installation complete."
+            elif [ "$launcher_name" = "EA App" ]; then
+                "$STEAM_RUNTIME" "$proton_dir/proton" run "$eaapp_file" /quiet &
+                install_eaapp_wait
             else
                 "$STEAM_RUNTIME" "$proton_dir/proton" run "$run_command" &
             fi
@@ -3481,7 +3517,7 @@ install_launcher "Epic Games" "EpicGamesLauncher" "$msi_file" "$msi_url" "MsiExe
 install_launcher "GOG Galaxy" "GogGalaxyLauncher" "$exe_file" "$exe_url" "$exe_file /silent" "71" "verify_gog_md5" "" true
 
 # Install Ubisoft Connect
-install_launcher "Ubisoft Connect" "UplayLauncher" "$ubi_file" "$ubi_url" "$ubi_file /S" "72" "" ""
+install_launcher "Ubisoft Connect" "UplayLauncher" "$ubi_file" "$ubi_url" "$ubi_file /S" "72" "" "" true
 
 # Install Battle.net
 install_launcher "Battle.net" "Battle.netLauncher" "$battle_file" "$battle_url" "" "73" "" "" true
@@ -3490,7 +3526,7 @@ install_launcher "Battle.net" "Battle.netLauncher" "$battle_file" "$battle_url" 
 install_launcher "Amazon Games" "AmazonGamesLauncher" "$amazon_file" "$amazon_url" "" "74" "" "" true
 
 #Install EA App
-install_launcher "EA App" "TheEAappLauncher" "$eaapp_file" "$eaapp_url" "$eaapp_file /quiet" "75" "" "install_eaapp"
+install_launcher "EA App" "TheEAappLauncher" "$eaapp_file" "$eaapp_url" "$eaapp_file /quiet" "75" "" "install_eaapp" true
 
 # Install itch.io
 install_launcher "itch.io" "itchioLauncher" "$itchio_file" "$itchio_url" "$itchio_file --silent" "76" "" ""

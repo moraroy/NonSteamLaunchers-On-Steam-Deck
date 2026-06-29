@@ -15,6 +15,9 @@
 * require `NSL_CONFIRM_START_FRESH=1` for non-interactive "Start Fresh" wipes
 * replace the password-piped-to-sudo flow in the Decky plugin installer with standard `sudo` credential handling
 * run pre-commit on edited files via a PostToolUse hook in `.claude/settings.json`
+* make the scanner re-scan cadence configurable via `NSL_SCAN_INTERVAL` (default 90s) instead of a hardcoded 300s
+* throttle outbound artwork/search API calls via `NSL_API_DELAY` (default 0.5s) so rescans no longer get IPs flagged
+* retry missing shortcut artwork on later scans, bounded by `NSL_ART_MAX_ATTEMPTS` (default 5)
 
 ### Bug Fixes
 
@@ -24,6 +27,9 @@
 * fix the project build by setting `[tool.uv] package = false` so `uv sync` / `uv run` no longer fail on the hatchling wheel step
 * fall back gracefully when `xrandr` is unavailable instead of crashing the resolution probe
 * quote `cd "$proton_dir"` paths and fail fast when Proton is missing
+* wait for the GOG Galaxy silent install to finish before continuing, instead of chasing a `GalaxySetup.tmp` the offline installer never spawns (fixes GOG failing to install when selected with other launchers)
+* wait for Ubisoft Connect (`upc.exe`) and EA App (`EALauncher.exe`) to finish installing and quiesce their auto-launched processes, so the install no longer races the next launcher or hangs on the EA login window
+* restore missing shortcut artwork that was skipped when the API was rate-limited at creation time, since the scanner previously never retried art for existing shortcuts
 
 ### Documentation
 

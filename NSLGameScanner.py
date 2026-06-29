@@ -159,6 +159,13 @@ import vdf
 # Define the paths
 service_path = f"{logged_in_home}/.config/systemd/user/nslgamescanner.service"
 
+# Re-scan cadence in seconds. The original 20s hammered the artwork API and got IPs
+# flagged for "suspicious behavior"; 300s fixed that but delayed shortcut/artwork
+# integration by up to 5 minutes. With the per-call throttle (NSL_API_DELAY) and the
+# bounded artwork retries added below, a moderate default keeps integration snappy
+# without abusing the API. Override with NSL_SCAN_INTERVAL.
+scan_interval = os.environ.get('NSL_SCAN_INTERVAL', '90')
+
 # Define the service file content
 service_content = f"""
 [Unit]
@@ -167,9 +174,7 @@ Description=NSL Game Scanner
 [Service]
 ExecStart=/usr/bin/python3 '{logged_in_home}/.config/systemd/user/NSLGameScanner.py'
 Restart=always
-# Re-scan every 5 minutes instead of every 20s. The old 20s cadence hammered
-# the artwork API and got IPs flagged/blocked for "suspicious behavior".
-RestartSec=300
+RestartSec={scan_interval}
 StartLimitBurst=40
 StartLimitInterval=240
 
@@ -240,6 +245,48 @@ api_cache = {}
 # Override with NSL_ARTWORK_API to point at your own artwork/metadata proxy
 # instead of the shared default (e.g. if your IP is rate-limited/blocked).
 BASE_URL = os.environ.get('NSL_ARTWORK_API', 'https://nonsteamlaunchers.onrender.com/api').rstrip('/')
+
+# Throttle (seconds) applied after each outbound search/artwork API call. The old
+# 20s rescan fired these per-game back-to-back, which is what got IPs flagged. A
+# small delay keeps request bursts under the proxy's abuse threshold while staying
+# invisible to the user. Override with NSL_API_DELAY (set 0 to disable).
+API_DELAY = float(os.environ.get('NSL_API_DELAY', '0.5'))
+
+def api_throttle():
+    if API_DELAY > 0:
+        time.sleep(API_DELAY)
+
+# Persistent record of artwork-fetch attempts per shortcut id. A shortcut gets
+# created even when its art fetch fails (e.g. the API was rate-limited at the time),
+# and the main loop early-returns on existing shortcuts -- so without this, missing
+# artwork would never be retried. We retry on later scans, but cap attempts so games
+# that genuinely have no art available stop re-hitting the API forever.
+ART_ATTEMPT_FILE = f"{logged_in_home}/.config/systemd/user/nsl_art_attempts.json"
+ART_MAX_ATTEMPTS = int(os.environ.get('NSL_ART_MAX_ATTEMPTS', '5'))
+
+def _load_art_attempts():
+    try:
+        with open(ART_ATTEMPT_FILE) as f:
+            data = json.load(f)
+            return data if isinstance(data, dict) else {}
+    except (OSError, ValueError):
+        return {}
+
+art_attempts = _load_art_attempts()
+
+def _save_art_attempts():
+    try:
+        with open(ART_ATTEMPT_FILE, 'w') as f:
+            json.dump(art_attempts, f)
+    except OSError as e:
+        print(f"Could not save artwork attempt cache: {e}")
+
+def artwork_is_complete(shortcut_id):
+    # Steam renders library art from the portrait grid (<id>p) and landscape grid
+    # (<id>) files. If both are present the shortcut is visually complete.
+    grid_dir = f"{logged_in_home}/.steam/root/userdata/{steamid3}/config/grid"
+    return (file_exists_with_any_ext(f"{grid_dir}/{shortcut_id}p")
+            and file_exists_with_any_ext(f"{grid_dir}/{shortcut_id}"))
 
 #GLOBAL VARS
 created_shortcuts = []
@@ -344,6 +391,7 @@ def download_artwork(game_id, art_type, shortcut_id, dimensions=None):
                 url += f"?dimensions={dimensions}"
             print(f"Request URL: {url}")
 
+            api_throttle()
             with urllib.request.urlopen(url) as response:
                 if response.status != 200:
                     raise Exception(f"Failed to fetch data, status code {response.status}")
@@ -401,6 +449,7 @@ def get_game_id(game_name):
         print(f"Request URL: {url}")
 
         # Open the URL and get the response
+        api_throttle()
         with urllib.request.urlopen(url) as response:
             # Manually check if the status code is 200
             if response.status == 200:
@@ -3997,6 +4046,25 @@ def create_new_entry(shortcutdirectory, appname, launchoptions, startingdir, lau
     # Check if shortcut already exists with final values
     if check_if_shortcut_exists(appname, exe_path, startingdir, launchoptions):
         shortcuts_updated = True
+        # The shortcut exists, but its artwork may not -- a shortcut is created even
+        # when the art fetch failed (e.g. the API was rate-limited at the time).
+        # Retry the SteamGridDB art for shortcuts missing their grid files;
+        # download_artwork skips files that already exist, and the per-shortcut
+        # attempt cap stops games with no available art from re-hitting the API.
+        sid_key = str(unsigned_shortcut_id)
+        if appname not in ['Repair EA App'] and not artwork_is_complete(unsigned_shortcut_id):
+            attempts = art_attempts.get(sid_key, 0)
+            if attempts < ART_MAX_ATTEMPTS:
+                print(f"Artwork missing for {appname}; retry {attempts + 1}/{ART_MAX_ATTEMPTS}.")
+                game_id = get_game_id(appname)
+                if game_id is not None:
+                    get_sgdb_art(game_id, unsigned_shortcut_id)
+                art_attempts[sid_key] = attempts + 1
+                _save_art_attempts()
+        elif sid_key in art_attempts:
+            # Art is complete now; stop tracking so the file stays small.
+            del art_attempts[sid_key]
+            _save_art_attempts()
         return
 
     # Skip artwork download for specific shortcuts
