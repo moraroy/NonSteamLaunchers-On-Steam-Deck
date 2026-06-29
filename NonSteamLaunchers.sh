@@ -3001,13 +3001,41 @@ function install_battlenet {
 
     installer_pid=$!
 
-    while ! pgrep -f "Battle.net.exe" > /dev/null; do
+    local bn_launcher="${logged_in_home}/.local/share/Steam/steamapps/compatdata/${appid}/pfx/drive_c/Program Files (x86)/Battle.net/Battle.net Launcher.exe"
+
+    # Wait for the install to land. The old loop blocked unbounded on Battle.net.exe
+    # being *running*, which hangs forever in a fresh prefix where setup finishes
+    # without leaving it running (e.g. when Battle.net is the only launcher selected).
+    # Break as soon as setup auto-launches Battle.net.exe OR the launcher exe exists,
+    # with a timeout as a backstop.
+    local end=$((SECONDS+300))  # Timeout after 5 minutes
+    while true; do
+        if pgrep -f "Battle.net.exe" > /dev/null; then
+            break
+        fi
+        if [ -e "$bn_launcher" ]; then
+            echo "Battle.net launcher present."
+            break
+        fi
+        if [ $SECONDS -gt $end ]; then
+            echo "Timeout waiting for Battle.net to install."
+            break
+        fi
         sleep 1
     done
 
     terminate_processes "Battle.net.exe"
 
-    wait "$installer_pid"
+    # Don't block forever on the installer -- it can stay alive holding the launcher.
+    # Give it a chance to exit on its own, then stop the setup process.
+    local wait_end=$((SECONDS+30))
+    while kill -0 "$installer_pid" 2>/dev/null; do
+        if [ $SECONDS -gt $wait_end ]; then
+            break
+        fi
+        sleep 1
+    done
+    pkill -f "Battle.net-Setup.exe" 2>/dev/null
     echo "Battle.net installation complete."
 }
 
