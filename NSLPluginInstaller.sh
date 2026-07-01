@@ -4,14 +4,12 @@
 logged_in_user=$(logname 2>/dev/null || whoami)
 logged_in_home=$(eval echo "~${logged_in_user}")
 
-# Function to prompt for sudo password
+# Function to prompt for sudo using sudo's normal credential handling, instead of
+# capturing the password with zenity and piping it into `sudo -S` (which exposes it
+# via the environment/argv and process listings).
 prompt_for_sudo() {
-  password=$(zenity --password --title="Authentication Required" --text="Please enter your password to proceed with installation/update.")
-
-  # Validate password
-  echo "$password" | sudo -S -v >/dev/null 2>&1
-  if [ $? -ne 0 ]; then
-    zenity --error --text="Incorrect password or sudo failed. Exiting."
+  if ! sudo -v; then
+    zenity --error --text="Sudo authentication failed. Exiting."
     exit 1
   fi
 }
@@ -117,14 +115,14 @@ else
 
   if $NSL_PLUGIN_EXISTS; then
     show_message "NSL Plugin detected. Deleting and updating..."
-    echo "$password" | sudo -S rm -rf "$LOCAL_DIR"
+    sudo rm -rf "$LOCAL_DIR"
   fi
 
   show_message "Creating base directory and setting permissions..."
 
-  echo "$password" | sudo -S mkdir -p "$LOCAL_DIR"
-  echo "$password" | sudo -S chmod -R u+rw "$LOCAL_DIR"
-  echo "$password" | sudo -S chown -R "$logged_in_user:$logged_in_user" "$LOCAL_DIR"
+  sudo mkdir -p "$LOCAL_DIR"
+  sudo chmod -R u+rw "$LOCAL_DIR"
+  sudo chown -R "$logged_in_user:$logged_in_user" "$LOCAL_DIR"
 
   curl -L "$REPO_URL" -o /tmp/NonSteamLaunchersDecky.zip
   unzip -o /tmp/NonSteamLaunchersDecky.zip -d /tmp/
