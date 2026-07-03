@@ -204,6 +204,22 @@ The NSL script can be called from online via bash, heres an example of it instal
 
 ```/bin/bash -c 'curl -Ls https://raw.githubusercontent.com/moraroy/NonSteamLaunchers-On-Steam-Deck/main/NonSteamLaunchers.sh | nohup /bin/bash -s -- "Move to SD Card" "NonSteamLaunchers"'```
 
+### Environment variable options 🔧
+
+These optional environment variables can be set before running the script to change its behavior:
+
+- ```NSL_DEBUG=1``` — Enable verbose execution tracing (`set -x`) in the install log. It's now **off by default**, so paths and values are no longer echoed into the log; turn it on when troubleshooting.
+- ```NSL_DRY_RUN=1``` — Preview destructive actions (deletes and "Start Fresh") without actually removing anything. Each planned removal is printed with a `DRY RUN:` prefix.
+- ```NSL_CONFIRM_START_FRESH=1``` — **Required** to run ```"Start Fresh"``` from the command line. Without it, a CLI "Start Fresh" refuses to run so it can't wipe everything by accident. (The Desktop/zenity confirmation prompt is unaffected.)
+
+Example — preview what a "Start Fresh" would remove, without deleting anything:
+
+```/bin/bash -c 'curl -Ls https://raw.githubusercontent.com/moraroy/NonSteamLaunchers-On-Steam-Deck/main/NonSteamLaunchers.sh | NSL_DRY_RUN=1 NSL_CONFIRM_START_FRESH=1 nohup /bin/bash -s -- "Start Fresh"'```
+
+Example — actually run "Start Fresh" from the command line:
+
+```/bin/bash -c 'curl -Ls https://raw.githubusercontent.com/moraroy/NonSteamLaunchers-On-Steam-Deck/main/NonSteamLaunchers.sh | NSL_CONFIRM_START_FRESH=1 nohup /bin/bash -s -- "Start Fresh"'```
+
 
 
 
