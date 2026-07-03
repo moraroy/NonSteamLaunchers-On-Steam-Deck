@@ -214,11 +214,11 @@ These optional environment variables can be set before running the script to cha
 
 Example — preview what a "Start Fresh" would remove, without deleting anything:
 
-```/bin/bash -c 'curl -Ls https://raw.githubusercontent.com/moraroy/NonSteamLaunchers-On-Steam-Deck/main/NonSteamLaunchers.sh | NSL_DRY_RUN=1 NSL_CONFIRM_START_FRESH=1 nohup /bin/bash -s -- "Start Fresh"'```
+```curl -Ls https://raw.githubusercontent.com/moraroy/NonSteamLaunchers-On-Steam-Deck/main/NonSteamLaunchers.sh | NSL_DRY_RUN=1 NSL_CONFIRM_START_FRESH=1 nohup /bin/bash -s -- "Start Fresh"```
 
 Example — actually run "Start Fresh" from the command line:
 
-```/bin/bash -c 'curl -Ls https://raw.githubusercontent.com/moraroy/NonSteamLaunchers-On-Steam-Deck/main/NonSteamLaunchers.sh | NSL_CONFIRM_START_FRESH=1 nohup /bin/bash -s -- "Start Fresh"'```
+```curl -Ls https://raw.githubusercontent.com/moraroy/NonSteamLaunchers-On-Steam-Deck/main/NonSteamLaunchers.sh | NSL_CONFIRM_START_FRESH=1 nohup /bin/bash -s -- "Start Fresh"```
 
 
 
