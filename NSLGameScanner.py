@@ -5242,7 +5242,7 @@ else:
 flavor_mapping = {
     "RTRO": "Blizzard Arcade Collection",
     "D1": "Diablo",
-    "OSI": "Diablo II Resurrected",
+    "OSI": "Diablo II: Resurrected",
     "D3": "Diablo III",
     "Fen": "Diablo IV",
     "ANBS": "Diablo Immortal (PC)",
