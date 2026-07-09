@@ -322,10 +322,12 @@ Finds Games Automatically
 
 ## Chrome Bookmarks
 The scanner will pick these up automatically. But in Chrome for Geforce Now and Boosteroid Cloud Gaming you need to change the name of the bookmark to your actual game name. Or you can press "Play" then Use "Ctrl + D" to edit the bookmarks for the Chrome Browser. As long as the game name is in the Bookmark Name.
+
 - Xbox Game Pass
 - GeForce Now
 - Amazon Luna
 - Boosteroid Cloud Gaming
+- WebRcade
 
 ## Waydroid Detection
 If you're not in Official SteamOS or not using [this script](https://github.com/ryanrudolfoba/SteamOS-Waydroid-Installer) to install your Waydroid, you can put your own script for the App launch with the name "waydroid-cage.sh" in your own home directory and the scanner will do the rest. A good references for writing your own Script is in [here](https://github.com/SwallowKOR/cachyos-waydroid-gamemode).
