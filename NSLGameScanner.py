@@ -2788,11 +2788,14 @@ METADATA_CODE = r"""
                 "Battle.net": "https://cdn2.steamgriddb.com/icon/739465804a0e17d2a47c9bc9c805d60a/32/96x96.png",
                 "Legacy Games": "https://cdn2.steamgriddb.com/icon_thumb/5225802cb9758f9fcd34a679bf9326ec.png",
                 "VK Play": "https://cdn2.steamgriddb.com/icon_thumb/5d35998237b55b8778a75732afc080aa.png",
-                "HoyoPlay": "https://cdn2.steamgriddb.com/icon/817fccd834f01fb5e1770c8679c0824e/32/256x256.png",
+                "HoYoPlay": "https://cdn2.steamgriddb.com/icon/817fccd834f01fb5e1770c8679c0824e/32/256x256.png",
                 "Game Jolt Client": "https://cdn2.steamgriddb.com/icon_thumb/17df67628bb89193838f83015a3e7d30.png",
                 "Minecraft Launcher": "https://cdn2.steamgriddb.com/icon/0678c572b0d5597d2d4a6b5bd135754c/32/96x96.png",
                 "Humble Games Collection": "https://cdn2.steamgriddb.com/icon_thumb/3126ed973cbecde2bbffe419f139f456.png",
                 "NVIDIA GeForce NOW": "https://cdn2.steamgriddb.com/icon_thumb/f91ee142269ec908c23e1cd87286e254.png",
+                "Amazon Luna": "https://cdn2.steamgriddb.com/icon/408cebdf5e2849adedc881583586e74d/32/256x256.png",
+                "Xbox Game Pass": "https://cdn2.steamgriddb.com/icon_thumb/ecc6d2386883febda6306bb70216c846.png",
+                "Boosteroid Cloud Gaming": "https://cdn2.steamgriddb.com/icon_thumb/e3998932e2e851de8a24b733628c29de.png",
                 "Waydroid": "https://cdn2.steamgriddb.com/icon_thumb/d6de4f0418bf4015017f5c65cdecc46e.png",
                 "Google Chrome": "https://cdn2.steamgriddb.com/icon/3941c4358616274ac2436eacf67fae05/32/256x256.png",
                 "Brave": "https://cdn2.steamgriddb.com/icon_thumb/192d80a88b27b3e4115e1a45a782fe1b.png",
@@ -2823,6 +2826,9 @@ METADATA_CODE = r"""
                     "Nintendo Wii": ["Wii", "NintendoWii", "RVL"],
                     "Nintendo Wii U": ["WiiU", "NintendoWiiU", "Wii U", "Cafe"],
                     "Nintendo Switch": ["Switch", "NintendoSwitch", "NS", "NSW", "HAC"],
+                    "NVIDIA GeForce NOW": ["GeForce NOW", "Geforce Now"],
+                    "Xbox Game Pass": ["Xbox Game Streaming", "Xbox", "Xbox Cloud Gaming", "Microsoft Xbox"],
+                    "Boosteroid Cloud Gaming": ["Boosteroid"],
                     // add more groups here
                 };
 
@@ -6153,7 +6159,7 @@ else:
             game_name,
             chromelaunch_options,
             chrome_startdir,
-            launcher_name="Google Chrome"
+            launcher_name=platform_name
         )
         track_game(game_name, "Google Chrome")
 
