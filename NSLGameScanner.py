@@ -462,7 +462,7 @@ steam_applist_cache = None
 
 
 def get_steam_store_appid(steam_store_game_name):
-    search_url = f"{BASE_URL}/search/{steam_store_game_name}"
+    search_url = f"{BASE_URL}/search/{urllib.parse.quote(steam_store_game_name)}"
     try:
         with urllib.request.urlopen(search_url) as response:
             data = json.load(response)
@@ -474,7 +474,6 @@ def get_steam_store_appid(steam_store_game_name):
     except (urllib.error.URLError, Exception) as e:
         print(f"Primary store App ID lookup failed for {steam_store_game_name}: {e}")
 
-    # Fallback using Steam AppList (cached)
     global steam_applist_cache
     if steam_applist_cache is None:
         steam_applist_cache = {}
@@ -482,25 +481,47 @@ def get_steam_store_appid(steam_store_game_name):
     def normalize_name(name):
         name = name.lower()
         name = re.sub(r'[®™]', '', name)
+        name = re.sub(r'[-–—:]', ' ', name)
         name = ' '.join(name.split())
         return name
 
     if steam_store_game_name not in steam_applist_cache:
-        time.sleep(0.5)  # Small delay to avoid spamming Steam
+        time.sleep(0.5) 
+
         query = urllib.parse.quote(steam_store_game_name)
         url = f"https://store.steampowered.com/api/storesearch/?term={query}&l=english&cc=US"
+
         try:
             with urllib.request.urlopen(url, timeout=10) as response:
                 data = json.load(response)
+
+            if not data.get("items"):
+                relaxed_name = steam_store_game_name.replace(" - ", " ")
+                relaxed_query = urllib.parse.quote(relaxed_name)
+                relaxed_url = f"https://store.steampowered.com/api/storesearch/?term={relaxed_query}&l=english&cc=US"
+
+                print(f"No exact Steam results. Trying relaxed search: {relaxed_name}")
+
+                with urllib.request.urlopen(relaxed_url, timeout=10) as response:
+                    data = json.load(response)
+
         except (urllib.error.URLError, Exception) as e:
             print(f"Fallback Steam lookup failed for {steam_store_game_name}: {e}")
             return None
 
         target = normalize_name(steam_store_game_name)
         fallback_appid = None
+
         for item in data.get("items", []):
-            if normalize_name(item.get("name", "")) == target:
+            item_name = normalize_name(item.get("name", ""))
+
+            if item_name == target:
                 fallback_appid = str(item.get("id"))
+                break
+
+            if target in item_name or item_name in target:
+                fallback_appid = str(item.get("id"))
+                print(f"Using partial Steam match: {item.get('name')} ({fallback_appid})")
                 break
 
         steam_applist_cache[steam_store_game_name] = fallback_appid
