@@ -5364,7 +5364,17 @@ if game_dict:
         elif game_key in ("seaofthieves", "sot", "scor"):
             game_key = "SCOR"
 
+
         game_name = flavor_mapping.get(game_key)
+
+        if not game_name:
+            game_name = flavor_mapping.get(game_key.upper())
+
+        if not game_name:
+            game_name = flavor_mapping.get(game_key.lower())
+
+        if not game_name:
+            game_name = flavor_mapping.get(game_key.title())
 
         if not game_name:
             print(f"Unknown game mapping: {game_key}, skipping")
