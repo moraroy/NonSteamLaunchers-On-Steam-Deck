@@ -80,6 +80,13 @@ nsl_download() {
     fi
 }
 
+# Find a launcher's exe when its install path includes a version folder
+resolve_launcher_path() {
+    local search_dir="$1"
+    local filename="$2"
+    find "$search_dir" -iname "$filename" 2>/dev/null | head -n1
+}
+
 # Delete only paths inside known NSL locations. Refuses empty/"/"/$HOME and any
 # path outside the allowlist so a bad variable expansion can't wipe unrelated data.
 # Honours NSL_DRY_RUN.
@@ -559,9 +566,15 @@ else
 fi
 
 # Game Launchers
-
-# TODO: parameterize hard-coded client versions (cf. 'app-26.1.9')
 # Set the paths to the launcher executables
+
+# Resolved dynamically (version-numbered install path)
+eaapp_path1=$(resolve_launcher_path "${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/Program Files/Electronic Arts/EA Desktop/" "EALauncher.exe")
+eaapp_path2=$(resolve_launcher_path "${logged_in_home}/.local/share/Steam/steamapps/compatdata/TheEAappLauncher/pfx/drive_c/Program Files/Electronic Arts/EA Desktop/" "EALauncher.exe")
+itchio_path1=$(resolve_launcher_path "${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/users/steamuser/AppData/Local/itch/" "itch.exe")
+itchio_path2=$(resolve_launcher_path "${logged_in_home}/.local/share/Steam/steamapps/compatdata/itchioLauncher/pfx/drive_c/users/steamuser/AppData/Local/itch/" "itch.exe")
+
+# Resolved statically (non-version-numbered install path)
 epic_games_launcher_path1="${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/Program Files/Epic Games/Launcher/Portal/Binaries/Win64/EpicGamesLauncher.exe"
 epic_games_launcher_path2="${logged_in_home}/.local/share/Steam/steamapps/compatdata/EpicGamesLauncher/pfx/drive_c/Program Files/Epic Games/Launcher/Portal/Binaries/Win64/EpicGamesLauncher.exe"
 gog_galaxy_path1="${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/Program Files (x86)/GOG Galaxy/GalaxyClient.exe"
@@ -570,12 +583,8 @@ uplay_path1="${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamL
 uplay_path2="${logged_in_home}/.local/share/Steam/steamapps/compatdata/UplayLauncher/pfx/drive_c/Program Files (x86)/Ubisoft/Ubisoft Game Launcher/upc.exe"
 battlenet_path1="${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/Program Files (x86)/Battle.net/Battle.net Launcher.exe"
 battlenet_path2="${logged_in_home}/.local/share/Steam/steamapps/compatdata/Battle.netLauncher/pfx/drive_c/Program Files (x86)/Battle.net/Battle.net Launcher.exe"
-eaapp_path1="${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/Program Files/Electronic Arts/EA Desktop/13.735.2.6250/EA Desktop/EALauncher.exe"
-eaapp_path2="${logged_in_home}/.local/share/Steam/steamapps/compatdata/TheEAappLauncher/pfx/drive_c/Program Files/Electronic Arts/EA Desktop/13.735.2.6250/EA Desktop/EALauncher.exe"
 amazongames_path1="${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/users/steamuser/AppData/Local/Amazon Games/App/Amazon Games.exe"
 amazongames_path2="${logged_in_home}/.local/share/Steam/steamapps/compatdata/AmazonGamesLauncher/pfx/drive_c/users/steamuser/AppData/Local/Amazon Games/App/Amazon Games.exe"
-itchio_path1="${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/users/steamuser/AppData/Local/itch/app-26.13.0/itch.exe"
-itchio_path2="${logged_in_home}/.local/share/Steam/steamapps/compatdata/itchioLauncher/pfx/drive_c/users/steamuser/AppData/Local/itch/app-26.13.0/itch.exe"
 legacygames_path1="${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/Program Files/Legacy Games/Legacy Games Launcher/Legacy Games Launcher.exe"
 legacygames_path2="${logged_in_home}/.local/share/Steam/steamapps/compatdata/LegacyGamesLauncher/pfx/drive_c/Program Files/Legacy Games/Legacy Games Launcher/Legacy Games Launcher.exe"
 humblegames_path1="${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/Program Files/Humble App/Humble App.exe"
@@ -2149,7 +2158,7 @@ process_uninstall_options() {
                 sed -i '' "${logged_in_home}/.config/systemd/user/env_vars"
             elif [[ -d "${logged_in_home}/.local/share/Steam/steamapps/compatdata/PlariumLauncher" ]]; then
                 handle_uninstall_plarium "PlariumLauncher"
-                uninstall_launcher "$uninstall_options" "Plarium Play" "$eaapp_path1" "$eaapp_path2" "plarium" "plarium"
+                uninstall_launcher "$uninstall_options" "Plarium Play" "$plarium_path1" "$plarium_path2" "plarium" "plarium"
                 sed -i '' "${logged_in_home}/.config/systemd/user/env_vars"
             fi
         fi
@@ -3854,6 +3863,12 @@ check_and_write() {
     fi
 }
 
+
+# Resolved dynamically (version-numbered install path - must run after install_launcher)
+eaapp_path1=$(resolve_launcher_path "${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/Program Files/Electronic Arts/EA Desktop/" "EALauncher.exe")
+eaapp_path2=$(resolve_launcher_path "${logged_in_home}/.local/share/Steam/steamapps/compatdata/TheEAappLauncher/pfx/drive_c/Program Files/Electronic Arts/EA Desktop/" "EALauncher.exe")
+itchio_path1=$(resolve_launcher_path "${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/users/steamuser/AppData/Local/itch/" "itch.exe")
+itchio_path2=$(resolve_launcher_path "${logged_in_home}/.local/share/Steam/steamapps/compatdata/itchioLauncher/pfx/drive_c/users/steamuser/AppData/Local/itch/" "itch.exe")
 
 check_and_write "epic" "$epic_games_launcher_path1" "$epic_games_launcher_path2" "NonSteamLaunchers" "EpicGamesLauncher" "-opengl" "epic_games_launcher"
 check_and_write "gog" "$gog_galaxy_path1" "$gog_galaxy_path2" "NonSteamLaunchers" "GogGalaxyLauncher" "" "gog_galaxy_launcher"
