@@ -6651,6 +6651,65 @@ else:
 # End of Gryphlink Game Scanner
 
 
+# Rockstar Games Launcher Scanner
+rockstar_launcher_id = os.environ.get('rockstar_launcher', '')
+rockstar_sys_reg = f"{logged_in_home}/.local/share/Steam/steamapps/compatdata/{rockstar_launcher_id}/pfx/system.reg"
+
+if not rockstar_launcher_id or not os.path.exists(rockstar_sys_reg):
+    print("Rockstar Games Launcher data not found. Skipping Rockstar Games Scanner.")
+else:
+    rockstar_games = {}
+    current_game = None
+
+    with open(rockstar_sys_reg, 'r') as f:
+        for line in f:
+            section_match = re.search(r'\[Software\\\\Wow6432Node\\\\Rockstar Games\\\\([^\\]+)\]', line)
+            if section_match:
+                game_title = section_match.group(1)
+                if game_title in ("Launcher", "Rockstar Games Social Club"):
+                    current_game = None
+                else:
+                    current_game = game_title
+                continue
+
+            if current_game and '"InstallFolder"' in line:
+                folder_match = re.search(r'"InstallFolder"="(.+)"', line)
+                if folder_match:
+                    install_folder = folder_match.group(1)
+                    linux_path = install_folder.replace(
+                        "C:\\\\",
+                        f"{logged_in_home}/.local/share/Steam/steamapps/compatdata/{rockstar_launcher_id}/pfx/drive_c/"
+                    ).replace("\\\\", "/")
+                    if os.path.exists(linux_path):
+                        if current_game not in rockstar_games:
+                            rockstar_games[current_game] = linux_path
+                    else:
+                        print(f"Rockstar game '{current_game}' found in registry but install path not in launcher prefix: {linux_path}")
+
+    if not rockstar_games:
+        print("No Rockstar games found in registry. Skipping Rockstar Games Scanner.")
+    else:
+        compat_path = f"{logged_in_home}/.local/share/Steam/steamapps/compatdata/{rockstar_launcher_id}/"
+
+        for game_name, install_path in rockstar_games.items():
+            game_exe = None
+            if os.path.isdir(install_path):
+                exe_candidates = [f for f in os.listdir(install_path) if f.lower().endswith('.exe') and 'uninstall' not in f.lower()]
+                game_word = game_name.split()[-1].lower()
+                game_exe = next((e for e in exe_candidates if game_word in e.lower()), exe_candidates[0] if exe_candidates else None)
+
+            if game_exe:
+                exe_path = f'"{os.path.join(install_path, game_exe)}"'
+                dir_path = f'"{install_path}"'
+                launch_options = f'STEAM_COMPAT_DATA_PATH="{compat_path}" %command%'
+                create_new_entry(exe_path, game_name, launch_options, dir_path, launcher_name="Rockstar Games Launcher")
+                track_game(game_name, "Rockstar Games Launcher")
+                print(f"Added Rockstar game: {game_name}")
+            else:
+                print(f"Could not find game executable for {game_name} in {install_path}")
+
+# End of Rockstar Games Scanner
+
 
 # Call finalize_tracking and capture removed apps
 removed_apps = finalize_tracking()
