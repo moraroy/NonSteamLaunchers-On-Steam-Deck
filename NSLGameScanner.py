@@ -1608,6 +1608,10 @@ if (window.__REAL_PLAYTIME_LOADED__) {
 
 
 THEMEMUSIC_CODE = r"""(function () {
+    if (window.__THEMEMUSIC_LOADED__) {
+        return;
+    }
+    window.__THEMEMUSIC_LOADED__ = true;
     const LOCAL_STORAGE_KEY = "ThemeMusicData";
 
     const themeMusicEvents = new EventTarget();
@@ -1681,12 +1685,9 @@ THEMEMUSIC_CODE = r"""(function () {
         sessionCache.set(query, entry);
     }
 
-    if (!window.__MY_THEMEMUSIC_SCRIPT_LOADED__) {
-        Object.defineProperty(window, "__MY_THEMEMUSIC_SCRIPT_LOADED__", { value: true });
-        const tag = document.createElement('script');
-        tag.src = "https://www.youtube.com/iframe_api";
-        document.head.appendChild(tag);
-    }
+    const tag = document.createElement("script");
+    tag.src = "https://www.youtube.com/iframe_api";
+    document.head.appendChild(tag);
 
     function waitForYouTubeAPI() {
         if (window.YT && window.YT.Player) return Promise.resolve();
