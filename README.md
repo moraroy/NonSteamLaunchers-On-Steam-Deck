@@ -25,6 +25,31 @@
   <img src="https://github.com/cchrkk/NSLOSD-DL/raw/main/logo.svg" width=40% height=auto
 </p>
 
+
+
+
+
+
+> [!WARNING]
+>
+> ## Official Repository & Download Warning
+>
+> This is the **only official GitHub repository** for NonSteamLaunchers.
+>
+> **Do not download anything** from websites or sources claiming to be official unless it is provided directly through this repository or explicitly linked by this github.
+>
+> Any website using this project's name, logo, or branding and claiming to be affiliated with this repository **is not affiliated or endorsed unless explicitly stated here**.
+>
+> **Unofficial forks, copies, or modified versions are not considered official or affiliated with this project unless they contribute back to or have an established relationship with the original project.**
+>
+> **When in doubt, download only from this repository.**
+
+
+
+
+
+
+
 <h1 align="center">
 NonSteamLaunchers 🚀
 </h1>
