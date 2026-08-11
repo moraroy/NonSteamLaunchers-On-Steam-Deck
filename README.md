@@ -334,6 +334,7 @@ Finds Games Automatically
 - EA App 🎮              💾 Full SD Card Support not sure 
 - Gog Galaxy 🎮          💾 Full SD Card Support
 - Battle.net 🎮
+- RockStar Games Launcher  🎮
 - Amazon Games 🎮        💾 Full SD Card Support
 - Itch.io 🎮
 - Legacy Games 🎮
