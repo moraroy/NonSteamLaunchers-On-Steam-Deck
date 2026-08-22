@@ -1,6 +1,6 @@
 certifi==2026.7.22
 charset-normalizer==3.5.0
-idna==3.18
+idna==3.19
 python-decouple==3.8
 python-steamgriddb==1.0.5
 requests==2.34.2
