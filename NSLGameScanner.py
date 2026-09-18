@@ -608,6 +608,7 @@ def get_steam_fallback_url(steam_store_appid, art_type):
     base_url = f"https://shared.steamstatic.com/store_item_assets/steam/apps/{steam_store_appid}/"
 
     candidates = []
+
     if art_type == "icons":
         try:
             url = f"https://steamcommunity.com/app/{steam_store_appid}"
@@ -616,30 +617,52 @@ def get_steam_fallback_url(steam_store_appid, art_type):
                 html = response.read().decode("utf-8")
 
             match = re.search(
-                rf"/apps/{steam_store_appid}/([a-f0-9]{{40}})\.jpg",
+                rf"/apps/{steam_store_appid}/([a-f0-9]{{40}})(?:_full)?\.jpg",
                 html,
                 re.IGNORECASE,
             )
 
-            if match:
-                return (
-                    f"https://shared.fastly.steamstatic.com/"
-                    f"community_assets/images/apps/{steam_store_appid}/{match.group(1)}.jpg"
-                )
+            if not match:
+                return None
+
+            hash_value = match.group(1)
+
+            candidates = [
+                f"https://shared.fastly.steamstatic.com/"
+                f"community_assets/images/apps/{steam_store_appid}/{hash_value}_full.jpg",
+
+                f"https://shared.fastly.steamstatic.com/"
+                f"community_assets/images/apps/{steam_store_appid}/{hash_value}.jpg",
+            ]
 
         except (urllib.error.URLError, Exception) as e:
             print(f"Error getting Steam icon for App ID {steam_store_appid}: {e}")
-
-        return None
+            return None
 
     elif art_type == "logos":
-        candidates = [base_url + "logo_2x.png", base_url + "logo.png"]
+        candidates = [
+            base_url + "logo_2x.png",
+            base_url + "logo.png",
+        ]
+
     elif art_type == "heroes":
-        candidates = [base_url + "library_hero_2x.jpg", base_url + "library_hero.jpg"]
+        candidates = [
+            base_url + "library_hero_2x.jpg",
+            base_url + "library_hero.jpg",
+        ]
+
     elif art_type == "grids_600x900":
-        candidates = [base_url + "library_600x900_2x.jpg", base_url + "library_600x900.jpg"]
+        candidates = [
+            base_url + "library_600x900_2x.jpg",
+            base_url + "library_600x900.jpg",
+        ]
+
     elif art_type == "grids_920x430":
-        candidates = [base_url + "header_2x.jpg", base_url + "header.jpg"]
+        candidates = [
+            base_url + "header_2x.jpg",
+            base_url + "header.jpg",
+        ]
+
     else:
         return None
 
@@ -650,8 +673,9 @@ def get_steam_fallback_url(steam_store_appid, art_type):
                     return url
         except (urllib.error.URLError, Exception) as e:
             print(f"Error checking fallback URL: {url} — {e}")
-            continue
+
     return None
+
 
 
 
