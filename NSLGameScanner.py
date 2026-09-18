@@ -609,7 +609,29 @@ def get_steam_fallback_url(steam_store_appid, art_type):
 
     candidates = []
     if art_type == "icons":
-        candidates = [base_url + "icon.png", base_url + "icon.ico"]
+        try:
+            url = f"https://steamcommunity.com/app/{steam_store_appid}"
+
+            with urllib.request.urlopen(url) as response:
+                html = response.read().decode("utf-8")
+
+            match = re.search(
+                rf"/apps/{steam_store_appid}/([a-f0-9]{{40}})\.jpg",
+                html,
+                re.IGNORECASE,
+            )
+
+            if match:
+                return (
+                    f"https://shared.fastly.steamstatic.com/"
+                    f"community_assets/images/apps/{steam_store_appid}/{match.group(1)}.jpg"
+                )
+
+        except (urllib.error.URLError, Exception) as e:
+            print(f"Error getting Steam icon for App ID {steam_store_appid}: {e}")
+
+        return None
+
     elif art_type == "logos":
         candidates = [base_url + "logo_2x.png", base_url + "logo.png"]
     elif art_type == "heroes":
