@@ -698,14 +698,13 @@ get_sd_path() {
 
 
 ### update proton ge
-
 function patch_proton_script() {
     proton_dir=$(find -L "${logged_in_home}/.steam/root/compatibilitytools.d" \
         -maxdepth 1 -type d -name "GE-Proton*" | sort -V | tail -n1)
 
     if [ -z "$proton_dir" ]; then
         echo "No GE-Proton installation found to patch."
-        return
+        return 0
     fi
 
     proton_script="${proton_dir}/proton"
@@ -713,73 +712,132 @@ function patch_proton_script() {
 
     if [ -f "$proton_script" ] && ! grep -q "ENABLE_GAMESCOPE_WSI" "$proton_script"; then
         echo "Patching Proton Python script to disable Gamescope WSI..."
-        sed -i "/^import protonfixes/a $insert_line" "$proton_script"
+
+        sed -i "/^import protonfixes/a $insert_line" "$proton_script" || {
+            echo "Warning: Failed to patch Proton Python script."
+            return 1
+        }
     else
         echo "Proton Python script already patched or not found."
     fi
+
+    return 0
 }
 
-# Function For Updating Proton-GE
 function download_ge_proton() {
     echo "Downloading GE-Proton using the GitHub API"
+
     cd "${logged_in_home}/Downloads/NonSteamLaunchersInstallation" || {
-        echo "Failed to change directory. Exiting."
-        exit 1
+        echo "Warning: Failed to change directory. Skipping GE-Proton download."
+        return 1
     }
 
-    tarball_url=$(curl -s https://api.github.com/repos/GloriousEggroll/proton-ge-custom/releases/latest \
-        | grep browser_download_url \
-        | cut -d\" -f4 \
-        | grep '\.tar\.gz$' \
-        | grep -v 'aarch64' \
+    if [ -z "$release_json" ]; then
+        echo "Warning: No GitHub release information available. Skipping update."
+        return 1
+    fi
+
+    tarball_url=$(printf '%s\n' "$release_json" \
+        | grep -o '"browser_download_url"[[:space:]]*:[[:space:]]*"[^"]*"' \
+        | cut -d '"' -f4 \
+        | grep 'GE-Proton.*-x86_64\.tar\.gz$' \
         | head -n1)
 
     if [ -z "$tarball_url" ]; then
-        echo "Failed to get tarball URL. Exiting."
-        exit 1
+        echo "Warning: Failed to get GE-Proton x86_64 tarball URL. Skipping update."
+        return 1
     fi
 
-    curl --retry 5 --retry-delay 0 --retry-max-time 60 -sLOJ "$tarball_url" || {
-        echo "Curl failed to download tarball. Exiting."
-        exit 1
-    }
-
-    checksum_url=$(curl -s https://api.github.com/repos/GloriousEggroll/proton-ge-custom/releases/latest \
-        | grep browser_download_url \
-        | cut -d\" -f4 \
-        | grep '\.sha512sum$' \
-        | grep -v 'aarch64' \
+    checksum_url=$(printf '%s\n' "$release_json" \
+        | grep -o '"browser_download_url"[[:space:]]*:[[:space:]]*"[^"]*"' \
+        | cut -d '"' -f4 \
+        | grep 'GE-Proton.*-x86_64\.sha512sum$' \
         | head -n1)
 
     if [ -z "$checksum_url" ]; then
-        echo "Failed to get checksum URL. Exiting."
-        exit 1
+        echo "Warning: Failed to get GE-Proton x86_64 checksum URL. Skipping update."
+        return 1
     fi
 
-    curl --retry 5 --retry-delay 0 --retry-max-time 60 -sLOJ "$checksum_url" || {
-        echo "Curl failed to download checksum. Exiting."
-        exit 1
+    ge_archive_name=$(basename "$tarball_url")
+    checksum_file_name=$(basename "$checksum_url")
+
+    echo "Downloading ${ge_archive_name}..."
+
+    curl -fL \
+        --retry 5 \
+        --retry-delay 0 \
+        --retry-max-time 60 \
+        -sLOJ "$tarball_url" || {
+        echo "Warning: Curl failed to download GE-Proton tarball. Skipping update."
+        return 1
     }
 
-    sha512sum -c ./*.sha512sum || {
-        echo "Checksum verification failed. Exiting."
-        exit 1
+    echo "Downloading ${checksum_file_name}..."
+
+    curl -fL \
+        --retry 5 \
+        --retry-delay 0 \
+        --retry-max-time 60 \
+        -sLOJ "$checksum_url" || {
+        echo "Warning: Curl failed to download GE-Proton checksum. Skipping update."
+        return 1
     }
 
-    ge_folder_name=$(tar -tf GE-Proton*.tar.gz | head -n1 | cut -d/ -f1)
+    ge_archive="./${ge_archive_name}"
+    checksum_file="./${checksum_file_name}"
+
+    if [ ! -f "$ge_archive" ]; then
+        echo "Warning: Downloaded GE-Proton archive not found. Skipping update."
+        return 1
+    fi
+
+    if [ ! -f "$checksum_file" ]; then
+        echo "Warning: Downloaded checksum file not found. Skipping update."
+        return 1
+    fi
+
+    echo "Verifying GE-Proton checksum..."
+
+    (
+        cd "$(dirname "$ge_archive")" || exit 1
+        sha512sum -c "$(basename "$checksum_file")"
+    ) || {
+        echo "Warning: Checksum verification failed. Skipping update."
+        return 1
+    }
+
+    ge_folder_name=$(tar -tf "$ge_archive" \
+        | head -n1 \
+        | cut -d/ -f1)
+
+    if [ -z "$ge_folder_name" ]; then
+        echo "Warning: Could not determine GE-Proton folder name. Skipping update."
+        return 1
+    fi
+
     target_dir="${logged_in_home}/.steam/root/compatibilitytools.d/${ge_folder_name}"
 
     if [ -d "$target_dir" ]; then
         echo "Removing existing ${ge_folder_name} for clean replacement..."
-        rm -rf "$target_dir"
+
+        rm -rf "$target_dir" || {
+            echo "Warning: Failed to remove existing ${ge_folder_name}. Skipping update."
+            return 1
+        }
     fi
 
-    tar -xf GE-Proton*.tar.gz -C "${logged_in_home}/.steam/root/compatibilitytools.d/" || {
-        echo "Tar extraction failed. Exiting."
-        exit 1
+    echo "Installing ${ge_folder_name}..."
+
+    tar -xf "$ge_archive" \
+        -C "${logged_in_home}/.steam/root/compatibilitytools.d/" || {
+        echo "Warning: Tar extraction failed. Skipping update."
+        return 1
     }
 
-    echo "All done :)"
+    echo "GE-Proton update completed successfully :)"
+
+    return 0
 }
 
 function update_proton() {
@@ -788,101 +846,180 @@ function update_proton() {
 
     if [ ! -d "${logged_in_home}/.steam/root/compatibilitytools.d" ]; then
         mkdir -p "${logged_in_home}/.steam/root/compatibilitytools.d" || {
-            echo "Failed to create directory. Exiting."
-            exit 1
+            echo "Warning: Failed to create compatibility tools directory. Skipping GE-Proton update."
+            return 1
         }
     fi
 
     mkdir -p "${logged_in_home}/Downloads/NonSteamLaunchersInstallation" || {
-        echo "Failed to create directory. Exiting."
-        exit 1
+        echo "Warning: Failed to create download directory. Skipping GE-Proton update."
+        return 1
     }
 
     proton_dir=$(find -L "${logged_in_home}/.steam/root/compatibilitytools.d" \
         -maxdepth 1 -type d -name "GE-Proton*" | sort -V | tail -n1)
 
+    echo "Checking latest GE-Proton release..."
+
+    release_json=$(curl -fsSL \
+        --retry 3 \
+        --retry-delay 1 \
+        --retry-max-time 30 \
+        -A "Mozilla/5.0" \
+        "https://api.github.com/repos/GloriousEggroll/proton-ge-custom/releases/latest")
+
+    if [ $? -ne 0 ] || [ -z "$release_json" ]; then
+        echo "Warning: Unable to retrieve GE-Proton release information."
+        echo "Warning: GitHub API may be rate limited. Skipping GE-Proton update."
+
+        patch_proton_script || {
+            echo "Warning: Failed to patch Proton script. Continuing..."
+        }
+
+        return 0
+    fi
+
+    tarball_url=$(printf '%s\n' "$release_json" \
+        | grep -o '"browser_download_url"[[:space:]]*:[[:space:]]*"[^"]*"' \
+        | cut -d '"' -f4 \
+        | grep 'GE-Proton.*-x86_64\.tar\.gz$' \
+        | head -n1)
+
+    if [ -z "$tarball_url" ]; then
+        echo "Warning: Could not determine GE-Proton x86_64 archive."
+        echo "Warning: Skipping GE-Proton update."
+
+        patch_proton_script || {
+            echo "Warning: Failed to patch Proton script. Continuing..."
+        }
+
+        return 0
+    fi
+
+    latest_version=$(basename "$tarball_url" .tar.gz)
+
+    if [ -z "$latest_version" ]; then
+        echo "Warning: Could not determine latest GE-Proton version."
+        echo "Warning: Skipping GE-Proton update."
+
+        patch_proton_script || {
+            echo "Warning: Failed to patch Proton script. Continuing..."
+        }
+
+        return 0
+    fi
+
+    echo "Latest GE-Proton version: ${latest_version}"
+
     if [ -z "$proton_dir" ]; then
-        download_ge_proton
+        echo "No GE-Proton installation found."
+        echo "Installing ${latest_version}..."
+
+        download_ge_proton || {
+            echo "Warning: GE-Proton installation failed."
+            echo "Continuing without updating Proton."
+            return 1
+        }
     else
-        installed_version=$(basename "$proton_dir" | sed 's/GE-Proton-//')
-        latest_version=$(curl -s https://api.github.com/repos/GloriousEggroll/proton-ge-custom/releases/latest \
-            | grep tag_name | cut -d '"' -f 4)
+        installed_version=$(basename "$proton_dir")
+
+        echo "Installed GE-Proton version: ${installed_version}"
 
         if [ "$installed_version" != "$latest_version" ]; then
-            download_ge_proton
+            echo "New GE-Proton version available: ${latest_version}"
+            echo "Updating GE-Proton..."
+
+            download_ge_proton || {
+                echo "Warning: GE-Proton update failed."
+                echo "Keeping existing installation."
+                return 1
+            }
+        else
+            echo "GE-Proton is already up to date: ${installed_version}"
         fi
     fi
 
-    patch_proton_script
-}
+    patch_proton_script || {
+        echo "Warning: Failed to patch Proton script. Continuing..."
+    }
 
+    return 0
+}
 ### End of updating proton ge
 
-
-
-# Function For Updating UMU Launcher
+###Update umu
 function download_umu_launcher() {
     echo "Downloading UMU Launcher using the GitHub API"
-    cd "${logged_in_home}/Downloads/NonSteamLaunchersInstallation" || { echo "Failed to change directory. Exiting."; exit 1; }
+    cd "${logged_in_home}/Downloads/NonSteamLaunchersInstallation" || {
+        echo "Warning: Failed to change directory. Skipping UMU Launcher update."
+        return 1
+    }
 
-    # Get the download URL for a file that matches the pattern 'umu-launcher-*zipapp*.tar.gz'
     zip_url=$(curl -s https://api.github.com/repos/Open-Wine-Components/umu-launcher/releases/latest | \
       grep '"browser_download_url":' | grep -E 'umu-launcher-.*-zipapp.*\.(zip|tar\.gz|tar)' | \
       cut -d '"' -f 4)
 
     if [ -z "$zip_url" ]; then
-        echo "Failed to get zip/tar URL. Exiting."
+        echo "Warning: Failed to get zip/tar URL. Skipping UMU Launcher update."
+        return 1
     fi
 
     echo "Found download URL: $zip_url"
 
-    # Download the file
     curl --retry 5 --retry-delay 0 --retry-max-time 60 -sLOJ "$zip_url"
     if [ $? -ne 0 ]; then
-        echo "Curl failed to download the file. Exiting."
+        echo "Warning: Curl failed to download the file. Skipping UMU Launcher update."
+        return 1
     fi
 
-    # Ensure the bin directory exists
     if [ ! -d "${logged_in_home}/bin" ]; then
-        mkdir -p "${logged_in_home}/bin" || { echo "Failed to create bin directory. Exiting."; exit 1; }
+        mkdir -p "${logged_in_home}/bin" || {
+            echo "Warning: Failed to create bin directory. Skipping UMU Launcher update."
+            return 1
+        }
     fi
 
-    # Get the downloaded file name
+    find "${logged_in_home}/bin" -mindepth 1 -maxdepth 1 -exec rm -rf {} \; || {
+        echo "Warning: Failed to clear bin directory. Skipping UMU Launcher update."
+        return 1
+    }
+
     downloaded_file=$(basename "$zip_url")
 
-    # Check if the downloaded file is a .zip file or a .tar.gz file and extract accordingly
     if [[ "$downloaded_file" =~ \.zip$ ]]; then
-        # Extract the .zip file into without preserving directory structure
         unzip -o -j "$downloaded_file" -d "${logged_in_home}/bin/"
         if [ $? -ne 0 ]; then
-            echo "Zip extraction failed. Exiting."
+            echo "Warning: Zip extraction failed. Skipping UMU Launcher update."
+            return 1
         fi
     elif [[ "$downloaded_file" =~ \.tar\.gz$ ]] || [[ "$downloaded_file" =~ \.tar$ ]]; then
-        # Check the actual file type using the `file` command
         file_type=$(file --mime-type -b "$downloaded_file")
 
         if [[ "$file_type" == "application/gzip" ]]; then
-            # If it's a gzipped tar file, extract it without leading directory (strip umu/)
             tar --strip-components=1 -xvzf "$downloaded_file" -C "${logged_in_home}/bin/"
             if [ $? -ne 0 ]; then
-                echo "Tar.gz extraction failed. Exiting."
-                exit 1
+                echo "Warning: Tar.gz extraction failed. Skipping UMU Launcher update."
+                return 1
             fi
         elif [[ "$file_type" == "application/x-tar" ]]; then
-            # If it's a tar file (without gzip), extract it without leading directory
             tar --strip-components=1 -xvf "$downloaded_file" -C "${logged_in_home}/bin/"
             if [ $? -ne 0 ]; then
-                echo "Tar extraction failed. Exiting."
+                echo "Warning: Tar extraction failed. Skipping UMU Launcher update."
+                return 1
             fi
         else
-            echo "Unknown file type: $file_type. Exiting."
+            echo "Warning: Unknown file type: $file_type. Skipping UMU Launcher update."
+            return 1
         fi
     else
-        echo "Unsupported file type: $downloaded_file. Exiting."
+        echo "Warning: Unsupported file type: $downloaded_file. Skipping UMU Launcher update."
+        return 1
     fi
 
-    # Make all extracted files executable
-    find "${logged_in_home}/bin/" -type f -exec chmod +x {} \;
+    find "${logged_in_home}/bin/" -type f -exec chmod +x {} \; || {
+        echo "Warning: Failed to set executable permissions. Skipping UMU Launcher update."
+        return 1
+    }
 
     if [ -f "${logged_in_home}/bin/umu-run" ]; then
         "${logged_in_home}/bin/umu-run" winetricks --self-update
@@ -893,6 +1030,29 @@ function download_umu_launcher() {
     echo "UMU Launcher update completed :)"
 }
 
+function update_umu_launcher() {
+    echo "0"
+    echo "# Detecting, Updating and Installing UMU Launcher...please wait..."
+
+    mkdir -p "${logged_in_home}/Downloads/NonSteamLaunchersInstallation" || {
+        echo "Warning: Failed to create download directory. Skipping UMU Launcher update."
+        return 1
+    }
+
+    umu_dir="${logged_in_home}/bin/umu-launcher"
+
+    if [ ! -d "$umu_dir" ]; then
+        download_umu_launcher
+    else
+        installed_version=$(cat "$umu_dir/version.txt")
+        latest_version=$(curl -s https://api.github.com/repos/Open-Wine-Components/umu-launcher/releases/latest | grep tag_name | cut -d '"' -f 4)
+
+        if [ "$installed_version" != "$latest_version" ]; then
+            download_umu_launcher
+        fi
+    fi
+}
+#end of umu
 
 
 
