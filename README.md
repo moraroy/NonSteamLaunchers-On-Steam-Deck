@@ -124,6 +124,9 @@ just to name a few!...there are much more videos and articles out there just wan
 - [MSN - Steam Deck: How to Install Epic Games Launcher with Decky Loader](https://www.msn.com/en-ca/news/technology/steam-deck-how-to-install-epic-games-launcher-with-decky-loader/ar-BB1pW1Ht)
 - [PCMAG - How to Install Third-Party Game Launchers on Steam Deck](https://www.pcmag.com/how-to/steam-deck-install-third-party-game-launchers)
 - [dadwithadeck - How to install Non-Steam Game Launchers on Steam Deck with NonSteamLaunchers](https://dadwithadeck.com/2025/11/24/how-to-install-non-steam-game-launchers-on-steam-deck-with-nonsteamlaunchers/)
+- [NerdZap - 9 Best Decky Loader Plugins for Steam Deck in 2026](https://nerdzap.com/news/best-decky-loader-plugins-steam-deck/)
+
+
 
 <p align="center">
     ▶️ <b>YouTube Tutorials</b> 🡺🡺🡺
