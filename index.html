@@ -1,1 +1,756 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta
+        name="description"
+        content="Official cryptocurrency and alternative donation page for NonSteamLaunchers."
+    >
+    <title>NonSteamLaunchers — Official Donation Page</title>
 
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            padding: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family:
+                -apple-system,
+                BlinkMacSystemFont,
+                "Segoe UI",
+                Roboto,
+                Helvetica,
+                Arial,
+                sans-serif;
+            color: #fff;
+            background:
+                radial-gradient(
+                    circle at top,
+                    #252525 0%,
+                    #111 45%,
+                    #080808 100%
+                );
+        }
+
+        .container {
+            width: 100%;
+            max-width: 500px;
+        }
+
+        .card {
+            padding: 32px;
+            background: rgba(25, 25, 25, 0.96);
+            border: 1px solid #333;
+            border-radius: 24px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.45);
+        }
+
+        .project-logo {
+            width: 90px;
+            height: 90px;
+            margin: 0 auto 24px;
+            display: block;
+            object-fit: contain;
+        }
+
+        .description {
+            margin: 0 auto 28px;
+            max-width: 440px;
+            color: #aaa;
+            text-align: center;
+            line-height: 1.6;
+        }
+
+        .crypto-buttons {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-bottom: 28px;
+        }
+
+        .crypto-button {
+            padding: 14px 10px;
+            border: 1px solid #444;
+            border-radius: 12px;
+            background: #1c1c1c;
+            color: #fff;
+            cursor: pointer;
+            font-size: 15px;
+            font-weight: 600;
+            transition: 0.2s ease;
+        }
+
+        .crypto-button:hover {
+            background: #292929;
+        }
+
+        .crypto-button.active {
+            background: #f7931a;
+            border-color: #f7931a;
+            color: #111;
+        }
+
+        .currency-name {
+            margin-bottom: 8px;
+            text-align: center;
+            font-size: 20px;
+            font-weight: 700;
+        }
+
+        .network-name {
+            min-height: 20px;
+            margin-bottom: 18px;
+            color: #888;
+            text-align: center;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .network-name.base {
+            color: #4da3ff;
+        }
+
+        .qr-container {
+            width: 240px;
+            height: 240px;
+            margin: 0 auto 20px;
+            padding: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #fff;
+            border-radius: 16px;
+        }
+
+        #qrcode {
+            width: 216px;
+            height: 216px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #qrcode img,
+        #qrcode canvas {
+            max-width: 100%;
+            max-height: 100%;
+        }
+
+        .address-label {
+            margin-bottom: 7px;
+            color: #888;
+            font-size: 13px;
+        }
+
+        .address {
+            margin-bottom: 12px;
+            padding: 12px;
+            background: #111;
+            border: 1px solid #333;
+            border-radius: 10px;
+            color: #ddd;
+            font-family: monospace;
+            font-size: 13px;
+            word-break: break-all;
+        }
+
+        .copy-button {
+            width: 100%;
+            padding: 14px;
+            border: 0;
+            border-radius: 12px;
+            background: #fff;
+            color: #111;
+            cursor: pointer;
+            font-size: 15px;
+            font-weight: 700;
+            transition: 0.2s ease;
+        }
+
+        .copy-button:hover {
+            background: #ddd;
+        }
+
+        .network-warning {
+            display: none;
+            margin-top: 12px;
+            padding: 12px;
+            background: rgba(77, 163, 255, 0.08);
+            border: 1px solid rgba(77, 163, 255, 0.35);
+            border-radius: 10px;
+            color: #9acbff;
+            font-size: 12px;
+            line-height: 1.5;
+            text-align: center;
+        }
+
+        .network-warning.visible {
+            display: block;
+        }
+
+        .network-warning strong {
+            color: #fff;
+        }
+
+        .warning {
+            margin-top: 18px;
+            padding: 12px;
+            background: rgba(255, 180, 0, 0.08);
+            border: 1px solid rgba(255, 180, 0, 0.25);
+            border-radius: 10px;
+            color: #c9b98a;
+            font-size: 12px;
+            line-height: 1.5;
+            text-align: center;
+        }
+
+        .support-divider {
+            height: 1px;
+            margin: 30px 0 26px;
+            background: #333;
+        }
+
+        .support-title {
+            margin: 0 0 8px;
+            text-align: center;
+            font-size: 20px;
+            font-weight: 700;
+        }
+
+        .support-description {
+            margin: 0 0 18px;
+            color: #999;
+            font-size: 13px;
+            line-height: 1.5;
+            text-align: center;
+        }
+
+        .support-buttons {
+            display: grid;
+            gap: 10px;
+        }
+
+        .support-button {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            width: 100%;
+            min-height: 54px;
+            padding: 12px 16px;
+            border: 1px solid #444;
+            border-radius: 12px;
+            color: #fff;
+            text-decoration: none;
+            font-size: 15px;
+            font-weight: 700;
+            transition:
+                transform 0.2s ease,
+                background 0.2s ease,
+                border-color 0.2s ease,
+                box-shadow 0.2s ease;
+        }
+
+        .support-button:hover {
+            transform: translateY(-2px);
+        }
+
+        .support-icon {
+            width: 28px;
+            height: 28px;
+            object-fit: contain;
+            flex-shrink: 0;
+            display: block;
+        }
+
+        .github {
+            background: #242424;
+            border-color: #444;
+        }
+
+        .github:hover {
+            background: #303030;
+            border-color: #666;
+            box-shadow: 0 6px 20px rgba(255, 255, 255, 0.05);
+        }
+
+        .github .support-icon {
+            filter: invert(1);
+        }
+
+        .patreon {
+            background: #242424;
+            border-color: #ff424d;
+        }
+
+        .patreon:hover {
+            background: #302020;
+            border-color: #ff5b65;
+            box-shadow: 0 6px 20px rgba(255, 66, 77, 0.12);
+        }
+
+        .patreon .support-icon {
+            filter: invert(1);
+        }
+
+        .kofi {
+            background: #242424;
+            border-color: #29abe0;
+        }
+
+        .kofi:hover {
+            background: #202c31;
+            border-color: #4dbce7;
+            box-shadow: 0 6px 20px rgba(41, 171, 224, 0.12);
+        }
+
+        .buymeacoffee {
+            background: #242424;
+            border-color: #ffdd00;
+        }
+
+        .buymeacoffee:hover {
+            background: #302e20;
+            border-color: #ffe633;
+            box-shadow: 0 6px 20px rgba(255, 221, 0, 0.12);
+        }
+
+        .liberapay {
+            background: #242424;
+            border-color: #f6c915;
+        }
+
+        .liberapay:hover {
+            background: #302e20;
+            border-color: #f9d63e;
+            box-shadow: 0 6px 20px rgba(246, 201, 21, 0.12);
+        }
+
+        .footer {
+            margin-top: 20px;
+            color: #666;
+            font-size: 14px;
+            text-align: center;
+            line-height: 1.6;
+        }
+
+        .verification {
+            margin-top: 8px;
+            color: #777;
+            font-size: 12px;
+            text-align: center;
+            line-height: 1.5;
+        }
+
+        .verification a {
+            color: #999;
+            text-decoration: underline;
+            text-underline-offset: 2px;
+        }
+
+        .verification a:hover {
+            color: #fff;
+        }
+
+        .crypto-button:focus-visible,
+        .copy-button:focus-visible,
+        .support-button:focus-visible,
+        .verification a:focus-visible {
+            outline: 2px solid #fff;
+            outline-offset: 3px;
+        }
+
+        @media (max-width: 450px) {
+            body {
+                padding: 16px;
+            }
+
+            .card {
+                padding: 26px 18px;
+            }
+
+            .project-logo {
+                width: 76px;
+                height: 76px;
+            }
+
+            .qr-container {
+                width: 220px;
+                height: 220px;
+            }
+
+            #qrcode {
+                width: 196px;
+                height: 196px;
+            }
+
+            .support-button {
+                min-height: 52px;
+                font-size: 14px;
+            }
+
+            .support-icon {
+                width: 26px;
+                height: 26px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<main class="container">
+
+    <section class="card">
+
+        <img
+            class="project-logo"
+            src="https://raw.githubusercontent.com/moraroy/NonSteamLaunchersDecky/refs/heads/main/assets/logo.png"
+            alt="NonSteamLaunchers logo"
+        >
+
+        <div class="description">
+            This is the official cryptocurrency donation page for
+            <strong>NonSteamLaunchers</strong>, an open-source project
+            that helps bring non-Steam game launchers and their games to your Steam library.
+
+            <br><br>
+
+            Below are the available cryptocurrency options you can use to
+            support the project. Select a cryptocurrency to view its QR code,
+            network, and wallet address, then scan the QR code or copy the address
+            into your wallet when sending your donation.
+        </div>
+
+        <div class="crypto-buttons">
+
+            <button
+                type="button"
+                class="crypto-button active"
+                data-crypto="DOGE"
+            >
+                🐕 DOGE
+            </button>
+
+            <button
+                type="button"
+                class="crypto-button"
+                data-crypto="BTC"
+            >
+                ₿ BTC
+            </button>
+
+            <button
+                type="button"
+                class="crypto-button"
+                data-crypto="ETH"
+            >
+                ♦ ETH
+            </button>
+
+            <button
+                type="button"
+                class="crypto-button"
+                data-crypto="USDC"
+            >
+                💵 USDC — Base
+            </button>
+
+        </div>
+
+        <div class="currency-name" id="currencyName">
+            Dogecoin
+        </div>
+
+        <div
+            class="network-name"
+            id="networkName"
+            aria-live="polite"
+        ></div>
+
+        <div class="qr-container">
+            <div id="qrcode"></div>
+        </div>
+
+        <div class="address-label">
+            Send to this address
+        </div>
+
+        <div class="address" id="address">
+            DSAwHaZcJMqB3zKsaqEZCEMBmp5LYMEotk
+        </div>
+
+        <button
+            type="button"
+            class="copy-button"
+            id="copyButton"
+        >
+            Copy Address
+        </button>
+
+        <div
+            class="network-warning"
+            id="networkWarning"
+        >
+            <strong>USDC on Base only.</strong><br>
+            This wallet is for USDC sent over the
+            <strong>Base network</strong>.
+            Do not send USDC over Ethereum, Solana, Polygon,
+            Arbitrum, or another network.
+        </div>
+
+        <div class="warning">
+            ⚠️ Always verify the cryptocurrency and network before sending.
+            Sending the wrong cryptocurrency or network may result in permanent loss.
+        </div>
+
+        <div class="support-divider"></div>
+
+        <h2 class="support-title">
+            Other Ways to Support
+        </h2>
+
+        <p class="support-description">
+            Don't have cryptocurrency?
+            You can also support NonSteamLaunchers through one of the
+            following platforms.
+        </p>
+
+        <div class="support-buttons">
+
+            <a
+                class="support-button github"
+                href="https://github.com/sponsors/moraroy"
+                target="_blank"
+                rel="noopener noreferrer"
+            >
+                <img
+                    class="support-icon"
+                    src="https://upload.wikimedia.org/wikipedia/commons/9/91/Octicons-mark-github.svg"
+                    alt=""
+                    aria-hidden="true"
+                >
+
+                <span>
+                    GitHub Sponsors
+                </span>
+            </a>
+
+            <a
+                class="support-button patreon"
+                href="https://www.patreon.com/moraroy"
+                target="_blank"
+                rel="noopener noreferrer"
+            >
+                <img
+                    class="support-icon"
+                    src="https://uxwing.com/wp-content/themes/uxwing/download/brands-and-social-media/patreon-icon.png"
+                    alt=""
+                    aria-hidden="true"
+                >
+
+                <span>
+                    Patreon
+                </span>
+            </a>
+
+            <a
+                class="support-button kofi"
+                href="https://ko-fi.com/moraroy"
+                target="_blank"
+                rel="noopener noreferrer"
+            >
+                <img
+                    class="support-icon"
+                    src="https://uxwing.com/wp-content/themes/uxwing/download/brands-and-social-media/ko-fi-icon.png"
+                    alt=""
+                    aria-hidden="true"
+                >
+
+                <span>
+                    Ko-fi
+                </span>
+            </a>
+
+            <a
+                class="support-button buymeacoffee"
+                href="https://buymeacoffee.com/moraroy"
+                target="_blank"
+                rel="noopener noreferrer"
+            >
+                <img
+                    class="support-icon"
+                    src="https://uxwing.com/wp-content/themes/uxwing/download/brands-and-social-media/buy-me-coffee-icon.png"
+                    alt=""
+                    aria-hidden="true"
+                >
+
+                <span>
+                    Buy Me a Coffee
+                </span>
+            </a>
+
+            <a
+                class="support-button liberapay"
+                href="https://liberapay.com/moraroy"
+                target="_blank"
+                rel="noopener noreferrer"
+            >
+                <img
+                    class="support-icon"
+                    src="https://liberapay.com/assets/liberapay/icon-v2_black-on-yellow.svg?etag=._QLQJKsW7OwBQqn7ASPxRA~~"
+                    alt=""
+                    aria-hidden="true"
+                >
+
+                <span>
+                    Liberapay
+                </span>
+            </a>
+
+        </div>
+
+    </section>
+
+    <div class="footer">
+        Thank you for supporting NonSteamLaunchers ❤️
+    </div>
+
+    <div class="verification">
+        Verify this page against the
+        official NonSteamLaunchers repository before donating.
+        <br>
+        <a
+            href="https://github.com/moraroy/NonSteamLaunchers-On-Steam-Deck/blob/main/index.html"
+            target="_blank"
+            rel="noopener noreferrer"
+        >
+            Official NonSteamLaunchers GitHub project
+        </a>.
+    </div>
+
+</main>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+<script>
+    const wallets = {
+        DOGE: {
+            name: "Dogecoin",
+            network: "",
+            address: "DSAwHaZcJMqB3zKsaqEZCEMBmp5LYMEotk"
+        },
+
+        BTC: {
+            name: "Bitcoin",
+            network: "",
+            address: "38CndSKJ2c4dB69jTsPi7344ibTd3bdepx"
+        },
+
+        ETH: {
+            name: "Ethereum",
+            network: "",
+            address: "0x3F072dD219Ed1c6233d90892Ef69ac7378ff0Ba9"
+        },
+
+        USDC: {
+            name: "USD Coin",
+            network: "Base",
+            address: "0x8B295910f2Cf3121c0b4002bee6d1E4e526FAeC1"
+        }
+    };
+
+    const buttons = document.querySelectorAll(".crypto-button");
+    const currencyName = document.getElementById("currencyName");
+    const networkName = document.getElementById("networkName");
+    const addressElement = document.getElementById("address");
+    const qrCode = document.getElementById("qrcode");
+    const copyButton = document.getElementById("copyButton");
+    const networkWarning = document.getElementById("networkWarning");
+
+    let currentCrypto = "DOGE";
+
+    function updateCrypto(crypto) {
+        const wallet = wallets[crypto];
+
+        if (!wallet) {
+            return;
+        }
+
+        currentCrypto = crypto;
+
+        currencyName.textContent = wallet.name;
+        addressElement.textContent = wallet.address;
+
+        if (wallet.network) {
+            networkName.textContent = "Network: " + wallet.network;
+            networkName.classList.add("base");
+        } else {
+            networkName.textContent = "";
+            networkName.classList.remove("base");
+        }
+
+        buttons.forEach(button => {
+            button.classList.toggle(
+                "active",
+                button.dataset.crypto === crypto
+            );
+        });
+
+        if (crypto === "USDC") {
+            networkWarning.classList.add("visible");
+        } else {
+            networkWarning.classList.remove("visible");
+        }
+
+        qrCode.innerHTML = "";
+        qrCode.style.color = "#111";
+
+        if (typeof QRCode !== "undefined") {
+            new QRCode(qrCode, {
+                text: wallet.address,
+                width: 216,
+                height: 216,
+                colorDark: "#000000",
+                colorLight: "#ffffff",
+                correctLevel: QRCode.CorrectLevel.M
+            });
+        } else {
+            qrCode.textContent = "QR code unavailable";
+            qrCode.style.fontSize = "14px";
+        }
+    }
+
+    buttons.forEach(button => {
+        button.addEventListener("click", () => {
+            updateCrypto(button.dataset.crypto);
+        });
+    });
+
+    copyButton.addEventListener("click", async () => {
+        const address = wallets[currentCrypto].address;
+
+        try {
+            await navigator.clipboard.writeText(address);
+            copyButton.textContent = "✓ Address Copied!";
+        } catch {
+            copyButton.textContent = "Copy Failed";
+        }
+
+        setTimeout(() => {
+            copyButton.textContent = "Copy Address";
+        }, 1800);
+    });
+
+    updateCrypto("DOGE");
+</script>
+
+</body>
+</html>
