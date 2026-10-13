@@ -2009,6 +2009,7 @@ if (window.__REAL_PLAYTIME_LOADED__) {
 
 
 
+
 THEMEMUSIC_CODE = r"""
 (function () {
     "use strict";
@@ -3113,7 +3114,7 @@ THEMEMUSIC_CODE = r"""
             buttons.music.addEventListener("vgp_onbuttondown", event => {
                 if (event.detail?.button === 1 && event.detail.is_repeat !== true) {
                     isButtonDown = true;
-                    isHoldingMusic = false;
+                    isHoldingMusic = true;
                     holdStarted = false;
                     clearTimeout(controllerHoldTimer);
 
@@ -3206,7 +3207,7 @@ THEMEMUSIC_CODE = r"""
     injectButtons();
     processGameState();
 
-})();"""
+})();
 
 
 
