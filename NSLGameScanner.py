@@ -668,7 +668,7 @@ def download_artwork(
                 image_file.read()
             ).decode("utf-8")
 
-    image_url = artwork.get("thumb")
+    image_url = artwork.get("url")
 
     if not image_url:
         print(
@@ -6766,6 +6766,9 @@ if amazon_games:
 # Set up the path to the Butler database
 itch_db_location = f"{logged_in_home}/.local/share/Steam/steamapps/compatdata/{itchio_launcher}/pfx/drive_c/users/steamuser/AppData/Roaming/itch/db/butler.db"
 
+# Set up the path to itch-setup.exe
+itch_setup_path = f"{logged_in_home}/.local/share/Steam/steamapps/compatdata/{itchio_launcher}/pfx/drive_c/users/steamuser/AppData/Local/itch/itch-setup.exe"
+
 # Check if the database path exists
 if not os.path.exists(itch_db_location):
     print(f"Path not found: {itch_db_location}. Aborting Itch.io scan...")
@@ -6788,46 +6791,38 @@ else:
     # List to store final Itch.io game details
     itchgames = []
 
-    # Match game_id between 'caves' and 'games' tables and collect relevant game details
+    # Match game_id between 'caves' and 'games' tables
     for cave in caves:
         game_id = cave[1]
+
         if game_id in games_dict:
             game_info = games_dict[game_id]
-            cave_info = json.loads(cave[11])
-            base_path = cave_info['basePath']
-            candidates = cave_info.get('candidates', [])
 
-            # Check if candidates exist and are not empty
-            if candidates:
-                executable_path = candidates[0].get('path', None)
+            # Extract the game title and ID
+            game_title = game_info[2]
 
-                # If there's no valid executable path, skip this entry
-                if not executable_path:
-                    print(f"Skipping game (no executable found): {game_info[2]}")
-                    continue
-
-                # Skip games with an executable that ends with '.html' (browser games)
-                if executable_path.endswith('.html'):
-                    print(f"Skipping browser game: {game_info[2]}")
-                    continue
-
-                # Extract the game title
-                game_title = game_info[2]
-
-                # Append the game info (base path, executable path, game title) to the list
-                itchgames.append((base_path, executable_path, game_title))
-            else:
-                print(f"Skipping game (no candidates): {game_info[2]}")
+            # Append the game ID and title
+            itchgames.append((game_id, game_title))
 
     # Process each game for creating new entries
-    for base_path, executable, game_title in itchgames:
-        base_path_linux = base_path.replace("C:\\", f"{logged_in_home}/.local/share/Steam/steamapps/compatdata/{itchio_launcher}/pfx/drive_c/").replace("\\", "/")
-        exe_path = "\"" + os.path.join(base_path_linux, executable).replace("\\", "/") + "\""
-        start_dir = "\"" + base_path_linux + "\""
-        launchoptions = f"STEAM_COMPAT_DATA_PATH=\"{logged_in_home}/.local/share/Steam/steamapps/compatdata/{itchio_launcher}/\" %command%"
+    for game_id, game_title in itchgames:
+        exe_path = f'"{itch_setup_path}"'
+
+        start_dir = f'"{os.path.dirname(itch_setup_path)}"'
+        launchoptions = (
+            f'STEAM_COMPAT_DATA_PATH="{logged_in_home}/.local/share/Steam/steamapps/compatdata/{itchio_launcher}/" '
+            f'%command% --appname itch --run-game {game_id}'
+        )
 
         # Call the provided function to create a new entry for the game
-        create_new_entry(exe_path, game_title, launchoptions, start_dir, launcher_name="itch.io")
+        create_new_entry(
+            exe_path,
+            game_title,
+            launchoptions,
+            start_dir,
+            launcher_name="itch.io"
+        )
+
         track_game(game_title, "itch.io")
 
     # Close the database connection
