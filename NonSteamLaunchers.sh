@@ -3489,7 +3489,7 @@ function install_launcher {
                 sleep 5
                 echo "ARC Launcher installation complete."
             else
-                "$STEAM_RUNTIME" "$proton_dir/proton" run "$run_command" &
+				"$STEAM_RUNTIME" "$proton_dir/proton" run ${run_command} &
             fi
         else
             "$STEAM_RUNTIME" "$proton_dir/proton" run ${run_command}
