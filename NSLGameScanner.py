@@ -1674,14 +1674,11 @@ window.createShortcut = async function(data) {
     // --- Set Compatibility Tool ---
     if (data.CompatTool && data.CompatTool.trim()) {
       const compatTool = data.CompatTool.trim();
-      const availableTools = await SteamClient.Apps.GetAvailableCompatTools(shortcutId);
-      const toolExists = availableTools.some(tool => tool.strToolName === compatTool);
-
-      if (toolExists) {
+      try {
         await SteamClient.Apps.SpecifyCompatTool(shortcutId, compatTool);
         console.log("Compat tool set to " + compatTool);
-      } else {
-        console.warn("Compat tool '" + compatTool + "' not found. Falling back to 'proton_experimental'.");
+      } catch (compatErr) {
+        console.warn("Failed to set compat tool '" + compatTool + "', falling back to 'proton_experimental':", compatErr);
         await SteamClient.Apps.SpecifyCompatTool(shortcutId, 'proton_experimental');
       }
     }
