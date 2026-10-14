@@ -328,15 +328,20 @@ get_steam_user_info() {
             for(i=1;i<=NF;i++){
                 if($i ~ /[0-9]{17}/){ split($i,a, "\""); steamid=a[2]; }
                 if($i ~ /"AccountName"/){ split($i,b, "\""); account=b[4]; }
-                if($i ~ /"Timestamp"/){ split($i,c, "\""); timestamp=c[4]; }
+                if($i ~ /[Tt]imestamp/){ split($i,c, "\""); timestamp=c[4]; }
             }
             print steamid "," account "," timestamp
         }')
 
+        # Safeguard: Ensure a valid Steam ID was found before computing
+        if [[ -z "$current_steamid" ]]; then
+            return 1
+        fi
+
         steamid3=$((current_steamid - 76561197960265728))
         echo "$steamid3"
     else
-        return 0
+        return 1
     fi
 }
 
@@ -4286,8 +4291,6 @@ if [[ -f "${logged_in_home}/.steam/root/config/loginusers.vdf" ]] || [[ -f "${lo
     current_user=""
     current_steamid=""
 
-
-
     # Process each user block
     # Set IFS to only look for Commas to avoid issues with Whitespace in older account names.
     while IFS="," read steamid account timestamp; do
@@ -4306,7 +4309,7 @@ if [[ -f "${logged_in_home}/.steam/root/config/loginusers.vdf" ]] || [[ -f "${lo
             if($i ~ /"AccountName"/){
                 split($i,b, "\""); account=b[4];
             }
-            if($i ~ /"Timestamp"/){
+            if($i ~ /[Tt]imestamp/){
                 split($i,c, "\""); timestamp=c[4];
             }
         }
@@ -4320,6 +4323,11 @@ if [[ -f "${logged_in_home}/.steam/root/config/loginusers.vdf" ]] || [[ -f "${lo
         echo "No users found."
     fi
 
+    # Safeguard: Ensure a valid Steam ID was found before computing
+    if [[ -z "$current_steamid" ]]; then
+        echo "Error: Could not determine valid SteamID."
+        return 1
+    fi
 
     # Convert steamid to steamid3
     steamid3=$((current_steamid - 76561197960265728))
@@ -4336,6 +4344,7 @@ if [[ -f "${logged_in_home}/.steam/root/config/loginusers.vdf" ]] || [[ -f "${lo
 else
     echo "Could not find loginusers.vdf file"
 fi
+
 
 
 
