@@ -1521,18 +1521,26 @@ def create_exec_line_from_entry(logged_in_home, new_entry, m_gameid):
                         print(f"Deleting broken symlink in applications folder: {full_path} -> {target}")
                         os.remove(full_path)
 
-
+            
             app_file_path = os.path.join(applications_dir, filename)
-
+            
+            if os.path.lexists(app_file_path):
+                os.remove(app_file_path)
+                print(f"Removed existing applications file: {app_file_path}")
+            
             with open(app_file_path, "w") as file:
                 file.write(content)
-            print(f"Moved and updated .desktop file in {app_file_path}")
-
+            
+            print(f"Created updated .desktop file: {app_file_path}")
+            
             original_desktop_path = os.path.join(desktop_dir, filename)
-            if os.path.exists(original_desktop_path):
+            
+            if os.path.lexists(original_desktop_path):
                 os.remove(original_desktop_path)
-
+                print(f"Removed existing Desktop entry: {original_desktop_path}")
+            
             os.symlink(app_file_path, original_desktop_path)
+
             print(f"Created symlink {original_desktop_path} -> {app_file_path}")
 
 
