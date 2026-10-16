@@ -7349,9 +7349,22 @@ else:
 
 
 #chrome scanner for xbox, geforce now, and amazon luna bookmarks
-bookmarks_file_path = f"{logged_in_home}/.var/app/com.google.Chrome/config/google-chrome/Default/Bookmarks"
+chrome_app_paths = [
+    os.path.join(logged_in_home, ".var/app/com.google.Chrome/config/google-chrome/Default"),
+    os.path.join(logged_in_home, ".var/app/com.google.chrome/config/google-chrome/Default"),
+]
 
-# Lists to store results
+possible_bookmark_files = [
+    os.path.join(profile_path, filename)
+    for profile_path in chrome_app_paths
+    for filename in ("Bookmarks", "AccountBookmarks")
+]
+
+bookmarks_file_path = next(
+    (path for path in possible_bookmark_files if os.path.isfile(path)),
+    None
+)
+
 geforce_now_urls = []
 xbox_urls = []
 luna_urls = []
@@ -7359,15 +7372,15 @@ boosteroid_urls = []
 webrcade_urls = []
 seen_urls = set()
 
-def process_bookmark_item(item):
-    if item['type'] == "url":
-        name = item['name'].strip()
-        url = item['url']
 
-        if not name or url in seen_urls:
+def process_bookmark_item(item):
+    if item.get('type') == "url":
+        name = item.get('name', '').strip()
+        url = item.get('url', '')
+
+        if not name or not url or url in seen_urls:
             return
 
-        # GeForce NOW
         if "play.geforcenow.com/games" in url:
             if name == "GeForce NOW":
                 return
@@ -7378,7 +7391,6 @@ def process_bookmark_item(item):
             geforce_now_urls.append(("GeForce NOW", game_name, url))
             seen_urls.add(url)
 
-        # Xbox Cloud Gaming
         elif "xbox.com/" in url and ("/play/launch/" in url or "/play/games/" in url):
             if name.startswith("Play "):
                 game_name = name.replace("Play ", "").split(" |")[0].strip()
@@ -7389,7 +7401,6 @@ def process_bookmark_item(item):
                 xbox_urls.append(("Xbox", game_name, url))
                 seen_urls.add(url)
 
-        # Amazon Luna
         elif "luna.amazon." in url and "/game/" in url:
             if name.startswith("Play "):
                 game_name = name.replace("Play ", "").split(" |")[0].strip()
@@ -7400,84 +7411,85 @@ def process_bookmark_item(item):
                 luna_urls.append(("Amazon Luna", game_name, url))
                 seen_urls.add(url)
 
-
-
-
-        # Boosteroid
         elif "cloud.boosteroid.com/application/" in url:
-            if not name or url in seen_urls:
-                return
-
-            game_name = name.strip()
-            boosteroid_urls.append(("Boosteroid", game_name, url))
+            boosteroid_urls.append(("Boosteroid", name, url))
             seen_urls.add(url)
 
-        # Boosteroid (Session format)
         elif "cloud.boosteroid.com/static/streaming/streaming.html" in url and "sessionId=" in url:
-            if not name or url in seen_urls:
-                return
-
-            game_name = name.strip()
-            boosteroid_urls.append(("Boosteroid", game_name, url))
+            boosteroid_urls.append(("Boosteroid", name, url))
             seen_urls.add(url)
 
-
-        # WebRcade
         elif "play.webrcade.com/app/" in url:
-            if not name or url in seen_urls:
-                return
-
-            game_name = name.strip()
-
-            webrcade_urls.append(("WebRcade", game_name, url))
+            webrcade_urls.append(("WebRcade", name, url))
             seen_urls.add(url)
-
 
 
 def scan_children(children):
     for item in children:
-        if item['type'] == "folder":
+        if item.get('type') == "folder":
             scan_children(item.get('children', []))
         else:
             process_bookmark_item(item)
 
-if not os.path.exists(bookmarks_file_path):
+
+if not bookmarks_file_path:
     print("Chrome Bookmarks not found. Skipping scanning for Bookmarks.")
 else:
-    with open(bookmarks_file_path, 'r') as f:
-        data = json.load(f)
+    try:
+        with open(bookmarks_file_path, 'r', encoding='utf-8') as f:
+            data = json.load(f)
 
-    # Scan bookmarks in bookmark_bar, other, and synced folders recursively
-    scan_children(data['roots']['bookmark_bar'].get('children', []))
-    scan_children(data['roots']['other'].get('children', []))
-    scan_children(data['roots']['synced'].get('children', []))
+        print(f"Scanning Chrome bookmarks: {bookmarks_file_path}")
 
-    # Merge all platforms' URLs into a single list for processing
-    all_urls = geforce_now_urls + xbox_urls + luna_urls + boosteroid_urls + webrcade_urls
+        roots = data.get('roots', {})
 
-    for platform_name, game_name, url in all_urls:
-        print(f"{platform_name}: {game_name} - {url}")
+        for root_name in ('bookmark_bar', 'other', 'synced'):
+            root = roots.get(root_name, {})
+            scan_children(root.get('children', []))
 
-        encoded_url = url
-
-        chromelaunch_options = (
-            f'run --branch=stable --arch=x86_64 --command=/app/bin/chrome --file-forwarding com.google.Chrome @@u @@ '
-            f'--window-size=1280,800 --force-device-scale-factor=1.00 --device-scale-factor=1.00 '
-            f'--start-fullscreen "{encoded_url}" --no-first-run --enable-features=OverlayScrollbar'
+        all_urls = (
+            geforce_now_urls
+            + xbox_urls
+            + luna_urls
+            + boosteroid_urls
+            + webrcade_urls
         )
 
-        chromedirectory = os.environ.get("chromedirectory", "/usr/bin/flatpak")
-        chrome_startdir = os.environ.get("chrome_startdir", "/usr/bin")
+        for platform_name, game_name, url in all_urls:
+            print(f"{platform_name}: {game_name} - {url}")
 
-        # Replace this with your existing method to handle the entries
-        create_new_entry(
-            chromedirectory,
-            game_name,
-            chromelaunch_options,
-            chrome_startdir,
-            launcher_name=platform_name
-        )
-        track_game(game_name, "Google Chrome")
+            encoded_url = url
+
+            chromelaunch_options = (
+                f'run --branch=stable --arch=x86_64 '
+                f'--command=/app/bin/chrome --file-forwarding '
+                f'com.google.Chrome @@u @@ '
+                f'--window-size=1280,800 '
+                f'--force-device-scale-factor=1.00 '
+                f'--device-scale-factor=1.00 '
+                f'--start-fullscreen "{encoded_url}" '
+                f'--no-first-run --enable-features=OverlayScrollbar'
+            )
+
+            chromedirectory = os.environ.get(
+                "chromedirectory", "/usr/bin/flatpak"
+            )
+            chrome_startdir = os.environ.get(
+                "chrome_startdir", "/usr/bin"
+            )
+
+            create_new_entry(
+                chromedirectory,
+                game_name,
+                chromelaunch_options,
+                chrome_startdir,
+                launcher_name=platform_name
+            )
+
+            track_game(game_name, "Google Chrome")
+
+    except (OSError, json.JSONDecodeError, TypeError) as e:
+        print(f"Failed to read Chrome bookmarks: {e}")
 
 # end of chrome scanner for xbox, geforce now, and amazon luna, boosteroid bookmarks
 
