@@ -3625,6 +3625,29 @@ recv_ws_message_for_id(ws_socket, enable_id)
 watch_code = r'''if (!window.__watcherInjected) {
 window.__watcherInjected = 1;
 
+if (!window.__originalOpen) {
+    window.__originalOpen = window.open;
+    window.__isScreensaverActive = false;
+
+    window.open = function(...args) {
+        const popup = window.__originalOpen.apply(this, args);
+        try {
+            const target = args[1];
+            if (target && typeof target === 'string' && target.toLowerCase().includes('screensaver')) {
+                window.__isScreensaverActive = true;
+                const checkClosed = setInterval(() => {
+                    if (popup && popup.closed) {
+                        window.__isScreensaverActive = false;
+                        clearInterval(checkClosed);
+                    }
+                }, 1000);
+            }
+        } catch (e) {}
+        return popup;
+    };
+}
+
+
 let desktopGameRunning = false, desktopCurrentAppId = null, desktopCurrentGameName = null;
 window.__watcherLedSnapshot = null;
 window.__watcherLedGeneration = 0;
@@ -3986,7 +4009,8 @@ async function runGameLEDPalette(gameId, gameName) {
             !s.gameId ||
             s.terminateScheduled ||
             s.possibleExit ||
-            s.qamActive
+            s.qamActive ||
+            window.__isScreensaverActive
         ) return;
 
         s.possibleExit=true;
@@ -4002,7 +4026,8 @@ async function runGameLEDPalette(gameId, gameName) {
                 s.gameId!==id ||
                 !s.watchersEnabled ||
                 !s.possibleExit ||
-                s.exitCandidateTime!==time
+                s.exitCandidateTime!==time ||
+                window.__isScreensaverActive
             ) return;
 
             if (
@@ -4040,7 +4065,8 @@ async function runGameLEDPalette(gameId, gameName) {
         SteamClient.GameSessions.RegisterForAppLifetimeNotifications(evt => {
             if (
                 !s.watchersEnabled ||
-                String(evt.unAppID)!==String(s.gameId)
+                String(evt.unAppID)!==String(s.gameId) ||
+                window.__isScreensaverActive
             ) return;
 
             if (evt.bRunning===false && s.inferredRunning) {
