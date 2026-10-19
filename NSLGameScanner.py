@@ -2834,27 +2834,38 @@ THEMEMUSIC_CODE = r"""
     };
 
     const updateButtonsUI = () => {
-        if (!buttons.mute || !buttons.music) return;
-
-        const muteSpan = buttons.mute.querySelector("span");
-        if (muteSpan) muteSpan.textContent = getMasterMuteIcon();
-        buttons.mute.setAttribute("aria-label", masterMusicEnabled() ? "Disable master theme music" : "Enable master theme music");
-
-        const musicSpan = buttons.music.querySelector("span");
-        if (musicSpan) {
-            if (isHoldingMusic && holdStarted) {
-                musicSpan.textContent = selectedSong?.videoId ? "💾" : "📋";
-                buttons.music.setAttribute("aria-label", selectedSong?.videoId ? "Release to save this theme song" : "Release to paste a YouTube link");
-            } else {
-                musicSpan.textContent = getMusicActionIcon();
-                buttons.music.setAttribute("aria-label", currentGameMuted() ? "Unmute this game's theme music" : "Mute this game's theme music");
+            if (!buttons.mute) return;
+    
+            const isMasterEnabled = masterMusicEnabled();
+    
+            const otherButtons = [buttons.left, buttons.music, buttons.right];
+            otherButtons.forEach(btn => {
+                if (btn) {
+                    btn.style.display = isMasterEnabled ? "" : "none";
+                }
+            });
+    
+            const muteSpan = buttons.mute.querySelector("span");
+            if (muteSpan) muteSpan.textContent = getMasterMuteIcon();
+            buttons.mute.setAttribute("aria-label", isMasterEnabled ? "Disable master theme music" : "Enable master theme music");
+    
+            if (isMasterEnabled && buttons.music) {
+                const musicSpan = buttons.music.querySelector("span");
+                if (musicSpan) {
+                    if (isHoldingMusic && holdStarted) {
+                        musicSpan.textContent = selectedSong?.videoId ? "💾" : "📋";
+                        buttons.music.setAttribute("aria-label", selectedSong?.videoId ? "Release to save this theme song" : "Release to paste a YouTube link");
+                    } else {
+                        musicSpan.textContent = getMusicActionIcon();
+                        buttons.music.setAttribute("aria-label", currentGameMuted() ? "Unmute this game's theme music" : "Mute this game's theme music");
+                    }
+                }
             }
-        }
-
-        if (!isHoldingMusic || !holdStarted) {
-            if (message) message.style.display = "none";
-        }
-    };
+    
+            if (!isMasterEnabled || !isHoldingMusic || !holdStarted) {
+                if (message) message.style.display = "none";
+            }
+        };
 
     let isNavigating = false;
     const setNavigationBusy = (busy) => {
