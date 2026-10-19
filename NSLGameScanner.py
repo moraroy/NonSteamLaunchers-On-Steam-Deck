@@ -2835,20 +2835,42 @@ THEMEMUSIC_CODE = r"""
 
     const updateButtonsUI = () => {
             if (!buttons.mute) return;
-    
+        
             const isMasterEnabled = masterMusicEnabled();
-    
+        
             const otherButtons = [buttons.left, buttons.music, buttons.right];
             otherButtons.forEach(btn => {
                 if (btn) {
                     btn.style.display = isMasterEnabled ? "" : "none";
                 }
             });
+        
+            navNodes.forEach(node => {
+                const isCollapsible = otherButtons.some(btn => node.m_element === btn);
+                if (isCollapsible) {
+                    try {
+                        node.SetProperties({
+                            layout: node.m_Properties?.layout ?? 0,
+                            focusable: isMasterEnabled,
+                            preferredFocus: false,
+                            autoFocus: false,
+                            noFocusRing: node.m_Properties?.noFocusRing ?? true,
+                            navKey: node.m_Properties?.navKey
+                        });
+                    } catch {}
     
+                    if (!isMasterEnabled) {
+                        if (document.activeElement && otherButtons.includes(document.activeElement)) {
+                            buttons.mute?.focus();
+                        }
+                    }
+                }
+            });
+        
             const muteSpan = buttons.mute.querySelector("span");
             if (muteSpan) muteSpan.textContent = getMasterMuteIcon();
             buttons.mute.setAttribute("aria-label", isMasterEnabled ? "Disable master theme music" : "Enable master theme music");
-    
+        
             if (isMasterEnabled && buttons.music) {
                 const musicSpan = buttons.music.querySelector("span");
                 if (musicSpan) {
@@ -2861,7 +2883,7 @@ THEMEMUSIC_CODE = r"""
                     }
                 }
             }
-    
+        
             if (!isMasterEnabled || !isHoldingMusic || !holdStarted) {
                 if (message) message.style.display = "none";
             }
