@@ -108,6 +108,8 @@ indie_launcher = os.environ.get('indie_launcher', '')
 stove_launcher = os.environ.get('stove_launcher', '')
 humble_launcher = os.environ.get('humble_launcher', '')
 gryphlink_launcher = os.environ.get('gryphlink_launcher', '')
+gryphlink_launcher = os.environ.get('gryphlink_launcher', '')
+
 
 
 #Variables of the Launchers
@@ -145,6 +147,7 @@ stoveshortcutdirectory = os.environ.get('stoveshortcutdirectory')
 bigfishshortcutdirectory = os.environ.get('bigfishshortcutdirectory')
 
 repaireaappshortcutdirectory = os.environ.get('repaireaappshortcutdirectory')
+xodusnexusshortcutdirectory = os.environ.get('xodusnexusshortcutdirectory')
 #Streaming
 chromedirectory = os.environ.get('chromedirectory')
 names_str = os.environ.get("custom_website_names_str", "")
@@ -306,6 +309,7 @@ HARDCODED_GAME_IDS = {
     "Disney+": 5260961,
     "NVIDIA GeForce NOW": 5258450,
     "Battle.net": 5248250,
+    "Minecraft for Windows": 38365,
 
 }
 
@@ -842,7 +846,7 @@ def get_steam_store_appid(steam_store_game_name):
         return name
 
     if steam_store_game_name not in steam_applist_cache:
-        time.sleep(0.5) 
+        time.sleep(0.5)
 
         query = urllib.parse.quote(steam_store_game_name)
         url = f"https://store.steampowered.com/api/storesearch/?term={query}&l=english&cc=US"
@@ -1521,24 +1525,24 @@ def create_exec_line_from_entry(logged_in_home, new_entry, m_gameid):
                         print(f"Deleting broken symlink in applications folder: {full_path} -> {target}")
                         os.remove(full_path)
 
-            
+
             app_file_path = os.path.join(applications_dir, filename)
-            
+
             if os.path.lexists(app_file_path):
                 os.remove(app_file_path)
                 print(f"Removed existing applications file: {app_file_path}")
-            
+
             with open(app_file_path, "w") as file:
                 file.write(content)
-            
+
             print(f"Created updated .desktop file: {app_file_path}")
-            
+
             original_desktop_path = os.path.join(desktop_dir, filename)
-            
+
             if os.path.lexists(original_desktop_path):
                 os.remove(original_desktop_path)
                 print(f"Removed existing Desktop entry: {original_desktop_path}")
-            
+
             os.symlink(app_file_path, original_desktop_path)
 
             print(f"Created symlink {original_desktop_path} -> {app_file_path}")
@@ -2835,16 +2839,16 @@ THEMEMUSIC_CODE = r"""
 
     const updateButtonsUI = () => {
             if (!buttons.mute) return;
-        
+
             const isMasterEnabled = masterMusicEnabled();
-        
+
             const otherButtons = [buttons.left, buttons.music, buttons.right];
             otherButtons.forEach(btn => {
                 if (btn) {
                     btn.style.display = isMasterEnabled ? "" : "none";
                 }
             });
-        
+
             navNodes.forEach(node => {
                 const isCollapsible = otherButtons.some(btn => node.m_element === btn);
                 if (isCollapsible) {
@@ -2858,7 +2862,7 @@ THEMEMUSIC_CODE = r"""
                             navKey: node.m_Properties?.navKey
                         });
                     } catch {}
-    
+
                     if (!isMasterEnabled) {
                         if (document.activeElement && otherButtons.includes(document.activeElement)) {
                             buttons.mute?.focus();
@@ -2866,11 +2870,11 @@ THEMEMUSIC_CODE = r"""
                     }
                 }
             });
-        
+
             const muteSpan = buttons.mute.querySelector("span");
             if (muteSpan) muteSpan.textContent = getMasterMuteIcon();
             buttons.mute.setAttribute("aria-label", isMasterEnabled ? "Disable master theme music" : "Enable master theme music");
-        
+
             if (isMasterEnabled && buttons.music) {
                 const musicSpan = buttons.music.querySelector("span");
                 if (musicSpan) {
@@ -2883,7 +2887,7 @@ THEMEMUSIC_CODE = r"""
                     }
                 }
             }
-        
+
             if (!isMasterEnabled || !isHoldingMusic || !holdStarted) {
                 if (message) message.style.display = "none";
             }
@@ -4311,6 +4315,21 @@ METADATA_CODE = r"""
     const playerCache = {};
     const hltbCache = {};
 
+
+    const customGameOverrides = {
+        "Xodus Nexus": {
+            about_the_game: "Xodus Nexus is an open-source, independent game launcher that allows users to run Microsoft Store and PC Game Pass games locally on Linux systems and the Steam Deck without a Windows installation.",
+            developer: "domsvoboda",
+            publisher: "",
+            release_date: "2026",
+            genres: "",
+            platforms: "",
+            image_url: "",
+            metacritic_score: null,
+            metacritic_url: null
+        }
+    };
+
     async function getSteamPlayerCount(appId) {
         const now = Date.now();
         if (playerCache[appId] && now - playerCache[appId].timestamp < 30000) {
@@ -4329,6 +4348,16 @@ METADATA_CODE = r"""
     }
 
     async function getSteamGameDetails(gameName) {
+
+        if (customGameOverrides[gameName]) {
+                return {
+                    appid: null,
+                    current_players: null,
+                    ...customGameOverrides[gameName]
+                };
+            }
+
+
         if (gameCache[gameName]) return gameCache[gameName];
         try {
             const searchRes = await fetch(`https://store.steampowered.com/search/?term=${encodeURIComponent(gameName)}`, { credentials: "omit" });
@@ -4571,6 +4600,7 @@ METADATA_CODE = r"""
                         "Nintendo Wii": "https://cdn2.steamgriddb.com/icon_thumb/4c220c393016798aed81f9350e68f61c.png",
                         "Nintendo Wii U": "https://cdn2.steamgriddb.com/icon_thumb/c6c02ef92aa0dcb6c333a27cfb22d47c.png",
                         "Nintendo Switch": "https://cdn2.steamgriddb.com/icon_thumb/3b05af2c48dbaf6656fdf2d2f905b3b6.png",
+                        "Sega": "https://cdn2.steamgriddb.com/icon_thumb/bdb4e8e60ca2bd614a1710438b37c08b.png",
                         "PlayStation": "https://cdn2.steamgriddb.com/icon_thumb/f6a81f703854985705a0cc479d221282.png",
                         "PlayStation 2": "https://cdn2.steamgriddb.com/icon/5e3600417e9ac9abf5a6fea026f9b05a/32/256x256.png",
                         "NonSteamLaunchers": "https://raw.githubusercontent.com/moraroy/NonSteamLaunchers-On-Steam-Deck/refs/heads/main/logo.png"
@@ -4580,13 +4610,14 @@ METADATA_CODE = r"""
                         "Super Nintendo": ["SNES", "Super NES", "SuperNintendo", "Super Nintendo Entertainment System"],
                         "Nintendo 64": ["N64", "Nintendo64"],
                         "Epic Games": ["Epic Game Store", "Epic Store", "EGS"],
-                        "PlayStation": ["PS", "PS1", "Sony PlayStation", "PSX", "PS one", "PSOne", "playstation"],
+                        "PlayStation": ["PS", "PS1", "Sony PlayStation", "PSX", "PS one", "PSOne", "playstation", "PSP", "PlayStation Portable", "Sony PSP"],
                         "Nintendo GameCube": ["GC", "NGC", "Gamecube", "NintendoGameCube"],
                         "Nintendo Wii": ["Wii", "NintendoWii", "RVL"],
+                        "Sega": ["Genesis", "Mega Drive", "Dreamcast", "Saturn", "Game Gear", "Master System", "Sega Genesis", "Sega Dreamcast"],
                         "Nintendo Wii U": ["WiiU", "NintendoWiiU", "Wii U", "Cafe"],
                         "Nintendo Switch": ["Switch", "NintendoSwitch", "NS", "NSW", "HAC"],
                         "NVIDIA GeForce NOW": ["GeForce NOW", "Geforce Now"],
-                        "Xbox Game Pass": ["Xbox Game Streaming", "Xbox", "Xbox Cloud Gaming", "Microsoft Xbox"],
+                        "Xbox Game Pass": ["Xbox Game Streaming", "Xbox", "Xbox Cloud Gaming", "Microsoft Xbox", "Windows", "Microsoft Windows"],
                         "Boosteroid Cloud Gaming": ["Boosteroid"]
                     };
 
@@ -5252,8 +5283,13 @@ def get_next_available_key(shortcuts):
     return str(key)
 
 
-def get_compat_tool_if_needed(launchoptions):
+def get_compat_tool_if_needed(launchoptions, exe_path, startingdir):
     steam_compat_marker = 'STEAM_COMPAT_DATA_PATH'
+
+    if 'xodus' in exe_path.lower() or 'xodus' in startingdir.lower():
+        print("Exclusion: 'xodus' detected in target or start directory.")
+        return None
+
     # Check for UMU-related Proton (UMU-Proton) and return None immediately if found
     if 'UMU-Proton' in launchoptions:  # If it's an UMU-related shortcut, return None immediately
         print("Exclusion: UMU-related shortcut detected.")
@@ -5312,8 +5348,9 @@ def create_new_entry(shortcutdirectory, appname, launchoptions, startingdir, lau
     logo64 = ""
     hero64 = ""
 
-    # Check if the launcher is installed
-    if not shortcutdirectory or not appname or not launchoptions or not startingdir:
+
+    # Check if the launcher is installed (allows blank launch options, but catches missing/None values)
+    if not shortcutdirectory or not appname or launchoptions is None or not startingdir:
         print(f"{appname} is not installed. Skipping.")
         return
 
@@ -5428,7 +5465,7 @@ def create_new_entry(shortcutdirectory, appname, launchoptions, startingdir, lau
 
 
 
-    compat_tool = get_compat_tool_if_needed(launchoptions)
+    compat_tool = get_compat_tool_if_needed(launchoptions, exe_path, startingdir)
 
     # Skip setting compat tool if UMU already processed it
     if not (umu_id and umu_processed_shortcuts.get(umu_id)) and compat_tool:
@@ -5694,8 +5731,8 @@ def modify_shortcut_for_umu(appname, exe, launchoptions, startingdir):
         new_start_dir = f'"{logged_in_home}/bin/"'
 
         updated_launch = launchoptions
-        
-        
+
+
         # Hoyoplay - Extract the game identifier
         #match = re.search(r'--game=(\w+)', launchoptions)
         #
@@ -5760,7 +5797,7 @@ def modify_shortcut_for_umu(appname, exe, launchoptions, startingdir):
 
     print(f"No UMU entry found for {appname}. Skipping modification.")
     return exe, startingdir, launchoptions
-   
+
 
 
 
@@ -5806,6 +5843,8 @@ track_create_entry(os.environ.get('gryphlinkshortcutdirectory'), 'Gryphlink', os
 
 
 track_create_entry(os.environ.get('repaireaappshortcutdirectory'), 'Repair EA App', os.environ.get('repaireaapplaunchoptions'), os.environ.get('repaireaappstartingdir'))
+
+track_create_entry(os.environ.get('xodusnexusshortcutdirectory'), 'Xodus Nexus', os.environ.get('xodusnexuslaunchoptions'), os.environ.get('xodusnexusstartingdir'))
 
 
 
@@ -6119,6 +6158,84 @@ if os.path.exists(non_steam_launchers_path):
 
 
 
+
+
+
+# Xodus Nexus Games Scanner
+xodus_config_dir = f"{logged_in_home}/.config/xodus-nexus"
+xodus_state_file = f"{xodus_config_dir}/launcher-state.json"
+xodus_launcher = f"{xodus_config_dir}/shortcuts/launch-game"
+
+
+def xodus_read_json(path):
+    try:
+        with open(path, "r", encoding="utf-8") as file:
+            data = json.load(file)
+            return data if isinstance(data, dict) else {}
+    except (OSError, json.JSONDecodeError) as error:
+        print(f"[Xodus] Failed to read {path}: {error}")
+        return {}
+
+
+if not os.path.isfile(xodus_state_file) or not os.path.isfile(xodus_launcher):
+    print("Skipping Exodus Scanner")
+else:
+    print("[Xodus] Scanner starting")
+
+    xodus_state = xodus_read_json(xodus_state_file)
+    xodus_games = xodus_state.get("games", [])
+
+    created_count = 0
+    skipped_count = 0
+
+    for game in xodus_games:
+        if not isinstance(game, dict):
+            skipped_count += 1
+            continue
+
+        display_name = game.get("title", "").strip()
+        game_id = game.get("id", "").strip()
+        game_path = game.get("path", "").strip()
+
+        if not display_name or not game_id:
+            skipped_count += 1
+            continue
+
+        if not game_path or not os.path.isdir(game_path):
+            skipped_count += 1
+            continue
+
+        if (
+            len(game_id) != 16
+            or any(c not in "0123456789abcdef" for c in game_id)
+        ):
+            skipped_count += 1
+            continue
+
+        exe_path = f'"{xodus_launcher}"'
+        start_dir = f'"{xodus_config_dir}"'
+        launch_options = game_id
+
+        try:
+            create_new_entry(
+                exe_path,
+                display_name,
+                launch_options,
+                start_dir,
+                launcher_name="Microsoft Windows"
+            )
+            track_game(display_name, "Microsoft Windows")
+            created_count += 1
+
+        except Exception as error:
+            print(f"[Xodus] ERROR creating {display_name}: {error}")
+
+    print(
+        f"\n[Xodus] Finished. Created: {created_count}; "
+        f"skipped: {skipped_count}"
+    )
+
+# End of Xodus Nexus Games Scanner
 
 
 
