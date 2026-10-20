@@ -106,6 +106,7 @@ nsl_safe_rm() {
         "${logged_in_home}/.config/systemd/user/env_vars"|\
         "${logged_in_home}/.local/share/applications/RemotePlayWhatever"|\
         "${logged_in_home}/.local/share/applications/RemotePlayWhatever.desktop"|\
+        "${logged_in_home}/.local/share/applications/Xodus Nexus.AppImage"|\
         /tmp/NonSteamLaunchersDecky|/tmp/NonSteamLaunchersDecky.zip|/tmp/NonSteamLaunchersDecky-main|\
         /tmp/hytale-launcher.flatpak)
             ;;
@@ -190,7 +191,7 @@ exec >> "$log_file" 2>&1
 
 
 # Version number (major.minor)
-version=v4.2.92
+version=v4.2.93
 #NSL Decky Plugin Latest Github Version
 deckyversion=$(curl -s https://raw.githubusercontent.com/moraroy/NonSteamLaunchersDecky/refs/heads/main/package.json | grep -o '"version": "[^"]*' | sed 's/"version": "//')
 
@@ -1129,6 +1130,7 @@ launcher_entries=(
   "$bigfish_value|$bigfish_text"
   "$gryphlink_value|$gryphlink_text"
   "FALSE|Hytale"
+  "FALSE|Xodus Nexus"
   "FALSE|RemotePlayWhatever"
   "FALSE|NVIDIA GeForce NOW"
   "FALSE|Moonlight Game Streaming"
@@ -1519,6 +1521,7 @@ StartFreshFunction() {
             "${logged_in_home}/.config/systemd/user/NSLGameScanner.py"|\
             "${logged_in_home}/.config/systemd/user/env_vars"|\
             "${logged_in_home}/.config/systemd/user/nslgamescanner.service"|\
+            "${logged_in_home}/.local/share/applications/Xodus Nexus.AppImage"|\
             "${logged_in_home}/.local/share/applications/RemotePlayWhatever"|\
             "${logged_in_home}/.local/share/applications/RemotePlayWhatever.desktop"|\
             "${logged_in_home}/Downloads/NonSteamLaunchers-install.log")
@@ -1629,6 +1632,10 @@ StartFreshFunction() {
     delete_path "${logged_in_home}/.config/systemd/user/Modules"
     delete_path "${logged_in_home}/.config/systemd/user/shortcuts"
     delete_path "${logged_in_home}/.config/systemd/user/descriptions.json"
+
+
+    delete_path "${logged_in_home}/.local/share/applications/Xodus Nexus.AppImage"
+
     delete_path "${logged_in_home}/.local/share/applications/RemotePlayWhatever"
     delete_path "${logged_in_home}/.local/share/applications/RemotePlayWhatever.desktop"
     delete_path "${logged_in_home}/Downloads/NonSteamLaunchers-install.log"
@@ -1837,8 +1844,8 @@ antstream_file=${logged_in_home}/Downloads/NonSteamLaunchersInstallation/antstre
 
 
 #PURPLE Launcher
-purple_url=https://gs-purple-inst.download.ncupdate.com/Purple/PurpleInstaller_2_25_325_23.exe
-purple_file=${logged_in_home}/Downloads/NonSteamLaunchersInstallation/PurpleInstaller_2_25_325_23.exe
+purple_url=https://gs-purple-inst.download.ncupdate.com/Purple/PURPLE_Installer_2_26_1019_7.exe
+purple_file=${logged_in_home}/Downloads/NonSteamLaunchersInstallation/PURPLE_Installer_2_26_1019_7.exe
 
 #Plarium Launcher
 plarium_url="https://installer.plarium.com/desktop?lid=1&arc=64&os=windows"
@@ -2383,6 +2390,22 @@ process_uninstall_options() {
         fi
 
 
+
+        if [[ $uninstall_options == *"Uninstall Xodus Nexus"* ]]; then
+            # Remove the AppImage file
+            nsl_safe_rm "${logged_in_home}/.local/share/applications/Xodus Nexus.AppImage"
+
+            # Clean up/delete its variables from the env_vars file instead of deleting the whole file
+            if [[ -f "${logged_in_home}/.config/systemd/user/env_vars" ]]; then
+                sed -i '/xodusnexus/d' "${logged_in_home}/.config/systemd/user/env_vars"
+            fi
+
+            zenity --info --text="Xodus Nexus has been uninstalled." --width=200 --height=150 &
+            sleep 3
+            killall zenity
+        fi
+
+
         if [[ $uninstall_options == *"Uninstall NVIDIA GeForce NOW"* ]]; then
             # Uninstall GeForce NOW Flatpak app and repository (user scope)
             flatpak uninstall -y --delete-data --force-remove --user com.nvidia.geforcenow
@@ -2552,6 +2575,7 @@ else
             FALSE "Pokémon Trading Card Game Live" \
             FALSE "Antstream Arcade" \
             FALSE "Big Fish Games Manager" \
+            FALSE "Xodus Nexus" \
             FALSE "RemotePlayWhatever" \
             FALSE "NVIDIA GeForce NOW" \
             FALSE "STOVE Client" \
@@ -4098,6 +4122,18 @@ eaapp_path2="${logged_in_home}/.local/share/Steam/steamapps/compatdata/TheEAappL
 
 check_and_write "repaireaapp" "$eaapp_path1" "$eaapp_path2" "NonSteamLaunchers" "TheEAappLauncher" "" "repaireaapp"
 
+
+# Xodus Nexus (Native AppImage - No Steam Compatdata needed)
+xoduspath1="${logged_in_home}/.local/share/applications/Xodus Nexus.AppImage"
+if [[ -f "$xoduspath1" ]]; then
+    echo "export xodusnexusshortcutdirectory=\"${xoduspath1}\"" >> "${logged_in_home}/.config/systemd/user/env_vars"
+    echo "export xodusnexuslaunchoptions=" >> "${logged_in_home}/.config/systemd/user/env_vars"
+    echo "export xodusnexusstartingdir=\"$(dirname "${xoduspath1}")\"" >> "${logged_in_home}/.config/systemd/user/env_vars"
+    echo "Xodusnexus Launcher found at ${xoduspath1}"
+else
+    echo "Xodusnexus Launcher not found"
+fi
+
 # Set the env_vars variable
 if [ "$use_separate_appids" != true ]; then
     echo "export separate_appids=$use_separate_appids" >> ${logged_in_home}/.config/systemd/user/env_vars
@@ -4147,6 +4183,42 @@ if [[ $options == *"RemotePlayWhatever"* ]]; then
     sleep 5
     echo "added RemotePlayWhatever to steamos"
 fi
+
+
+
+# Xodus Nexus
+if [[ $options == *"Xodus Nexus"* ]]; then
+    DIRECTORY="${logged_in_home}/.local/share/applications"
+    mkdir -p "$DIRECTORY"
+
+    # Get the latest Xodus Nexus AppImage URL
+    RELEASE_URL=$(curl -fsSL \
+        https://api.github.com/repos/domsvoboda/xodus-nexus/releases/latest |
+        grep -oE 'https://[^"]*Xodus-Nexus-[^"]*x86_64\.AppImage' |
+        head -n 1)
+
+    if [[ -z "$RELEASE_URL" ]]; then
+        echo "Failed to find the Xodus Nexus AppImage release."
+    fi
+
+    # Set the clean, unified filename
+    TARGET_FILE="$DIRECTORY/Xodus Nexus.AppImage"
+
+    # Remove any existing older version to ensure it always replaces with the latest
+    if [[ -f "$TARGET_FILE" ]]; then
+        rm -f "$TARGET_FILE"
+    fi
+
+    # Download and save it directly under the clean new name
+    wget -O "$TARGET_FILE" "$RELEASE_URL"
+
+    # Make it executable
+    chmod +x "$TARGET_FILE"
+
+    echo "Xodus Nexus updated and downloaded to $TARGET_FILE"
+fi
+
+
 
 
 # Set Chrome options based on user's selection
