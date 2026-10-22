@@ -2537,10 +2537,10 @@ THEMEMUSIC_CODE = r"""
         const current = getCurrentGame();
         if (!current || String(current.appid) !== appid || !isThemeMusicAllowed(game)) return;
 
-        startSong(game, song.videoId);
-
-        cacheVideo(game, song);
-        setCurrentlyPlaying(game, song.videoId);
+        // Session-only playback update (No local storage write)
+        currentVideoId = song.videoId;
+        currentQuery = game.name;
+        createYTPlayer(song.videoId);
 
         selectedSong = {
             name: getThemeKey(game.name),
@@ -2548,6 +2548,7 @@ THEMEMUSIC_CODE = r"""
         };
 
         updateButtonsUI();
+        showInlineMessage("Don't like it? Hold 🎵 to 📋/💾.");
     }
 
     function handleDetectedGame(game) {
@@ -2782,60 +2783,60 @@ THEMEMUSIC_CODE = r"""
     };
 
     const updateButtonsUI = () => {
-            if (!buttons.mute) return;
+        if (!buttons.mute) return;
 
-            const isMasterEnabled = masterMusicEnabled();
+        const isMasterEnabled = masterMusicEnabled();
 
-            const otherButtons = [buttons.left, buttons.music, buttons.right];
-            otherButtons.forEach(btn => {
-                if (btn) {
-                    btn.style.display = isMasterEnabled ? "" : "none";
-                }
-            });
+        const otherButtons = [buttons.left, buttons.music, buttons.right];
+        otherButtons.forEach(btn => {
+            if (btn) {
+                btn.style.display = isMasterEnabled ? "" : "none";
+            }
+        });
 
-            navNodes.forEach(node => {
-                const isCollapsible = otherButtons.some(btn => node.m_element === btn);
-                if (isCollapsible) {
-                    try {
-                        node.SetProperties({
-                            layout: node.m_Properties?.layout ?? 0,
-                            focusable: isMasterEnabled,
-                            preferredFocus: false,
-                            autoFocus: false,
-                            noFocusRing: node.m_Properties?.noFocusRing ?? true,
-                            navKey: node.m_Properties?.navKey
-                        });
-                    } catch {}
+        navNodes.forEach(node => {
+            const isCollapsible = otherButtons.some(btn => node.m_element === btn);
+            if (isCollapsible) {
+                try {
+                    node.SetProperties({
+                        layout: node.m_Properties?.layout ?? 0,
+                        focusable: isMasterEnabled,
+                        preferredFocus: false,
+                        autoFocus: false,
+                        noFocusRing: node.m_Properties?.noFocusRing ?? true,
+                        navKey: node.m_Properties?.navKey
+                    });
+                } catch {}
 
-                    if (!isMasterEnabled) {
-                        if (document.activeElement && otherButtons.includes(document.activeElement)) {
-                            buttons.mute?.focus();
-                        }
-                    }
-                }
-            });
-
-            const muteSpan = buttons.mute.querySelector("span");
-            if (muteSpan) muteSpan.textContent = getMasterMuteIcon();
-            buttons.mute.setAttribute("aria-label", isMasterEnabled ? "Disable master theme music" : "Enable master theme music");
-
-            if (isMasterEnabled && buttons.music) {
-                const musicSpan = buttons.music.querySelector("span");
-                if (musicSpan) {
-                    if (isHoldingMusic && holdStarted) {
-                        musicSpan.textContent = selectedSong?.videoId ? "💾" : "📋";
-                        buttons.music.setAttribute("aria-label", selectedSong?.videoId ? "Release to save this theme song" : "Release to paste a YouTube link");
-                    } else {
-                        musicSpan.textContent = getMusicActionIcon();
-                        buttons.music.setAttribute("aria-label", currentGameMuted() ? "Unmute this game's theme music" : "Mute this game's theme music");
+                if (!isMasterEnabled) {
+                    if (document.activeElement && otherButtons.includes(document.activeElement)) {
+                        buttons.mute?.focus();
                     }
                 }
             }
+        });
 
-            if (!isMasterEnabled || !isHoldingMusic || !holdStarted) {
-                if (message) message.style.display = "none";
+        const muteSpan = buttons.mute.querySelector("span");
+        if (muteSpan) muteSpan.textContent = getMasterMuteIcon();
+        buttons.mute.setAttribute("aria-label", isMasterEnabled ? "Disable master theme music" : "Enable master theme music");
+
+        if (isMasterEnabled && buttons.music) {
+            const musicSpan = buttons.music.querySelector("span");
+            if (musicSpan) {
+                if (isHoldingMusic && holdStarted) {
+                    musicSpan.textContent = selectedSong?.videoId ? "💾" : "📋";
+                    buttons.music.setAttribute("aria-label", selectedSong?.videoId ? "Release to save this theme song" : "Release to paste a YouTube link");
+                } else {
+                    musicSpan.textContent = getMusicActionIcon();
+                    buttons.music.setAttribute("aria-label", currentGameMuted() ? "Unmute this game's theme music" : "Mute this game's theme music");
+                }
             }
-        };
+        }
+
+        if (!isMasterEnabled || (!isHoldingMusic && !holdStarted && !message?.textContent)) {
+            if (message) message.style.display = "none";
+        }
+    };
 
     let isNavigating = false;
     const setNavigationBusy = (busy) => {
@@ -3195,9 +3196,6 @@ THEMEMUSIC_CODE = r"""
 
 })();
 """
-
-
-
 
 
 
