@@ -5048,6 +5048,7 @@ SCANNER_CODE = r"""
 
 
 
+
 // Game Mode
 (() => {
     "use strict";
@@ -5220,18 +5221,89 @@ SCANNER_CODE = r"""
             original.forEach(el => { el.style.display = el._nslDisplay ?? ""; delete el._nslDisplay; });
         }
 
-        // Minimal MutationObserver to auto-close on navigation
         let debounceTimer = null;
-        navObserver = new MutationObserver(() => {
-            if (closed) return;
+        let observerReady = false;
+
+        navObserver = new MutationObserver((mutations) => {
+            if (closed || !observerReady) return;
+
+            const hasExternalChange = mutations.some(m => {
+                const target = m.target.nodeType === Node.ELEMENT_NODE
+                    ? m.target
+                    : m.target.parentElement;
+
+                if (target && (target === page || page.contains(target))) {
+                    return false;
+                }
+
+                if (m.type === "attributes") {
+                    const attr = m.attributeName;
+                    if (
+                        attr === "class" ||
+                        attr === "style" ||
+                        attr === "tabindex" ||
+                        attr === "aria-checked"
+                    ) {
+                        return false;
+                    }
+                }
+
+                if (m.type === "characterData") return false;
+
+                if (m.type === "childList") {
+                    const changedNodes = [
+                        ...m.addedNodes,
+                        ...m.removedNodes
+                    ];
+
+                    if (
+                        changedNodes.length > 0 &&
+                        changedNodes.every(node =>
+                            node === page ||
+                            (node.nodeType === Node.ELEMENT_NODE &&
+                                (page.contains(node) ||
+                                 node.contains(page)))
+                        )
+                    ) {
+                        return false;
+                    }
+                }
+
+                return true;
+            });
+
+            if (!hasExternalChange) return;
+
             clearTimeout(debounceTimer);
             debounceTimer = setTimeout(() => {
+                if (closed) return;
+
+                const stillMounted = document.getElementById(PAGE_ID);
+                if (!stillMounted) {
+                    restore();
+                    return;
+                }
+
                 restore();
             }, 300);
         });
+
         setTimeout(() => {
             if (!closed) {
-                navObserver.observe(main, { childList: true, subtree: true });
+                navObserver.observe(main, {
+                    childList: true,
+                    subtree: true,
+                    attributes: true,
+                    attributeFilter: [
+                        "class",
+                        "style",
+                        "tabindex",
+                        "aria-checked"
+                    ],
+                    characterData: true
+                });
+
+                observerReady = true;
             }
         }, 600);
 
