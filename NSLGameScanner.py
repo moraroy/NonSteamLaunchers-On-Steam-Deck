@@ -1600,6 +1600,8 @@ WS_PORT = 8080
 TARGET_TITLE = "SharedJSContext"
 TARGET_TITLE2 = "Steam"
 TARGET_TITLE3 = "Steam Big Picture Mode"
+TARGET_TITLE4 = r"^MainMenu_uid\d+$"
+
 
 
 
@@ -3255,12 +3257,17 @@ def fetch_targets(host, port, max_retries=15, base_delay=2):
             except:
                 pass
 
+
 # Find websocket debugger URL for the target title
 def get_ws_url_by_title(host, port, title):
     targets = fetch_targets(host, port)
+
     for target in targets:
-        if target.get("title") == title:
+        target_title = target.get("title", "")
+
+        if re.fullmatch(title, target_title):
             return target.get("webSocketDebuggerUrl")
+
     raise Exception(f"Target with title '{title}' not found.")
 
 # Create raw TCP socket and perform WebSocket handshake
@@ -4899,20 +4906,6 @@ SCANNER_CODE = r"""
     `;
     document.head.appendChild(style);
 
-    const isGameMode = () => !!document.querySelector("#Footer");
-
-    const findGameModeTarget = () => {
-        const footer = document.querySelector("#Footer");
-        if (!footer) return null;
-
-        const groups = [...footer.querySelectorAll("div")];
-
-        return groups.find(g => {
-            const text = (g.innerText || "").trim().toLowerCase();
-            return g.children.length <= 3 && text === "menu";
-        });
-    };
-
     const findDesktopTarget = () => {
         return [...document.querySelectorAll("div")].find(
             (el) => el.textContent.trim() === "Add a Game"
@@ -5036,10 +5029,7 @@ SCANNER_CODE = r"""
     };
 
     const tryInject = () => {
-        const target = isGameMode()
-            ? findGameModeTarget()
-            : findDesktopTarget();
-
+        const target = findDesktopTarget();
         if (target) inject(target);
     };
 
@@ -5054,6 +5044,240 @@ SCANNER_CODE = r"""
         subtree: true
     });
 
+})();
+
+
+
+// Game Mode
+(() => {
+    "use strict";
+    if (window.__NSL_LISTENER_LOADED__) return;
+    window.__NSL_LISTENER_LOADED__ = true;
+
+    const channel = new BroadcastChannel("nsl_communication_channel");
+    const PAGE_ID = "nsl-config-page";
+
+    function openConfigPage() {
+        if (document.getElementById(PAGE_ID)) return;
+        const main = document.getElementById("Main");
+        if (!main) return;
+
+        const trees = window.g_WindowFocusCoordinator?.m_rgTrees ?? window.opener?.g_WindowFocusCoordinator?.m_rgTrees ?? [];
+        const tree = trees.find(entry => entry.tree?.m_ID === "GamepadUI_Full_Root")?.tree;
+        if (!tree?.Root) return;
+
+        const stack = [tree.Root], seen = new Set();
+        let refNode = null;
+        while (stack.length) {
+            const node = stack.pop();
+            if (!node || seen.has(node)) continue;
+            seen.add(node);
+            if (node.Element || node.m_element) { refNode = node; break; }
+            if (Array.isArray(node.m_rgChildren)) stack.push(...node.m_rgChildren);
+        }
+        if (!refNode) return;
+
+        const D3 = refNode.constructor;
+        const parent = refNode.Parent || refNode.m_Parent || refNode;
+        const original = Array.from(main.children);
+        original.forEach(el => { el._nslDisplay = el.style.display; el.style.display = "none"; });
+
+        const page = document.createElement("div");
+        page.id = PAGE_ID;
+        page.style.cssText = "position:relative;width:100%;height:100%;overflow-y:auto;background:#171d25;color:#fff;padding:40px;box-sizing:border-box;z-index:99999;display:flex;flex-direction:column;gap:24px;font-family:'Motiva Sans',Arial,sans-serif;";
+
+        page.innerHTML = `
+            <div style="text-align:center;display:flex;flex-direction:column;align-items:center;">
+                <h1 style="margin:0;font-size:26px;display:flex;align-items:center;justify-content:center;">
+                    N<img src="https://raw.githubusercontent.com/moraroy/NonSteamLaunchersDecky/refs/heads/main/assets/logo.png" alt="NSL" style="height:15px;vertical-align:middle;position:relative;top:3px;">nSteamLaunchers
+                </h1>
+            </div>
+            <div style="display:flex;align-items:center;gap:14px;max-width:650px;width:100%;margin:0 auto;padding:16px 20px;background:#222b38;border:1px solid #2e3b4e;border-radius:8px;box-sizing:border-box;">
+                <span style="color:#dcdedf;font-size:16px;font-weight:600;">Scanner</span>
+                <div style="flex:1"></div>
+                <div style="display:flex;flex-direction:column;align-items:center;gap:6px;">
+                    <div tabindex="0" class="Focusable nsl-toggle" role="switch" aria-checked="false" style="width:42px;height:24px;border-radius:999px;background:#3b4452;border:1px solid rgba(255,255,255,0.12);position:relative;cursor:pointer;box-sizing:border-box;flex-shrink:0;">
+                        <div style="width:18px;height:18px;border-radius:50%;background:#8f98a0;position:absolute;top:2px;left:2px;transition:left .2s,background .2s;"></div>
+                    </div>
+                    <span style="font-size:11px;color:#8f98a0;font-weight:500;">Auto</span>
+                </div>
+                <div style="display:flex;flex-direction:column;align-items:center;gap:6px;">
+                    <div tabindex="0" class="Focusable nsl-btn" role="button" style="min-width:48px;height:42px;padding:0 8px;display:flex;align-items:center;justify-content:center;box-sizing:border-box;border-radius:6px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.08);color:rgba(255,255,255,0.9);cursor:pointer;font-size:20px;flex-shrink:0;">🔍</div>
+                    <span style="font-size:11px;color:#8f98a0;font-weight:500;">Manual</span>
+                </div>
+            </div>
+            <div style="max-width:650px;width:100%;margin:0 auto;padding:16px 20px;background:#222b38;border:1px solid #2e3b4e;border-radius:8px;box-sizing:border-box;color:#8f98a0;font-size:14px;line-height:1.5;">
+                <span style="color:#dcdedf;font-weight:600;display:block;margin-bottom:8px;">Notice</span>
+                Hey! Youre using the Desktop Version of NSL (v.4.9.3)! Thanks for being cool. As NonSteamLaunchers continues to grow, so will the integration into Steam. The scanner has now been moved here instead of the footer lol, but soon, more options and settings  will appear here too............ :) *For now open this page when on the "Home" page, it may break during gamplay.*
+            </div>
+            <div style="max-width:650px;width:100%;margin:0 auto;display:flex;justify-content:flex-end;align-items:center;gap:24px;margin-top:auto;padding-top:10px;">
+                <div style="display:flex;align-items:center;gap:8px;color:#8f98a0;font-size:13px;font-weight:500;">
+                    <span style="display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;background:#dcdedf;color:#171d25;border-radius:50%;font-weight:bold;font-size:11px;">A</span>Select
+                </div>
+                <div style="display:flex;align-items:center;gap:8px;color:#8f98a0;font-size:13px;font-weight:500;">
+                    <span style="display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;background:#dcdedf;color:#171d25;border-radius:50%;font-weight:bold;font-size:11px;">B</span>Back
+                </div>
+            </div>
+        `;
+        main.appendChild(page);
+
+        const toggle = page.querySelector(".nsl-toggle");
+        const knob = toggle.firstElementChild;
+        const scanBtn = page.querySelector(".nsl-btn");
+
+        if (window.__scan_state === "MANUAL" && window.__nsl_scan_end) {
+            if (Date.now() >= window.__nsl_scan_end) {
+                window.__scan_state = "OFF";
+                window.__nsl_scan_end = 0;
+            }
+        }
+
+        let autoScan = window.__scan_state === "ON";
+        let scanLocked = window.__scan_state === "MANUAL";
+        let closed = false, navNodes = [];
+
+        if (scanLocked && window.__nsl_scan_end) {
+            const remaining = window.__nsl_scan_end - Date.now();
+            if (remaining > 0) {
+                setTimeout(() => {
+                    if (closed) return;
+                    scanLocked = false;
+                    window.__scan_state = "OFF";
+                    window.__nsl_scan_end = 0;
+                    render();
+                }, remaining);
+            } else {
+                scanLocked = false;
+                window.__scan_state = "OFF";
+                window.__nsl_scan_end = 0;
+            }
+        }
+
+        function render() {
+            toggle.style.background = autoScan ? "#1a9fff" : "#3b4452";
+            toggle.style.opacity = scanLocked ? "0.4" : "1";
+            toggle.setAttribute("aria-checked", String(autoScan));
+            knob.style.left = autoScan ? "20px" : "2px";
+            knob.style.background = autoScan ? "#fff" : "#8f98a0";
+
+            scanBtn.style.opacity = (autoScan || scanLocked) ? "0.4" : "1";
+            scanBtn.style.background = scanLocked ? "#1a9fff" : "rgba(255,255,255,0.06)";
+
+            if (scanLocked) {
+                scanBtn.textContent = "⏳";
+            } else if (autoScan) {
+                scanBtn.textContent = "AUTO";
+                scanBtn.style.fontSize = "11px";
+                scanBtn.style.fontWeight = "700";
+            } else {
+                scanBtn.textContent = "🔍";
+                scanBtn.style.fontSize = "20px";
+                scanBtn.style.fontWeight = "400";
+            }
+
+            [toggle, scanBtn].forEach((el) => {
+                const focused = el.classList.contains("Focus");
+                el.style.outline = focused ? "2px solid #1a9fff" : "none";
+            });
+        }
+
+        function toggleScanner() {
+            if (closed || scanLocked) return;
+            autoScan = !autoScan;
+            window.__scan_state = autoScan ? "ON" : "OFF";
+            render();
+        }
+
+        function startManualScan() {
+            if (closed || scanLocked || autoScan) return;
+            scanLocked = true;
+            autoScan = false;
+            window.__scan_state = "MANUAL";
+            window.__scan_event = "MANUAL";
+            window.__nsl_scan_end = Date.now() + 30000;
+            render();
+
+            if (window.__nsl_scan_timer) clearTimeout(window.__nsl_scan_timer);
+            window.__nsl_scan_timer = setTimeout(() => {
+                scanLocked = false;
+                window.__scan_state = "OFF";
+                window.__nsl_scan_end = 0;
+                window.__nsl_scan_timer = null;
+                render();
+            }, 30000);
+        }
+
+        function restore() {
+            if (closed) return;
+            closed = true;
+            navNodes.forEach(n => { try { n.OnUnmount?.(); } catch {} });
+            page.remove();
+            original.forEach(el => { el.style.display = el._nslDisplay ?? ""; delete el._nslDisplay; });
+        }
+
+        const container = new D3(tree, parent, null);
+        container.SetProperties({ focusable: true, autoFocus: true, isModal: true, navKey: "nsl-root" });
+        container.OnMount(page);
+        navNodes.push(container);
+
+        [toggle, scanBtn].forEach((control, i) => {
+            const node = new D3(tree, container, null);
+            node.SetProperties({
+                layout: refNode.m_Properties?.layout ?? 0,
+                focusable: true,
+                preferredFocus: i === 0,
+                autoFocus: i === 0,
+                noFocusRing: true,
+                navKey: `nsl-ctrl-${i}`,
+                onMoveUp: () => { navNodes[1]?.BTakeFocus?.(); return true; },
+                onMoveDown: () => { navNodes[2]?.BTakeFocus?.(); return true; },
+                onMoveLeft: () => { navNodes[1]?.BTakeFocus?.(); return true; },
+                onMoveRight: () => { navNodes[2]?.BTakeFocus?.(); return true; }
+            });
+            node.OnMount(control);
+            navNodes.push(node);
+
+            const highlight = active => {
+                control.classList.toggle("Focus", active);
+                control.classList.toggle("FocusVisible", active);
+                render();
+            };
+            control.addEventListener("focus", () => highlight(true));
+            control.addEventListener("blur", () => highlight(false));
+            control.addEventListener("vgp_onfocus", () => highlight(true));
+            control.addEventListener("vgp_onblur", () => highlight(false));
+            control.addEventListener("click", () => i === 0 ? toggleScanner() : startManualScan());
+        });
+
+        container.m_rgChildren = navNodes.slice(1);
+        container.m_bChildrenSorted = true;
+
+        page.addEventListener("vgp_onbuttondown", e => {
+            if (closed || e.detail?.is_repeat) return;
+            if (e.detail?.button === 1) {
+                e.preventDefault(); e.stopPropagation();
+                (toggle.classList.contains("Focus") || toggle === document.activeElement) ? toggleScanner() : startManualScan();
+            } else if (e.detail?.button === 2) {
+                e.preventDefault(); e.stopPropagation();
+                restore();
+            }
+        });
+
+        page.addEventListener("keydown", e => {
+            if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault(); e.stopPropagation();
+                (toggle.classList.contains("Focus") || toggle === document.activeElement) ? toggleScanner() : startManualScan();
+            } else if (e.key === "Escape" || e.key === "Backspace") {
+                e.preventDefault(); e.stopPropagation();
+                restore();
+            }
+        });
+
+        render();
+        navNodes[1]?.BTakeFocus?.();
+    }
+
+    channel.onmessage = e => { if (e.data?.type === "open page") openConfigPage(); };
 })();
 """
 
@@ -5208,6 +5432,269 @@ for title in TARGET_TITLES:
 
 
 
+
+
+MAIN_MENU_BUTTON_CODE = r"""
+(() => {
+    "use strict";
+
+    const ID = "my-custom-nsl-button";
+    const LABEL = "NSL";
+    const NAV_KEY = "custom-nsl-button";
+    const WRAPPER = "._1BbM8Qq8OL5N8gL4PYH397";
+    const LOGO_URL = "https://raw.githubusercontent.com/moraroy/NonSteamLaunchers-On-Steam-Deck/refs/heads/main/logo.png";
+
+    if (window.__nslMenuButtonInitializing ||
+        window.__nslMenuButtonInjected) return;
+
+    window.__nslMenuButtonInitializing = true;
+
+    const channel = new BroadcastChannel("nsl_communication_channel");
+
+    const observer = new MutationObserver(() => initialize());
+
+    function cleanup() {
+        observer.disconnect();
+        window.__nslMenuButtonInitializing = false;
+    }
+
+    function getD3Node(element) {
+        if (!element) return null;
+
+        const key = Object.keys(element).find(k =>
+            k.startsWith("__reactFiber$")
+        );
+
+        let node = key ? element[key] : null;
+
+        while (node) {
+            const result = node.memoizedProps?.node ||
+                node.stateNode?.props?.node;
+
+            if (result) return result;
+            node = node.return;
+        }
+
+        return null;
+    }
+
+    function getMenuElement(wrapper) {
+        return wrapper?.querySelector('[role="menuitem"]') ||
+            wrapper?.firstElementChild;
+    }
+
+    function initialize() {
+        if (document.getElementById(ID)) {
+            window.__nslMenuButtonInjected = true;
+            cleanup();
+            return;
+        }
+
+        const settings = document.querySelector('[aria-label="Settings"]');
+        const power = document.querySelector('[aria-label="Power"]');
+
+        const settingsWrapper = settings?.closest(WRAPPER);
+        const powerWrapper = power?.closest(WRAPPER);
+        const menu = settingsWrapper?.parentElement;
+
+        if (!settings || !power || !settingsWrapper ||
+            !powerWrapper || !menu ||
+            powerWrapper.parentElement !== menu) return;
+
+        const settingsNode = getD3Node(getMenuElement(settingsWrapper));
+        const powerNode = getD3Node(getMenuElement(powerWrapper));
+
+        if (!settingsNode || !powerNode) return;
+
+        const parent = settingsNode.m_Parent || settingsNode.Parent;
+        const tree = settingsNode.m_Tree || settingsNode.Tree;
+
+        if (!parent ||
+            !tree ||
+            parent !== (powerNode.m_Parent || powerNode.Parent) ||
+            !Array.isArray(parent.m_rgChildren)) return;
+
+        const children = parent.m_rgChildren;
+
+        for (let i = children.length - 1; i >= 0; i--) {
+            if (children[i]?.m_Properties?.navKey === NAV_KEY &&
+                children[i] !== window.__nslMenuButtonNode) {
+                children.splice(i, 1);
+            }
+        }
+
+        const wrapper = settingsWrapper.cloneNode(true);
+        const button = getMenuElement(wrapper);
+
+        if (!button) return;
+
+        button.id = ID;
+        button.tabIndex = 0;
+        button.setAttribute("aria-label", LABEL);
+        button.classList.add("Focusable");
+
+        button.querySelectorAll("[id], [aria-label]").forEach(element => {
+            element.removeAttribute("id");
+            element.removeAttribute("aria-label");
+        });
+
+        const icon = button.querySelector("._36qQ1jQx09c12WwFv-rQ0R") ||
+            button.querySelector("svg")?.parentElement ||
+            button.firstElementChild;
+
+        if (icon) {
+            icon.innerHTML = `<img src="${LOGO_URL}" alt=""
+                style="width:20px;height:20px;object-fit:contain">`;
+        }
+
+        const label = button.querySelector("._2ADpTpv53dcY1uFpMWO1KT") ||
+            button.querySelector("span");
+
+        if (label) label.textContent = LABEL;
+
+        menu.insertBefore(wrapper, settingsWrapper.nextSibling);
+
+        let navNode;
+
+        try {
+            navNode = new settingsNode.constructor(tree, parent, null);
+
+            navNode.SetProperties({
+                ...(settingsNode.m_Properties || {}),
+                focusable: true,
+                preferredFocus: false,
+                autoFocus: false,
+                navKey: NAV_KEY,
+                onMoveDown: () => {
+                    if (typeof powerNode.BTakeFocus === "function") {
+                        powerNode.BTakeFocus();
+                    } else {
+                        power.focus();
+                    }
+                    return true;
+                }
+            });
+
+            navNode.OnMount(button);
+        } catch (error) {
+            wrapper.remove();
+            console.error("NSL navigation initialization failed:", error);
+            return;
+        }
+
+        const settingsIndex = children.indexOf(settingsNode);
+        const powerIndex = children.indexOf(powerNode);
+
+        if (settingsIndex < 0 || powerIndex < 0) {
+            wrapper.remove();
+            return;
+        }
+
+        children.splice(settingsIndex + 1, 0, navNode);
+        parent.m_bChildrenSorted = false;
+        window.__nslMenuButtonNode = navNode;
+
+        const highlight = active => {
+            button.style.backgroundColor = active
+                ? "rgba(255,255,255,0.12)" : "";
+            button.style.boxShadow = active
+                ? "inset 2px 0 0 #1a9fff" : "";
+
+            button.classList.toggle("Focus", active);
+            button.classList.toggle("FocusVisible", active);
+        };
+
+        button.addEventListener("focus", () => highlight(true));
+        button.addEventListener("blur", () => highlight(false));
+        button.addEventListener("vgp_onfocus", () => highlight(true));
+        button.addEventListener("vgp_onblur", () => highlight(false));
+
+        let actionTriggered = false;
+
+        const triggerAction = () => {
+            if (actionTriggered) return;
+            actionTriggered = true;
+
+            setTimeout(() => {
+                button.dispatchEvent(new CustomEvent("vgp_onbuttondown", {
+                    bubbles: true,
+                    detail: { button: 2, is_repeat: false }
+                }));
+
+                channel.postMessage({ type: "open page" });
+
+                setTimeout(() => {
+                    actionTriggered = false;
+                }, 300);
+            }, 100);
+        };
+
+        button.addEventListener("vgp_onbuttondown", event => {
+            if (event.detail?.button === 1 &&
+                event.detail?.is_repeat !== true) {
+                triggerAction();
+            }
+        });
+
+        button.addEventListener("click", triggerAction);
+
+        window.__nslMenuButtonInjected = true;
+        cleanup();
+
+        console.log("NSL button initialized after Settings.");
+    }
+
+    observer.observe(document.documentElement, {
+        childList: true,
+        subtree: true
+    });
+
+    initialize();
+})();
+"""
+
+
+eval_id_counter = iter(range(1, 1000000))
+
+def inject_button_code(ws_socket):
+    try:
+        inject_id = next(eval_id_counter)
+
+        wrapped_code = f"(async () => {{ {MAIN_MENU_BUTTON_CODE}; return 'Button injection done'; }})()"
+
+        send_ws_text(ws_socket, json.dumps({
+            "id": inject_id,
+            "method": "Runtime.evaluate",
+            "params": {
+                "expression": wrapped_code,
+                "awaitPromise": True
+            }
+        }))
+
+        response = recv_ws_message_for_id(ws_socket, inject_id)
+        print("Button injection response:", response)
+        return response
+
+    except Exception as e:
+        print("Error during Button injection:", e)
+        return None
+
+
+try:
+    ws_url = get_ws_url_by_title(WS_HOST, WS_PORT, TARGET_TITLE4)
+    ws_socket = create_websocket_connection(ws_url)
+
+    send_ws_text(ws_socket, json.dumps({
+        "id": 1,
+        "method": "Runtime.enable"
+    }))
+    recv_ws_message_for_id(ws_socket, 1)
+
+    inject_button_code(ws_socket)
+
+except Exception as e:
+    print("Failed to connect or inject Button code:", e)
+#end of button code
 
 
 
