@@ -5108,7 +5108,7 @@ SCANNER_CODE = r"""
             </div>
             <div style="max-width:650px;width:100%;margin:0 auto;padding:16px 20px;background:#222b38;border:1px solid #2e3b4e;border-radius:8px;box-sizing:border-box;color:#8f98a0;font-size:14px;line-height:1.5;">
                 <span style="color:#dcdedf;font-weight:600;display:block;margin-bottom:8px;">Notice</span>
-                Hey! Youre using the Desktop Version of NSL (v.4.9.3)! Thanks for being cool. As NonSteamLaunchers continues to grow, so will the integration into Steam. The scanner has now been moved here instead of the footer lol, but soon, more options and settings  will appear here too............ :) *For now open this page when on the "Home" page, it may break during gamplay.*
+                Hey! Youre using the Desktop Version of NSL (v4.2.93)! Thanks for being cool. As NonSteamLaunchers continues to grow, so will the integration into Steam. The scanner has now been moved here instead of the footer lol, but soon, more options and settings  will appear here too............ :) *For now open this page when on the "Home" page, it may break during gamplay.*
             </div>
             <div style="max-width:650px;width:100%;margin:0 auto;display:flex;justify-content:flex-end;align-items:center;gap:24px;margin-top:auto;padding-top:10px;">
                 <div style="display:flex;align-items:center;gap:8px;color:#8f98a0;font-size:13px;font-weight:500;">
