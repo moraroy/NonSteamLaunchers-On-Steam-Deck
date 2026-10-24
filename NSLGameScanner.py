@@ -1978,6 +1978,7 @@ THEMEMUSIC_CODE = r"""
     const MAX_SESSION_SONGS = 10;
 
     const sessionSongQueues = new Map();
+    const sessionSearchCache = new Map();
     const reactPropsKeys = new WeakMap();
     const reactFiberKeys = new WeakMap();
 
@@ -2333,8 +2334,6 @@ THEMEMUSIC_CODE = r"""
         const searches = [
             `${gameName} Game Theme Music site:youtube.com`,
             `${gameName} Original Theme site:youtube.com`,
-            `${gameName} Main Theme site:youtube.com`,
-            `${gameName} Original Main Theme site:youtube.com`
         ];
 
         for (const query of searches) {
@@ -2345,11 +2344,13 @@ THEMEMUSIC_CODE = r"""
     }
 
     async function findYouTubeVideos(gameName) {
+        if (sessionSearchCache.has(gameName)) {
+            return sessionSearchCache.get(gameName);
+        }
+
         const searches = [
             `${gameName} Game Theme Music site:youtube.com`,
-            `${gameName} Original Theme site:youtube.com`,
-            `${gameName} Main Theme site:youtube.com`,
-            `${gameName} Original Main Theme site:youtube.com`
+            `${gameName} Original Theme site:youtube.com`
         ];
 
         const songs = [];
@@ -2367,6 +2368,8 @@ THEMEMUSIC_CODE = r"""
                 }
             }
         }
+
+        sessionSearchCache.set(gameName, songs);
         return songs;
     }
 
@@ -4422,15 +4425,19 @@ METADATA_CODE = r"""
     }
 
     async function hltbSearch(query) {
-        const r = await fetch("https://search.tiago.zip/api", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ query, type: "web", page: 0 })
-        });
-        if (!r.ok) throw new Error();
-        const data = await r.json();
-        return data.results?.web?.results || [];
-    }
+            try {
+                const r = await fetch("https://search.tiago.zip/api", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ query, type: "web", page: 0 })
+                });
+                if (!r.ok) return [];
+                const data = await r.json();
+                return data.results?.web?.results || [];
+            } catch {
+                return [];
+            }
+        }
 
     function getMainStory(result) {
         const text = [result.title || "", result.description || "", result.snippet || ""].join(" ").replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
