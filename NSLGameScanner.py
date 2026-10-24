@@ -5134,7 +5134,7 @@ SCANNER_CODE = r"""
 
         let autoScan = window.__scan_state === "ON";
         let scanLocked = window.__scan_state === "MANUAL";
-        let closed = false, navNodes = [];
+        let closed = false, navNodes = [], navObserver = null;
 
         if (scanLocked && window.__nsl_scan_end) {
             const remaining = window.__nsl_scan_end - Date.now();
@@ -5210,11 +5210,30 @@ SCANNER_CODE = r"""
         function restore() {
             if (closed) return;
             closed = true;
+            if (navObserver) {
+                navObserver.disconnect();
+                navObserver = null;
+            }
             window.__nsl_take_focus = null;
             navNodes.forEach(n => { try { n.OnUnmount?.(); } catch {} });
             page.remove();
             original.forEach(el => { el.style.display = el._nslDisplay ?? ""; delete el._nslDisplay; });
         }
+
+        // Minimal MutationObserver to auto-close on navigation
+        let debounceTimer = null;
+        navObserver = new MutationObserver(() => {
+            if (closed) return;
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(() => {
+                restore();
+            }, 300);
+        });
+        setTimeout(() => {
+            if (!closed) {
+                navObserver.observe(main, { childList: true, subtree: true });
+            }
+        }, 600);
 
         const container = new D3(tree, parent, null);
         container.SetProperties({ focusable: true, autoFocus: true, isModal: false, navKey: "nsl-root" });
@@ -5310,6 +5329,7 @@ SCANNER_CODE = r"""
     channel.onmessage = e => { if (e.data?.type === "open page") openConfigPage(); };
 })();
 """
+
 
 _last_written_state = None
 
