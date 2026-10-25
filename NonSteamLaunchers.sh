@@ -2077,7 +2077,7 @@ fi
 # Function to handle PURPLE uninstallation
 handle_uninstall_purple() {
     # Define the path to the Purple uninstaller
-    purpleun_file="${logged_in_home}/.local/share/Steam/steamapps/compatdata/${1}/pfx/drive_c/Program Files (x86)/NCSOFT/Purple/Uninstall.exe"
+    purpleun_file="${logged_in_home}/.local/share/Steam/steamapps/compatdata/${1}/pfx/drive_c/Program Files (x86)/NC/Purple/Uninstall.exe"
 
     # Call the common uninstallation handler with necessary parameters
     handle_uninstall_common "$1" "$purpleun_file" "/S" "PURPLE Launcher"
@@ -2312,13 +2312,13 @@ process_uninstall_options() {
         fi
         # Uninstall PURPLE Launcher
         if [[ $uninstall_options == *"Uninstall PURPLE Launcher"* ]]; then
-            if [[ -d "${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/Program Files (x86)/NCSOFT" ]]; then
+            if [[ -d "${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/Program Files (x86)/NC" ]]; then
                 handle_uninstall_purple "NonSteamLaunchers"
-                uninstall_launcher "$uninstall_options" "PURPLE Launcher" "$purple_path1" "$purple_path2" "${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/Program Files (x86)/NCSOFT" "" "purple"
+                uninstall_launcher "$uninstall_options" "PURPLE Launcher" "$purple_path1" "$purple_path2" "${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/Program Files (x86)/NC" "" "purple"
                 sed -i '' "${logged_in_home}/.config/systemd/user/env_vars"
-            elif [[ -d "${logged_in_home}/.local/share/Steam/steamapps/compatdata/PURPLELauncher/pfx/drive_c/Program Files (x86)/NCSOFT" ]]; then
+            elif [[ -d "${logged_in_home}/.local/share/Steam/steamapps/compatdata/PURPLELauncher/pfx/drive_c/Program Files (x86)/NC" ]]; then
                 handle_uninstall_purple "PURPLELauncher"
-                uninstall_launcher "$uninstall_options" "PURPLE Launcher" "$purple_path1" "$purple_path2" "${logged_in_home}/.local/share/Steam/steamapps/compatdata/PURPLELauncher/pfx/drive_c/Program Files (x86)/NCSOFT" "" "purple"
+                uninstall_launcher "$uninstall_options" "PURPLE Launcher" "$purple_path1" "$purple_path2" "${logged_in_home}/.local/share/Steam/steamapps/compatdata/PURPLELauncher/pfx/drive_c/Program Files (x86)/NC" "" "purple"
                 sed -i '' "${logged_in_home}/.config/systemd/user/env_vars"
             fi
         fi
