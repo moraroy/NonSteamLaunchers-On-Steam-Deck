@@ -2277,67 +2277,53 @@ THEMEMUSIC_CODE = r"""
     const getDesktopGameRunning = () => checkGameRunning(getDesktopControlState);
     const getGameModeGameRunning = () => checkGameRunning(getGameModeControlState);
 
-    async function fetchSearchResults(query) {
-        const EXCLUDED_PATTERNS = /\b(how\s+to\s+play|tutorial|guitar\s+lesson|piano\s+lesson|cover|remix)\b/i;
+    const EXCLUDED_PATTERNS = /\b(how\s+to\s+play|tutorial|guitar\s+lesson|piano\s+lesson|cover|remix)\b/i;
+    async function ytSearch(query, limit = 20) {
+        const api = new URL("https://yt.chocolatemoo53.com/api/v1/search");
+        api.searchParams.set("q", query);
+        api.searchParams.set("type", "video");
 
         try {
-            const r = await fetch("https://search.tiago.zip/api", {
-                method: "POST",
-                mode: "cors",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ query, type: "web", page: 0 })
-            });
+            const response = await fetch(api);
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}`);
+            }
 
-            if (!r.ok) return [];
+            const data = await response.json();
+            const videos = [];
+            for (const v of data) {
+                if (v.type !== "video" || !v.videoId) continue;
 
-            const data = await r.json();
-            const results = data.results?.web?.results || [];
-            const parsedResults = [];
+                const title = v.title || "";
+                const channel = v.author || "";
 
-            for (const result of results) {
-                const { title = "", url = "", description = "", snippet = "" } = result;
-
-                if (url.match(/(\/playlist\?|\/channel\/|\/@|\/shorts\/)/)) continue;
-
-                const fullText = `${title} ${description} ${snippet}`;
+                const fullText = `${title} ${channel}`;
                 if (EXCLUDED_PATTERNS.test(fullText)) continue;
 
-                let parsed;
-                try { parsed = new URL(url); } catch { continue; }
+                videos.push({
+                    title,
+                    channel,
+                    videoId: v.videoId,
+                    url: `https://www.youtube.com/watch?v=${v.videoId}`
+                });
 
-                let videoId = null;
-                const host = parsed.hostname;
-                const pathParts = parsed.pathname.split("/").filter(Boolean);
-
-                if (["www.youtube.com", "youtube.com", "music.youtube.com"].includes(host)) {
-                    if (parsed.pathname === "/watch") videoId = parsed.searchParams.get("v");
-                    else if (pathParts.length === 2 && pathParts[0] === "watch") videoId = pathParts[1];
-                } else if (host === "youtu.be" && pathParts.length === 1) {
-                    videoId = pathParts[0];
-                }
-
-                if (videoId && YOUTUBE_ID_REGEX.test(videoId)) {
-                    parsedResults.push({
-                        title,
-                        videoId,
-                        url: `https://www.youtube.com/watch?v=${videoId}`
-                    });
-                }
+                if (videos.length >= limit) break;
             }
-            return parsedResults;
-        } catch {
+
+            return videos;
+        } catch (error) {
+            console.error("Search failed:", error);
             return [];
         }
     }
 
     async function findYouTubeVideo(gameName) {
         const searches = [
-            `${gameName} Game Theme Music site:youtube.com`,
-            `${gameName} Original Theme site:youtube.com`,
+            `${gameName} Game Theme Music`
         ];
 
         for (const query of searches) {
-            const results = await fetchSearchResults(query);
+            const results = await ytSearch(query, 1);
             if (results.length > 0) return results[0];
         }
         return null;
@@ -2349,8 +2335,7 @@ THEMEMUSIC_CODE = r"""
         }
 
         const searches = [
-            `${gameName} Game Theme Music site:youtube.com`,
-            `${gameName} Original Theme site:youtube.com`
+            `${gameName} Game Theme Music`
         ];
 
         const songs = [];
@@ -2359,7 +2344,7 @@ THEMEMUSIC_CODE = r"""
         for (const query of searches) {
             if (songs.length >= MAX_SESSION_SONGS) break;
 
-            const results = await fetchSearchResults(query);
+            const results = await ytSearch(query, MAX_SESSION_SONGS);
             for (const song of results) {
                 if (songs.length >= MAX_SESSION_SONGS) break;
                 if (!seen.has(song.videoId)) {
@@ -2372,6 +2357,7 @@ THEMEMUSIC_CODE = r"""
         sessionSearchCache.set(gameName, songs);
         return songs;
     }
+
 
     function createYTPlayer(videoId) {
         if (!videoId) return;
