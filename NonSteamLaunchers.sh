@@ -621,8 +621,8 @@ poketcg_path1="${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonStea
 poketcg_path2="${logged_in_home}/.local/share/Steam/steamapps/compatdata/PokeTCGLauncher/pfx/drive_c/users/steamuser/The Pokémon Company International/Pokémon Trading Card Game Live/Pokemon TCG Live.exe"
 antstream_path1="${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/Program Files (x86)/Antstream Ltd/Antstream/AntstreamArcade.exe"
 antstream_path2="${logged_in_home}/.local/share/Steam/steamapps/compatdata/AntstreamLauncher/pfx/drive_c/Program Files (x86)/Antstream Ltd/Antstream/AntstreamArcade.exe"
-purple_path1="${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/Program Files (x86)/NCSOFT/Purple/PurpleLauncher.exe"
-purple_path2="${logged_in_home}/.local/share/Steam/steamapps/compatdata/PURPLELauncher/pfx/drive_c/Program Files (x86)/NCSOFT/Purple/PurpleLauncher.exe"
+purple_path1="${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/Program Files (x86)/NC/Purple/PurpleLauncher.exe"
+purple_path2="${logged_in_home}/.local/share/Steam/steamapps/compatdata/PURPLELauncher/pfx/drive_c/Program Files (x86)/NC/Purple/PurpleLauncher.exe"
 plarium_path1="${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/users/steamuser/AppData/Local/PlariumPlay/PlariumPlay.exe"
 plarium_path2="${logged_in_home}/.local/share/Steam/steamapps/compatdata/PlariumLauncher/pfx/drive_c/users/steamuser/AppData/Local/PlariumPlay/PlariumPlay.exe"
 
