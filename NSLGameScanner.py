@@ -5040,9 +5040,6 @@ SCANNER_CODE = r"""
 
 })();
 
-
-
-
 // Game Mode
 (() => {
     "use strict";
@@ -5109,9 +5106,19 @@ SCANNER_CODE = r"""
                     <span style="font-size:11px;color:#8f98a0;font-weight:500;">Manual</span>
                 </div>
             </div>
+            <div style="display:flex;align-items:center;gap:14px;max-width:650px;width:100%;margin:0 auto;padding:16px 20px;background:#222b38;border:1px solid #2e3b4e;border-radius:8px;box-sizing:border-box;">
+                <span style="color:#dcdedf;font-size:16px;font-weight:600;">Boot Videos</span>
+                <div style="flex:1"></div>
+                <div style="display:flex;flex-direction:column;align-items:center;gap:6px;">
+                    <div tabindex="0" class="Focusable nsl-boot-toggle" role="switch" aria-checked="false" style="width:42px;height:24px;border-radius:999px;background:#3b4452;border:1px solid rgba(255,255,255,0.12);position:relative;cursor:pointer;box-sizing:border-box;flex-shrink:0;">
+                        <div style="width:18px;height:18px;border-radius:50%;background:#8f98a0;position:absolute;top:2px;left:2px;transition:left .2s,background .2s;"></div>
+                    </div>
+                    <span style="font-size:11px;color:#8f98a0;font-weight:500;">Enable</span>
+                </div>
+            </div>
             <div style="max-width:650px;width:100%;margin:0 auto;padding:16px 20px;background:#222b38;border:1px solid #2e3b4e;border-radius:8px;box-sizing:border-box;color:#8f98a0;font-size:14px;line-height:1.5;">
                 <span style="color:#dcdedf;font-weight:600;display:block;margin-bottom:8px;">Notice</span>
-                Hey! Youre using the Desktop Version of NSL (v4.2.93)! Thanks for being cool. As NonSteamLaunchers continues to grow, so will the integration into Steam. The scanner has now been moved here instead of the footer lol, but soon, more options and settings  will appear here too............ :) *For now open this page when on the "Home" page, it may break during gamplay.*
+                Hey! Youre using the Desktop Version of NSL (v4.2.93)! Thanks for being cool. As NonSteamLaunchers continues to grow, so will the integration into Steam. The scanner has now been moved here instead of the footer lol, but soon, more options and settings will appear here too............ :) *For now open this page when on the "Home" page, it may break during gameplay.*
             </div>
         `;
         main.appendChild(page);
@@ -5119,6 +5126,8 @@ SCANNER_CODE = r"""
         const toggle = page.querySelector(".nsl-toggle");
         const knob = toggle.firstElementChild;
         const scanBtn = page.querySelector(".nsl-btn");
+        const bootToggle = page.querySelector(".nsl-boot-toggle");
+        const bootKnob = bootToggle.firstElementChild;
 
         if (window.__scan_state === "MANUAL" && window.__nsl_scan_end) {
             if (Date.now() >= window.__nsl_scan_end) {
@@ -5129,6 +5138,7 @@ SCANNER_CODE = r"""
 
         let autoScan = window.__scan_state === "ON";
         let scanLocked = window.__scan_state === "MANUAL";
+        let bootVideos = window.__boot_videos_state === "ON";
         let closed = false, navNodes = [], navObserver = null;
 
         if (scanLocked && window.__nsl_scan_end) {
@@ -5170,7 +5180,12 @@ SCANNER_CODE = r"""
                 scanBtn.style.fontWeight = "400";
             }
 
-            [toggle, scanBtn].forEach((el) => {
+            bootToggle.style.background = bootVideos ? "#1a9fff" : "#3b4452";
+            bootToggle.setAttribute("aria-checked", String(bootVideos));
+            bootKnob.style.left = bootVideos ? "20px" : "2px";
+            bootKnob.style.background = bootVideos ? "#fff" : "#8f98a0";
+
+            [toggle, scanBtn, bootToggle].forEach((el) => {
                 const focused = el.classList.contains("Focus");
                 el.style.outline = focused ? "2px solid #1a9fff" : "none";
             });
@@ -5200,6 +5215,13 @@ SCANNER_CODE = r"""
                 window.__nsl_scan_timer = null;
                 render();
             }, 30000);
+        }
+
+        function toggleBootVideos() {
+            if (closed) return;
+            bootVideos = !bootVideos;
+            window.__boot_videos_state = bootVideos ? "ON" : "OFF";
+            render();
         }
 
         function restore() {
@@ -5319,7 +5341,13 @@ SCANNER_CODE = r"""
         });
         page.addEventListener("vgp_onblur", () => setPageFocus(false));
 
-        [toggle, scanBtn].forEach((control, i) => {
+        const controls = [
+            { el: toggle, handler: toggleScanner },
+            { el: scanBtn, handler: startManualScan },
+            { el: bootToggle, handler: toggleBootVideos }
+        ];
+
+        controls.forEach((ctrl, i) => {
             const node = new D3(tree, container, null);
             node.SetProperties({
                 layout: refNode.m_Properties?.layout ?? 0,
@@ -5328,24 +5356,40 @@ SCANNER_CODE = r"""
                 autoFocus: i === 0,
                 noFocusRing: true,
                 navKey: `nsl-ctrl-${i}`,
-                onMoveUp: () => { navNodes[1]?.BTakeFocus?.(); return true; },
-                onMoveDown: () => { navNodes[2]?.BTakeFocus?.(); return true; },
-                onMoveLeft: () => { navNodes[1]?.BTakeFocus?.(); return true; },
-                onMoveRight: () => { navNodes[2]?.BTakeFocus?.(); return true; }
+                onMoveUp: () => {
+                    const prev = i > 0 ? i - 1 : controls.length - 1;
+                    navNodes[prev + 1]?.BTakeFocus?.();
+                    return true;
+                },
+                onMoveDown: () => {
+                    const next = (i + 1) % controls.length;
+                    navNodes[next + 1]?.BTakeFocus?.();
+                    return true;
+                },
+                onMoveLeft: () => {
+                    const prev = i > 0 ? i - 1 : controls.length - 1;
+                    navNodes[prev + 1]?.BTakeFocus?.();
+                    return true;
+                },
+                onMoveRight: () => {
+                    const next = (i + 1) % controls.length;
+                    navNodes[next + 1]?.BTakeFocus?.();
+                    return true;
+                }
             });
-            node.OnMount(control);
+            node.OnMount(ctrl.el);
             navNodes.push(node);
 
             const highlight = active => {
-                control.classList.toggle("Focus", active);
-                control.classList.toggle("FocusVisible", active);
+                ctrl.el.classList.toggle("Focus", active);
+                ctrl.el.classList.toggle("FocusVisible", active);
                 render();
             };
-            control.addEventListener("focus", () => highlight(true));
-            control.addEventListener("blur", () => highlight(false));
-            control.addEventListener("vgp_onfocus", () => highlight(true));
-            control.addEventListener("vgp_onblur", () => highlight(false));
-            control.addEventListener("click", () => i === 0 ? toggleScanner() : startManualScan());
+            ctrl.el.addEventListener("focus", () => highlight(true));
+            ctrl.el.addEventListener("blur", () => highlight(false));
+            ctrl.el.addEventListener("vgp_onfocus", () => highlight(true));
+            ctrl.el.addEventListener("vgp_onblur", () => highlight(false));
+            ctrl.el.addEventListener("click", ctrl.handler);
         });
 
         container.m_rgChildren = navNodes.slice(1);
@@ -5371,7 +5415,13 @@ SCANNER_CODE = r"""
             if (closed || e.detail?.is_repeat) return;
             if (e.detail?.button === 1) {
                 e.preventDefault(); e.stopPropagation();
-                (toggle.classList.contains("Focus") || toggle === document.activeElement) ? toggleScanner() : startManualScan();
+                if (toggle.classList.contains("Focus") || toggle === document.activeElement) {
+                    toggleScanner();
+                } else if (bootToggle.classList.contains("Focus") || bootToggle === document.activeElement) {
+                    toggleBootVideos();
+                } else {
+                    startManualScan();
+                }
             } else if (e.detail?.button === 2) {
                 e.preventDefault(); e.stopPropagation();
                 restore();
@@ -5381,7 +5431,13 @@ SCANNER_CODE = r"""
         page.addEventListener("keydown", e => {
             if (e.key === "Enter" || e.key === " ") {
                 e.preventDefault(); e.stopPropagation();
-                (toggle.classList.contains("Focus") || toggle === document.activeElement) ? toggleScanner() : startManualScan();
+                if (toggle.classList.contains("Focus") || toggle === document.activeElement) {
+                    toggleScanner();
+                } else if (bootToggle.classList.contains("Focus") || bootToggle === document.activeElement) {
+                    toggleBootVideos();
+                } else {
+                    startManualScan();
+                }
             } else if (e.key === "Escape" || e.key === "Backspace") {
                 e.preventDefault(); e.stopPropagation();
                 restore();
@@ -5397,11 +5453,12 @@ SCANNER_CODE = r"""
 """
 
 
+# Writing to env_vars from frontend
 _last_written_state = None
 
-def write_scan_state_to_file(state: str):
+def write_scan_state_to_file(state: str, variable: str = "NSL_SCAN_STATE"):
     try:
-        current = read_scan_state_from_file()
+        current = read_scan_state_from_file(variable)
         if current == state:
             return
 
@@ -5413,40 +5470,53 @@ def write_scan_state_to_file(state: str):
 
         found = False
         for i, line in enumerate(lines):
-            if line.startswith("NSL_SCAN_STATE="):
-                lines[i] = f"NSL_SCAN_STATE={state}\n"
+            key, sep, _ = line.partition("=")
+            if sep and key.strip() == variable:
+                lines[i] = f"{variable}={state}\n"
                 found = True
                 break
 
         if not found:
-            lines.append(f"NSL_SCAN_STATE={state}\n")
+            lines.append(f"{variable}={state}\n")
 
         with open(ENVARS_FILE, "w") as f:
             f.writelines(lines)
 
-        print(f"[ENVARS] Updated scan state: {state}")
+        print(f"[ENVARS] Updated {variable}: {state}")
 
     except Exception as e:
-        print(f"[ENVARS] Failed to write state: {e}")
-def read_scan_state_from_file() -> str | None:
+        print(f"[ENVARS] Failed to write {variable}: {e}")
+
+
+def read_scan_state_from_file(variable: str = "NSL_SCAN_STATE") -> str | None:
     try:
-        for line in open(ENVARS_FILE):
-            if line.startswith("NSL_SCAN_STATE="):
-                return line.strip().split("=",1)[1]
+        with open(ENVARS_FILE, "r") as f:
+            for line in f:
+                key, sep, value = line.partition("=")
+                if sep and key.strip() == variable:
+                    return value.strip()
     except FileNotFoundError:
         return None
+    except Exception as e:
+        print(f"[ENVARS] Failed to read {variable}: {e}")
+
     return None
+
 
 eval_id_counter = itertools.count(1000)
 
-def inject_scanner_code(sock, state):
-    state_js = state if state in ("ON","OFF","MANUAL") else "OFF"
+
+def inject_scanner_code(sock, scan_state, boot_state):
+    scan_state_js = scan_state if scan_state in ("ON", "OFF", "MANUAL") else "OFF"
+    boot_state_js = boot_state if boot_state in ("ON", "OFF") else "OFF"
+
     send_ws_text(sock, json.dumps({
         "id": next(eval_id_counter),
         "method": "Runtime.evaluate",
         "params": {
             "expression": f"""
-                window.__scan_state = '{state_js}';
+                window.__scan_state = '{scan_state_js}';
+                window.__boot_videos_state = '{boot_state_js}';
                 (function(){{ {SCANNER_CODE} }})();
             """,
             "awaitPromise": True
@@ -5454,23 +5524,17 @@ def inject_scanner_code(sock, state):
     }))
     recv_ws_message(sock)
 
-def set_initial_state(sock):
-    state_from_envars = read_scan_state_from_file()
-    send_ws_text(sock, json.dumps({
-        "id": next(eval_id_counter),
-        "method": "Runtime.evaluate",
-        "params": {"expression": f"window.__scan_state = '{state_from_envars}'"}
-    }))
-    #write_scan_state_to_file(state_from_envars)
-    return state_from_envars
 
 def sync_frontend_state_to_envars(sock):
-
+    # 1. Check for manual scan event trigger
     request_id = next(eval_id_counter)
     send_ws_text(sock, json.dumps({
         "id": request_id,
         "method": "Runtime.evaluate",
-        "params": {"expression": "window.__scan_event", "returnByValue": True}
+        "params": {
+            "expression": "window.__scan_event",
+            "returnByValue": True
+        }
     }))
 
     while True:
@@ -5478,43 +5542,79 @@ def sync_frontend_state_to_envars(sock):
         if not msg:
             time.sleep(0.01)
             continue
+
         data = json.loads(msg)
         if data.get("id") != request_id:
             continue
 
         event = data.get("result", {}).get("result", {}).get("value")
         if event == "MANUAL":
-
             send_ws_text(sock, json.dumps({
                 "id": next(eval_id_counter),
                 "method": "Runtime.evaluate",
-                "params": {"expression": "window.__scan_event = null"}
+                "params": {
+                    "expression": "window.__scan_event = null"
+                }
             }))
-            write_scan_state_to_file("MANUAL")
-            return "MANUAL"
-
+            write_scan_state_to_file("MANUAL", "NSL_SCAN_STATE")
+            break
         break
 
+    # 2. Sync Scanner State
     request_id = next(eval_id_counter)
     send_ws_text(sock, json.dumps({
         "id": request_id,
         "method": "Runtime.evaluate",
-        "params": {"expression": "window.__scan_state", "returnByValue": True}
+        "params": {
+            "expression": "window.__scan_state",
+            "returnByValue": True
+        }
     }))
 
+    scan_state = "OFF"
     while True:
         msg = recv_ws_message(sock)
         if not msg:
             time.sleep(0.01)
             continue
+
         data = json.loads(msg)
         if data.get("id") != request_id:
             continue
-        state = data.get("result", {}).get("result", {}).get("value")
-        if state is None:
-            return None
-        write_scan_state_to_file(state)
-        return state
+
+        scan_state = data.get("result", {}).get("result", {}).get("value")
+        if scan_state is not None:
+            write_scan_state_to_file(scan_state, "NSL_SCAN_STATE")
+        break
+
+    # 3. Sync Boot Videos State (NEW)
+    request_id = next(eval_id_counter)
+    send_ws_text(sock, json.dumps({
+        "id": request_id,
+        "method": "Runtime.evaluate",
+        "params": {
+            "expression": "window.__boot_videos_state",
+            "returnByValue": True
+        }
+    }))
+
+    boot_state = "OFF"
+    while True:
+        msg = recv_ws_message(sock)
+        if not msg:
+            time.sleep(0.01)
+            continue
+
+        data = json.loads(msg)
+        if data.get("id") != request_id:
+            continue
+
+        boot_state = data.get("result", {}).get("result", {}).get("value")
+        if boot_state is not None:
+            write_scan_state_to_file(boot_state, "NSL_BOOT_VIDEOS")
+        break
+
+    return scan_state, boot_state
 
 
 sockets = []
@@ -5530,21 +5630,23 @@ for title in TARGET_TITLES:
         }))
         recv_ws_message(sock)
 
-        state = sync_frontend_state_to_envars(sock)
 
-        if state is None:
-            state = read_scan_state_from_file() or "OFF"
-        inject_scanner_code(sock, state)
+        scan_state, boot_state = sync_frontend_state_to_envars(sock)
 
-        print(f"RESUMED WITH STATE for '{title}': {state}")
+        if scan_state is None:
+            scan_state = read_scan_state_from_file("NSL_SCAN_STATE") or "OFF"
+
+        if boot_state is None:
+            boot_state = read_scan_state_from_file("NSL_BOOT_VIDEOS") or "OFF"
+
+        inject_scanner_code(sock, scan_state, boot_state)
+
+        print(f"RESUMED WITH STATES for '{title}' -> Scanner: {scan_state}, Boot Videos: {boot_state}")
         sockets.append(sock)
 
     except Exception as e:
         print(f"[ERROR] Failed for '{title}': {e}")
-# End of Scanner button and control for Frontend
-
-
-
+# End of Writing and control for Frontend
 
 
 
@@ -8732,7 +8834,7 @@ else:
 # Call finalize_tracking and capture removed apps
 removed_apps = finalize_tracking()
 
-# List of game names to skip fetching descriptions for
+# List of game names to skip for
 skip_games = {'Epic Games', 'GOG Galaxy', 'Ubisoft Connect', 'Battle.net', 'EA App',
     'Amazon Games', 'itch.io', 'Legacy Games', 'Humble Bundle', 'IndieGala Client',
     'Rockstar Games Launcher', 'Glyph', 'Minecraft Launcher', 'Playstation Plus',
@@ -8748,6 +8850,30 @@ skip_games = {'Epic Games', 'GOG Galaxy', 'Ubisoft Connect', 'Battle.net', 'EA A
 
 # --- Boot Video Logic ---
 def get_boot_video(game_name, logged_in_home):
+    env_file = os.path.expanduser(
+        f'{logged_in_home}/.config/systemd/user/env_vars'
+    )
+    boot_videos = "OFF"
+
+    try:
+        with open(env_file, "r") as f:
+            for line in f:
+                line = line.strip()
+
+                if line.startswith("NSL_BOOT_VIDEOS="):
+                    boot_videos = line.split("=", 1)[1].strip().strip('"').strip("'")
+                    break
+
+    except OSError as e:
+        print(f"Could not read {env_file}: {e}")
+
+    print(f"NSL_BOOT_VIDEOS setting: {boot_videos}")
+
+    if boot_videos.upper() != "ON":
+        print("Boot videos are disabled.")
+        return
+
+    print("Boot videos are enabled.")
     excluded_apps = skip_games
 
     OVERRIDE_PATH = os.path.expanduser(f'{logged_in_home}/.steam/root/config/uioverrides/movies')
