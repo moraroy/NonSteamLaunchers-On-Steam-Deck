@@ -96,6 +96,12 @@ In both versions of NonSteamLaunchers, Desktop or Decky, NSL will back up your g
 ### Logs
 - The logs for NSL are located here ``` /home/deck/Downloads/NonSteamLaunchers-install.log ``` and here ``` /home/deck/homebrew/logs/NonSteamLaunchers/ ``` if using the Decky Plugin Version.
 
+### arm64 (SteamOS arm64, ArmadaOS) 🦾
+- On arm64 devices run `NonSteamLaunchers-arm64.sh` (or `NonSteamLaunchers-arm64.desktop`) instead; the Decky plugin picks it automatically. It installs the aarch64 GE-Proton build, and the Windows launchers run through Proton with FEX emulation in the same single `NonSteamLaunchers` prefix.
+```/bin/bash -c 'curl -Ls https://raw.githubusercontent.com/moraroy/NonSteamLaunchers-On-Steam-Deck/main/NonSteamLaunchers-arm64.sh | nohup /bin/bash -s -- "Epic Games"'```
+- Native Linux launchers are used where they exist (Heroic, Prism Launcher) and Flatpaks run as aarch64. Edge, Hytale and GeForce NOW only ship x86_64 and run under FEX; the Decky plugin hides Hytale and GeForce NOW on arm64.
+- Known arm64 issues and the workarounds NSL applies are in [docs/arm64-known-issues.md](docs/arm64-known-issues.md).
+
 
 # As Seen on
 just to name a few!...there are much more videos and articles out there just wanted to share some resources on how to install and how the program works.
