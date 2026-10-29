@@ -9,11 +9,11 @@ import gzip
 import zipfile
 import time
 import sys
+import platform
 import subprocess
 import sqlite3
 import csv
 import configparser
-import certifi
 import itertools
 import fcntl
 import shlex
@@ -1582,7 +1582,79 @@ def check_if_shortcut_exists(display_name, exe_path, start_dir, launch_options):
             print(f"Existing website shortcut found for {display_name}. Skipping creation.")
             return True
 
+        # Same target already added by another tool under its own wrapper/name
+        # (e.g. ArmadaOS wraps Xodus games and Flatpaks with armada-game-launch)
+        if is_wrapped_duplicate(s, stripped_exe_path, launch_options):
+            print(f"Existing shortcut for the same target found for {display_name}. Skipping creation.")
+            return True
+
     return False
+
+
+ARMADA_LAUNCH_WRAPPER = "/usr/libexec/armada/armada-game-launch"
+
+
+def wrap_for_armada(launch_options):
+    # ArmadaOS applies per-game FEX/driver tweaks through this wrapper, but armada-control only
+    # wraps shortcuts at startup; add it now in the same format so new shortcuts get it too
+    if not os.path.exists(ARMADA_LAUNCH_WRAPPER):
+        return launch_options
+    opts = launch_options or ""
+    if ARMADA_LAUNCH_WRAPPER in opts:
+        return opts
+    wrapped = f"{ARMADA_LAUNCH_WRAPPER} %command%"
+    if "%command%" in opts:
+        return opts.replace("%command%", wrapped, 1)
+    return f"{wrapped} {opts.strip()}" if opts.strip() else wrapped
+
+
+def strip_nsl_additions(launch_options):
+    """Launch options without what NSL or ArmadaOS add around them, to tell NSL defaults from user edits"""
+    return " ".join(
+        token
+        for token in (launch_options or "").split()
+        if token not in (ARMADA_LAUNCH_WRAPPER, "LD_PRELOAD=", "/usr/bin/env", "%command%")
+        and not token.startswith("FEX_APP_CONFIG=")
+    )
+
+
+def shortcut_target(exe):
+    quoted = re.match(r'"([^"]*)"', exe or "")
+    return os.path.basename(quoted.group(1) if quoted else (exe or "").strip())
+
+
+def find_outdated_nsl_shortcut(appname, exe, launch_options):
+    """The existing shortcut for appname if it still has an earlier NSL target or launch options, else None.
+
+    NSL fixes change some launchers' targets (ARC's virtual desktop) or launch options (no Steam overlay for
+    Heroic and Amazon, Amazon's FEX profile), but existing shortcuts are never touched again, so move the ones
+    still on NSL's earlier values over. Anything the user edited is left alone.
+    """
+    for s in shortcuts['shortcuts'].values():
+        if (s.get('appname') or s.get('AppName')) != appname:
+            continue
+        current_exe = s.get('exe') or s.get('Exe') or ''
+        current_options = s.get('LaunchOptions') or ''
+        if current_exe == exe and current_options == launch_options:
+            return None
+        target = shortcut_target(current_exe)
+        if target and target in exe and strip_nsl_additions(current_options) == strip_nsl_additions(launch_options):
+            return s
+    return None
+
+
+def is_wrapped_duplicate(shortcut, exe_path, launch_options):
+    if not exe_path or not launch_options:
+        return False
+    try:
+        key = shlex.split(launch_options)[-1]  # game id / Flatpak app id
+    except ValueError:
+        return False
+    if len(key) < 8 or key.startswith(("%", "-")):
+        return False
+    target = os.path.basename(exe_path.rstrip("/"))
+    combined = f"{shortcut.get('exe') or shortcut.get('Exe') or ''} {shortcut.get('LaunchOptions') or ''}"
+    return key in combined and target in combined
 
 
 # Start of Refactoring code from the .sh file
@@ -5958,6 +6030,12 @@ def get_compat_tool_if_needed(launchoptions, exe_path, startingdir):
             print(f"Exclusion: {steam_compat_marker} not in launch options.")
             return None
 
+    # Native Linux targets (e.g. /usr/bin/heroic, Flatpaks) must not be forced through Proton
+    if steam_compat_marker not in launchoptions and \
+       not exe_path.strip('"').lower().endswith(('.exe', '.msi', '.bat')):
+        print("Exclusion: native Linux target without a Proton prefix.")
+        return None
+
     print("No exclusions applied. Returning compat tool.")
     return compat_tool_name
 
@@ -6014,6 +6092,14 @@ def create_new_entry(shortcutdirectory, appname, launchoptions, startingdir, lau
     # Only store app ID for specific launchers
     if appname in ['Epic Games', 'Gog Galaxy', 'Ubisoft Connect', 'Battle.net', 'EA App', 'Amazon Games', 'itch.io', 'Legacy Games', 'Humble Bundle', 'IndieGala Client', 'Rockstar Games Launcher', 'Glyph', 'Minecraft Launcher', 'Playstation Plus', 'VK Play', 'HoYoPlay', 'Nexon Launcher', 'Game Jolt Client', 'Artix Game Launcher', 'ARC Launcher', 'PURPLE Launcher', 'Plarium Play', 'VFUN Launcher', 'Tempo Launcher', 'Pokémon Trading Card Game Live', 'Antstream Arcade', 'STOVE Client', 'Big Fish Games Manager', 'Gryphlink']:
         app_ids[appname] = unsigned_shortcut_id
+
+    outdated = find_outdated_nsl_shortcut(appname, exe_path, wrap_for_armada(launchoptions))
+    if outdated is not None:
+        print(f"Updating {appname} to NSL's current target and launch options.")
+        outdated['exe' if 'exe' in outdated else 'Exe'] = exe_path
+        outdated['LaunchOptions'] = wrap_for_armada(launchoptions)
+        shortcuts_updated = True
+        return
 
     # Check if shortcut already exists with final values
     if check_if_shortcut_exists(appname, exe_path, startingdir, launchoptions):
@@ -6097,7 +6183,7 @@ def create_new_entry(shortcutdirectory, appname, launchoptions, startingdir, lau
         'exe': exe_path,
         'StartDir': startingdir,
         'icon': f"{logged_in_home}/.steam/root/userdata/{steamid3}/config/grid/{get_file_name('icons', unsigned_shortcut_id)}",
-        'LaunchOptions': launchoptions,
+        'LaunchOptions': wrap_for_armada(launchoptions),
         'WideGrid': grid64,
         'Grid': gridp64,
         'Hero': hero64,
@@ -8446,11 +8532,17 @@ flatpak_apps = [
     {
         "id": "com.hypixel.HytaleLauncher",
         "display_name": "Hytale"
+    },
+    {
+        "id": "org.prismlauncher.PrismLauncher",
+        "display_name": "Prism Launcher"
     }
 ]
 
 exe_path = "/usr/bin/flatpak"
 start_dir = "/usr/bin"
+# Native Flatpak arch for this machine; Hytale only ships x86_64 and runs via FEX on arm64
+flatpak_arch = "aarch64" if platform.machine() == "aarch64" else "x86_64"
 
 def is_flatpak_installed(app_id):
     try:
@@ -8474,7 +8566,7 @@ for app in flatpak_apps:
 
     # Custom launch options for specific apps
     if app_id == "com.moonlight_stream.Moonlight":
-        app_launch_options = '"run" "--branch=stable" "--arch=x86_64" "--command=moonlight" "com.moonlight_stream.Moonlight"'
+        app_launch_options = f'"run" "--branch=stable" "--arch={flatpak_arch}" "--command=moonlight" "com.moonlight_stream.Moonlight"'
     elif app_id == "com.hypixel.HytaleLauncher":
         app_launch_options = '"run" "--branch=master" "--arch=x86_64" "--command=hytale-launcher-wrapper" "com.hypixel.HytaleLauncher"'
     else:
@@ -8489,6 +8581,30 @@ for app in flatpak_apps:
     )
     track_game(display_name, "Launcher")
 # End of Flatpak Scanner
+
+
+#Heroic Games Launcher (native) Scanner
+# Prefer a distro-provided Heroic (e.g. ArmadaOS /usr/bin/heroic), then the AppImage NSL installs
+heroic_exe = shutil.which("heroic")
+if not heroic_exe:
+    heroic_appimage = f"{logged_in_home}/.local/share/applications/Heroic.AppImage"
+    if os.path.isfile(heroic_appimage):
+        heroic_exe = heroic_appimage
+
+if heroic_exe:
+    # Keep Steam's overlay library out of Heroic: Electron SIGKILLs its helper processes on exit, and one
+    # killed while the preloaded overlay holds Steam's IPC lock (SysMgrMutex) freezes the whole Steam UI
+    create_new_entry(
+        shortcutdirectory=f'"{heroic_exe}"',
+        appname="Heroic Games Launcher",
+        launchoptions="LD_PRELOAD= %command%",
+        startingdir=f'"{os.path.dirname(heroic_exe)}"',
+        launcher_name="NonSteamLaunchers"
+    )
+    track_game("Heroic Games Launcher", "Launcher")
+else:
+    print("Skipping Heroic Games Launcher scanner — Heroic not found.")
+# End of Heroic Games Launcher Scanner
 
 
 
