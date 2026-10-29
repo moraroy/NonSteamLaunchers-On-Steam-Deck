@@ -205,7 +205,7 @@ exec >> "$log_file" 2>&1
 
 
 # Version number (major.minor)
-version=v4.2.93
+version=v4.2.94
 #NSL Decky Plugin Latest Github Version
 deckyversion=$(curl -s https://raw.githubusercontent.com/moraroy/NonSteamLaunchersDecky/refs/heads/main/package.json | grep -o '"version": "[^"]*' | sed 's/"version": "//')
 
