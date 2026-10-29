@@ -6636,7 +6636,7 @@ create_new_entry(chromedirectory, 'Plex', os.environ.get('plexchromelaunchoption
 create_new_entry(chromedirectory, 'Apple TV+', os.environ.get('applechromelaunchoptions'), os.environ.get('chrome_startdir'), launcher_name=browser_for_env('applechromelaunchoptions'))
 create_new_entry(chromedirectory, 'Crunchyroll', os.environ.get('crunchychromelaunchoptions'), os.environ.get('chrome_startdir'), launcher_name=browser_for_env('crunchychromelaunchoptions'))
 create_new_entry(chromedirectory, 'PokéRogue', os.environ.get('pokeroguechromelaunchoptions'), os.environ.get('chrome_startdir'), launcher_name=browser_for_env('pokeroguechromelaunchoptions'))
-
+create_new_entry(chromedirectory, 'Pokébonk', os.environ.get('pokebonkchromelaunchoptions'), os.environ.get('chrome_startdir'), launcher_name=browser_for_env('pokebonkchromelaunchoptions'))
 
 
 # Iterate over each custom website
