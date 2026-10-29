@@ -191,7 +191,7 @@ exec >> "$log_file" 2>&1
 
 
 # Version number (major.minor)
-version=v4.2.93
+version=v4.2.94
 #NSL Decky Plugin Latest Github Version
 deckyversion=$(curl -s https://raw.githubusercontent.com/moraroy/NonSteamLaunchersDecky/refs/heads/main/package.json | grep -o '"version": "[^"]*' | sed 's/"version": "//')
 
@@ -1141,6 +1141,7 @@ chrome_entries=(
   "FALSE|Venge"
   "FALSE|Super Monkey Ball Online"
   "FALSE|PokéRogue"
+  "False|Pokébonk"
   "FALSE|Xbox Game Pass"
   "FALSE|Better xCloud"
   "FALSE|GeForce Now"
@@ -3637,7 +3638,7 @@ if [[ $options == *"Apple TV+"* ]] || [[ $options == *"Plex"* ]] || [[ $options 
    [[ $options == *"Amazon Luna"* ]] || [[ $options == *"Hulu"* ]] || [[ $options == *"Tubi"* ]] || \
    [[ $options == *"Disney+"* ]] || [[ $options == *"Amazon Prime Video"* ]] || [[ $options == *"Youtube"* ]] || \
    [[ $options == *"Youtube TV"* ]] || [[ $options == *"Twitch"* ]] || [[ $options == *"Stim.io"* ]] || \
-   [[ $options == *"WatchParty"* ]] || [[ $options == *"PokéRogue"* ]] || [[ $options == *"Afterplay.io"* ]] || \
+   [[ $options == *"WatchParty"* ]] || [[ $options == *"PokéRogue"* ]] || [[ $options == *"Pokébonk"* ]] || [[ $options == *"Afterplay.io"* ]] || \
    [[ $options == *"OnePlay"* ]] || [[ $options == *"AirGPU"* ]] || [[ $options == *"CloudDeck"* ]] || \
    [[ $options == *"JioGamesCloud"* ]] || [[ $options == *"Cloudy Pad"* ]] || [[ -n "$custom_websites_str" ]]; then
 
@@ -3773,17 +3774,95 @@ fi
 
 
 
+#Other Applications
+if [[ $options == *"RemotePlayWhatever"* ]]; then
+    # Set the directory path
+    DIRECTORY="${logged_in_home}/.local/share/applications"
 
+    # Check if the directory exists
+    if [ ! -d "$DIRECTORY" ]; then
+        mkdir -p "$DIRECTORY"
+    fi
 
+    # Get the latest release URL for RemotePlayWhatever
+    RELEASE_URL=$(curl -s https://api.github.com/repos/m4dEngi/RemotePlayWhatever/releases/latest | grep -o 'https://github.com/m4dEngi/RemotePlayWhatever/releases/download/.*RemotePlayWhatever.*\.AppImage')
 
+    # Download the latest RemotePlayWhatever AppImage
+    wget -P "$DIRECTORY" "$RELEASE_URL"
 
+    # Get the downloaded file name
+    DOWNLOADED_FILE=$(basename "$RELEASE_URL")
 
+    # Rename the downloaded file
+    mv "$DIRECTORY/$DOWNLOADED_FILE" "$DIRECTORY/RemotePlayWhatever"
 
+    # Make the file executable
+    chmod +x "$DIRECTORY/RemotePlayWhatever"
 
+    echo "RemotePlayWhatever downloaded, renamed to Remote Play Whatever, made executable, created in $DIRECTORY"
+
+    # Create a new .desktop file
+    echo "[Desktop Entry]
+    Type=Application
+    Exec=$DIRECTORY/RemotePlayWhatever \"--appid 0\"
+    Name=RemotePlayWhatever
+    Icon=$DIRECTORY/RemotePlayWhatever" > "$DIRECTORY/RemotePlayWhatever.desktop"
+
+    # Make the .desktop file executable
+    chmod +x "$DIRECTORY/RemotePlayWhatever.desktop"
+
+    steamos-add-to-steam "$DIRECTORY/RemotePlayWhatever.desktop"
+    sleep 5
+    echo "added RemotePlayWhatever to steamos"
+fi
 
 
 
 echo "99.4"
+echo "# Installing Xodus Nexus ...please wait..."
+# Xodus Nexus
+if [[ $options == *"Xodus Nexus"* ]]; then
+    DIRECTORY="${logged_in_home}/.local/share/applications"
+    mkdir -p "$DIRECTORY"
+
+    # Get the latest Xodus Nexus AppImage URL
+    RELEASE_URL=$(curl -fsSL \
+        https://api.github.com/repos/domsvoboda/xodus-nexus/releases/latest |
+        grep -oE 'https://[^"]*Xodus-Nexus-[^"]*x86_64\.AppImage' |
+        head -n 1)
+
+    if [[ -z "$RELEASE_URL" ]]; then
+        echo "Failed to find the Xodus Nexus AppImage release."
+    fi
+
+    # Set the clean, unified filename
+    TARGET_FILE="$DIRECTORY/Xodus Nexus.AppImage"
+
+    # Remove any existing older version to ensure it always replaces with the latest
+    if [[ -f "$TARGET_FILE" ]]; then
+        rm -f "$TARGET_FILE"
+    fi
+
+    # Download and save it directly under the clean new name
+    wget -O "$TARGET_FILE" "$RELEASE_URL"
+
+    # Make it executable
+    chmod +x "$TARGET_FILE"
+
+    echo "Xodus Nexus updated and downloaded to $TARGET_FILE"
+fi
+
+
+
+
+
+
+
+
+
+
+
+echo "99.5"
 echo "# Checking if Ludusavi is installed...please wait..."
 
 # AutoInstall Ludusavi
@@ -4142,82 +4221,6 @@ fi
 
 
 
-#Other Applications
-if [[ $options == *"RemotePlayWhatever"* ]]; then
-    # Set the directory path
-    DIRECTORY="${logged_in_home}/.local/share/applications"
-
-    # Check if the directory exists
-    if [ ! -d "$DIRECTORY" ]; then
-        mkdir -p "$DIRECTORY"
-    fi
-
-    # Get the latest release URL for RemotePlayWhatever
-    RELEASE_URL=$(curl -s https://api.github.com/repos/m4dEngi/RemotePlayWhatever/releases/latest | grep -o 'https://github.com/m4dEngi/RemotePlayWhatever/releases/download/.*RemotePlayWhatever.*\.AppImage')
-
-    # Download the latest RemotePlayWhatever AppImage
-    wget -P "$DIRECTORY" "$RELEASE_URL"
-
-    # Get the downloaded file name
-    DOWNLOADED_FILE=$(basename "$RELEASE_URL")
-
-    # Rename the downloaded file
-    mv "$DIRECTORY/$DOWNLOADED_FILE" "$DIRECTORY/RemotePlayWhatever"
-
-    # Make the file executable
-    chmod +x "$DIRECTORY/RemotePlayWhatever"
-
-    echo "RemotePlayWhatever downloaded, renamed to Remote Play Whatever, made executable, created in $DIRECTORY"
-
-    # Create a new .desktop file
-    echo "[Desktop Entry]
-    Type=Application
-    Exec=$DIRECTORY/RemotePlayWhatever \"--appid 0\"
-    Name=RemotePlayWhatever
-    Icon=$DIRECTORY/RemotePlayWhatever" > "$DIRECTORY/RemotePlayWhatever.desktop"
-
-    # Make the .desktop file executable
-    chmod +x "$DIRECTORY/RemotePlayWhatever.desktop"
-
-    steamos-add-to-steam "$DIRECTORY/RemotePlayWhatever.desktop"
-    sleep 5
-    echo "added RemotePlayWhatever to steamos"
-fi
-
-
-
-# Xodus Nexus
-if [[ $options == *"Xodus Nexus"* ]]; then
-    DIRECTORY="${logged_in_home}/.local/share/applications"
-    mkdir -p "$DIRECTORY"
-
-    # Get the latest Xodus Nexus AppImage URL
-    RELEASE_URL=$(curl -fsSL \
-        https://api.github.com/repos/domsvoboda/xodus-nexus/releases/latest |
-        grep -oE 'https://[^"]*Xodus-Nexus-[^"]*x86_64\.AppImage' |
-        head -n 1)
-
-    if [[ -z "$RELEASE_URL" ]]; then
-        echo "Failed to find the Xodus Nexus AppImage release."
-    fi
-
-    # Set the clean, unified filename
-    TARGET_FILE="$DIRECTORY/Xodus Nexus.AppImage"
-
-    # Remove any existing older version to ensure it always replaces with the latest
-    if [[ -f "$TARGET_FILE" ]]; then
-        rm -f "$TARGET_FILE"
-    fi
-
-    # Download and save it directly under the clean new name
-    wget -O "$TARGET_FILE" "$RELEASE_URL"
-
-    # Make it executable
-    chmod +x "$TARGET_FILE"
-
-    echo "Xodus Nexus updated and downloaded to $TARGET_FILE"
-fi
-
 
 
 
@@ -4290,6 +4293,7 @@ declare -A services=(
     ["Venge"]="venge|https://venge.io"
     ["Super Monkey Ball Online"]="monkey|https://monkeyball-online.pages.dev"
     ["PokéRogue"]="pokerogue|https://pokerogue.net"
+    ["Pokébonk"]="pokebonk|https://pokebonk.com"
     ["Boosteroid Cloud Gaming"]="boosteroid|https://cloud.boosteroid.com"
     ["WebRcade"]="webrcade|https://play.webrcade.com"
     ["WebRcade Editor"]="webrcadeedit|https://editor.webrcade.com"
