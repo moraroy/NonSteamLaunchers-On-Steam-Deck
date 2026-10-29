@@ -2621,6 +2621,7 @@ move_launcher_to_sd() {
         return 1
     fi
 
+    # The real prefix folder: the appid folder the launcher symlink points to, or the launcher folder itself
     local number_folder
     number_folder=$(readlink -f "$launcher_link")
 
@@ -2638,23 +2639,74 @@ move_launcher_to_sd() {
         return 1
     }
 
+    # Swap the real folder for a link to the SD copy; a launcher symlink keeps pointing at it unchanged
     rm -rf "$number_folder"
     ln -s "$sd_folder" "$number_folder"
+}
 
-    rm -f "$launcher_link"
-    ln -s "$number_folder" "$launcher_link"
+move_launcher_from_sd() {
+    local launcher_name=$1
+    local compat_dir="${logged_in_home}/.local/share/Steam/steamapps/compatdata"
+    local launcher_link="${compat_dir}/${launcher_name}"
+
+    if [[ ! -L "$launcher_link" ]]; then
+        echo "# $launcher_name is not on the SD card."
+        return 0
+    fi
+
+    # Follow the launcher link to its appid folder, if it has one, to find the link that points off the SSD
+    local local_link="$launcher_link"
+    local next
+    next=$(readlink "$launcher_link")
+    [[ "$next" != /* ]] && next="${compat_dir}/${next}"
+    if [[ -L "$next" && "$(dirname "$next")" -ef "$compat_dir" ]]; then
+        local_link="$next"
+    fi
+
+    local sd_folder
+    sd_folder=$(readlink -f "$local_link")
+    if [[ "$(dirname "$sd_folder")" -ef "$compat_dir" ]]; then
+        echo "# $launcher_name is not on the SD card."
+        return 0
+    fi
+    if [[ ! -d "$sd_folder" ]]; then
+        # The card may be mounted somewhere else now
+        local sd_path
+        sd_path=$(get_sd_path) || return 1
+        sd_folder="${sd_path}/${launcher_name}"
+    fi
+    if [[ ! -d "$sd_folder" ]]; then
+        zenity --error --text="Could not find $launcher_name on the SD card." --width=300 --height=100
+        return 1
+    fi
+
+    echo "# Moving $launcher_name back to internal storage..."
+    local staging="${local_link}.nsl-moving"
+    rm -rf "$staging"
+    mkdir -p "$staging"
+    rsync -a "$sd_folder/" "$staging/" || {
+        zenity --error --text="Failed to copy $launcher_name back to internal storage." --width=300 --height=100
+        rm -rf "$staging"
+        return 1
+    }
+
+    rm -f "$local_link"
+    mv "$staging" "$local_link"
+    rm -rf "$sd_folder"
 }
 
 move_all_selected() {
+    local move_fn=${1:-move_launcher_to_sd}
+    local title=${2:-Moving Launchers to SD Card}
     local any_moved=0
     (
         for launcher in "${selected_launchers[@]}"; do
-            if move_launcher_to_sd "$launcher"; then
+            if "$move_fn" "$launcher"; then
                 any_moved=1
             fi
         done
     ) | zenity --progress \
-        --title="Moving Launchers to SD Card" \
+        --title="$title" \
         --text="Copying files…" \
         --pulsate \
         --auto-close \
@@ -2671,11 +2723,33 @@ if [[ $1 == "Move to SD Card" ]]; then
     for launcher in "$@"; do
         move_launcher_to_sd "$launcher"
     done
+elif [[ $1 == "Move from SD Card" ]]; then
+    shift
+    for launcher in "$@"; do
+        move_launcher_from_sd "$launcher"
+    done
 else
     if [[ $options == "Move to SD Card" ]]; then
         CheckInstallationDirectory
 
-        move_options=$(zenity --list --text="Which launcher IDs do you want to move to the SD card?" \
+        move_direction=$(zenity --question --title="Move Launchers" \
+            --text="Move launchers to the SD card, or back to internal storage?" \
+            --ok-label="To SD Card" --cancel-label="Cancel" --extra-button="Back to Internal" \
+            --width=350)
+        move_status=$?
+        if [[ $move_direction == "Back to Internal" ]]; then
+            move_fn=move_launcher_from_sd
+            move_title="Moving Launchers to Internal Storage"
+            move_prompt="Which launcher IDs do you want to move back to internal storage?"
+        elif [[ $move_status -eq 0 ]]; then
+            move_fn=move_launcher_to_sd
+            move_title="Moving Launchers to SD Card"
+            move_prompt="Which launcher IDs do you want to move to the SD card?"
+        else
+            exit 0
+        fi
+
+        move_options=$(zenity --list --text="$move_prompt" \
             --checklist --column="Select" --column="Launcher ID" \
             $nonsteamlauncher_move_value "NonSteamLaunchers" \
             $epicgameslauncher_move_value "EpicGamesLauncher" \
@@ -2710,7 +2784,7 @@ else
 
         if [[ $? -eq 0 ]]; then
             IFS="|" read -ra selected_launchers <<< "$move_options"
-            move_all_selected
+            move_all_selected "$move_fn" "$move_title"
         fi
 
         exit 0

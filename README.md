@@ -206,7 +206,7 @@ How to Run 🏃‍♂️
 + Uninstall = uninstalls the specific launchers and possibly its games too, each launcher uninstallation is different.
 + 🔍 = Pressing the magnifying glass will stop the NSL Scanner and prompt you to restart it if needed. When you open NSL the scanner will update from online then auto scan. So restarting it activates the real time service file for active scanning.
 + Start Fresh = Wipes all of NSL, all the prefixes, launchers, games, etc. Shortcuts will attempt to be removed, and your game save backups, if any, at ```/home/deck/NSLGameSaves``` will not be deleted. This essentially "Uninstalls" NonSteamLaunchers.
-+ Move to SD Card = moves each prefix to your SD Card, this is legacy code and probably still needs work.
++ Move to SD Card = moves each prefix to your SD Card, or back to internal storage, this is legacy code and probably still needs work.
 + Update Proton GE = this will update and install Proton GE and UMU if you dont have it already, the script attempts to do this on each launcher install but you can do it manually and help the script before hand if you want.
 + 🖥️ Off = this simply turns off your screen, useful if your doing long downloads to save battery.
 + NSLGameSaves = this will inject your game saves from ```/home/deck/NSLGameSaves``` into its correct locations using ludusavi into your launchers. Use this if you pressed "Start Fresh" and have downloaded your launchers again, dont download your games until you have pressed this button.
@@ -237,6 +237,10 @@ The NSL script can be called from online via bash, heres an example of it instal
 - The format of "EpicGamesLauncher" comes from the user choosing to either "Separate App ID's" or use the default installation prefix "NonSteamLaunchers" in the compatdata folder. This would be named differently for each launcher. Otherwise the command line would then only be 
 
 ```/bin/bash -c 'curl -Ls https://raw.githubusercontent.com/moraroy/NonSteamLaunchers-On-Steam-Deck/main/NonSteamLaunchers.sh | nohup /bin/bash -s -- "Move to SD Card" "NonSteamLaunchers"'```
+
+- To move a prefix back to internal storage, use "Move from SD Card" the same way
+
+```/bin/bash -c 'curl -Ls https://raw.githubusercontent.com/moraroy/NonSteamLaunchers-On-Steam-Deck/main/NonSteamLaunchers.sh | nohup /bin/bash -s -- "Move from SD Card" "NonSteamLaunchers"'```
 
 ### Environment variable options 🔧
 
