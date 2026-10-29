@@ -4959,167 +4959,272 @@ TARGET_TITLES = [TARGET_TITLE2, TARGET_TITLE3]
 
 SCANNER_CODE = r"""
 (function () {
+    "use strict";
     if (window.__MY_SCANNER_LOADED__) return;
     window.__MY_SCANNER_LOADED__ = true;
 
-    const css = (el, s) => Object.assign(el.style, s);
-
-    const style = document.createElement("style");
-    style.textContent = `
-        .steam-hover { transition: filter 0.12s ease; }
-        .steam-hover:hover { filter: brightness(1.25); }
-        .no-hover:hover { filter: none !important; }
-    `;
-    document.head.appendChild(style);
-
-    const findDesktopTarget = () => {
-        return [...document.querySelectorAll("div")].find(
-            (el) => el.textContent.trim() === "Add a Game"
-        );
+    const config = {
+        name: "NSL",
+        content: "Welcome to NSL.",
+        targetText: "Library",
+        activeColor: "rgb(26, 159, 255)",
+        logo: "https://raw.githubusercontent.com/moraroy/NonSteamLaunchers-On-Steam-Deck/refs/heads/main/logo.png"
     };
 
-    const inject = (addGame) => {
-        if (!addGame || addGame.parentElement.querySelector(".my-steam-controls")) return;
-
-        const parent = addGame.parentElement;
-        css(parent, { position: "relative" });
-
-        const wrapper = document.createElement("div");
-        wrapper.className = "my-steam-controls";
-
-        css(wrapper, {
-            display: "flex",
-            alignItems: "center",
-            gap: "8px",
-            position: "absolute",
-            left: "125px",
-            top: "50%",
-            transform: "translateY(-50%)",
-            zIndex: 9999,
-            pointerEvents: "auto"
-        });
-
-        let autoScan = window.__scan_state === "ON";
-        if (window.__scan_state === "MANUAL") autoScan = false;
-
-        const toggle = document.createElement("div");
-        const knob = document.createElement("div");
-        const scanBtn = document.createElement("div");
-        let scanLocked = false;
-
-        toggle.classList.add("steam-hover");
-        scanBtn.classList.add("steam-hover");
-
-        css(toggle, {
-            width: "34px", height: "18px", borderRadius: "999px",
-            background: "#333", border: "1px solid rgba(255,255,255,0.12)",
-            position: "relative", cursor: "pointer", transition: "0.12s ease"
-        });
-
-        css(knob, {
-            width: "14px", height: "14px", borderRadius: "50%",
-            background: "#bbb", position: "absolute", top: "50%", left: "2px",
-            transform: "translateY(-50%)", transition: "0.2s"
-        });
-
-        toggle.appendChild(knob);
-
-        css(scanBtn, {
-            width: "28px", height: "28px", display: "flex",
-            alignItems: "center", justifyContent: "center",
-            borderRadius: "6px", background: "rgba(255,255,255,0.06)",
-            border: "1px solid rgba(255,255,255,0.08)",
-            color: "rgba(255,255,255,0.85)", cursor: "pointer",
-            transition: "0.12s ease"
-        });
-
-        const render = () => {
-            const on = autoScan;
-
-            css(toggle, {
-                background: on ? "rgba(255,122,24,0.85)" : "#333",
-                opacity: scanLocked ? "0.4" : "1",
-                pointerEvents: scanLocked ? "none" : "auto"
-            });
-
-            knob.style.left = on ? "18px" : "2px";
-            knob.style.background = on ? "#fff" : "#bbb";
-
-            scanBtn.style.opacity = autoScan ? "0.4" : "1";
-            scanBtn.style.pointerEvents = autoScan ? "none" : "auto";
-            scanBtn.style.cursor = autoScan ? "default" : "pointer";
-
-            if (scanLocked) {
-                scanBtn.textContent = "⏳";
-                scanBtn.style.background = "rgba(255,122,24,0.85)";
-                scanBtn.style.border = "none";
-            } else {
-                scanBtn.style.background = "rgba(255,255,255,0.06)";
-                scanBtn.style.border = "1px solid rgba(255,255,255,0.08)";
-                if (autoScan) {
-                    scanBtn.textContent = "AUTO";
-                    scanBtn.style.fontSize = "11px";
-                    scanBtn.style.fontWeight = "700";
-                } else {
-                    scanBtn.textContent = "🔍";
-                    scanBtn.style.fontSize = "16px";
-                    scanBtn.style.fontWeight = "400";
-                }
-            }
-
-            toggle.classList.toggle("no-hover", autoScan || scanLocked);
-            scanBtn.classList.toggle("no-hover", autoScan || scanLocked);
-        };
-
-        toggle.onclick = () => {
-            if (scanLocked) return;
-            autoScan = !autoScan;
-            window.__scan_state = autoScan ? "ON" : "OFF";
-            console.log("STATE:", window.__scan_state);
-            render();
-        };
-
-        scanBtn.onclick = () => {
-            if (scanLocked || autoScan) return;
-            scanLocked = true;
-            autoScan = false;
-            window.__scan_event = "MANUAL";
-            console.log("EVENT: MANUAL");
-            render();
-            setTimeout(() => { scanLocked = false; render(); window.__scan_state = "OFF"; }, 30000);
-        };
-
-        render();
-        wrapper.append(toggle, scanBtn);
-        parent.appendChild(wrapper);
+    const ids = {
+        label: "nsl-label",
+        modal: "nsl-modal",
+        heading: "nsl-heading"
     };
 
-    const tryInject = () => {
-        const target = findDesktopTarget();
-        if (target) inject(target);
-    };
-
-    tryInject();
-
-    const observer = new MutationObserver(() => {
-        tryInject();
-    });
-
-    observer.observe(document.body, {
-        childList: true,
-        subtree: true
-    });
-
-})();
-
-// Game Mode
-(() => {
-    "use strict";
-    if (window.__NSL_LISTENER_LOADED__) return;
-    window.__NSL_LISTENER_LOADED__ = true;
-
+    const SCAN_LOCK_MS = 30_000;
     const channel = new BroadcastChannel("nsl_communication_channel");
     const PAGE_ID = "nsl-config-page";
+
+    const getHasGameMode = () => {
+        const trees = window.g_WindowFocusCoordinator?.m_rgTrees ?? window.opener?.g_WindowFocusCoordinator?.m_rgTrees ?? [];
+        return trees.some(entry => entry.tree?.m_ID === "GamepadUI_Full_Root");
+    };
+
+    window.__nslCleanup?.();
+    document.getElementById(ids.label)?.remove();
+    document.getElementById(ids.modal)?.remove();
+    document.getElementById(PAGE_ID)?.remove();
+
+    const css = (element, styles) => Object.assign(element.style, styles);
+
+    function getSharedConfigHTML() {
+        return `
+            <div style="text-align:center;display:flex;flex-direction:column;align-items:center;">
+                <h1 style="margin:0;font-size:26px;display:flex;align-items:center;justify-content:center;">
+                    N<img src="https://raw.githubusercontent.com/moraroy/NonSteamLaunchersDecky/refs/heads/main/assets/logo.png" alt="NSL" style="height:15px;vertical-align:middle;position:relative;top:3px;">nSteamLaunchers
+                </h1>
+            </div>
+            <div style="display:flex;align-items:center;gap:14px;max-width:650px;width:100%;margin:0 auto;padding:16px 20px;background:#222b38;border:1px solid #2e3b4e;border-radius:8px;box-sizing:border-box;">
+                <span style="color:#dcdedf;font-size:16px;font-weight:600;">Scanner</span>
+                <div style="flex:1"></div>
+                <div style="display:flex;flex-direction:column;align-items:center;gap:6px;">
+                    <div tabindex="0" class="Focusable nsl-toggle" role="switch" aria-checked="false" style="width:42px;height:24px;border-radius:999px;background:#3b4452;border:1px solid rgba(255,255,255,0.12);position:relative;cursor:pointer;box-sizing:border-box;flex-shrink:0;">
+                        <div style="width:18px;height:18px;border-radius:50%;background:#8f98a0;position:absolute;top:2px;left:2px;transition:left .2s,background .2s;"></div>
+                    </div>
+                    <span style="font-size:11px;color:#8f98a0;font-weight:500;">Auto</span>
+                </div>
+                <div style="display:flex;flex-direction:column;align-items:center;gap:6px;">
+                    <div tabindex="0" class="Focusable nsl-btn" role="button" style="min-width:48px;height:42px;padding:0 8px;display:flex;align-items:center;justify-content:center;box-sizing:border-box;border-radius:6px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.08);color:rgba(255,255,255,0.9);cursor:pointer;font-size:20px;flex-shrink:0;">🔍</div>
+                    <span style="font-size:11px;color:#8f98a0;font-weight:500;">Manual</span>
+                </div>
+            </div>
+            <div style="display:flex;align-items:center;gap:14px;max-width:650px;width:100%;margin:0 auto;padding:16px 20px;background:#222b38;border:1px solid #2e3b4e;border-radius:8px;box-sizing:border-box;">
+                <span style="color:#dcdedf;font-size:16px;font-weight:600;">Boot Videos</span>
+                <div style="flex:1"></div>
+                <div style="display:flex;flex-direction:column;align-items:center;gap:6px;">
+                    <div tabindex="0" class="Focusable nsl-boot-toggle" role="switch" aria-checked="false" style="width:42px;height:24px;border-radius:999px;background:#3b4452;border:1px solid rgba(255,255,255,0.12);position:relative;cursor:pointer;box-sizing:border-box;flex-shrink:0;">
+                        <div style="width:18px;height:18px;border-radius:50%;background:#8f98a0;position:absolute;top:2px;left:2px;transition:left .2s,background .2s;"></div>
+                    </div>
+                    <span style="font-size:11px;color:#8f98a0;font-weight:500;">Enable</span>
+                </div>
+            </div>
+            <div style="max-width:650px;width:100%;margin:0 auto;padding:16px 20px;background:#222b38;border:1px solid #2e3b4e;border-radius:8px;box-sizing:border-box;color:#8f98a0;font-size:14px;line-height:1.5;">
+                <span style="color:#dcdedf;font-weight:600;display:block;margin-bottom:8px;">Notice</span>
+                Hey! Youre using the Desktop Version of NSL (v4.2.94)! Thanks for being cool. As NonSteamLaunchers continues to grow, so will the integration into Steam. The scanner has now been moved here instead of the footer lol, but soon, more options and settings will appear here too............ :) *For now open this page when on the "Home" page, it may break during gameplay.*
+            </div>
+        `;
+    }
+
+    let wrapper = null;
+
+    if (!getHasGameMode()) {
+        const findTarget = () =>
+            [...document.querySelectorAll("div")].find(
+                el => el.children.length === 0 && el.textContent.trim() === config.targetText
+            );
+
+        const original = findTarget();
+        if (original?.parentElement?.parentElement) {
+            wrapper = original.parentElement.cloneNode(true);
+            const navTextSelector = [...original.classList]
+                .map(name => `.${CSS.escape(name)}`)
+                .join("");
+
+            const labelText = navTextSelector ? wrapper.querySelector(navTextSelector) : wrapper;
+            if (labelText) {
+                wrapper.id = ids.label;
+                wrapper.title = config.name;
+                wrapper.style.cursor = "pointer";
+                wrapper.style.display = "none";
+                wrapper.tabIndex = 0;
+                wrapper.setAttribute("role", "button");
+                wrapper.setAttribute("aria-haspopup", "dialog");
+
+                const logo = document.createElement("img");
+                logo.src = config.logo;
+                logo.alt = "";
+                logo.draggable = false;
+                css(logo, { display: "block", width: "20px", height: "20px", objectFit: "contain", flexShrink: "0", pointerEvents: "none" });
+
+                const labelContents = document.createElement("span");
+                css(labelContents, { display: "inline-flex", alignItems: "center", gap: "6px" });
+
+                wrapper.replaceChildren(labelContents);
+                labelText.textContent = config.name;
+                labelContents.append(logo, labelText);
+            }
+        }
+    }
+
+    const modal = document.createElement("div");
+    modal.id = ids.modal;
+    css(modal, {
+        position: "fixed", inset: "0", zIndex: "999999", display: "none",
+        alignItems: "center", justifyContent: "center", background: "rgba(0,0,0,.75)",
+        fontFamily: '"Motiva Sans",Twemoji,"Noto Sans",Helvetica,sans-serif'
+    });
+
+    const panel = document.createElement("div");
+    css(panel, {
+        position: "relative", width: "min(650px,calc(100vw - 40px))", maxHeight: "calc(100vh - 40px)",
+        overflow: "auto", boxSizing: "border-box", padding: "30px", color: "#c7d5e0",
+        background: "#171d25", boxShadow: "0 12px 40px rgba(0,0,0,.5)", display: "flex", flexDirection: "column", gap: "24px"
+    });
+
+    const close = document.createElement("button");
+    close.type = "button";
+    close.textContent = "×";
+    css(close, {
+        position: "absolute", top: "10px", right: "14px", border: "0", background: "transparent",
+        color: "#c7d5e0", fontSize: "26px", cursor: "pointer"
+    });
+
+    panel.innerHTML = getSharedConfigHTML();
+    panel.appendChild(close);
+    modal.appendChild(panel);
+    document.body.appendChild(modal);
+
+    const toggle = panel.querySelector(".nsl-toggle");
+    const knob = toggle.firstElementChild;
+    const scanBtn = panel.querySelector(".nsl-btn");
+    const bootToggle = panel.querySelector(".nsl-boot-toggle");
+    const bootKnob = bootToggle.firstElementChild;
+
+    let autoScan = window.__scan_state === "ON";
+    let scanLocked = window.__scan_state === "MANUAL";
+    let bootVideos = window.__boot_videos_state === "ON";
+    let lockTimer = null;
+
+    const renderDesktop = () => {
+        toggle.style.background = autoScan ? "#1a9fff" : "#3b4452";
+        toggle.style.opacity = scanLocked ? "0.4" : "1";
+        toggle.setAttribute("aria-checked", String(autoScan));
+        knob.style.left = autoScan ? "20px" : "2px";
+        knob.style.background = autoScan ? "#fff" : "#8f98a0";
+
+        scanBtn.style.opacity = (autoScan || scanLocked) ? "0.4" : "1";
+        scanBtn.style.background = scanLocked ? "#1a9fff" : "rgba(255,255,255,0.06)";
+
+        if (scanLocked) {
+            scanBtn.textContent = "⏳";
+        } else if (autoScan) {
+            scanBtn.textContent = "AUTO";
+            scanBtn.style.fontSize = "11px";
+            scanBtn.style.fontWeight = "700";
+        } else {
+            scanBtn.textContent = "🔍";
+            scanBtn.style.fontSize = "20px";
+            scanBtn.style.fontWeight = "400";
+        }
+
+        bootToggle.style.background = bootVideos ? "#1a9fff" : "#3b4452";
+        bootToggle.setAttribute("aria-checked", String(bootVideos));
+        bootKnob.style.left = bootVideos ? "20px" : "2px";
+        bootKnob.style.background = bootVideos ? "#fff" : "#8f98a0";
+    };
+
+    toggle.addEventListener("click", () => {
+        if (scanLocked) return;
+        autoScan = !autoScan;
+        window.__scan_state = autoScan ? "ON" : "OFF";
+        renderDesktop();
+    });
+
+    scanBtn.addEventListener("click", () => {
+        if (scanLocked || autoScan) return;
+        scanLocked = true;
+        autoScan = false;
+        window.__scan_state = "MANUAL";
+        window.__scan_event = "MANUAL";
+        renderDesktop();
+
+        clearTimeout(lockTimer);
+        lockTimer = setTimeout(() => {
+            lockTimer = null;
+            scanLocked = false;
+            renderDesktop();
+            window.__scan_state = "OFF";
+        }, SCAN_LOCK_MS);
+    });
+
+    bootToggle.addEventListener("click", () => {
+        bootVideos = !bootVideos;
+        window.__boot_videos_state = bootVideos ? "ON" : "OFF";
+        renderDesktop();
+    });
+
+    let modalOpen = false;
+    let previousFocus = null;
+
+    const openDesktopModal = () => {
+        if (modalOpen) return;
+        previousFocus = document.activeElement;
+        modalOpen = true;
+        modal.style.display = "flex";
+        close.focus();
+        renderDesktop();
+    };
+
+    const hideDesktopModal = () => {
+        if (!modalOpen) return;
+        modalOpen = false;
+        modal.style.display = "none";
+        if (previousFocus?.isConnected) previousFocus.focus();
+    };
+
+    close.addEventListener("click", hideDesktopModal);
+    modal.addEventListener("click", e => { if (e.target === modal) hideDesktopModal(); });
+
+    if (wrapper) {
+        wrapper.addEventListener("click", openDesktopModal);
+        wrapper.addEventListener("keydown", event => {
+            if (event.key === "Enter" || event.key === " ") {
+                event.preventDefault();
+                openDesktopModal();
+            }
+        });
+
+        const updateVisibility = () => {
+            const current = [...document.querySelectorAll("div")].find(
+                el => el.children.length === 0 && el.textContent.trim() === config.targetText
+            );
+            if (!current?.parentElement?.parentElement) {
+                wrapper.style.display = "none";
+                return;
+            }
+            const navRow = current.parentElement.parentElement;
+            if (wrapper.parentElement !== navRow) {
+                navRow.appendChild(wrapper);
+            }
+            const active = getComputedStyle(current).color === config.activeColor;
+            wrapper.style.display = active ? "" : "none";
+        };
+
+        const observer = new MutationObserver(updateVisibility);
+        observer.observe(document.body, {
+            subtree: true,
+            childList: true,
+            attributes: true,
+            attributeFilter: ["class", "style", "aria-current", "aria-selected"]
+        });
+        updateVisibility();
+    }
 
     function openConfigPage() {
         const existingPage = document.getElementById(PAGE_ID);
@@ -5155,44 +5260,9 @@ SCANNER_CODE = r"""
 
         const page = document.createElement("div");
         page.id = PAGE_ID;
-        // Balanced z-index: 10 sits above normal page content, but below Steam's system overlays (1000+)
         page.style.cssText = "position:relative;width:100%;height:100%;overflow-y:auto;background:#171d25;color:#fff;padding:40px;box-sizing:border-box;z-index:10;display:flex;flex-direction:column;gap:24px;font-family:'Motiva Sans',Arial,sans-serif;outline:2px solid transparent;transition:outline-color 0.2s ease;";
 
-        page.innerHTML = `
-            <div style="text-align:center;display:flex;flex-direction:column;align-items:center;">
-                <h1 style="margin:0;font-size:26px;display:flex;align-items:center;justify-content:center;">
-                    N<img src="https://raw.githubusercontent.com/moraroy/NonSteamLaunchersDecky/refs/heads/main/assets/logo.png" alt="NSL" style="height:15px;vertical-align:middle;position:relative;top:3px;">nSteamLaunchers
-                </h1>
-            </div>
-            <div style="display:flex;align-items:center;gap:14px;max-width:650px;width:100%;margin:0 auto;padding:16px 20px;background:#222b38;border:1px solid #2e3b4e;border-radius:8px;box-sizing:border-box;">
-                <span style="color:#dcdedf;font-size:16px;font-weight:600;">Scanner</span>
-                <div style="flex:1"></div>
-                <div style="display:flex;flex-direction:column;align-items:center;gap:6px;">
-                    <div tabindex="0" class="Focusable nsl-toggle" role="switch" aria-checked="false" style="width:42px;height:24px;border-radius:999px;background:#3b4452;border:1px solid rgba(255,255,255,0.12);position:relative;cursor:pointer;box-sizing:border-box;flex-shrink:0;">
-                        <div style="width:18px;height:18px;border-radius:50%;background:#8f98a0;position:absolute;top:2px;left:2px;transition:left .2s,background .2s;"></div>
-                    </div>
-                    <span style="font-size:11px;color:#8f98a0;font-weight:500;">Auto</span>
-                </div>
-                <div style="display:flex;flex-direction:column;align-items:center;gap:6px;">
-                    <div tabindex="0" class="Focusable nsl-btn" role="button" style="min-width:48px;height:42px;padding:0 8px;display:flex;align-items:center;justify-content:center;box-sizing:border-box;border-radius:6px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.08);color:rgba(255,255,255,0.9);cursor:pointer;font-size:20px;flex-shrink:0;">🔍</div>
-                    <span style="font-size:11px;color:#8f98a0;font-weight:500;">Manual</span>
-                </div>
-            </div>
-            <div style="display:flex;align-items:center;gap:14px;max-width:650px;width:100%;margin:0 auto;padding:16px 20px;background:#222b38;border:1px solid #2e3b4e;border-radius:8px;box-sizing:border-box;">
-                <span style="color:#dcdedf;font-size:16px;font-weight:600;">Boot Videos</span>
-                <div style="flex:1"></div>
-                <div style="display:flex;flex-direction:column;align-items:center;gap:6px;">
-                    <div tabindex="0" class="Focusable nsl-boot-toggle" role="switch" aria-checked="false" style="width:42px;height:24px;border-radius:999px;background:#3b4452;border:1px solid rgba(255,255,255,0.12);position:relative;cursor:pointer;box-sizing:border-box;flex-shrink:0;">
-                        <div style="width:18px;height:18px;border-radius:50%;background:#8f98a0;position:absolute;top:2px;left:2px;transition:left .2s,background .2s;"></div>
-                    </div>
-                    <span style="font-size:11px;color:#8f98a0;font-weight:500;">Enable</span>
-                </div>
-            </div>
-            <div style="max-width:650px;width:100%;margin:0 auto;padding:16px 20px;background:#222b38;border:1px solid #2e3b4e;border-radius:8px;box-sizing:border-box;color:#8f98a0;font-size:14px;line-height:1.5;">
-                <span style="color:#dcdedf;font-weight:600;display:block;margin-bottom:8px;">Notice</span>
-                Hey! Youre using the Desktop Version of NSL (v4.2.93)! Thanks for being cool. As NonSteamLaunchers continues to grow, so will the integration into Steam. The scanner has now been moved here instead of the footer lol, but soon, more options and settings will appear here too............ :) *For now open this page when on the "Home" page, it may break during gameplay.*
-            </div>
-        `;
+        page.innerHTML = getSharedConfigHTML();
         main.appendChild(page);
 
         const toggle = page.querySelector(".nsl-toggle");
@@ -5520,7 +5590,11 @@ SCANNER_CODE = r"""
         navNodes[1]?.BTakeFocus?.();
     }
 
-    channel.onmessage = e => { if (e.data?.type === "open page") openConfigPage(); };
+    channel.onmessage = e => {
+        if (e.data?.type === "open page") {
+            openConfigPage();
+        }
+    };
 })();
 """
 
