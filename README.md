@@ -262,6 +262,7 @@ Example — actually run "Start Fresh" from the command line:
 Supported Stores 🛍
 </h1>
 
+- Xodus Nexus ✔️
 - Unreal Engine (via Epic Games) ✔️
 - Amazon Games Launcher ✔️
 - Battle.net ✔️
@@ -305,6 +306,7 @@ Supported Streaming Sites for games and as well as any website. 🌐
 - Fortnite ✔️
 - Venge ✔️
 - PokéRogue ✔️
+- Pokébonk ✔️
 - Xbox Game Pass ✔️
 - Better xCloud ✔️
 - GeForce Now ✔️
@@ -354,6 +356,7 @@ Finds Games Automatically
 - Waydroid Apps 🎮       📜 Your own script Support
 - Humble Games Collection 🎮 💾 Full SD Card Support
 - NVIDIA GeForce NOW (Native Linux App) - You must "Favorite" the game with the heart. Old favorites will not be picked up, you need to re-favorite.
+- Xodus Nexus 🎮
 
 ## Chrome Bookmarks
 The scanner will pick these up automatically. But in Chrome for Geforce Now and Boosteroid Cloud Gaming you need to change the name of the bookmark to your actual game name. Or you can press "Play" then Use "Ctrl + D" to edit the bookmarks for the Chrome Browser. As long as the game name is in the Bookmark Name.
