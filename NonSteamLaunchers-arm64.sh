@@ -4510,7 +4510,8 @@ eaapp_path2=$(resolve_launcher_path "${logged_in_home}/.local/share/Steam/steama
 itchio_path1=$(resolve_launcher_path "${logged_in_home}/.local/share/Steam/steamapps/compatdata/NonSteamLaunchers/pfx/drive_c/users/steamuser/AppData/Local/itch/" "itch.exe")
 itchio_path2=$(resolve_launcher_path "${logged_in_home}/.local/share/Steam/steamapps/compatdata/itchioLauncher/pfx/drive_c/users/steamuser/AppData/Local/itch/" "itch.exe")
 
-check_and_write "epic" "$epic_games_launcher_path1" "$epic_games_launcher_path2" "NonSteamLaunchers" "EpicGamesLauncher" "-opengl" "epic_games_launcher"
+# No -opengl for Epic here: under FEX its UI runs slowly on OpenGL, so leave it on the default DXVK path
+check_and_write "epic" "$epic_games_launcher_path1" "$epic_games_launcher_path2" "NonSteamLaunchers" "EpicGamesLauncher" "" "epic_games_launcher"
 check_and_write "gog" "$gog_galaxy_path1" "$gog_galaxy_path2" "NonSteamLaunchers" "GogGalaxyLauncher" "" "gog_galaxy_launcher"
 check_and_write "uplay" "$uplay_path1" "$uplay_path2" "NonSteamLaunchers" "UplayLauncher" "" "ubisoft_connect_launcher"
 check_and_write "battlenet" "$battlenet_path1" "$battlenet_path2" "NonSteamLaunchers" "Battle.netLauncher" "" "bnet_launcher"
