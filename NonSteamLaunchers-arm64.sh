@@ -3612,8 +3612,23 @@ function install_launcher {
         fi
 
 
+        if [[ "$launcher_name" == "EA App" ]]; then
+            for root in \
+                "$HOME/.local/share/Steam" \
+                "$HOME/.steam/steam" \
+                /run/media/"$USER"/* \
+                /mnt/* \
+                /media/*
+            do
+                # skip if glob didn't expand to real dirs
+                [[ -d "$root" ]] || continue
 
-
+                if [[ -x "$root/steamapps/common/Proton - Experimental/proton" ]]; then
+                    proton_dir="$root/steamapps/common/Proton - Experimental"
+                    break
+                fi
+            done
+        fi
 
 
         SLR4="${logged_in_home}/.local/share/Steam/steamapps/common/SteamLinuxRuntime_4-arm64/run"
