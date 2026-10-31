@@ -7570,9 +7570,9 @@ else:
 
 
 #Battle.net Scanner
-
-# Define your mapping
 flavor_mapping = {
+
+    # Blizzard
     "RTRO": "Blizzard Arcade Collection",
     "D1": "Diablo",
     "OSI": "Diablo II: Resurrected",
@@ -7581,48 +7581,109 @@ flavor_mapping = {
     "ANBS": "Diablo Immortal (PC)",
     "WTCG": "Hearthstone",
     "Hero": "Heroes of the Storm",
-    "Pro": "Overwatch 2",
+    "Pro": "Overwatch",
     "S1": "StarCraft",
     "S2": "StarCraft 2",
     "W1": "Warcraft: Orcs & Humans",
-    "W1R": "Warcraft I: Remastered",
     "W2": "Warcraft II: Battle.net Edition",
+    "W1R": "Warcraft: Remastered",
     "W2R": "Warcraft II: Remastered",
     "W3": "Warcraft III: Reforged",
     "WoW": "World of Warcraft",
     "WoWC": "World of Warcraft Classic",
+    "WoWF": "World of Warcraft: Forever",
     "GRY": "Warcraft Rumble",
-    "ZEUS": "Call of Duty: Black Ops - Cold War",
-    "VIPR": "Call of Duty: Black Ops 4",
-    "ODIN": "Call of Duty: Modern Warfare",
-    "AUKS": "Call of Duty",
-    "LAZR": "Call of Duty: MW 2 Campaign Remastered",
-    "FORE": "Call of Duty: Vanguard",
-    "SPOT": "Call of Duty: Modern Warfare III",
-    "WLBY": "Crash Bandicoot 4: It's About Time",
-    "Aqua": "Avowed",
-    "LBRA": "Tony Hawk's Pro Skater 3 + 4",
-    "SCOR": "Sea of Thieves",
+
+    # Microsoft
+    "AQUA": "Avowed",
+    "ARIS": "Doom: The Dark Ages",
     "ARK": "The Outer Worlds 2",
+    "SCOR": "Sea of Thieves",
+    "LBRA": "Tony Hawk's Pro Skater 3 + 4",
 
+    # Activision
+    "AUKS": "Call of Duty",
+    "VIPR": "Call of Duty: Black Ops 4",
+    "BTLR": "Call of Duty: Black Ops 6",
+    "ZEUS": "Call of Duty: Black Ops Cold War",
+    "LAZR": "Call of Duty: MW 2 Campaign Remastered",
+    "ODIN": "Call of Duty: Modern Warfare",
+    "NINA": "Call of Duty: Modern Warfare II",
+    "PNTA": "Call of Duty: Modern Warfare III",
+    "FORE": "Call of Duty: Vanguard",
+    "WLBY": "Crash Bandicoot 4: It's About Time",
 
-
-
-
-    # Add more games here...
+    # CD Projekt Red
+    "LYRA": "The Witcher 3: Wild Hunt Remastered",
 }
 
 
+
+game_aliases = {
+
+    # Blizzard
+    "prometheus": "Pro",
+    "fenris": "Fen",
+    "diablo3": "D3",
+    "hs_beta": "WTCG",
+    "wow_classic": "WoWC",
+    "wow_classic_era": "WoWC",
+    "wow": "WoW",
+    "heroes": "Hero",
+    "gryphon": "GRY",
+
+    # Microsoft
+    "aqua": "AQUA",
+    "aris": "ARIS",
+    "ark": "ARK",
+    "lbra": "LBRA",
+    "seaofthieves": "SCOR",
+    "sot": "SCOR",
+    "scor": "SCOR",
+
+    # Activision
+    "blackops6": "BTLR",
+    "modernwarfare2": "NINA",
+    "modernwarfare3": "PNTA",
+}
+
+
+flavor_lookup = {
+    code.casefold(): code
+    for code in flavor_mapping
+}
+
+
+
+def resolve_battlenet_game(raw_key):
+
+    normalized = str(raw_key).strip().casefold()
+
+    game_code = game_aliases.get(normalized)
+
+    if not game_code:
+        game_code = flavor_lookup.get(normalized)
+
+    if not game_code:
+        return None, None
+
+    game_name = flavor_mapping.get(game_code)
+
+    return game_code, game_name
+
+
 def parse_battlenet_config(config_file_path):
+
     print(f"Opening Battle.net config file at: {config_file_path}")
 
-    with open(config_file_path, 'r') as file:
+    with open(config_file_path, "r") as file:
         config_data = json.load(file)
 
     games_info = config_data.get("Games", {})
     game_dict = {}
 
     for game_key, game_data in games_info.items():
+
         print(f"Processing game: {game_key}")
 
         if game_key == "battle_net":
@@ -7643,87 +7704,141 @@ def parse_battlenet_config(config_file_path):
 
     return game_dict
 
-
 game_dict = {}
 
 print("Detected platform: Non-Windows")
-config_file_path = f"{logged_in_home}/.local/share/Steam/steamapps/compatdata/{bnet_launcher}/pfx/drive_c/users/steamuser/AppData/Roaming/Battle.net/Battle.net.config"
+
+prefix_path = (
+    f"{logged_in_home}/.local/share/Steam/"
+    f"steamapps/compatdata/{bnet_launcher}"
+)
+
+config_file_path = (
+    f"{prefix_path}/pfx/drive_c/users/steamuser/"
+    "AppData/Roaming/Battle.net/Battle.net.config"
+)
 
 print(f"Config file path: {config_file_path}")
 
 if os.path.exists(config_file_path):
-    print("Battle.net config file found, parsing...")
-    game_dict = parse_battlenet_config(config_file_path)
+
+    print("Battle.net config file found.")
+
+    ge_proton_dir = (
+        f"{logged_in_home}/.steam/root/compatibilitytools.d"
+    )
+
+    ge_proton_versions = []
+
+    if os.path.isdir(ge_proton_dir):
+
+        for entry in os.scandir(ge_proton_dir):
+
+            if entry.is_dir():
+
+                match = re.fullmatch(
+                    r"GE-Proton(\d+)-(\d+)-x86_64",
+                    entry.name
+                )
+
+                if match:
+                    version = tuple(map(int, match.groups()))
+                    ge_proton_versions.append((version, entry.path))
+
+    if not ge_proton_versions:
+        raise FileNotFoundError(
+            f"No GE-Proton installations found in {ge_proton_dir}"
+        )
+
+    latest_ge_proton = max(
+        ge_proton_versions,
+        key=lambda x: x[0]
+    )[1]
+
+    ge_proton = os.path.join(latest_ge_proton, "proton")
+
+    if not os.path.isfile(ge_proton):
+        raise FileNotFoundError(
+            f"GE-Proton executable not found: {ge_proton}"
+        )
+
+    print(f"Detected latest GE-Proton: {latest_ge_proton}")
+
+
+    try:
+        game_dict = parse_battlenet_config(config_file_path)
+
+    except (json.JSONDecodeError, OSError) as error:
+        print(f"Error reading Battle.net config: {error}")
+
 else:
-    print("Battle.net config file not found. Skipping Battle.net Games Scanner.")
+
+    print(
+        "Battle.net config file not found. "
+        "Skipping Battle.net Games Scanner."
+    )
+
 
 if game_dict:
+
     for raw_key, game_info in game_dict.items():
 
-        print(f"Processing game: {raw_key}")
+        print(f"\nProcessing game: {raw_key}")
 
-        game_key = raw_key
+        game_code, game_name = resolve_battlenet_game(raw_key)
 
-        if game_key == "prometheus":
-            game_key = "Pro"
-        elif game_key == "fenris":
-            game_key = "Fen"
-        elif game_key == "diablo3":
-            game_key = "D3"
-        elif game_key == "hs_beta":
-            game_key = "WTCG"
-        elif game_key == "wow_classic":
-            game_key = "WoWC"
-        elif game_key == "wow":
-            game_key = "WoW"
-        elif game_key == "aqua":
-            game_key = "Aqua"
-        elif game_key == "aris":
-            game_key = "Aris"
-        elif game_key == "heroes":
-            game_key = "Hero"
-        elif game_key == "gryphon":
-            game_key = "GRY"
-        elif game_key == "lbra":
-            game_key = "LBRA"
-        elif game_key == "wow_classic_era":
-            game_key = "WoWC"
-        elif game_key in ("seaofthieves", "sot", "scor"):
-            game_key = "SCOR"
+        if not game_code or not game_name:
 
+            print(
+                f"Unknown game mapping: {raw_key}, skipping"
+            )
 
-        game_name = flavor_mapping.get(game_key)
-
-        if not game_name:
-            game_name = flavor_mapping.get(game_key.upper())
-
-        if not game_name:
-            game_name = flavor_mapping.get(game_key.lower())
-
-        if not game_name:
-            game_name = flavor_mapping.get(game_key.title())
-
-        if not game_name:
-            print(f"Unknown game mapping: {game_key}, skipping")
             continue
 
-        print(f"Resolved {raw_key} -> {game_name}")
+        print(
+            f"Resolved {raw_key} -> {game_code} -> {game_name}"
+        )
 
+        exe_path = (
+            f'"{prefix_path}/pfx/drive_c/Program Files (x86)/'
+            f'Battle.net/Battle.net.exe"'
+        )
 
-        exe_path = f'"{logged_in_home}/.local/share/Steam/steamapps/compatdata/{bnet_launcher}/pfx/drive_c/Program Files (x86)/Battle.net/Battle.net.exe"'
-        start_dir = f'"{logged_in_home}/.local/share/Steam/steamapps/compatdata/{bnet_launcher}/pfx/drive_c/Program Files (x86)/Battle.net/"'
+        start_dir = (
+            f'"{prefix_path}/pfx/drive_c/Program Files (x86)/'
+            f'Battle.net/"'
+        )
 
         launch_options = (
-            f'STEAM_COMPAT_DATA_PATH="{logged_in_home}/.local/share/Steam/steamapps/compatdata/{bnet_launcher}" '
-            f'%command% --exec="launch {game_key}" battlenet://{game_key}'
+            f'STEAM_COMPAT_DATA_PATH="{prefix_path}" '
+            f'%command% & sleep 15; '
+            f'STEAM_COMPAT_DATA_PATH="{prefix_path}" '
+            f'"{ge_proton}" run '
+            f'"C:\\\\Program Files (x86)\\\\Battle.net\\\\Battle.net Launcher.exe" '
+            f'--exec="launch {game_code}"'
         )
 
         print(f"Creating entry for {game_name}")
+        print(f"Product code: {game_code}")
+        print(f"Launch options: {launch_options}")
 
-        create_new_entry(exe_path, game_name, launch_options, start_dir, launcher_name="Battle.net")
+        create_new_entry(
+            exe_path,
+            game_name,
+            launch_options,
+            start_dir,
+            launcher_name="Battle.net"
+        )
+
         track_game(game_name, "Battle.net")
 
-print("Battle.net Games Scanner completed.")
+
+print("\nBattle.net Games Scanner completed.")
+
+# End of Battle.net Scanner
+
+
+
 
 # End of Battle.net Scanner
 
