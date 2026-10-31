@@ -3181,7 +3181,8 @@ function install_battlenet {
 
 # Amazon Games specific installation steps
 function install_amazon {
-    terminate_processes "Amazon Games.exe"
+    # When Amazon Games is already installed the setup stops on a dialog and never launches it; close the setup so the install can finish
+    terminate_processes "Amazon Games.exe" || pkill -f "AmazonGamesSetup.exe"
 }
 
 function install_eaapp {
