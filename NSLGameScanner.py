@@ -1592,6 +1592,7 @@ def check_if_shortcut_exists(display_name, exe_path, start_dir, launch_options):
 
 
 ARMADA_LAUNCH_WRAPPER = "/usr/libexec/armada/armada-game-launch"
+EPIC_OVERLAY_HOOK_OFF = 'WINEDLLOVERRIDES="EOSOVH-Win64-Shipping=d"'
 
 
 def wrap_for_armada(launch_options):
@@ -1613,7 +1614,7 @@ def strip_nsl_additions(launch_options):
     return " ".join(
         token
         for token in (launch_options or "").split()
-        if token not in (ARMADA_LAUNCH_WRAPPER, "LD_PRELOAD=", "/usr/bin/env", "%command%")
+        if token not in (ARMADA_LAUNCH_WRAPPER, EPIC_OVERLAY_HOOK_OFF, "LD_PRELOAD=", "/usr/bin/env", "%command%")
         and not token.startswith(("FEX_APP_CONFIG=", "--force-device-scale-factor="))
     )
 
@@ -6618,6 +6619,10 @@ def modify_shortcut_for_umu(appname, exe, launchoptions, startingdir):
             f'PROTONPATH="{logged_in_home}/.steam/root/compatibilitytools.d/{compat_tool_name}" '
         )
 
+        # Keep the arm64 Epic overlay fix the rebuilt options would otherwise drop
+        if EPIC_OVERLAY_HOOK_OFF in launchoptions:
+            new_launch_options = f"{EPIC_OVERLAY_HOOK_OFF} {new_launch_options}"
+
         if '%command%' not in updated_launch:
             updated_launch = f'%command% {updated_launch}'
 
@@ -7134,6 +7139,9 @@ if os.path.exists(item_dir):
             f"'com.epicgames.launcher://apps/{app_name}"
             f"?action=launch&silent=true'"
         )
+        # Epic's EOS overlay hooks DXGI by writing x86 jumps into Proton's arm64 dxgi.dll, which crashes the launcher
+        if platform.machine() == "aarch64":
+            launch_options = f"{EPIC_OVERLAY_HOOK_OFF} {launch_options}"
 
         create_new_entry(
             exe_path,
