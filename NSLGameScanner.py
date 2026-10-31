@@ -8831,6 +8831,92 @@ if heroic_exe:
     track_game("Heroic Games Launcher", "Launcher")
 else:
     print("Skipping Heroic Games Launcher scanner — Heroic not found.")
+
+
+HEROIC_LAUNCH_URL = re.compile(r'heroic://launch(?:\?[^"\s]*appName=([^&"\s]+)|/[^/"\s]+/([^/?"\s]+))')
+
+
+def heroic_shortcut_app_names():
+    """appNames that already have a Steam shortcut launching them through Heroic (NSL's or Heroic's own)"""
+    names = set()
+    for s in shortcuts['shortcuts'].values():
+        for m in HEROIC_LAUNCH_URL.finditer(f"{s.get('exe') or s.get('Exe') or ''} {s.get('LaunchOptions') or ''}"):
+            names.add(urllib.parse.unquote(m.group(1) or m.group(2)))
+    return names
+
+
+def quiet_heroic_shortcuts():
+    """Add --no-gui to game shortcuts that go through Heroic, so Heroic runs the game without opening its window"""
+    global shortcuts_updated
+    for s in shortcuts['shortcuts'].values():
+        options = s.get('LaunchOptions') or ''
+        if '--no-gui' in options or 'heroic://launch' not in options:
+            continue
+        s['LaunchOptions'] = re.sub(r'("?heroic://launch)', r'--no-gui \1', options, count=1)
+        shortcuts_updated = True
+        print(f"Added --no-gui to Heroic shortcut {s.get('appname') or s.get('AppName')}.")
+
+
+def read_heroic_json(path):
+    try:
+        with open(path, encoding="utf-8") as f:
+            return json.load(f)
+    except (OSError, ValueError):
+        return None
+
+
+def get_heroic_games(config_dir):
+    """(appName, runner, title) for each game installed through Heroic's Epic, GOG, Amazon and sideload stores"""
+    games = []
+
+    legendary = read_heroic_json(f"{config_dir}/legendaryConfig/legendary/installed.json") or {}
+    for app_name, info in legendary.items():
+        if not info.get("is_dlc"):
+            games.append((app_name, "legendary", info.get("title") or app_name))
+
+    gog_library = read_heroic_json(f"{config_dir}/store_cache/gog_library.json") or {}
+    gog_titles = {g.get("app_name"): g.get("title") for g in gog_library.get("games", [])}
+    gog_installed = read_heroic_json(f"{config_dir}/gog_store/installed.json") or {}
+    for info in gog_installed.get("installed", []):
+        app_name = info.get("appName")
+        if app_name and not info.get("is_dlc"):
+            title = gog_titles.get(app_name) or os.path.basename((info.get("install_path") or "").rstrip("/"))
+            games.append((app_name, "gog", title or app_name))
+
+    nile_library = read_heroic_json(f"{config_dir}/nile_config/nile/library.json") or []
+    nile_titles = {g.get("id"): (g.get("product") or {}).get("title") for g in nile_library}
+    for info in read_heroic_json(f"{config_dir}/nile_config/nile/installed.json") or []:
+        app_name = info.get("id")
+        if app_name:
+            title = nile_titles.get(app_name) or os.path.basename((info.get("path") or "").rstrip("/"))
+            games.append((app_name, "nile", title or app_name))
+
+    sideloaded = read_heroic_json(f"{config_dir}/sideload_apps/library.json") or {}
+    for info in sideloaded.get("games", []):
+        if info.get("is_installed") and info.get("app_name"):
+            games.append((info["app_name"], "sideload", info.get("title") or info["app_name"]))
+
+    return games
+
+
+quiet_heroic_shortcuts()
+
+if heroic_exe:
+    existing_heroic_games = heroic_shortcut_app_names()
+    for app_name, runner, title in get_heroic_games(f"{logged_in_home}/.config/heroic"):
+        track_game(title, "Heroic Games Launcher")
+        if app_name in existing_heroic_games:
+            print(f"Heroic already has a Steam shortcut for {title}. Skipping creation.")
+            continue
+        # --no-gui runs the game without Heroic's window and closes Heroic when the game exits.
+        # LD_PRELOAD is cleared for the same Steam UI freeze as the launcher shortcut above.
+        create_new_entry(
+            shortcutdirectory=f'"{heroic_exe}"',
+            appname=title,
+            launchoptions=f'LD_PRELOAD= %command% --no-gui --no-sandbox "heroic://launch?appName={quote(app_name)}&runner={runner}"',
+            startingdir=f'"{os.path.dirname(heroic_exe)}"',
+            launcher_name="Heroic Games Launcher"
+        )
 # End of Heroic Games Launcher Scanner
 
 
