@@ -1614,7 +1614,7 @@ def strip_nsl_additions(launch_options):
     return " ".join(
         token
         for token in (launch_options or "").split()
-        if token not in (ARMADA_LAUNCH_WRAPPER, EPIC_OVERLAY_HOOK_OFF, "LD_PRELOAD=", "/usr/bin/env", "%command%")
+        if token not in (ARMADA_LAUNCH_WRAPPER, EPIC_OVERLAY_HOOK_OFF, "LD_PRELOAD=", "/usr/bin/env", "%command%", "--console")
         and not token.startswith(("FEX_APP_CONFIG=", "--force-device-scale-factor="))
     )
 
@@ -8816,7 +8816,9 @@ if not heroic_exe:
 if heroic_exe:
     # Keep Steam's overlay library out of Heroic: Electron SIGKILLs its helper processes on exit, and one
     # killed while the preloaded overlay holds Steam's IPC lock (SysMgrMutex) freezes the whole Steam UI
-    heroic_options = "LD_PRELOAD= %command%"
+    # --console opens Heroic's controller UI from Steam without the "Start in console mode" setting, which
+    # also pops Heroic's window up on --no-gui game launches
+    heroic_options = "LD_PRELOAD= %command% --console"
     heroic_scale = internal_panel_scale_factor()
     if heroic_scale:
         # Heroic's UI is unreadably small at 1x on dense handheld screens
