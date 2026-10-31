@@ -3626,7 +3626,9 @@ function install_launcher {
     fi
 }
 # Install Epic Games Launcher
-install_launcher "Epic Games" "EpicGamesLauncher" "$msi_file" "$msi_url" "MsiExec.exe /i "$msi_file" /qn" "70" "" ""
+# The launcher saves each game's install record to Data/Manifests but never creates that folder itself; without it
+# installs are never recorded, so they're missing after a restart and the game scanner can't find them
+install_launcher "Epic Games" "EpicGamesLauncher" "$msi_file" "$msi_url" "MsiExec.exe /i "$msi_file" /qn" "70" "" 'mkdir -p "${STEAM_COMPAT_DATA_PATH}/pfx/drive_c/ProgramData/Epic/EpicGamesLauncher/Data/Manifests"'
 # Install GOG Galaxy
 install_launcher "GOG Galaxy" "GogGalaxyLauncher" "$exe_file" "$exe_url" "$exe_file /silent" "71" "" "" true
 
