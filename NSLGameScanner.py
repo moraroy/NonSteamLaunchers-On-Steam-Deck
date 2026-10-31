@@ -1614,8 +1614,33 @@ def strip_nsl_additions(launch_options):
         token
         for token in (launch_options or "").split()
         if token not in (ARMADA_LAUNCH_WRAPPER, "LD_PRELOAD=", "/usr/bin/env", "%command%")
-        and not token.startswith("FEX_APP_CONFIG=")
+        and not token.startswith(("FEX_APP_CONFIG=", "--force-device-scale-factor="))
     )
+
+
+def internal_panel_scale_factor():
+    """Electron scale for a dense built-in panel (1080p+ handhelds like the AYN Odin 2), else None"""
+    drm = "/sys/class/drm"
+    try:
+        connectors = os.listdir(drm)
+    except OSError:
+        return None
+    for name in connectors:
+        if not re.search(r"-(eDP|DSI|LVDS)-", name):
+            continue
+        try:
+            with open(f"{drm}/{name}/status") as f:
+                if f.read().strip() != "connected":
+                    continue
+            with open(f"{drm}/{name}/modes") as f:
+                mode = f.readline().strip()
+        except OSError:
+            continue
+        size = re.match(r"(\d+)x(\d+)", mode)
+        # Panels may be mounted portrait (e.g. 1080x1920), so go by the long side
+        if size and max(int(size.group(1)), int(size.group(2))) >= 1920:
+            return "1.5"
+    return None
 
 
 def shortcut_target(exe):
@@ -8668,10 +8693,15 @@ if not heroic_exe:
 if heroic_exe:
     # Keep Steam's overlay library out of Heroic: Electron SIGKILLs its helper processes on exit, and one
     # killed while the preloaded overlay holds Steam's IPC lock (SysMgrMutex) freezes the whole Steam UI
+    heroic_options = "LD_PRELOAD= %command%"
+    heroic_scale = internal_panel_scale_factor()
+    if heroic_scale:
+        # Heroic's UI is unreadably small at 1x on dense handheld screens
+        heroic_options += f" --force-device-scale-factor={heroic_scale}"
     create_new_entry(
         shortcutdirectory=f'"{heroic_exe}"',
         appname="Heroic Games Launcher",
-        launchoptions="LD_PRELOAD= %command%",
+        launchoptions=heroic_options,
         startingdir=f'"{os.path.dirname(heroic_exe)}"',
         launcher_name="NonSteamLaunchers"
     )
