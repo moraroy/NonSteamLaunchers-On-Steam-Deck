@@ -4472,6 +4472,11 @@ write_env_vars() {
             launch_options="LD_PRELOAD= ${launch_options/\%command\%/${armada_game_launch} /usr/bin/env FEX_APP_CONFIG=${fex_config} %command%}"
         fi
     fi
+    # Epic's EOS overlay hooks DXGI by writing x86 jumps into Proton's arm64 dxgi.dll, which crashes the
+    # launcher (EXCEPTION_ILLEGAL_INSTRUCTION) whenever it starts for a game, so keep the hook DLL from loading
+    if [[ "$launcher_name" == "epic" ]]; then
+        launch_options="WINEDLLOVERRIDES=\"EOSOVH-Win64-Shipping=d\" ${launch_options}"
+    fi
     local starting_dir="\"$(dirname "${launcher_path}")\""
 
     # Write the variables directly to the env_vars file
