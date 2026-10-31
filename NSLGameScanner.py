@@ -7810,9 +7810,9 @@ if game_dict:
         )
 
         launch_options = (
-            f'STEAM_COMPAT_DATA_PATH="{prefix_path}" '
+            f'STEAM_COMPAT_DATA_PATH="{prefix_path}/" '
             f'%command% & sleep 15; '
-            f'STEAM_COMPAT_DATA_PATH="{prefix_path}" '
+            f'STEAM_COMPAT_DATA_PATH="{prefix_path}/" '
             f'"{ge_proton}" run '
             f'"C:\\\\Program Files (x86)\\\\Battle.net\\\\Battle.net Launcher.exe" '
             f'--exec="launch {game_code}"'
