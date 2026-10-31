@@ -6619,6 +6619,10 @@ def modify_shortcut_for_umu(appname, exe, launchoptions, startingdir):
             f'PROTONPATH="{logged_in_home}/.steam/root/compatibilitytools.d/{compat_tool_name}" '
         )
 
+        # Keep the arm64 Epic overlay fix the rebuilt options would otherwise drop
+        if EPIC_OVERLAY_HOOK_OFF in launchoptions:
+            new_launch_options = f"{EPIC_OVERLAY_HOOK_OFF} {new_launch_options}"
+
         if '%command%' not in updated_launch:
             updated_launch = f'%command% {updated_launch}'
 
