@@ -6142,6 +6142,142 @@ def get_compat_tool_if_needed(launchoptions, exe_path, startingdir):
 
 
 
+
+def prepare_artwork_for_game(appname, unsigned_shortcut_id, steamid3, logged_in_home):
+    global grid64, gridp64, logo64, hero64
+
+    grid64 = ""
+    gridp64 = ""
+    logo64 = ""
+    hero64 = ""
+
+    if appname == 'Repair EA App':
+        print(f"Skipping artwork for special app: {appname}")
+        return
+
+    grid_dir = f"{logged_in_home}/.steam/root/userdata/{steamid3}/config/grid"
+    os.makedirs(grid_dir, exist_ok=True)
+
+    print(f"[Artwork] Starting local tag check for: {appname}")
+
+    try:
+        if os.path.exists(grid_dir):
+            for filename in os.listdir(grid_dir):
+                filepath = os.path.join(grid_dir, filename)
+                if os.path.isdir(filepath):
+                    continue
+
+                if file_tagged_with_appname(filepath, appname):
+                    print(f"[Artwork] Found matching tagged file: {filename}")
+                    with open(filepath, "rb") as img_file:
+                        encoded_val = b64encode(img_file.read()).decode("utf-8")
+                        filename_lower = filename.lower()
+
+                        if "-icon" in filename_lower or filename_lower.endswith(".ico"):
+                            continue
+
+                        if "_logo." in filename_lower and not logo64:
+                            logo64 = encoded_val
+                        elif "_hero." in filename_lower and not hero64:
+                            hero64 = encoded_val
+                        elif (filename_lower.endswith("p.png") or filename_lower.endswith("p.jpg") or filename_lower.endswith("p.jpeg")) and not gridp64:
+                            gridp64 = encoded_val
+                        elif filename_lower.endswith(('.png', '.jpg', '.jpeg', '.webp')) and not grid64:
+                            grid64 = encoded_val
+    except Exception as e:
+        print(f"[Artwork] Error checking local tagged artwork: {e}")
+
+    if grid64 and gridp64 and logo64 and hero64:
+        print(f"[Artwork] Found complete local artwork set for {appname}. Skipping download entirely.")
+        return
+
+    print(f"[Artwork] Local artwork set for {appname} is incomplete or missing. Proceeding to fetch/download...")
+
+    game_id = get_game_id(appname)
+    if game_id is not None:
+        print(f"[Artwork] Fetching SteamGridDB art for game ID: {game_id}")
+        get_sgdb_art(game_id, unsigned_shortcut_id)
+
+    steam_store_appid = get_steam_store_appid(appname)
+    if steam_store_appid:
+        print(f"[Artwork] Found Steam App ID for {appname}: {steam_store_appid}. Checking fallbacks...")
+
+        for art_type in ["icons", "logos", "heroes", "grids_600x900", "grids_920x430"]:
+            url = get_steam_fallback_url(steam_store_appid, art_type)
+            if not url:
+                continue
+
+            try:
+                req = urllib.request.Request(url, method='HEAD')
+                with urllib.request.urlopen(req) as response:
+                    if response.status == 200:
+                        ext = url.split('.')[-1]
+
+                        if art_type == "icons":
+                            filename = get_file_name("icons", unsigned_shortcut_id)
+                        elif art_type == "logos":
+                            filename = f"{unsigned_shortcut_id}_logo.{ext}"
+                        elif art_type == "heroes":
+                            filename = f"{unsigned_shortcut_id}_hero.{ext}"
+                        elif art_type == "grids_600x900":
+                            filename = f"{unsigned_shortcut_id}p.{ext}"
+                        elif art_type == "grids_920x430":
+                            filename = f"{unsigned_shortcut_id}.{ext}"
+                        else:
+                            continue
+
+                        file_path = os.path.join(grid_dir, filename)
+                        print(f"[Artwork] Downloading fallback {art_type} from {url}")
+
+                        with urllib.request.urlopen(url) as img_response:
+                            img_data = img_response.read()
+
+                            if art_type == "icons":
+                                with open(file_path, 'wb') as f:
+                                    f.write(img_data)
+                                print(f"[Artwork] Saved fallback icon to {filename}")
+                            else:
+                                encoded = b64encode(img_data).decode('utf-8')
+                                if art_type == "logos" and not logo64:
+                                    logo64 = encoded
+                                elif art_type == "heroes" and not hero64:
+                                    hero64 = encoded
+                                elif art_type == "grids_600x900" and not gridp64:
+                                    gridp64 = encoded
+                                elif art_type == "grids_920x430" and not grid64:
+                                    grid64 = encoded
+            except Exception as e:
+                print(f"[Artwork] Error downloading fallback artwork for {art_type}: {e}")
+
+    print(f"[Artwork] Running fallback disk reader check for ID {unsigned_shortcut_id}...")
+
+    try:
+        if os.path.exists(grid_dir):
+            for filename in os.listdir(grid_dir):
+                filepath = os.path.join(grid_dir, filename)
+                if os.path.isdir(filepath):
+                    continue
+                if file_tagged_with_appname(filepath, appname):
+                    with open(filepath, "rb") as img_file:
+                        encoded_val = b64encode(img_file.read()).decode("utf-8")
+                        filename_lower = filename.lower()
+                        if "_logo." in filename_lower and not logo64:
+                            logo64 = encoded_val
+                        elif "_hero." in filename_lower and not hero64:
+                            hero64 = encoded_val
+                        elif (filename_lower.endswith("p.png") or filename_lower.endswith("p.jpg") or filename_lower.endswith("p.jpeg")) and not gridp64:
+                            gridp64 = encoded_val
+                        elif filename_lower.endswith(('.png', '.jpg', '.jpeg', '.webp')) and not "-icon" in filename_lower and not grid64:
+                            grid64 = encoded_val
+    except Exception as e:
+        print(f"[Artwork] Error in fallback disk reader: {e}")
+
+    print(f"[Artwork] Tagging artwork files for {appname}...")
+    tag_artwork_files(unsigned_shortcut_id, appname, steamid3, logged_in_home)
+
+
+
+
 def create_new_entry(shortcutdirectory, appname, launchoptions, startingdir, launcher_name=None):
     gate_file = f"{logged_in_home}/.config/systemd/user/env_vars"
     scan_state = None
@@ -6161,36 +6297,31 @@ def create_new_entry(shortcutdirectory, appname, launchoptions, startingdir, lau
     global new_shortcuts_added
     global shortcuts_updated
     global created_shortcuts
+    global app_ids
 
-    global grid64
-    global gridp64
-    global logo64
-    global hero64
-    global counter
-
-    grid64 = ""
-    gridp64 = ""
-    logo64 = ""
-    hero64 = ""
-
-
-    # Check if the launcher is installed (allows blank launch options, but catches missing/None values)
+    # Check if the launcher is installed
     if not shortcutdirectory or not appname or launchoptions is None or not startingdir:
         print(f"{appname} is not installed. Skipping.")
         return
 
     exe_path = f"{shortcutdirectory}"
 
-    # --- FIX: Modify shortcut first ---
+    # --- Modify shortcut and generate IDs ---
     exe_path, startingdir, launchoptions = modify_shortcut_for_umu(appname, exe_path, launchoptions, startingdir)
     umu_id = extract_umu_id_from_launch_options(launchoptions)
 
-    # --- Now generate IDs using modified exe_path ---
     signed_shortcut_id = get_steam_shortcut_id(exe_path, appname)
     unsigned_shortcut_id = get_unsigned_shortcut_id(signed_shortcut_id)
 
     # Only store app ID for specific launchers
-    if appname in ['Epic Games', 'Gog Galaxy', 'Ubisoft Connect', 'Battle.net', 'EA App', 'Amazon Games', 'itch.io', 'Legacy Games', 'Humble Bundle', 'IndieGala Client', 'Rockstar Games Launcher', 'Glyph', 'Minecraft Launcher', 'Playstation Plus', 'VK Play', 'HoYoPlay', 'Nexon Launcher', 'Game Jolt Client', 'Artix Game Launcher', 'ARC Launcher', 'PURPLE Launcher', 'Plarium Play', 'VFUN Launcher', 'Tempo Launcher', 'Pokémon Trading Card Game Live', 'Antstream Arcade', 'STOVE Client', 'Big Fish Games Manager', 'Gryphlink']:
+    if appname in [
+        'Epic Games', 'Gog Galaxy', 'Ubisoft Connect', 'Battle.net', 'EA App',
+        'Amazon Games', 'itch.io', 'Legacy Games', 'Humble Bundle', 'IndieGala Client',
+        'Rockstar Games Launcher', 'Glyph', 'Minecraft Launcher', 'Playstation Plus',
+        'VK Play', 'HoYoPlay', 'Nexon Launcher', 'Game Jolt Client', 'Artix Game Launcher',
+        'ARC Launcher', 'PURPLE Launcher', 'Plarium Play', 'VFUN Launcher', 'Tempo Launcher',
+        'Pokémon Trading Card Game Live', 'Antstream Arcade', 'STOVE Client', 'Big Fish Games Manager', 'Gryphlink'
+    ]:
         app_ids[appname] = unsigned_shortcut_id
 
     outdated = find_outdated_nsl_shortcut(appname, exe_path, wrap_for_armada(launchoptions))
@@ -6206,78 +6337,10 @@ def create_new_entry(shortcutdirectory, appname, launchoptions, startingdir, lau
         shortcuts_updated = True
         return
 
-    # Skip artwork download for specific shortcuts
-    if appname not in ['Repair EA App']:
-        #delete_old_artwork_by_tag(appname, unsigned_shortcut_id, steamid3, logged_in_home)
-        game_id = get_game_id(appname)
-        if game_id is not None:
-            get_sgdb_art(game_id, unsigned_shortcut_id)
+    # --- Prepare Artwork Beforehand (Called here cleanly) ---
+    prepare_artwork_for_game(appname, unsigned_shortcut_id, steamid3, logged_in_home)
 
-    # Try Steam fallback artwork
-    steam_store_appid = get_steam_store_appid(appname)
-    if steam_store_appid:
-        print(f"Found Steam App ID for {appname}: {steam_store_appid}")
-        #create_steam_store_app_manifest_file(steam_store_appid, appname)
-
-        for art_type in ["icons", "logos", "heroes", "grids_600x900", "grids_920x430"]:
-            url = get_steam_fallback_url(steam_store_appid, art_type)
-            if not url:
-                print(f"Fallback URL invalid for {art_type} - No valid URL found")
-                continue
-
-            try:
-                # Use urllib to perform a HEAD request (check URL status)
-                req = urllib.request.Request(url, method='HEAD')
-                with urllib.request.urlopen(req) as response:
-                    if response.status == 200:
-                        ext = url.split('.')[-1]
-
-                        if art_type == "icons":
-                            filename = get_file_name("icons", unsigned_shortcut_id)
-                        elif art_type == "logos":
-                            filename = f"{unsigned_shortcut_id}_logo.{ext}"
-                        elif art_type == "heroes":
-                            filename = f"{unsigned_shortcut_id}_hero.{ext}"
-                        elif art_type == "grids_600x900":
-                            filename = f"{unsigned_shortcut_id}p.{ext}"
-                        elif art_type == "grids_920x430":
-                            filename = f"{unsigned_shortcut_id}.{ext}"
-                        else:
-                            continue
-
-                        file_path = f"{logged_in_home}/.steam/root/userdata/{steamid3}/config/grid/{filename}"
-
-                        # Download and use artwork directly — no file existence checks
-                        with urllib.request.urlopen(url) as img_response:
-                            img_data = img_response.read()
-
-                            if art_type == "icons":
-                                with open(file_path, 'wb') as f:
-                                    f.write(img_data)
-                                print(f"Downloaded and saved fallback icon: {filename}")
-                            else:
-                                encoded = b64encode(img_data).decode('utf-8')
-                                print(f"Downloaded fallback {art_type} as base64")
-
-                                if art_type == "logos" and not logo64:
-                                    logo64 = encoded
-                                elif art_type == "heroes" and not hero64:
-                                    hero64 = encoded
-                                elif art_type == "grids_600x900" and not gridp64:
-                                    gridp64 = encoded
-                                elif art_type == "grids_920x430" and not grid64:
-                                    grid64 = encoded
-                    else:
-                        print(f"Fallback URL invalid for {art_type} - {url}")
-            except Exception as e:
-                print(f"Error downloading fallback artwork for {art_type}: {e}")
-
-
-
-    tag_artwork_files(unsigned_shortcut_id, appname, steamid3, logged_in_home)
-
-
-
+    # --- Build New Entry Dictionary ---
     new_entry = {
         'appname': appname,
         'exe': exe_path,
@@ -6294,10 +6357,6 @@ def create_new_entry(shortcutdirectory, appname, launchoptions, startingdir, lau
         new_entry['Launcher'] = launcher_name
 
 
-
-
-
-
     compat_tool = get_compat_tool_if_needed(launchoptions, exe_path, startingdir)
 
     # Skip setting compat tool if UMU already processed it
@@ -6305,22 +6364,9 @@ def create_new_entry(shortcutdirectory, appname, launchoptions, startingdir, lau
         new_entry['CompatTool'] = compat_tool
 
 
-
-
-
-
-
-
-
-
     # Add the new entry to the shortcuts dictionary and add proton
     key = get_next_available_key(shortcuts)
     shortcuts['shortcuts'][key] = new_entry
-
-
-
-
-
 
 
     remove_lines = {
@@ -6406,10 +6452,9 @@ def create_new_entry(shortcutdirectory, appname, launchoptions, startingdir, lau
         print(f"WebSocket error: {e}")
 
 
-
-
     #Final return
     return new_entry
+
 
 
 
