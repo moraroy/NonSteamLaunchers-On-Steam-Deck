@@ -3697,6 +3697,47 @@ recv_ws_message_for_id(ws_socket, enable_id)
 
 watch_code = r'''if (!window.__watcherInjected) {
 window.__watcherInjected = 1;
+const TERMINATION_EXCLUDED_GAMES = [
+    'Epic Games',
+    'GOG Galaxy',
+    'Ubisoft Connect',
+    'Battle.net',
+    'EA App',
+    'Amazon Games',
+    'itch.io',
+    'Legacy Games',
+    'Humble Bundle',
+    'IndieGala Client',
+    'Rockstar Games Launcher',
+    'Glyph',
+    'Minecraft Launcher',
+    'Playstation Plus',
+    'VK Play',
+    'HoYoPlay',
+    'Nexon Launcher',
+    'Game Jolt Client',
+    'Artix Game Launcher',
+    'PURPLE Launcher',
+    'Plarium Play',
+    'VFUN Launcher',
+    'Tempo Launcher',
+    'ARC Launcher',
+    'Pokémon Trading Card Game Live',
+    'Antstream Arcade',
+    'STOVE Client',
+    'Big Fish Games Manager',
+    'Xbox Game Pass',
+    'Xodus Nexus',
+    'NonSteamLaunchers',
+    'Repair EA App',
+    'Gryphlink'
+];
+
+const isTerminationExcluded = name =>
+    TERMINATION_EXCLUDED_GAMES.some(
+        excluded =>
+            excluded.toLowerCase() === String(name || '').trim().toLowerCase()
+    );
 
 if (!window.__originalOpen) {
     window.__originalOpen = window.open;
@@ -3949,7 +3990,7 @@ async function runGameLEDPalette(gameId, gameName) {
                     desktopGameRunning=false;
                     const id=desktopCurrentAppId;
 
-                    if (id) setTimeout(() => {
+                    if (id && !isTerminationExcluded(desktopCurrentGameName)) setTimeout(() => {
                         try {
                             SteamClient.Apps.TerminateApp(id,false);
 
@@ -4059,7 +4100,12 @@ async function runGameLEDPalette(gameId, gameName) {
     } catch {}
 
     const terminate = () => {
-        if (!s.watchersEnabled || !s.gameId || s.terminateScheduled) return;
+        if (
+            !s.watchersEnabled ||
+            !s.gameId ||
+            s.terminateScheduled ||
+            isTerminationExcluded(s.gameName)
+        ) return;
 
         s.terminateScheduled=true;
 
