@@ -3762,7 +3762,13 @@ if (!window.__originalOpen) {
 }
 
 
-let desktopGameRunning = false, desktopCurrentAppId = null, desktopCurrentGameName = null;
+
+const GAME_GRACE_PERIOD_MS = 2 * 60 * 1000;
+
+let desktopGameRunning = false,
+    desktopCurrentAppId = null,
+    desktopCurrentGameName = null,
+    desktopGameLaunchTime = 0;
 window.__watcherLedSnapshot = null;
 window.__watcherLedGeneration = 0;
 
@@ -3976,6 +3982,7 @@ async function runGameLEDPalette(gameId, gameName) {
                             desktopGameRunning=true;
                             desktopCurrentAppId=m[1];
                             desktopCurrentGameName=app.display_name||null;
+                            desktopGameLaunchTime=Date.now();
                         }
                     }
                 }
@@ -3990,7 +3997,12 @@ async function runGameLEDPalette(gameId, gameName) {
                     desktopGameRunning=false;
                     const id=desktopCurrentAppId;
 
-                    if (id && !isTerminationExcluded(desktopCurrentGameName)) setTimeout(() => {
+
+                    if (
+                        id &&
+                        !isTerminationExcluded(desktopCurrentGameName) &&
+                        Date.now()-desktopGameLaunchTime>=GAME_GRACE_PERIOD_MS
+                    ) setTimeout(() => {
                         try {
                             SteamClient.Apps.TerminateApp(id,false);
 
@@ -4104,7 +4116,8 @@ async function runGameLEDPalette(gameId, gameName) {
             !s.watchersEnabled ||
             !s.gameId ||
             s.terminateScheduled ||
-            isTerminationExcluded(s.gameName)
+            isTerminationExcluded(s.gameName) ||
+            Date.now()-s.launchTime<GAME_GRACE_PERIOD_MS
         ) return;
 
         s.terminateScheduled=true;
