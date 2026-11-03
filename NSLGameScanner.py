@@ -7915,7 +7915,7 @@ if game_dict:
 
         launch_options = (
             f'STEAM_COMPAT_DATA_PATH="{prefix_path}/" '
-            f'%command% & sleep 15; '
+            f'%command% & sleep 20; '
             f'STEAM_COMPAT_DATA_PATH="{prefix_path}/" '
             f'"{ge_proton}" run '
             f'"C:\\\\Program Files (x86)\\\\Battle.net\\\\Battle.net Launcher.exe" '
