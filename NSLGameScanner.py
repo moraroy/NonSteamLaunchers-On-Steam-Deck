@@ -261,6 +261,7 @@ logo64 = ""
 hero64 = ""
 
 
+
 # Define the path to the shortcuts file
 shortcuts_file = f"{logged_in_home}/.steam/root/userdata/{steamid3}/config/shortcuts.vdf"
 
@@ -3318,11 +3319,10 @@ def fetch_targets(host, port, max_retries=15, base_delay=2):
                       f"retrying in {delay}s... ({e})")
                 time.sleep(delay)
             else:
-                print(f"ERROR: Could not connect to Steam debugger at {host}:{port} "
-                      f"after {max_retries} attempts.")
-                print(f"Make sure Steam is running with these launch options:")
-                print(f"  -dev -cef-enable-debugging -cef-single-process")
-                raise last_error
+                print(f"WARNING: Steam debugger unavailable at {host}:{port} "
+                    f"after {max_retries} attempts.")
+                print("Steam may not be running or debugging may not be enabled.")
+                return None
 
         finally:
             try:
@@ -3335,13 +3335,23 @@ def fetch_targets(host, port, max_retries=15, base_delay=2):
 def get_ws_url_by_title(host, port, title):
     targets = fetch_targets(host, port)
 
+    if not targets:
+        return None
+
     for target in targets:
         target_title = target.get("title", "")
 
         if re.fullmatch(title, target_title):
-            return target.get("webSocketDebuggerUrl")
+            ws_url = target.get("webSocketDebuggerUrl")
 
-    raise Exception(f"Target with title '{title}' not found.")
+            if not ws_url:
+                print("[NSL] WARNING: Target found, but WebSocket URL is missing.")
+                return None
+
+            return ws_url
+
+    print(f"WARNING: Target with title '{title}' not found.")
+    return None
 
 # Create raw TCP socket and perform WebSocket handshake
 def create_websocket_connection(ws_url):
@@ -3668,6 +3678,10 @@ def inject_js_only(ws_socket):
 
 #Watch only
 ws_url = get_ws_url_by_title(WS_HOST, WS_PORT, TARGET_TITLE)
+
+if not ws_url:
+    print("[NSL] Steam debugger unavailable. Exiting gracefully.")
+    sys.exit(0)
 
 ws_socket = create_websocket_connection(ws_url)
 
