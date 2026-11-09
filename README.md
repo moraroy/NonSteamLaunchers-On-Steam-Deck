@@ -93,8 +93,13 @@ In both versions of NonSteamLaunchers, Desktop or Decky, NSL will back up your g
 ### Notes
 - With NSL youre able to send notes to each other and communicate to other NSL users via a hashtag in your note at the beginning, write #nsl and leave a space, and then type your actual note. The script will then look for that note and send it through the api and spit it back out for that non-steam game. Everyone who uses NSL will then receive it and it will be added to the "NSL Community Note". This is to allow people to have first hand information about their games right in front of them from others! Currently you can participate only if you send a note! Once you created a note, open up NonSteamLaunchers and press the ❤️. This is an expiremental feature so keep that in mind!
 
+### Library Backups
+- NSL backs up your library here ``` /home/deck/.steam/root/userdata/STEAMID3/config/shortcuts.vdf_backups ```  Replace the one you want in the directory before and rename to ``` shortcuts.vdf ```  
+
 ### Logs
 - The logs for NSL are located here ``` /home/deck/Downloads/NonSteamLaunchers-install.log ``` and here ``` /home/deck/homebrew/logs/NonSteamLaunchers/ ``` if using the Decky Plugin Version.
+
+- In the Desktop Version you can see the scanner that is located here ``` /home/deck/.config/systemd/user/NSLGameScanner.py ```  live in Konsole ``` journalctl --user -u nslgamescanner.service -f -o short-iso ``` 
 
 ### arm64 (SteamOS arm64, ArmadaOS) 🦾
 - On arm64 devices run `NonSteamLaunchers-arm64.sh` (or `NonSteamLaunchers-arm64.desktop`) instead; the Decky plugin picks it automatically. It installs the aarch64 GE-Proton build, and the Windows launchers run through Proton with FEX emulation in the same single `NonSteamLaunchers` prefix.
