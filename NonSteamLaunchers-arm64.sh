@@ -1543,6 +1543,7 @@ StartFreshFunction() {
             "${logged_in_home}/.config/systemd/user/nslgamescanner.service"|\
             "${logged_in_home}/.local/share/applications/Xodus Nexus.AppImage"|\
             "${logged_in_home}/.local/share/applications/RemotePlayWhatever"|\
+			"${logged_in_home}/.local/share/applications/Heroic.AppImage"|\
             "${logged_in_home}/.local/share/applications/RemotePlayWhatever.desktop"|\
             "${logged_in_home}/Downloads/NonSteamLaunchers-install.log")
                 ;;
