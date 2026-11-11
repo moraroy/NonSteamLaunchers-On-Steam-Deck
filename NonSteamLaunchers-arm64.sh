@@ -708,8 +708,12 @@ get_sd_path() {
         | awk '$1 ~ /^mmcblk.*p[0-9]+$/ && $2 != "" { print $2; exit }')
 
     if [[ -z "$sd_mount" ]]; then
-        zenity --error --text="No SD card detected. Please insert and mount an SD card."
-        exit 1
+        timeout 5s zenity --error \
+            --text="No SD card detected. Skipping SD card cleanup." \
+            2>/dev/null || true
+
+        echo ""
+        return 0
     fi
 
     echo "$sd_mount"
@@ -1634,9 +1638,15 @@ StartFreshFunction() {
     done
 
     echo "Removing SD card folders..."
-    for folder in "${folder_names[@]}"; do
-        delete_path "${sd_path}/${folder}"
-    done
+	if [[ -n "$sd_path" && -d "$sd_path" ]]; then
+	    echo "SD card detected at: $sd_path"
+	
+	    for folder in "${folder_names[@]}"; do
+	        delete_path "${sd_path}/${folder}"
+	    done
+	else
+	    echo "No SD card detected. Skipping SD card cleanup."
+	fi
 
     clean_envars_file
 
