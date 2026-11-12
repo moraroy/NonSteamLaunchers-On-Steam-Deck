@@ -1706,34 +1706,6 @@ TARGET_TITLE4 = r"^MainMenu_uid\d+$"
 
 
 JS_CODE = """
-// Create shared audio context once
-window._sharedAudioCtx ??= new (window.AudioContext || window.webkitAudioContext)();
-const ctx = window._sharedAudioCtx;
-
-// Play a soft notification tone
-function playTone({ type = 'sine', frequency = 440, volume = 0.1, duration = 1, startTime = null }) {
-  const now = ctx.currentTime;
-  const start = startTime ?? now;
-  const osc = ctx.createOscillator();
-  const gain = ctx.createGain();
-
-  osc.type = type;
-  osc.frequency.setValueAtTime(frequency, start);
-
-  gain.gain.setValueAtTime(volume, start);
-  gain.gain.exponentialRampToValueAtTime(0.0005, start + duration);
-
-  osc.connect(gain);
-  gain.connect(ctx.destination);
-
-  osc.start(start);
-  osc.stop(start + duration);
-
-  osc.onended = () => {
-    osc.disconnect();
-    gain.disconnect();
-  };
-}
 
 function detectImageFormat(base64String) {
   if (base64String.startsWith("iVBORw0KGgo")) return "png";  // PNG
@@ -1876,10 +1848,6 @@ window.createShortcut = async function(data) {
     try {
       await sleep(300);
 
-      // Play your custom soft notification sound here:
-      playTone({ type: 'sine', frequency: 520, volume: 0.12, duration: 1.5 });
-      playTone({ type: 'sine', frequency: 660, volume: 0.06, duration: 0.8, startTime: ctx.currentTime + 0.1 });
-
       const notificationPayload = {
         rawbody: data.appname + " was added to your library!",
         state: "ingame",
@@ -1919,6 +1887,8 @@ window.createShortcut = async function(data) {
   }
 };
 """
+
+
 
 
 
@@ -3575,31 +3545,6 @@ def send_launcher_notification(ws_socket, message_text, removed_apps):
     JS_notify = f"""
     (function() {{
         try {{
-            if (!window._sharedAudioCtx)
-                window._sharedAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
-            const ctx = window._sharedAudioCtx;
-
-            function playTone({{ type='sine', frequency=440, frequencyEnd=null, volume=0.1, duration=1, startTime=null }}) {{
-                const now = ctx.currentTime;
-                const start = startTime ?? now;
-                const osc = ctx.createOscillator();
-                const gain = ctx.createGain();
-                osc.type = type;
-                osc.frequency.setValueAtTime(frequency, start);
-                if (frequencyEnd !== null)
-                    osc.frequency.exponentialRampToValueAtTime(frequencyEnd, start + duration);
-                gain.gain.setValueAtTime(volume, start);
-                gain.gain.exponentialRampToValueAtTime(0.0005, start + duration);
-                osc.connect(gain);
-                gain.connect(ctx.destination);
-                osc.start(start);
-                osc.stop(start + duration);
-                osc.onended = () => {{ osc.disconnect(); gain.disconnect(); }};
-            }}
-
-            playTone({{ type:'sine', frequency:660, frequencyEnd:520, volume:0.12, duration:1.5 }});
-            playTone({{ type:'sine', frequency:520, frequencyEnd:400, volume:0.08, duration:0.8, startTime: ctx.currentTime + 0.1 }});
-
             if (window.SteamClient && SteamClient.ClientNotifications) {{
                 const payload = {{ rawbody: {js_message}, state: "ingame" }};
                 SteamClient.ClientNotifications.DisplayClientNotification(
@@ -3629,6 +3574,7 @@ def send_launcher_notification(ws_socket, message_text, removed_apps):
         }}
     }})();
     """
+
 
     send_ws_text(ws_socket, json.dumps({
         "id": notify_id,
