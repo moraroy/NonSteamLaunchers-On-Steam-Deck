@@ -6130,9 +6130,9 @@ def get_compat_tool_if_needed(launchoptions, exe_path, startingdir):
         return None
 
     # Check for UMU-related Proton (UMU-Proton) and return None immediately if found
-    if 'UMU-Proton' in launchoptions:  # If it's an UMU-related shortcut, return None immediately
-        print("Exclusion: UMU-related shortcut detected.")
-        return None
+    #if 'UMU-Proton' in launchoptions:  # If it's an UMU-related shortcut, return None immediately
+        #print("Exclusion: UMU-related shortcut detected.")
+        #return None
 
     if ('chrome' in launchoptions or
         'brave' in launchoptions or
@@ -6379,9 +6379,17 @@ def create_new_entry(shortcutdirectory, appname, launchoptions, startingdir, lau
 
     compat_tool = get_compat_tool_if_needed(launchoptions, exe_path, startingdir)
 
-    # Skip setting compat tool if UMU already processed it
-    if not (umu_id and umu_processed_shortcuts.get(umu_id)) and compat_tool:
+
+    is_umu_shortcut = '/umu-run' in exe_path.lower()
+
+    if is_umu_shortcut:
+        new_entry['CompatTool'] = 'Default'
+        print(f"[UMU] Assigning Steam-Play-None to Steam shortcut: {appname}")
+
+    elif compat_tool:
         new_entry['CompatTool'] = compat_tool
+
+
 
 
     # Add the new entry to the shortcuts dictionary and add proton
