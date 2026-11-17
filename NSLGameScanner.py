@@ -275,12 +275,6 @@ shortcuts_file = f"{logged_in_home}/.steam/root/userdata/{steamid3}/config/short
 
 # Check if the file exists
 if os.path.exists(shortcuts_file):
-    # If the file is not executable, write the shortcuts dictionary and make it executable
-    if not os.access(shortcuts_file, os.X_OK):
-        print("The file is not executable. Writing an empty shortcuts dictionary and making it executable.")
-        shortcuts = create_empty_shortcuts()
-        write_shortcuts_to_file(shortcuts_file, shortcuts)
-    else:
         # Load the existing shortcuts
         with open(shortcuts_file, 'rb') as file:
             try:
