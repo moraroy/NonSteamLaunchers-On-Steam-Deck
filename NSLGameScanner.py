@@ -265,27 +265,21 @@ hero64 = ""
 def create_empty_shortcuts():
     return {'shortcuts': {}}
 
-def write_shortcuts_to_file(shortcuts_file, shortcuts):
-    with open(shortcuts_file, 'wb') as file:
-        file.write(vdf.binary_dumps(shortcuts))
-    os.chmod(shortcuts_file, 0o755)
-
-# Define the path to the shortcuts file
 shortcuts_file = f"{logged_in_home}/.steam/root/userdata/{steamid3}/config/shortcuts.vdf"
 
-# Check if the file exists
 if os.path.exists(shortcuts_file):
-        # Load the existing shortcuts
-        with open(shortcuts_file, 'rb') as file:
-            try:
-                shortcuts = vdf.binary_loads(file.read())
-            except vdf.VDFError as e:
-                print(f"Error reading file: {e}. The file might be corrupted or unreadable.")
-                print("Exiting the program. Please check the shortcuts.vdf file.")
-                sys.exit(1)
+    with open(shortcuts_file, 'rb') as file:
+        try:
+            shortcuts = vdf.binary_loads(file.read())
+            print("Successfully loaded existing shortcuts.vdf file.")
+        except vdf.VDFError as e:
+            print(f"Error reading file: {e}. The file might be corrupted or unreadable.")
+            print("Exiting the program. Please check the shortcuts.vdf file.")
+            sys.exit(1)
 else:
-    print("The shortcuts.vdf file does not exist.")
-    sys.exit(1)
+    print("The shortcuts.vdf file does not exist. Using an a temporary dictionary.")
+    shortcuts = create_empty_shortcuts()
+    
 
 
 
