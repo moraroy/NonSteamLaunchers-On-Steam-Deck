@@ -147,7 +147,7 @@ stoveshortcutdirectory = os.environ.get('stoveshortcutdirectory')
 bigfishshortcutdirectory = os.environ.get('bigfishshortcutdirectory')
 
 repaireaappshortcutdirectory = os.environ.get('repaireaappshortcutdirectory')
-xoduslaunchershortcutdirectory = os.environ.get('xoduslaunchershortcutdirectory')
+nexuslaunchershortcutdirectory = os.environ.get('nexuslaunchershortcutdirectory')
 #Streaming
 chromedirectory = os.environ.get('chromedirectory')
 names_str = os.environ.get("custom_website_names_str", "")
@@ -1573,7 +1573,7 @@ def check_if_shortcut_exists(display_name, exe_path, start_dir, launch_options):
             return True
 
         # Same target already added by another tool under its own wrapper/name
-        # (e.g. ArmadaOS wraps Xodus games and Flatpaks with armada-game-launch)
+        # (e.g. ArmadaOS wraps nexus games and Flatpaks with armada-game-launch)
         if is_wrapped_duplicate(s, stripped_exe_path, launch_options):
             print(f"Existing shortcut for the same target found for {display_name}. Skipping creation.")
             return True
@@ -3676,7 +3676,7 @@ const TERMINATION_EXCLUDED_GAMES = [
     'STOVE Client',
     'Big Fish Games Manager',
     'Xbox Game Pass',
-    'Xodus Launcher',
+    'Nexus Launcher',
     'NonSteamLaunchers',
     'Repair EA App',
     'Gryphlink'
@@ -4361,8 +4361,8 @@ METADATA_CODE = r"""
 
 
     const customGameOverrides = {
-        "Xodus Launcher": {
-            about_the_game: "Xodus Launcher is an open-source, independent game launcher that allows users to run Microsoft Store and PC Game Pass games locally on Linux systems and the Steam Deck without a Windows installation.",
+        "Nexus Launcher": {
+            about_the_game: "Nexus Launcher is an open-source, independent game launcher that allows users to run Microsoft Store and PC Game Pass games locally on Linux systems and the Steam Deck without a Windows installation.",
             developer: "domsvoboda",
             publisher: "",
             release_date: "2026",
@@ -6113,8 +6113,8 @@ def get_next_available_key(shortcuts):
 def get_compat_tool_if_needed(launchoptions, exe_path, startingdir):
     steam_compat_marker = 'STEAM_COMPAT_DATA_PATH'
 
-    if 'xodus' in exe_path.lower() or 'xodus' in startingdir.lower():
-        print("Exclusion: 'xodus' detected in target or start directory.")
+    if 'nexus' in exe_path.lower() or 'nexus' in startingdir.lower():
+        print("Exclusion: 'nexus' detected in target or start directory.")
         return None
 
     # Check for UMU-related Proton (UMU-Proton) and return None immediately if found
@@ -6742,7 +6742,7 @@ track_create_entry(os.environ.get('gryphlinkshortcutdirectory'), 'Gryphlink', os
 
 track_create_entry(os.environ.get('repaireaappshortcutdirectory'), 'Repair EA App', os.environ.get('repaireaapplaunchoptions'), os.environ.get('repaireaappstartingdir'))
 
-track_create_entry(os.environ.get('xoduslaunchershortcutdirectory'), 'Xodus Launcher', os.environ.get('xoduslauncherlaunchoptions'), os.environ.get('xoduslauncherstartingdir'))
+track_create_entry(os.environ.get('nexuslaunchershortcutdirectory'), 'Nexus Launcher', os.environ.get('nexuslauncherlaunchoptions'), os.environ.get('nexuslauncherstartingdir'))
 
 
 
@@ -7059,7 +7059,7 @@ if os.path.exists(non_steam_launchers_path):
 
 
 
-# Xodus Nexus Games Scanner
+#Nexus Launcher Games Scanner
 xodus_config_dir = f"{logged_in_home}/.config/xodus-nexus"
 xodus_state_file = f"{xodus_config_dir}/launcher-state.json"
 xodus_launcher = f"{xodus_config_dir}/shortcuts/launch-game"
@@ -7133,7 +7133,7 @@ else:
         f"skipped: {skipped_count}"
     )
 
-# End of Xodus Nexus Games Scanner
+# End of Nexus Launcher Games Scanner
 
 
 

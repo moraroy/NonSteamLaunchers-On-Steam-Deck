@@ -119,7 +119,7 @@ nsl_safe_rm() {
         "${logged_in_home}/.config/systemd/user/env_vars"|\
         "${logged_in_home}/.local/share/applications/RemotePlayWhatever"|\
         "${logged_in_home}/.local/share/applications/RemotePlayWhatever.desktop"|\
-        "${logged_in_home}/.local/share/applications/Xodus Nexus.AppImage"|\
+        "${logged_in_home}/.local/share/applications/Nexus Launcher.AppImage"|\
         "${logged_in_home}/.local/share/applications/Heroic.AppImage"|\
         /tmp/NonSteamLaunchersDecky|/tmp/NonSteamLaunchersDecky.zip|/tmp/NonSteamLaunchersDecky-main|\
         /tmp/hytale-launcher.flatpak)
@@ -1148,7 +1148,7 @@ launcher_entries=(
   "$stove_value|$stove_text"
   "$bigfish_value|$bigfish_text"
   "$gryphlink_value|$gryphlink_text"
-  "FALSE|Xodus Nexus"
+  "FALSE|Nexus Launcher"
   "FALSE|RemotePlayWhatever"
   "FALSE|Moonlight Game Streaming"
   "FALSE|Heroic Games Launcher"
@@ -1541,7 +1541,7 @@ StartFreshFunction() {
             "${logged_in_home}/.config/systemd/user/NSLGameScanner.py"|\
             "${logged_in_home}/.config/systemd/user/env_vars"|\
             "${logged_in_home}/.config/systemd/user/nslgamescanner.service"|\
-            "${logged_in_home}/.local/share/applications/Xodus Nexus.AppImage"|\
+            "${logged_in_home}/.local/share/applications/Nexus Launcher.AppImage"|\
             "${logged_in_home}/.local/share/applications/RemotePlayWhatever"|\
 			"${logged_in_home}/.local/share/applications/Heroic.AppImage"|\
             "${logged_in_home}/.local/share/applications/RemotePlayWhatever.desktop"|\
@@ -1661,7 +1661,7 @@ StartFreshFunction() {
     delete_path "${logged_in_home}/.config/systemd/user/descriptions.json"
 
 
-    delete_path "${logged_in_home}/.local/share/applications/Xodus Nexus.AppImage"
+    delete_path "${logged_in_home}/.local/share/applications/Nexus Launcher.AppImage"
 
     delete_path "${logged_in_home}/.local/share/applications/RemotePlayWhatever"
     delete_path "${logged_in_home}/.local/share/applications/RemotePlayWhatever.desktop"
@@ -2418,16 +2418,16 @@ process_uninstall_options() {
 
 
 
-        if [[ $uninstall_options == *"Uninstall Xodus Nexus"* ]]; then
+        if [[ $uninstall_options == *"Uninstall Nexus Launcher"* ]]; then
             # Remove the AppImage file
-            nsl_safe_rm "${logged_in_home}/.local/share/applications/Xodus Nexus.AppImage"
+            nsl_safe_rm "${logged_in_home}/.local/share/applications/Nexus Launcher.AppImage"
 
             # Clean up/delete its variables from the env_vars file instead of deleting the whole file
             if [[ -f "${logged_in_home}/.config/systemd/user/env_vars" ]]; then
-                sed -i '/xodusnexus/d' "${logged_in_home}/.config/systemd/user/env_vars"
+                sed -i '/nexuslauncher/d' "${logged_in_home}/.config/systemd/user/env_vars"
             fi
 
-            zenity --info --text="Xodus Nexus has been uninstalled." --width=200 --height=150 &
+            zenity --info --text="Nexus Launcher has been uninstalled." --width=200 --height=150 &
             sleep 3
             killall zenity
         fi
@@ -2620,7 +2620,7 @@ else
             FALSE "Pokémon Trading Card Game Live" \
             FALSE "Antstream Arcade" \
             FALSE "Big Fish Games Manager" \
-            FALSE "Xodus Nexus" \
+            FALSE "Nexus Launcher" \
             FALSE "RemotePlayWhatever" \
             FALSE "NVIDIA GeForce NOW" \
             FALSE "STOVE Client" \
@@ -4129,39 +4129,42 @@ fi
 
 
 echo "99.4"
-echo "# Installing Xodus Nexus ...please wait..."
-# Xodus Nexus
-if [[ $options == *"Xodus Nexus"* ]]; then
+echo "# Installing Nexus Launcher ...please wait..."
+
+# Nexus Launcher
+if [[ $options == *"Nexus Launcher"* ]]; then
     DIRECTORY="${logged_in_home}/.local/share/applications"
     mkdir -p "$DIRECTORY"
 
-    # Get the latest Xodus Nexus AppImage URL
     RELEASE_URL=$(curl -fsSL \
-        https://api.github.com/repos/domsvoboda/xodus-nexus/releases/latest |
-        grep -oE 'https://[^"]*Xodus-Nexus-[^"]*x86_64\.AppImage' |
+        https://api.github.com/repos/domsvoboda/nexus-launcher/releases/latest |
+        grep -oE 'https://[^"]*Nexus-Launcher-[^"]*x86_64\.AppImage' |
         head -n 1)
 
     if [[ -z "$RELEASE_URL" ]]; then
-        echo "Failed to find the Xodus Nexus AppImage release."
+        echo "Failed to find the Nexus Launcher AppImage release."
+    else
+        TARGET_FILE="$DIRECTORY/Nexus Launcher.AppImage"
+        TEMP_FILE="$TARGET_FILE.tmp"
+
+        if wget -O "$TEMP_FILE" "$RELEASE_URL"; then
+
+            # Make it executable
+            chmod +x "$TEMP_FILE"
+
+            if mv -f "$TEMP_FILE" "$TARGET_FILE"; then
+                echo "Nexus Launcher updated and downloaded to $TARGET_FILE"
+            else
+                echo "Failed to replace the existing Nexus Launcher."
+                rm -f "$TEMP_FILE"
+            fi
+
+        else
+            echo "Failed to download Nexus Launcher."
+            rm -f "$TEMP_FILE"
+        fi
     fi
-
-    # Set the clean, unified filename
-    TARGET_FILE="$DIRECTORY/Xodus Nexus.AppImage"
-
-    # Remove any existing older version to ensure it always replaces with the latest
-    if [[ -f "$TARGET_FILE" ]]; then
-        rm -f "$TARGET_FILE"
-    fi
-
-    # Download and save it directly under the clean new name
-    wget -O "$TARGET_FILE" "$RELEASE_URL"
-
-    # Make it executable
-    chmod +x "$TARGET_FILE"
-
-    echo "Xodus Nexus updated and downloaded to $TARGET_FILE"
 fi
-
 
 
 
@@ -4566,15 +4569,15 @@ eaapp_path2="${logged_in_home}/.local/share/Steam/steamapps/compatdata/TheEAappL
 check_and_write "repaireaapp" "$eaapp_path1" "$eaapp_path2" "NonSteamLaunchers" "TheEAappLauncher" "" "repaireaapp"
 
 
-# Xodus Nexus (Native AppImage - No Steam Compatdata needed)
-xoduspath1="${logged_in_home}/.local/share/applications/Xodus Nexus.AppImage"
-if [[ -f "$xoduspath1" ]]; then
-    echo "export xodusnexusshortcutdirectory=\"${xoduspath1}\"" >> "${logged_in_home}/.config/systemd/user/env_vars"
-    echo "export xodusnexuslaunchoptions=" >> "${logged_in_home}/.config/systemd/user/env_vars"
-    echo "export xodusnexusstartingdir=\"$(dirname "${xoduspath1}")\"" >> "${logged_in_home}/.config/systemd/user/env_vars"
-    echo "Xodusnexus Launcher found at ${xoduspath1}"
+# Nexus Launcher (Native AppImage - No Steam Compatdata needed)
+nexuspath1="${logged_in_home}/.local/share/applications/Nexus Launcher.AppImage"
+if [[ -f "$nexuspath1" ]]; then
+    echo "export nexuslaunchershortcutdirectory=\"${nexuspath1}\"" >> "${logged_in_home}/.config/systemd/user/env_vars"
+    echo "export nexuslauncherlaunchoptions=" >> "${logged_in_home}/.config/systemd/user/env_vars"
+    echo "export nexuslauncherstartingdir=\"$(dirname "${nexuspath1}")\"" >> "${logged_in_home}/.config/systemd/user/env_vars"
+    echo "Nexus Launcher found at ${nexuspath1}"
 else
-    echo "Xodusnexus Launcher not found"
+    echo "Nexus Launcher not found"
 fi
 
 # Set the env_vars variable

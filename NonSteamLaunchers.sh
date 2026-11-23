@@ -106,7 +106,7 @@ nsl_safe_rm() {
         "${logged_in_home}/.config/systemd/user/env_vars"|\
         "${logged_in_home}/.local/share/applications/RemotePlayWhatever"|\
         "${logged_in_home}/.local/share/applications/RemotePlayWhatever.desktop"|\
-        "${logged_in_home}/.local/share/applications/Xodus Launcher.AppImage"|\
+        "${logged_in_home}/.local/share/applications/Nexus Launcher.AppImage"|\
         /tmp/NonSteamLaunchersDecky|/tmp/NonSteamLaunchersDecky.zip|/tmp/NonSteamLaunchersDecky-main|\
         /tmp/hytale-launcher.flatpak)
             ;;
@@ -1134,7 +1134,7 @@ launcher_entries=(
   "$bigfish_value|$bigfish_text"
   "$gryphlink_value|$gryphlink_text"
   "FALSE|Hytale"
-  "FALSE|Xodus Launcher"
+  "FALSE|Nexus Launcher"
   "FALSE|RemotePlayWhatever"
   "FALSE|NVIDIA GeForce NOW"
   "FALSE|Moonlight Game Streaming"
@@ -1526,7 +1526,7 @@ StartFreshFunction() {
             "${logged_in_home}/.config/systemd/user/NSLGameScanner.py"|\
             "${logged_in_home}/.config/systemd/user/env_vars"|\
             "${logged_in_home}/.config/systemd/user/nslgamescanner.service"|\
-            "${logged_in_home}/.local/share/applications/Xodus Launcher.AppImage"|\
+            "${logged_in_home}/.local/share/applications/Nexus Launcher.AppImage"|\
             "${logged_in_home}/.local/share/applications/RemotePlayWhatever"|\
             "${logged_in_home}/.local/share/applications/RemotePlayWhatever.desktop"|\
             "${logged_in_home}/Downloads/NonSteamLaunchers-install.log")
@@ -1645,7 +1645,7 @@ StartFreshFunction() {
     delete_path "${logged_in_home}/.config/systemd/user/descriptions.json"
 
 
-    delete_path "${logged_in_home}/.local/share/applications/Xodus Launcher.AppImage"
+    delete_path "${logged_in_home}/.local/share/applications/Nexus Launcher.AppImage"
 
     delete_path "${logged_in_home}/.local/share/applications/RemotePlayWhatever"
     delete_path "${logged_in_home}/.local/share/applications/RemotePlayWhatever.desktop"
@@ -2402,16 +2402,16 @@ process_uninstall_options() {
 
 
 
-        if [[ $uninstall_options == *"Uninstall Xodus Launcher"* ]]; then
+        if [[ $uninstall_options == *"Uninstall Nexus Launcher"* ]]; then
             # Remove the AppImage file
-            nsl_safe_rm "${logged_in_home}/.local/share/applications/Xodus Launcher.AppImage"
+            nsl_safe_rm "${logged_in_home}/.local/share/applications/Nexus Launcher.AppImage"
 
             # Clean up/delete its variables from the env_vars file instead of deleting the whole file
             if [[ -f "${logged_in_home}/.config/systemd/user/env_vars" ]]; then
-                sed -i '/xoduslauncher/d' "${logged_in_home}/.config/systemd/user/env_vars"
+                sed -i '/nexuslauncher/d' "${logged_in_home}/.config/systemd/user/env_vars"
             fi
 
-            zenity --info --text="Xodus Launcher has been uninstalled." --width=200 --height=150 &
+            zenity --info --text="Nexus Launcher has been uninstalled." --width=200 --height=150 &
             sleep 3
             killall zenity
         fi
@@ -2586,7 +2586,7 @@ else
             FALSE "Pokémon Trading Card Game Live" \
             FALSE "Antstream Arcade" \
             FALSE "Big Fish Games Manager" \
-            FALSE "Xodus Launcher" \
+            FALSE "Nexus Launcher" \
             FALSE "RemotePlayWhatever" \
             FALSE "NVIDIA GeForce NOW" \
             FALSE "STOVE Client" \
@@ -3922,10 +3922,10 @@ fi
 
 
 echo "99.4"
-echo "# Installing Xodus Launcher ...please wait..."
+echo "# Installing Nexus Launcher ...please wait..."
 
-# Xodus Launcher
-if [[ $options == *"Xodus Launcher"* ]]; then
+# Nexus Launcher
+if [[ $options == *"Nexus Launcher"* ]]; then
     DIRECTORY="${logged_in_home}/.local/share/applications"
     mkdir -p "$DIRECTORY"
 
@@ -3935,9 +3935,9 @@ if [[ $options == *"Xodus Launcher"* ]]; then
         head -n 1)
 
     if [[ -z "$RELEASE_URL" ]]; then
-        echo "Failed to find the Xodus Launcher AppImage release."
+        echo "Failed to find the Nexus Launcher AppImage release."
     else
-        TARGET_FILE="$DIRECTORY/Xodus Launcher.AppImage"
+        TARGET_FILE="$DIRECTORY/Nexus Launcher.AppImage"
         TEMP_FILE="$TARGET_FILE.tmp"
 
         if wget -O "$TEMP_FILE" "$RELEASE_URL"; then
@@ -3946,14 +3946,14 @@ if [[ $options == *"Xodus Launcher"* ]]; then
             chmod +x "$TEMP_FILE"
 
             if mv -f "$TEMP_FILE" "$TARGET_FILE"; then
-                echo "Xodus Launcher updated and downloaded to $TARGET_FILE"
+                echo "Nexus Launcher updated and downloaded to $TARGET_FILE"
             else
-                echo "Failed to replace the existing Xodus Launcher."
+                echo "Failed to replace the existing Nexus Launcher."
                 rm -f "$TEMP_FILE"
             fi
 
         else
-            echo "Failed to download Xodus Launcher."
+            echo "Failed to download Nexus Launcher."
             rm -f "$TEMP_FILE"
         fi
     fi
@@ -4310,15 +4310,15 @@ eaapp_path2="${logged_in_home}/.local/share/Steam/steamapps/compatdata/TheEAappL
 check_and_write "repaireaapp" "$eaapp_path1" "$eaapp_path2" "NonSteamLaunchers" "TheEAappLauncher" "" "repaireaapp"
 
 
-# Xodus Launcher (Native AppImage - No Steam Compatdata needed)
-xoduspath1="${logged_in_home}/.local/share/applications/Xodus Launcher.AppImage"
-if [[ -f "$xoduspath1" ]]; then
-    echo "export xoduslaunchershortcutdirectory=\"${xoduspath1}\"" >> "${logged_in_home}/.config/systemd/user/env_vars"
-    echo "export xoduslauncherlaunchoptions=" >> "${logged_in_home}/.config/systemd/user/env_vars"
-    echo "export xoduslauncherstartingdir=\"$(dirname "${xoduspath1}")\"" >> "${logged_in_home}/.config/systemd/user/env_vars"
-    echo "XodusLauncher Launcher found at ${xoduspath1}"
+# Nexus Launcher (Native AppImage - No Steam Compatdata needed)
+nexuspath1="${logged_in_home}/.local/share/applications/Nexus Launcher.AppImage"
+if [[ -f "$nexuspath1" ]]; then
+    echo "export nexuslaunchershortcutdirectory=\"${nexuspath1}\"" >> "${logged_in_home}/.config/systemd/user/env_vars"
+    echo "export nexuslauncherlaunchoptions=" >> "${logged_in_home}/.config/systemd/user/env_vars"
+    echo "export nexuslauncherstartingdir=\"$(dirname "${nexuspath1}")\"" >> "${logged_in_home}/.config/systemd/user/env_vars"
+    echo "Nexus Launcher found at ${nexuspath1}"
 else
-    echo "XodusLauncher Launcher not found"
+    echo "Nexus Launcher not found"
 fi
 
 # Set the env_vars variable
