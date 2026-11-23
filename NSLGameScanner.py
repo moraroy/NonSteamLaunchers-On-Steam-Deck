@@ -147,7 +147,7 @@ stoveshortcutdirectory = os.environ.get('stoveshortcutdirectory')
 bigfishshortcutdirectory = os.environ.get('bigfishshortcutdirectory')
 
 repaireaappshortcutdirectory = os.environ.get('repaireaappshortcutdirectory')
-xodusnexusshortcutdirectory = os.environ.get('xodusnexusshortcutdirectory')
+xoduslaunchershortcutdirectory = os.environ.get('xoduslaunchershortcutdirectory')
 #Streaming
 chromedirectory = os.environ.get('chromedirectory')
 names_str = os.environ.get("custom_website_names_str", "")
@@ -3676,7 +3676,7 @@ const TERMINATION_EXCLUDED_GAMES = [
     'STOVE Client',
     'Big Fish Games Manager',
     'Xbox Game Pass',
-    'Xodus Nexus',
+    'Xodus Launcher',
     'NonSteamLaunchers',
     'Repair EA App',
     'Gryphlink'
@@ -4361,8 +4361,8 @@ METADATA_CODE = r"""
 
 
     const customGameOverrides = {
-        "Xodus Nexus": {
-            about_the_game: "Xodus Nexus is an open-source, independent game launcher that allows users to run Microsoft Store and PC Game Pass games locally on Linux systems and the Steam Deck without a Windows installation.",
+        "Xodus Launcher": {
+            about_the_game: "Xodus Launcher is an open-source, independent game launcher that allows users to run Microsoft Store and PC Game Pass games locally on Linux systems and the Steam Deck without a Windows installation.",
             developer: "domsvoboda",
             publisher: "",
             release_date: "2026",
@@ -6742,7 +6742,7 @@ track_create_entry(os.environ.get('gryphlinkshortcutdirectory'), 'Gryphlink', os
 
 track_create_entry(os.environ.get('repaireaappshortcutdirectory'), 'Repair EA App', os.environ.get('repaireaapplaunchoptions'), os.environ.get('repaireaappstartingdir'))
 
-track_create_entry(os.environ.get('xodusnexusshortcutdirectory'), 'Xodus Nexus', os.environ.get('xodusnexuslaunchoptions'), os.environ.get('xodusnexusstartingdir'))
+track_create_entry(os.environ.get('xoduslaunchershortcutdirectory'), 'Xodus Launcher', os.environ.get('xoduslauncherlaunchoptions'), os.environ.get('xoduslauncherstartingdir'))
 
 
 
