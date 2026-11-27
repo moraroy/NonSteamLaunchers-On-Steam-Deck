@@ -1684,7 +1684,7 @@ track_game, finalize_tracking = scan_and_track_games(logged_in_home, steamid3)
 
 # === CONFIGURATION ===
 WS_HOST = "localhost"
-WS_PORT = 8080
+WS_PORT = None
 TARGET_TITLE = "SharedJSContext"
 TARGET_TITLE2 = "Steam"
 TARGET_TITLE3 = "Steam Big Picture Mode"
@@ -3250,58 +3250,93 @@ THEMEMUSIC_CODE = r"""
 
 
 
-# Utility: Fetch debugger targets with retry
-def fetch_targets(host, port, max_retries=15, base_delay=2):
-    """Fetch debugger targets from Steam CEF debugger, with retry logic.
 
-    Steam's CEF debugger on port 8080 may not be listening on first run.
-    Retries with exponential backoff (capped at 10s) up to max_retries times.
-
-    Old behavior: called sys.exit(0) on any connection failure (silent exit).
-    New behavior: retries up to max_retries times, then raises the last error.
-    """
-    import time
-
-    last_error = None
+def fetch_targets(host, port=None, max_retries=15, base_delay=2):
     for attempt in range(max_retries):
         try:
-            conn = http.client.HTTPConnection(host, port, timeout=5)
-            conn.request("GET", "/json")
-            resp = conn.getresponse()
+            # Get localhost listening ports
+            result = subprocess.run(
+                ["ss", "-ltnH"],
+                capture_output=True,
+                text=True,
+                timeout=5
+            )
 
-            if resp.status != 200:
-                msg = f"Failed to fetch targets: {resp.status} {resp.reason}"
-                print(msg)
-                raise Exception(msg)
+            ports = set()
 
-            data = resp.read()
-            targets = json.loads(data)
+            for line in result.stdout.splitlines():
+                parts = line.split()
+                if len(parts) < 4:
+                    continue
 
-            if attempt > 0:
-                print(f"Connected to Steam debugger on attempt {attempt + 1}/{max_retries}")
+                address = parts[3]
 
-            return targets
+                if address.startswith("127.0.0.1:"):
+                    try:
+                        ports.add(int(address.rsplit(":", 1)[1]))
+                    except ValueError:
+                        continue
 
-        except (ConnectionRefusedError, socket.timeout,
-                http.client.CannotSendRequest, http.client.RemoteDisconnected,
-                OSError, Exception) as e:
-            last_error = e
-            if attempt < max_retries - 1:
-                delay = min(base_delay * (attempt + 1), 10)
-                print(f"Steam debugger not ready (attempt {attempt + 1}/{max_retries}), "
-                      f"retrying in {delay}s... ({e})")
-                time.sleep(delay)
-            else:
-                print(f"WARNING: Steam debugger unavailable at {host}:{port} "
-                    f"after {max_retries} attempts.")
-                print("Steam may not be running or debugging may not be enabled.")
-                return None
+            # Try configured port first if provided
+            candidates = ([port] if port else []) + sorted(
+                p for p in ports if p != port
+            )
 
-        finally:
-            try:
-                conn.close()
-            except:
-                pass
+            for candidate in candidates:
+                conn = None
+
+                try:
+                    conn = http.client.HTTPConnection(
+                        host, candidate, timeout=3
+                    )
+                    conn.request("GET", "/json")
+                    resp = conn.getresponse()
+
+                    if resp.status != 200:
+                        continue
+
+                    targets = json.loads(resp.read())
+
+                    if isinstance(targets, list) and any(
+                        isinstance(t, dict)
+                        and t.get("title") in (
+                            "SharedJSContext",
+                            "Steam",
+                            "Steam Big Picture Mode"
+                        )
+                        and t.get("webSocketDebuggerUrl")
+                        for t in targets
+                    ):
+                        global WS_PORT
+                        WS_PORT = candidate
+
+                        #print(
+                            #f"[NSL] Steam CEF debugger found "
+                            #f"at {host}:{candidate}"
+                        #)
+                        return targets
+
+                except (OSError, ValueError, http.client.HTTPException):
+                    pass
+
+                finally:
+                    if conn:
+                        conn.close()
+
+        except Exception as e:
+            print(f"[NSL] Debugger discovery error: {e}")
+
+        if attempt < max_retries - 1:
+            delay = min(base_delay * (attempt + 1), 10)
+            print(
+                f"[NSL] Debugger not found "
+                f"(attempt {attempt + 1}/{max_retries}), "
+                f"retrying in {delay}s..."
+            )
+            time.sleep(delay)
+
+    print("[NSL] Steam CEF debugger unavailable.")
+    return None
 
 
 # Find websocket debugger URL for the target title
